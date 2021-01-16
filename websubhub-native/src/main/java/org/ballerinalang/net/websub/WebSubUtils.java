@@ -41,55 +41,6 @@ public class WebSubUtils {
 
     public static final String WEBSUB_ERROR = "WebSubError";
 
-    static BObject getHttpRequest(HttpCarbonMessage httpCarbonMessage) {
-        BObject httpRequest = ValueCreator.createObjectValue(HttpConstants.PROTOCOL_HTTP_PKG_ID,
-                                                                    HttpConstants.REQUEST);
-        BObject inRequestEntity = ValueCreator.createObjectValue(MimeConstants.PROTOCOL_MIME_PKG_ID,
-                                                                        MimeConstants.ENTITY);
-
-        HttpUtil.populateInboundRequest(httpRequest, inRequestEntity, httpCarbonMessage);
-        HttpUtil.populateEntityBody(httpRequest, inRequestEntity, true, true);
-        return httpRequest;
-    }
-
-    // TODO: 8/1/18 Handle duplicate code
-    @SuppressWarnings("unchecked")
-    static BMap<BString, ?> getJsonBody(BObject httpRequest) {
-        BObject entityObj = HttpUtil.extractEntity(httpRequest);
-        if (entityObj != null) {
-            Object dataSource = EntityBodyHandler.getMessageDataSource(entityObj);
-            String stringPayload;
-            if (dataSource != null) {
-                stringPayload = MimeUtil.getMessageAsString(dataSource);
-            } else {
-                stringPayload = EntityBodyHandler.constructStringDataSource(entityObj).getValue();
-                EntityBodyHandler.addMessageDataSource(entityObj, stringPayload);
-                // Set byte channel to null, once the message data source has been constructed
-                entityObj.addNativeData(MimeConstants.ENTITY_BYTE_CHANNEL, null);
-            }
-
-            Object result = JsonUtils.parse(stringPayload);
-            if (result instanceof BMap) {
-                return (BMap<BString, ?>) result;
-            }
-            throw new BallerinaConnectorException("Non-compatible payload received for payload key based dispatching");
-        } else {
-            throw new BallerinaConnectorException("Error retrieving payload for payload key based dispatching");
-        }
-    }
-
-    public static MethodType getAttachedFunction(BObject service, String functionName) {
-        MethodType attachedFunction = null;
-        String functionFullName = service.getType().getName() + "." + functionName;
-        for (MethodType function : service.getType().getMethods()) {
-            //TODO test the name of resource
-            if (functionFullName.contains(function.getName())) {
-                attachedFunction = function;
-            }
-        }
-        return attachedFunction;
-    }
-
     /**
      * Create WebSub specific error record with 'WebSubError' as error type ID name.
      *
@@ -101,15 +52,4 @@ public class WebSubUtils {
                                                  StringUtils.fromString(errMsg));
     }
 
-    /**
-     * Create WebSub specific error for a given error message.
-     *
-     * @param typeIdName  The error type ID name
-     * @param message  The Actual error cause
-     * @return Ballerina error value
-     */
-    public static BError createError(String typeIdName, String message) {
-        return ErrorCreator.createDistinctError(typeIdName, WebSubSubscriberConstants.WEBSUB_PACKAGE_ID,
-                                                 StringUtils.fromString(message));
-    }
 }

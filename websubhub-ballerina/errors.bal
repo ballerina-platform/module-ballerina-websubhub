@@ -14,9 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents a listener startup error.
-public type ListenerStartupError distinct error;
-
 # Represents a hub startup error.
 public type HubStartupError distinct error;
 
