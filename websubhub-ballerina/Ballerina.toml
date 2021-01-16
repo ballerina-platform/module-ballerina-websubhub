@@ -1,6 +1,6 @@
 [package]
 org = "ballerina"
-name = "websub"
+name = "websubhub"
 version = "@toml.version@"
 
 [[dependency]]
@@ -64,7 +64,7 @@ name = "uuid"
 version = "@stdlib.uuid.version@"
 
 [[platform.java11.dependency]]
-path = "../websub-native/build/libs/websub-native-@project.version@.jar"
+path = "../websubhub-native/build/libs/websubhub-native-@project.version@.jar"
 groupId = "ballerina"
 artifactId = "web-sub"
 version = "@project.version@"

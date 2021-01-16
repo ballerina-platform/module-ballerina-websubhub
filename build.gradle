@@ -268,7 +268,7 @@ release {
 }
 
 task build {
-    dependsOn('websub-ballerina:build')
+    dependsOn('websubhub-ballerina:build')
 }
 
 task codeCoverageReport(type: JacocoReport) {

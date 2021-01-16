@@ -16,7 +16,7 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.websub {
+module io.ballerina.stdlib.websubhub {
     requires io.ballerina.stdlib.io;
     requires io.netty.buffer;
     requires org.slf4j;

@@ -17,7 +17,7 @@
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-description = 'Ballerina - Websub Ballerina Generator'
+description = 'Ballerina - WebsubHub Ballerina Generator'
 
 configurations {
     jbalTools
@@ -28,7 +28,7 @@ dependencies {
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
-    compile project(':websub-native')
+    compile project(':websubhub-native')
     compile group: 'org.ballerinalang', name: 'toml-parser', version: "${ballerinaTomlParserVersion}"
     
     externalJars (group: 'io.netty', name: 'netty-common', version: "${nettyVersion}") {
@@ -131,7 +131,7 @@ task unpackStdLibs() {
     }
 }
 
-def packageName = "websub"
+def packageName = "websubhub"
 def packageOrg = "ballerina"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
 def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
@@ -294,7 +294,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-websub")
+            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-websubhub")
             credentials {
                 username = System.getenv("packageUser")
                 password = System.getenv("packagePAT")
@@ -303,7 +303,7 @@ publishing {
     }
 }
 
-ballerinaBuild.dependsOn ":websub-native:build"
+ballerinaBuild.dependsOn ":websubhub-native:build"
 unpackJballerinaTools.dependsOn copyToLib
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
