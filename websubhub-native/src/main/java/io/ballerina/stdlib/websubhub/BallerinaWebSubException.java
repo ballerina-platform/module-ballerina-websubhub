@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.ballerinalang.net.websub;
+package io.ballerina.stdlib.websubhub;
 
 /**
  * Represents a Runtime Exception that could be thrown when performing WebSub actions.

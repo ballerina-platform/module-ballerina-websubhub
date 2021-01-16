@@ -385,12 +385,12 @@ public class Hub {
 
 isolated function externGetAvailableTopics(Hub hub) returns string[] = @java:Method {
     name: "getAvailableTopics",
-    'class: "org.ballerinalang.net.websub.nativeimpl.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.nativeimpl.HubNativeOperationHandler"
 } external;
 
 isolated function externGetSubscribers(Hub hub, string topic) returns SubscriberDetails[] = @java:Method {
     name: "getSubscribers",
-    'class: "org.ballerinalang.net.websub.nativeimpl.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.nativeimpl.HubNativeOperationHandler"
 } external;
 
 ///////////////////////////////////////////////////////////////////

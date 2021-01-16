@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package org.ballerinalang.net.websub.hub;
+package io.ballerina.stdlib.websubhub.hub;
 
 import io.ballerina.runtime.api.Runtime;
 import io.ballerina.runtime.api.async.Callback;
@@ -27,10 +27,11 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.net.websub.BallerinaConnectorException;
-import org.ballerinalang.net.websub.BallerinaWebSubException;
-import org.ballerinalang.net.websub.broker.BallerinaBroker;
-import org.ballerinalang.net.websub.broker.BallerinaBrokerByteBuf;
+import io.ballerina.stdlib.websubhub.BallerinaConnectorException;
+import io.ballerina.stdlib.websubhub.WebSubSubscriberConstants;
+import io.ballerina.stdlib.websubhub.BallerinaWebSubException;
+import io.ballerina.stdlib.websubhub.broker.BallerinaBroker;
+import io.ballerina.stdlib.websubhub.broker.BallerinaBrokerByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.STRUCT_WEBSUB_BALLERINA_HUB;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.WEBSUB_PACKAGE_ID;
 
 /**
  * The Ballerina WebSub Hub.
@@ -255,7 +253,7 @@ public class Hub {
                 setSubscribeUrl(subscribeUrl);
 
                 BObject hubObject = ValueCreator.createObjectValue(
-                        WEBSUB_PACKAGE_ID, STRUCT_WEBSUB_BALLERINA_HUB, StringUtils.fromString(subscribeUrl),
+                        WebSubSubscriberConstants.WEBSUB_PACKAGE_ID, WebSubSubscriberConstants.STRUCT_WEBSUB_BALLERINA_HUB, StringUtils.fromString(subscribeUrl),
                         StringUtils.fromString(publishUrl), hubListener);
                 setHubObject(hubObject);
                 this.runtime = runtime;

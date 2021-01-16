@@ -16,17 +16,17 @@
  *  under the License.
  */
 
-package org.ballerinalang.net.websub.nativeimpl;
+package io.ballerina.stdlib.websubhub.nativeimpl;
 
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.websubhub.BallerinaWebSubException;
+import io.ballerina.stdlib.websubhub.WebSubUtils;
+import io.ballerina.stdlib.websubhub.hub.Hub;
 import org.ballerinalang.mime.util.MimeUtil;
-import org.ballerinalang.net.websub.BallerinaWebSubException;
-import org.ballerinalang.net.websub.WebSubUtils;
-import org.ballerinalang.net.websub.hub.Hub;
 import org.ballerinalang.stdlib.io.channels.base.Channel;
 import org.ballerinalang.stdlib.io.utils.IOConstants;
 

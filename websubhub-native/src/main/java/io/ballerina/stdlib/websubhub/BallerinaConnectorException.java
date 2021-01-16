@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package org.ballerinalang.net.websub;
+package io.ballerina.stdlib.websubhub;
 
 /**
  * Exceptions that could occur in WebSub native level.

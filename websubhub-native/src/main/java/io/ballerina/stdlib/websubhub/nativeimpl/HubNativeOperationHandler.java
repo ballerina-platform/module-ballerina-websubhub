@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package org.ballerinalang.net.websub.nativeimpl;
+package io.ballerina.stdlib.websubhub.nativeimpl;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.TypeCreator;
@@ -26,22 +26,15 @@ import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.net.websub.BallerinaWebSubException;
-import org.ballerinalang.net.websub.WebSubUtils;
-import org.ballerinalang.net.websub.hub.Hub;
-import org.ballerinalang.net.websub.hub.HubSubscriber;
+import io.ballerina.stdlib.websubhub.BallerinaWebSubException;
+import io.ballerina.stdlib.websubhub.WebSubSubscriberConstants;
+import io.ballerina.stdlib.websubhub.WebSubUtils;
+import io.ballerina.stdlib.websubhub.hub.Hub;
+import io.ballerina.stdlib.websubhub.hub.HubSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.STRUCT_WEBSUB_BALLERINA_HUB_STARTED_UP_ERROR;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.SUBSCRIPTION_DETAILS;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_CALLBACK;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_CREATED_AT;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_LEASE_SECONDS;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_TOPIC;
-import static org.ballerinalang.net.websub.WebSubSubscriberConstants.WEBSUB_PACKAGE_ID;
 
 /**
  * This class contains interop external functions related to Hub.
@@ -75,14 +68,14 @@ public class HubNativeOperationHandler {
         try {
             List<HubSubscriber> subscribers = Hub.getInstance().getSubscribers();
             BMap<BString, Object> subscriberDetailsRecordValue =
-                    ValueCreator.createRecordValue(WEBSUB_PACKAGE_ID, SUBSCRIPTION_DETAILS);
+                    ValueCreator.createRecordValue(WebSubSubscriberConstants.WEBSUB_PACKAGE_ID, WebSubSubscriberConstants.SUBSCRIPTION_DETAILS);
             subscriberDetailArray = ValueCreator.createArrayValue(TypeCreator.createArrayType(subscriberDetailsRecordValue.getType()));
             for (HubSubscriber subscriber : subscribers) {
                 if (topic.getValue().equals(subscriber.getTopic())) {
                     BMap<BString, Object> subscriberDetail = ValueCreator.createRecordValue(
                             subscriberDetailsRecordValue, subscriber.getCallback(),
-                            subscriber.getSubscriptionDetails().get(SUBSCRIPTION_DETAILS_LEASE_SECONDS),
-                            subscriber.getSubscriptionDetails().get(SUBSCRIPTION_DETAILS_CREATED_AT));
+                            subscriber.getSubscriptionDetails().get(WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_LEASE_SECONDS),
+                            subscriber.getSubscriptionDetails().get(WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_CREATED_AT));
                     subscriberDetailArray.append(subscriberDetail);
                 }
             }
@@ -112,7 +105,7 @@ public class HubNativeOperationHandler {
         Hub hubInstance = Hub.getInstance();
         if (hubInstance.isStarted()) {
             BMap<BString, Object> hubStartedUpError =
-                    ValueCreator.createRecordValue(WEBSUB_PACKAGE_ID, STRUCT_WEBSUB_BALLERINA_HUB_STARTED_UP_ERROR);
+                    ValueCreator.createRecordValue(WebSubSubscriberConstants.WEBSUB_PACKAGE_ID, WebSubSubscriberConstants.STRUCT_WEBSUB_BALLERINA_HUB_STARTED_UP_ERROR);
             return ValueCreator.createRecordValue(hubStartedUpError, "Ballerina Hub already started up", null,
                                                 hubInstance.getHubObject());
         }
@@ -151,9 +144,9 @@ public class HubNativeOperationHandler {
      */
     public static void addSubscription(BMap<BString, Object> subscriptionDetails) {
         String topic = subscriptionDetails.getStringValue(
-                StringUtils.fromString(SUBSCRIPTION_DETAILS_TOPIC)).getValue();
+                StringUtils.fromString(WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_TOPIC)).getValue();
         String callback = subscriptionDetails.getStringValue(
-                StringUtils.fromString(SUBSCRIPTION_DETAILS_CALLBACK)).getValue();
+                StringUtils.fromString(WebSubSubscriberConstants.SUBSCRIPTION_DETAILS_CALLBACK)).getValue();
         Hub.getInstance().registerSubscription(topic, callback, subscriptionDetails);
     }
 

@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package org.ballerinalang.net.websub.hub;
+package io.ballerina.stdlib.websubhub.hub;
 
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Consumer;
@@ -28,8 +28,8 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.net.websub.BallerinaConnectorException;
-import org.ballerinalang.net.websub.broker.BallerinaBrokerByteBuf;
+import io.ballerina.stdlib.websubhub.BallerinaConnectorException;
+import io.ballerina.stdlib.websubhub.broker.BallerinaBrokerByteBuf;
 
 import java.util.Objects;
 import java.util.Properties;

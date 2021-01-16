@@ -16,23 +16,11 @@
  *  under the License.
  */
 
-package org.ballerinalang.net.websub;
+package io.ballerina.stdlib.websubhub;
 
 import io.ballerina.runtime.api.creators.ErrorCreator;
-import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.types.MethodType;
-import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
-import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BObject;
-import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.mime.util.EntityBodyHandler;
-import org.ballerinalang.mime.util.MimeConstants;
-import org.ballerinalang.mime.util.MimeUtil;
-import org.ballerinalang.net.http.HttpConstants;
-import org.ballerinalang.net.http.HttpUtil;
-import org.ballerinalang.net.transport.message.HttpCarbonMessage;
 
 /**
  * Util class for WebSub.
