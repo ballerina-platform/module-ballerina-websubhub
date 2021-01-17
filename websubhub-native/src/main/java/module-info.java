@@ -17,17 +17,6 @@
  */
 
 module io.ballerina.stdlib.websubhub {
-    requires io.ballerina.stdlib.io;
-    requires io.netty.buffer;
-    requires org.slf4j;
     requires io.ballerina.lang;
     requires io.ballerina.runtime;
-    requires io.netty.codec.http;
-    requires io.netty.codec;
-    requires io.ballerina.lang.value;
-    requires io.ballerina.stdlib.mime;
-    requires io.ballerina.stdlib.http;
-    requires io.ballerina.tools.api;
-    requires broker.common;
-    requires broker.core;
 }

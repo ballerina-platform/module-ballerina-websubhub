@@ -23,36 +23,6 @@ plugins {
 }
 
 ext.ballerinaLangVersion = project.ballerinaLangVersion
-ext.puppycrawlCheckstyleVersion = project.puppycrawlCheckstyleVersion
-ext.slf4jVersion = project.slf4jVersion
-ext.ballerinaTomlParserVersion = project.ballerinaTomlParserVersion
-ext.nettyVersion = project.nettyVersion
-ext.nettyTcnativeVersion = project.nettyTcnativeVersion
-ext.ballerinaMessageBrokerVersion = project.ballerinaMessageBrokerVersion
-ext.ballerinaMessageBrokerCoreVersion = project.ballerinaMessageBrokerCoreVersion
-ext.wso2CommonsPoolVersion = project.wso2CommonsPoolVersion
-ext.wso2SnakeYamlVersion = project.wso2SnakeYamlVersion
-ext.bouncycastleVersion = project.bouncycastleVersion
-ext.guavaVersion = project.guavaVersion
-ext.wso2CarbonMetricsVersion = project.wso2CarbonMetricsVersion
-ext.stdlibHttpVersion = project.stdlibHttpVersion
-ext.stdlibMimeVersion = project.stdlibMimeVersion
-ext.stdlibAuthVersion = project.stdlibAuthVersion
-ext.stdlibFileVersion = project.stdlibFileVersion
-ext.stdlibCacheVersion = project.stdlibCacheVersion
-ext.stdlibCryptoVersion = project.stdlibCryptoVersion
-ext.stdlibEncodingVersion = project.stdlibEncodingVersion
-ext.stdlibTaskVersion = project.stdlibTaskVersion
-ext.stdlibLogVersion = project.stdlibLogVersion
-ext.stdlibTimeVersion = project.stdlibTimeVersion
-ext.stdlibReflectVersion = project.stdlibReflectVersion
-ext.stdlibOsVersion = project.stdlibOsVersion
-ext.stdlibConfigApiVersion = project.stdlibConfigApiVersion
-ext.stdlibIoVersion = project.stdlibIoVersion
-ext.stdlibStringutilsVersion = project.stdlibStringutilsVersion
-ext.stdlibUuidVersion = project.stdlibUuidVersion
-ext.stdlibJwtVersion = project.stdlibJwtVersion
-ext.stdlibOAuth2Version = project.stdlibOAuth2Version
 
 allprojects {
     group = project.group
@@ -63,9 +33,6 @@ allprojects {
 
     repositories {
         mavenLocal()
-        maven {
-            url = 'https://mvnrepository.com/artifact/io.ballerina.messaging/broker-core'
-        }
 
         maven {
             url = 'https://maven.wso2.org/nexus/content/repositories/releases/'
@@ -85,10 +52,6 @@ allprojects {
                 username System.getenv("packageUser")
                 password System.getenv("packagePAT")
             }
-        }
-
-        maven {
-            url = 'https://mvnrepository.com/artifact/io.ballerina.messaging/broker-common'
         }
 
         maven {

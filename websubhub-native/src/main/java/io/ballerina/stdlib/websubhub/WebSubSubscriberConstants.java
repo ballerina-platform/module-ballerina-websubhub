@@ -19,8 +19,6 @@
 package io.ballerina.stdlib.websubhub;
 
 import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUILTIN_PKG_PREFIX;
 
@@ -31,20 +29,8 @@ import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUIL
  */
 public class WebSubSubscriberConstants {
 
-    public static final String BALLERINA = "ballerina";
     public static final String WEBSUB = "websubhub";
     public static final String MODULE_VERSION = "0.1.0";
     public static final Module WEBSUB_PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, WEBSUB, MODULE_VERSION);
-
-    public static final String STRUCT_WEBSUB_BALLERINA_HUB = "Hub";
-    public static final String STRUCT_WEBSUB_BALLERINA_HUB_STARTED_UP_ERROR = "HubStartedUpError";
-
-    // SubscriptionDetails struct field names
-    public static final String SUBSCRIPTION_DETAILS_TOPIC = "topic";
-    public static final String SUBSCRIPTION_DETAILS_CALLBACK = "callback";
-    public static final String SUBSCRIPTION_DETAILS_SECRET = "secret";
-    public static final BString SUBSCRIPTION_DETAILS_LEASE_SECONDS = StringUtils.fromString("leaseSeconds");
-    public static final BString SUBSCRIPTION_DETAILS_CREATED_AT = StringUtils.fromString("createdAt");
-    public static final String SUBSCRIPTION_DETAILS = "SubscriberDetails";
 
 }
