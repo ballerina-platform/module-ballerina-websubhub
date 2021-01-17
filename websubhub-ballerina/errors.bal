@@ -16,3 +16,7 @@
 
 # Represents a webSub distinct error.
 public type WebSubError distinct error;
+
+public type TopicRegistrationError distinct error;
+
+public type TopicUnregistrationError distinct error;

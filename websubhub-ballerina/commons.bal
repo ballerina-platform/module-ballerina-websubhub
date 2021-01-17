@@ -43,6 +43,24 @@ type WebSubContent record {|
     string contentType = "";
 |};
 
-isolated function isSuccessStatusCode(int statusCode) returns boolean {
-    return (200 <= statusCode && statusCode < 300);
-}
+public type RegisterTopicMessage record {|
+    string topic;
+|};
+
+public type UnregisterTopicMessage record {|
+    string topic;
+|};
+
+type CommonResponse record {|
+    map<string|string[]> headers?;
+    map<string> body?;
+|};
+
+public type TopicRegistrationSuccess record {
+    *CommonResponse;
+};
+
+public type TopicUnregistrationSuccess record {
+    *CommonResponse;
+};
+
