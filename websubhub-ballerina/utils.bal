@@ -39,10 +39,6 @@ isolated function respondToRegisterRequest(http:Caller caller, http:Response res
         updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
         log:print("Topic registration successful at Hub, for topic[" + topic + "]");
     }
-    var responseError = caller->respond(response);
-    if (responseError is error) {
-        log:printError("Error responding remote topic registration status", err = responseError);
-    }
 }
 
 isolated function updateErrorResponse(http:Response response, string topic, string reason) {

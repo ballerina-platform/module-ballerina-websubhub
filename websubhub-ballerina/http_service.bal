@@ -61,6 +61,10 @@ service class HttpService {
                 log:print("Hub request unsuccessful :" + errorMessage);
             }
         }
+        var responseError = caller->respond(response);
+        if (responseError is error) {
+            log:printError("Error responding remote topic registration status", err = responseError);
+        }
     }
 }
 

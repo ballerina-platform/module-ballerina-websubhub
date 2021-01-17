@@ -17,6 +17,8 @@
 import ballerina/http;
 import ballerina/test;
 
+http:Client httpClient = new("http://localhost:9090/websubhub");
+
 listener Listener functionWithArgumentsListener = new(9090);
 
 service /websubhub on functionWithArgumentsListener {
@@ -53,8 +55,22 @@ service /websubhub on functionWithArgumentsListener {
 
 @test:Config {
 }
+function testFailurePost() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=register123&hub.topic=test", "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 400);
+        test:assertEquals(response.getTextPayload(), "The request need to include valid `hub.mode` form param");
+    } else {
+        test:assertFail("Malformed request was successful");
+    }
+}
+
+@test:Config {
+}
 function testRegistrationSuccess() returns @tainted error? {
-    http:Client httpClient = new("http://localhost:9090/websubhub");
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded");
 
@@ -69,15 +85,12 @@ function testRegistrationSuccess() returns @tainted error? {
 }
 
 @test:Config {
-    dependsOn: [testRegistrationSuccess]
 }
 function testRegistrationFailure() returns @tainted error? {
-    http:Client httpClient = new("http://localhost:9090/websubhub");
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
 
     string expectedPayload = "hub.mode=denied&hub.topic=test1&hub.reason=Registration Failed!";
-
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
