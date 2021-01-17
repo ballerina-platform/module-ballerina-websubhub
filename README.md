@@ -2,7 +2,7 @@ Ballerina WebSubHub Library
 ===================
 
   [![Build](https://github.com/ballerina-platform/module-ballerina-websubhub/workflows/Build/badge.svg)](https://github.com/ballerina-platform/module-ballerina-websubhub/actions?query=workflow%3ABuild)
-  [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-websubhub.svg)](https://github.com/ballerina-platform/module-ballerina-websubhub/commits/master)
+  [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-websubhub.svg)](https://github.com/ballerina-platform/module-ballerina-websubhub/commits/main)
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/websubhub.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fwebsubhub)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
