@@ -17,16 +17,10 @@
 import ballerina/encoding;
 import ballerina/http;
 import ballerina/log;
-import ballerina/java;
 
 isolated function respondToRegisterRequest(http:Caller caller, http:Response response, 
                                             map<string> params, HubService hubService) {
-    string topic = "";
-    var topicFromParams = params[HUB_TOPIC];
-    if topicFromParams is string {
-        var decodedValue = encoding:decodeUriComponent(topicFromParams, "UTF-8");
-        topic = decodedValue is string ? decodedValue : topicFromParams;
-    }
+    string topic = getTopicFromRequest(params);
     RegisterTopicMessage msg = {
         topic: topic
     };
@@ -39,6 +33,32 @@ isolated function respondToRegisterRequest(http:Caller caller, http:Response res
         updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
         log:print("Topic registration successful at Hub, for topic[" + topic + "]");
     }
+}
+
+isolated function respondToUnregisterRequest(http:Caller caller, http:Response response, 
+                                            map<string> params, HubService hubService) {
+    string topic = getTopicFromRequest(params);
+    UnregisterTopicMessage msg = {
+        topic: topic
+    };
+    TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
+    if (unregisterStatus is TopicUnregistrationError) {
+        updateErrorResponse(response, topic, unregisterStatus.message());
+        log:print("Topic unregistration unsuccessful at Hub for Topic [" + topic + "]: " + unregisterStatus.message());
+    } else {
+        updateSuccessResponse(response, unregisterStatus["body"], unregisterStatus["headers"]);
+        log:print("Topic registration successful at Hub, for topic[" + topic + "]");
+    }
+}
+
+isolated function getTopicFromRequest(map<string> params) returns string {
+    string topic = "";
+    var topicFromParams = params[HUB_TOPIC];
+    if topicFromParams is string {
+        var decodedValue = encoding:decodeUriComponent(topicFromParams, "UTF-8");
+        topic = decodedValue is string ? decodedValue : topicFromParams;
+    }
+    return topic;
 }
 
 isolated function updateErrorResponse(http:Response response, string topic, string reason) {
@@ -69,8 +89,3 @@ isolated function updateSuccessResponse(http:Response response, map<string>? mes
         }
     }
 }
-
-isolated function callRegisterMethod(HubService hubService, RegisterTopicMessage msg)
-returns TopicRegistrationSuccess|TopicRegistrationError = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
-} external;

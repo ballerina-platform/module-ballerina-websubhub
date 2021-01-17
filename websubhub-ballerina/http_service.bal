@@ -54,6 +54,9 @@ service class HttpService {
             MODE_REGISTER => {
                 respondToRegisterRequest(caller, response, <@untainted> params, self.hubService);
             }
+            MODE_UNREGISTER => {
+                respondToUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+            }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "The request need to include valid `hub.mode` form param";

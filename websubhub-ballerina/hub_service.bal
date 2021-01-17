@@ -19,9 +19,8 @@ public type HubService service object {
    remote function onRegisterTopic(RegisterTopicMessage msg)
                  returns TopicRegistrationSuccess|TopicRegistrationError;
 
-//   remote function onUnregisterTopic(websub:UnregisterTopicMessage msg)
-//                 returns websub:TopicUnregistrationSuccess
-//                         |websub:TopicUnregistrationError;
+   remote function onUnregisterTopic(UnregisterTopicMessage msg)
+                 returns TopicUnregistrationSuccess|TopicUnregistrationError;
 
 //   remote function onUpdateMessage(websub:UpdateMessage msg)
 //               returns websub:Acknowledgement

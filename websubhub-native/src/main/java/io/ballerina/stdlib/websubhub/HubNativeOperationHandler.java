@@ -43,15 +43,23 @@ public class HubNativeOperationHandler {
     }
 
     public static Object callRegisterMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callRegisterMethod", "onRegisterTopic");
+    }
 
+    public static Object callUnregisterMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callUnregisterMethod", "onUnregisterTopic");
+    }
+
+    private static Object invokeRemoteFunction(Environment env, BObject bHubService, BMap<BString, Object> message,
+                                String parentFunctionName, String remoteFunctionName) {
         Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
-                                                     "callRegisterMethod");
+                parentFunctionName);
         CountDownLatch latch = new CountDownLatch(1);
         CallableUnitCallback callback = new CallableUnitCallback(latch);
 
         Object[] args = new Object[]{message, true};
-        env.getRuntime().invokeMethodAsync(bHubService, "onRegisterTopic", null, metadata, callback, args);
+        env.getRuntime().invokeMethodAsync(bHubService, remoteFunctionName, null, metadata, callback, args);
 
         try {
             latch.await();
