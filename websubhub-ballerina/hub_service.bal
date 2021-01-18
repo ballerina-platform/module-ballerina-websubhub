@@ -20,7 +20,7 @@ import ballerina/encoding;
 import ballerina/http;
 import ballerina/lang.'int as langint;
 import ballerina/log;
-import ballerina/stringutils;
+import ballerina/regex;
 import ballerina/uuid;
 import ballerina/time;
 
@@ -315,7 +315,7 @@ function verifyIntentAndAddSubscription(string callback, string topic, map<strin
     var decodedCallback = encoding:decodeUriComponent(callback, "UTF-8");
     string callbackToCheck = decodedCallback is error ? callback : decodedCallback;
 
-    string queryParams = (stringutils:contains(callbackToCheck, ("?")) ? "&" : "?")
+    string queryParams = (callbackToCheck.includes(("?")) ? "&" : "?")
         + HUB_MODE + "=" + mode
         + "&" + HUB_TOPIC + "=" + topic
         + "&" + HUB_CHALLENGE + "=" + challenge;
@@ -499,10 +499,10 @@ function distributeContent(string callback, SubscriptionDetails subscriptionDeta
         if (subscriptionDetails.secret != "") {
             string xHubSignature = hubSignatureMethod + "=";
             string generatedSignature = "";
-            if (stringutils:equalsIgnoreCase(SHA1, hubSignatureMethod)) { //not recommended
+            if (SHA1.equalsIgnoreCaseAscii(hubSignatureMethod)) { //not recommended
                 generatedSignature = crypto:hmacSha1(stringPayload.toBytes(),
                     subscriptionDetails.secret.toBytes()).toBase16();
-            } else if (stringutils:equalsIgnoreCase(SHA256, hubSignatureMethod)) {
+            } else if (SHA256.equalsIgnoreCaseAscii(hubSignatureMethod)) {
                 generatedSignature = crypto:hmacSha256(stringPayload.toBytes(),
                     subscriptionDetails.secret.toBytes()).toBase16();
             }
@@ -622,5 +622,5 @@ isolated function getArray(string groupString) returns string[] {
     if (groupString.length() == 0) {
         return groupsArr;
     }
-    return stringutils:split(groupString, ",");
+    return regex:split(groupString, ",");
 }
