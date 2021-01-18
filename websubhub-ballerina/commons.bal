@@ -447,6 +447,17 @@ type WebSubContent record {|
     string contentType = "";
 |};
 
+# Record to represent a WebSub content delivery.
+#
+# + headers - Additional Request headers to include when distributing content
+# + payload - The payload to be sent
+# + contentType - The content-type of the payload
+type ContentDistributionMessage record {|
+    map<string|string[]>? headers = ();
+    string? contentType = ();
+    json|xml|string|byte[]|io:ReadableByteChannel content;
+|}
+
 isolated function isSuccessStatusCode(int statusCode) returns boolean {
     return (200 <= statusCode && statusCode < 300);
 }
