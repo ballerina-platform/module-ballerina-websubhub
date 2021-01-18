@@ -47,10 +47,7 @@ public class HubClient {
     # "mode": "remote-hub"});
     #  ```
     #
-    # + topic - The topic for which the update occurred
-    # + payload - The update payload
-    # + contentType - The type of the update content to set as the `ContentType` header
-    # + headers - The headers that need to be set (if any)
+    # + msg - content to be distributed to the topic-subscriber 
     # + return -  An `error`if an error occurred with the update or else `()`
     remote function notifyContentDistribution(ContentDistributionMessage msg) @tainted returns error? {
         http:Request request = new;
@@ -94,7 +91,7 @@ public class HubClient {
                 return mime:TEXT_PLAIN;
             } else if (payload is xml) {
                 return mime:APPLICATION_XML;
-            } else if (payload is json) {
+            } else if (payload is map<json>) {
                 return mime:APPLICATION_JSON;
             } else {
                 return mime:APPLICATION_OCTET_STREAM;
