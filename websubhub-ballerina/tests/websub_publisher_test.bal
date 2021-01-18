@@ -75,11 +75,13 @@ service /publisher on publisherServiceEP {
 
     resource function get topicInfo(http:Caller caller, http:Request req) {
         if (req.hasHeader("x-topic")) {
-            string topicName = req.getHeader("x-topic");
-            SubscriberDetails[] details = webSubHub.getSubscribers(topicName);
-            var err = caller->respond(details.toString());
-            if (err is error) {
-                log:printError("Error responding on topicInfo request", err = err);
+            string|error topicName = req.getHeader("x-topic");
+            if (topicName is string) {
+                SubscriberDetails[] details = webSubHub.getSubscribers(topicName);
+                var err = caller->respond(details.toString());
+                if (err is error) {
+                    log:printError("Error responding on topicInfo request", err = err);
+                }
             }
         } else {
             map<string> allTopics = {};
@@ -197,7 +199,7 @@ function startHubAndRegisterTopic() returns Hub {
 }
 
 function startWebSubHub() returns Hub {
-    var result = startHub(new http:Listener(23191), "/websub", "/hub",
+    var result = startHub(checkpanic new http:Listener(23191), "/websub", "/hub",
                                  hubConfiguration = { remotePublish : { enabled : true }});
     if (result is Hub) {
         return result;
@@ -279,7 +281,7 @@ const string WEBSUB_TOPIC_SIX = "http://two.redir.topic.com";
 
 @test:Config{}
 public function testStartTestHubAndPublish() returns @tainted error? {
-http:Client httpClient = new("http://localhost:23191/websub/hub");
+http:Client httpClient = check new("http://localhost:23191/websub/hub");
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded");
 

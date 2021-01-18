@@ -20,7 +20,7 @@ import ballerina/encoding;
 import ballerina/http;
 import ballerina/lang.'int as langint;
 import ballerina/log;
-import ballerina/stringutils;
+import ballerina/regex;
 import ballerina/uuid;
 import ballerina/time;
 
@@ -120,7 +120,7 @@ isolated function getHubPublishService() returns http:Service {
                         byte[0] arr = [];
                         byte[] | error binaryPayload = arr;
                         string stringPayload;
-                        string contentType = "";
+                        string|error contentType = "";
                         if (remotePublishConfig.mode == PUBLISH_MODE_FETCH) {
                             var fetchResponse = fetchTopicUpdate(topic);
                             if (fetchResponse is http:Response) {
@@ -153,8 +153,10 @@ isolated function getHubPublishService() returns http:Service {
 
                         error? publishStatus = ();
                         if (binaryPayload is byte[]) {
-                            WebSubContent notification = {payload: binaryPayload, contentType: contentType};
-                            publishStatus = publishToInternalHub(topic, notification);
+                            if (contentType is string) {
+                                WebSubContent notification = {payload: binaryPayload, contentType: contentType};
+                                publishStatus = publishToInternalHub(topic, notification);
+                            }
                         } else {
                             string errorMessage = "Error extracting payload: " +
                                                   <@untainted string>binaryPayload.message();
@@ -313,7 +315,7 @@ function verifyIntentAndAddSubscription(string callback, string topic, map<strin
     var decodedCallback = encoding:decodeUriComponent(callback, "UTF-8");
     string callbackToCheck = decodedCallback is error ? callback : decodedCallback;
 
-    string queryParams = (stringutils:contains(callbackToCheck, ("?")) ? "&" : "?")
+    string queryParams = (callbackToCheck.includes(("?")) ? "&" : "?")
         + HUB_MODE + "=" + mode
         + "&" + HUB_TOPIC + "=" + topic
         + "&" + HUB_CHALLENGE + "=" + challenge;
@@ -460,7 +462,7 @@ isolated function addSubscriptionsOnStartup(HubPersistenceStore persistenceStore
 # + return - An `http:Response` indicating the response received on fetching the topic URL if successful or else an
 #            `error` if an HTTP error occurred
 function fetchTopicUpdate(string topic) returns @untainted http:Response|error {
-    http:Client topicEp = new http:Client(topic, hubClientConfig);
+    http:Client topicEp = check new http:Client(topic, hubClientConfig);
     http:Request request = new;
 
     return <http:Response> check topicEp->get("", request);
@@ -497,10 +499,10 @@ function distributeContent(string callback, SubscriptionDetails subscriptionDeta
         if (subscriptionDetails.secret != "") {
             string xHubSignature = hubSignatureMethod + "=";
             string generatedSignature = "";
-            if (stringutils:equalsIgnoreCase(SHA1, hubSignatureMethod)) { //not recommended
+            if (SHA1.equalsIgnoreCaseAscii(hubSignatureMethod)) { //not recommended
                 generatedSignature = crypto:hmacSha1(stringPayload.toBytes(),
                     subscriptionDetails.secret.toBytes()).toBase16();
-            } else if (stringutils:equalsIgnoreCase(SHA256, hubSignatureMethod)) {
+            } else if (SHA256.equalsIgnoreCaseAscii(hubSignatureMethod)) {
                 generatedSignature = crypto:hmacSha256(stringPayload.toBytes(),
                     subscriptionDetails.secret.toBytes()).toBase16();
             }
@@ -552,7 +554,7 @@ function getSubcriberCallbackClient(string callback) returns http:Client {
             if (subscriberCallbackClientCache.hasKey(callback)) {
                 return <http:Client> checkpanic subscriberCallbackClientCache.get(<@untainted> callback);
             }
-            subscriberCallbackClient = new http:Client(callback, hubClientConfig);
+            subscriberCallbackClient = checkpanic new http:Client(callback, hubClientConfig);
             cache:Error? result = subscriberCallbackClientCache.put(<@untainted> callback,
                                                               <@untainted> subscriberCallbackClient);
             if (result is cache:Error) {
@@ -620,5 +622,5 @@ isolated function getArray(string groupString) returns string[] {
     if (groupString.length() == 0) {
         return groupsArr;
     }
-    return stringutils:split(groupString, ",");
+    return regex:split(groupString, ",");
 }

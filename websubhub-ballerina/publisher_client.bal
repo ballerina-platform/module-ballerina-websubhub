@@ -33,7 +33,7 @@ public client class PublisherClient {
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
     public function init(string url, http:ClientConfiguration? config = ()) {
         self.url = url;
-        self.httpClient = new (self.url, config);
+        self.httpClient = checkpanic new (self.url, config);
     }
 
     # Registers a topic in a Ballerina WebSub Hub against which subscribers can subscribe and the publisher will
