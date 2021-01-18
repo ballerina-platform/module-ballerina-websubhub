@@ -455,7 +455,8 @@ type WebSubContent record {|
 type ContentDistributionMessage record {|
     map<string|string[]>? headers = ();
     string? contentType = ();
-    json|xml|string|byte[]|io:ReadableByteChannel content;
+    string? secret = ();
+    json|xml|string|byte[] content;
 |}
 
 isolated function isSuccessStatusCode(int statusCode) returns boolean {

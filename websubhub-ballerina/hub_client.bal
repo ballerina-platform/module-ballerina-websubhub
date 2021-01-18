@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/io;
 import ballerina/mime;
+import ballerina/crypto;
 
 public class HubClient {
     private string url;
@@ -54,22 +55,26 @@ public class HubClient {
     remote function notifyContentDistribution(ContentDistributionMessage msg) @tainted returns error? {
         http:Request request = new;
         
-        request.setPayload(payload);
+        request.setPayload(msg.content);
 
         string contentType = retrieveContentType(msg.contentType, msg.content);
 
         check request.setContentType(contentType);
 
         msg?.headers.entries().forEach(function ([string, string[]] pair) {
-            string headerValue = pairt[1].reduce(function (string acc, string cur) returns string {
-                return acc + cur + ";";
-            }, "");
-            req.addHeader(pair[0], pair[1]);
+            string value = ";".'join(...pair[1]) + ";";
+            req.addHeader(pair[0], value);
         });
 
         request.setHeader("Link", linkHeaderValue);
 
+        if (msg.secret is string && msg.secret.length() >= 0) {
+            check string hash = retrievePayloadSignature(msg.secret, msg.content);
+            request.setHeader(X_HUB_SIGNATURE, "sha1:"+hash);
+        }
+
         var response = self.httpClient->post(request);
+
         if (response is http:Response) {
             if (!isSuccessStatusCode(response.statusCode)) {
                 var result = response.getTextPayload();
@@ -99,5 +104,17 @@ public class HubClient {
 
     private function retrieveLinkHeader(string hubUrl, string topic) returns string {
         return hubUrl + "; rel=\"hub\"," + topic + "; rel=\"self\"";
+    }
+
+    private function retrievePayloadSignature(string key, string|xml|json|byte[] payload) returns string | error {
+        byte[] keyArr = key.toBytes();
+        byte[] hashedContent = [];
+        if (payload is byte[]) {
+            hashedContent = crypto:hmacSha1(payload, keyArr);
+        } else {
+            byte[] inputArr = payload.toBytes();
+            hashedContent = crypto:hmacSha1(inputArr, keyArr);
+        }
+        return hashedContent.toBase64();
     }
 }
