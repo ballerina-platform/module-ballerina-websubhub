@@ -31,10 +31,8 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
     TopicRegistrationSuccess|TopicRegistrationError registerStatus = callRegisterMethod(hubService, msg);
     if (registerStatus is TopicRegistrationError) {
         updateErrorResponse(response, topic, registerStatus.message());
-        log:print("Topic registration unsuccessful at Hub for Topic [" + topic + "]: " + registerStatus.message());
     } else {
         updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
-        log:print("Topic registration successful at Hub, for topic[" + topic + "]");
     }
 }
 
@@ -48,10 +46,8 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
     TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
     if (unregisterStatus is TopicUnregistrationError) {
         updateErrorResponse(response, topic, unregisterStatus.message());
-        log:print("Topic unregistration unsuccessful at Hub for Topic [" + topic + "]: " + unregisterStatus.message());
     } else {
         updateSuccessResponse(response, unregisterStatus["body"], unregisterStatus["headers"]);
-        log:print("Topic registration successful at Hub, for topic[" + topic + "]");
     }
 }
 
@@ -90,9 +86,6 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
     //         response.statusCode = http:REDIRECT_TEMPORARY_REDIRECT_307;
     //         var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307, 
     //                                     onSubscriptionResult.redirectUrls);
-    //         if (result is error) {
-    //             log:printError("Error in sending redirect response to caller", err = result);
-    //         }
     //    } 
     }
 }   
@@ -120,25 +113,17 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
         request.setTextPayload(payload);
         request.setHeader("Content-type","application/x-www-form-urlencoded");
         var validationFailureRequest = httpClient->post("", request);
-        if (validationFailureRequest is error) {
-            log:printError("Failed to notify subscriber of subscription validation failure", err = validationFailureRequest);
-        }
     } else {
         http:Request request = new;
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=" + MODE_SUBSCRIBE
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + HUB_CHALLENGE + "=" + challenge;
-        log:print("Sending intent verification request to callback[" + <string> message.hubCallback + 
-                    "] for topic[" + <string> message.hubTopic + "]");
         var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
         if (subscriberResponse is http:Response) {
             var respStringPayload = subscriberResponse.getTextPayload();
             if (respStringPayload is string) {
-                if (respStringPayload != challenge) {
-                    log:print("Intent verification failed for mode: [" + MODE_SUBSCRIBE + "], for callback URL: ["
-                            + <string> message.hubCallback + "]: Challenge not echoed correctly.");
-                } else {
+                if (respStringPayload == challenge) {
                     VerifiedSubscription verifiedMessage = {
                         verificationSuccess: true,
                         hubMode: message.hubMode,
@@ -149,9 +134,6 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
                     };
                     callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
                 }
-            } else {
-                log:print("Intent verification failed for mode: [" + MODE_SUBSCRIBE + "], for callback URL: ["
-                            + <string> message.hubCallback + "]: Challenge not echoed correctly.");
             }
         }
     }
@@ -195,16 +177,11 @@ function proceedToVerification(Service hubService, Unsubscription message) {
                             + HUB_MODE + "=" + MODE_UNSUBSCRIBE
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + HUB_CHALLENGE + "=" + challenge;
-    log:print("Sending unsubscribing intent verification request to callback[" + <string> message.hubCallback + 
-                    "] for topic[" + <string> message.hubTopic + "]");
     var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
     if (subscriberResponse is http:Response) {
         var respStringPayload = subscriberResponse.getTextPayload();
         if (respStringPayload is string) {
-            if (respStringPayload != challenge) {
-                log:print("Intent verification failed for mode: [" + MODE_UNSUBSCRIBE + "], for callback URL: ["
-                        + <string> message.hubCallback + "]: Challenge not echoed correctly.");
-            } else {
+            if (respStringPayload == challenge) {
                 VerifiedUnsubscription verifiedMessage = {
                     verificationSuccess: true,
                     hubMode: message.hubMode,
@@ -214,9 +191,6 @@ function proceedToVerification(Service hubService, Unsubscription message) {
                 };
                 callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
             }
-        } else {
-            log:print("Intent verification failed for mode: [" + MODE_UNSUBSCRIBE + "], for callback URL: ["
-                        + <string> message.hubCallback + "]: Challenge not echoed correctly.");
         }
     }
 }
@@ -277,7 +251,4 @@ isolated function updateSuccessResponse(http:Response response, map<string>? mes
 
 isolated function respondToRequest(http:Caller caller, http:Response response) {
     var responseError = caller->respond(response);
-    if (responseError is error) {
-        log:printError("Error responding remote topic registration status", err = responseError);
-    }
 }

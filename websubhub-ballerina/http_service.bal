@@ -134,7 +134,6 @@ service class HttpService {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "The request need to include valid `hub.mode` form param";
                 response.setTextPayload(errorMessage);
-                log:print("Hub request unsuccessful :" + errorMessage);
                 respondToRequest(caller, response);
             }
         }
