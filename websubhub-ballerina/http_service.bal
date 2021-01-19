@@ -20,8 +20,9 @@ import ballerina/java;
 
 service class HttpService {
     private HubService hubService;
-    private boolean isSubscriptionAvailable;
-    private boolean isUnsubscriptionAvailable;
+    private boolean isSubscriptionAvailable = false;
+    private boolean isSubscriptionValidationAvailable = false;
+    private boolean isUnsubscriptionAvailable = false;
 
     public isolated function init(HubService hubService) {
         self.hubService = hubService;
@@ -30,19 +31,32 @@ service class HttpService {
         foreach var methodName in methodNames {
             if (methodName == "onSubscription") {
                 self.isSubscriptionAvailable = true;
+                break;
             } else {
                 self.isSubscriptionAvailable = false;
             }
+        }
 
+        foreach var methodName in methodNames {
+            if (methodName == "onSubscriptionValidation") {
+                self.isSubscriptionValidationAvailable = true;
+                break;
+            } else {
+                self.isSubscriptionValidationAvailable = false;
+            }
+        }
+
+        foreach var methodName in methodNames {
             if (methodName == "onUnsubscription") {
                 self.isUnsubscriptionAvailable = true;
+                break;
             } else {
                self.isUnsubscriptionAvailable = false;
             }
         }
     }
 
-    isolated resource function post .(http:Caller caller, http:Request request) {
+    resource function post .(http:Caller caller, http:Request request) {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
 
@@ -52,21 +66,26 @@ service class HttpService {
         string mode = params[HUB_MODE] ?: "";
         match mode {
             MODE_REGISTER => {
-                respondToRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                respondToRequest(caller, response);
             }
             MODE_UNREGISTER => {
-                respondToUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+                processUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+                respondToRequest(caller, response);
+            }
+            MODE_SUBSCRIBE => {
+                processSubscriptionRequestAndRespond(caller, response, <@untainted> params, 
+                                                        <@untainted> self.hubService,
+                                                        <@untainted> self.isSubscriptionAvailable,
+                                                        <@untainted> self.isSubscriptionValidationAvailable);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "The request need to include valid `hub.mode` form param";
                 response.setTextPayload(errorMessage);
                 log:print("Hub request unsuccessful :" + errorMessage);
+                respondToRequest(caller, response);
             }
-        }
-        var responseError = caller->respond(response);
-        if (responseError is error) {
-            log:printError("Error responding remote topic registration status", err = responseError);
         }
     }
 }

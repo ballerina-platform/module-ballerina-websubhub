@@ -23,6 +23,14 @@ const string HUB_MODE = "hub.mode";
 # which the request is initiated.
 const string HUB_TOPIC = "hub.topic";
 
+const string HUB_CALLBACK = "hub.callback";
+
+const string HUB_LEASE_SECONDS = "hub.lease_seconds";
+
+const string HUB_SECRET = "hub.lease_seconds";
+
+const string HUB_CHALLENGE = "hub.challenge";
+
 # `hub.mode` value indicating "publish" mode, used by a publisher to notify an update to a topic.
 const string MODE_PUBLISH = "publish";
 
@@ -31,6 +39,9 @@ const string MODE_REGISTER = "register";
 
 # `hub.mode` value indicating "unregister" mode, used by a publisher to unregister a topic at a hub.
 const string MODE_UNREGISTER = "unregister";
+
+# `hub.mode` value indicating "subscribe" mode, used by a subscriber to subscribe a topic at a hub.
+const string MODE_SUBSCRIBE = "subscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
@@ -51,6 +62,19 @@ public type UnregisterTopicMessage record {|
     string topic;
 |};
 
+public type SubscriptionMessage record {|
+    string hubMode;
+    string? hubCallback = ();
+    string? hubTopic = ();
+    string? hubLeaseSeconds = ();
+    string? hubSecret = ();
+|};
+
+public type VerifiedSubscriptionMessage record {
+    *SubscriptionMessage;
+    boolean verificationSuccess;
+};
+
 type CommonResponse record {|
     map<string|string[]> headers?;
     map<string> body?;
@@ -64,3 +88,11 @@ public type TopicUnregistrationSuccess record {
     *CommonResponse;
 };
 
+public type SubscriptionAccepted record {
+    *CommonResponse;
+};
+
+public type SubscriptionRedirect record {
+    *CommonResponse;
+    string[] redirectUrls;
+};

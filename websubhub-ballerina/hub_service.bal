@@ -26,16 +26,14 @@ public type HubService service object {
 //               returns websub:Acknowledgement
 //                       |websub:UpdateMessageError;
 
-//   remote function onSubscription(websub:SubscriptionMessage msg)
-//              returns websub:SubscriptionAccepted
-//                      |websub:SubscriptionRedirect
-//                      |websub:BadSubscriptionError
-//                      |websub:InternalSubscriptionError;
+//   remote function onSubscription(SubscriptionMessage msg)
+//              returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
+//                      |InternalSubscriptionError;
 
-//   remote function onSubscriptionValidation(websub:SubscriptionMessage msg)
-//              returns websub:SubcriptionDenied?;
+//   remote function onSubscriptionValidation(SubscriptionMessage msg)
+//              returns SubscriptionDenied?;
 
-//   remote function onSubscriptionIntentVerified(websub:VerifiedSubscriptionMessage msg);
+   remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg);
 
 //  remote function onUnsubscription(websub:UnsubscriptionMessage msg)
 //               returns websub:UnsubscriptionAccepted

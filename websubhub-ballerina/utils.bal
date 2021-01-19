@@ -14,13 +14,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/lang.'string as strings;
 import ballerina/encoding;
 import ballerina/http;
 import ballerina/log;
+import ballerina/uuid;
 
-isolated function respondToRegisterRequest(http:Caller caller, http:Response response, 
+isolated function processRegisterRequest(http:Caller caller, http:Response response,
                                             map<string> params, HubService hubService) {
-    string topic = getTopicFromRequest(params);
+    string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
+    string topic = topicVar is () ? "" : topicVar;
     RegisterTopicMessage msg = {
         topic: topic
     };
@@ -35,9 +38,10 @@ isolated function respondToRegisterRequest(http:Caller caller, http:Response res
     }
 }
 
-isolated function respondToUnregisterRequest(http:Caller caller, http:Response response, 
+isolated function processUnregisterRequest(http:Caller caller, http:Response response,
                                             map<string> params, HubService hubService) {
-    string topic = getTopicFromRequest(params);
+    string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
+    string topic = topicVar is () ? "" : topicVar;
     UnregisterTopicMessage msg = {
         topic: topic
     };
@@ -51,9 +55,111 @@ isolated function respondToUnregisterRequest(http:Caller caller, http:Response r
     }
 }
 
-isolated function getTopicFromRequest(map<string> params) returns string {
-    string topic = "";
-    var topicFromParams = params[HUB_TOPIC];
+function processSubscriptionRequestAndRespond(http:Caller caller, http:Response response,
+                                              map<string> params, HubService hubService,
+                                              boolean isAvailable, boolean isSubscriptionValidationAvailable) {
+
+    SubscriptionMessage message = {
+        hubMode: MODE_SUBSCRIBE,
+        hubCallback: getEncodedValueFromRequest(params, HUB_CALLBACK),
+        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
+        hubLeaseSeconds: params[HUB_LEASE_SECONDS],
+        hubSecret: params[HUB_LEASE_SECONDS]
+    };
+    if (!isAvailable) {
+        response.statusCode = http:STATUS_ACCEPTED;
+        respondToRequest(caller, response);
+    } else {
+        SubscriptionAccepted|SubscriptionRedirect|
+        BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(hubService, message);
+        if (onSubscriptionResult is BadSubscriptionError) {
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            respondToRequest(caller, response);
+        } else if (onSubscriptionResult is InternalSubscriptionError) {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            respondToRequest(caller, response);
+        } else {
+            //todo Redirect record is not done
+            response.statusCode = http:STATUS_ACCEPTED;
+            respondToRequest(caller, response);
+            proceedToValidationAndVerification(hubService, message, isSubscriptionValidationAvailable);
+        } 
+        
+    //    else if (onSubscriptionResult is SubscriptionRedirect) {
+    //         SubscriptionRedirect redirMsg = <SubscriptionRedirect> onSubscriptionResult;
+    //         response.statusCode = http:REDIRECT_TEMPORARY_REDIRECT_307;
+    //         var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307, 
+    //                                     onSubscriptionResult.redirectUrls);
+    //         if (result is error) {
+    //             log:printError("Error in sending redirect response to caller", err = result);
+    //         }
+    //    } 
+    }
+}   
+
+function proceedToValidationAndVerification(HubService hubService, SubscriptionMessage message, 
+                                                    boolean isSubscriptionValidationAvailable) {
+    SubscriptionDenied? validationResult = ();
+    if (isSubscriptionValidationAvailable) {
+        validationResult = callOnSubscriptionValidationMethod(hubService, message);
+    } else {
+        if (message.hubCallback is () || message.hubCallback == "") {
+            validationResult = error SubscriptionDenied("Invalid hub.callback param in the request.");
+        }
+        if (message.hubTopic is () || message.hubTopic == "") {
+            validationResult = error SubscriptionDenied("Invalid hub.topic param in the request.'");
+        }
+    }
+
+    http:Client httpClient = checkpanic new(<string> message.hubCallback);
+    string challenge = uuid:createType4AsString();
+
+    if (validationResult is SubscriptionDenied) {
+        http:Request request = new;
+        string payload = "hub.mode=subscribe&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
+        request.setTextPayload(payload);
+        request.setHeader("Content-type","application/x-www-form-urlencoded");
+        var validationFailureRequest = httpClient->post("", request);
+        if (validationFailureRequest is error) {
+            log:printError("Failed to notify subscriber of subscription validation failure", err = validationFailureRequest);
+        }
+    } else {
+        http:Request request = new;
+        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
+                            + HUB_MODE + "=" + MODE_SUBSCRIBE
+                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
+                            + "&" + HUB_CHALLENGE + "=" + challenge;
+        log:print("Sending intent verification request to callback[" + <string> message.hubCallback + 
+                    "] for topic[" + <string> message.hubTopic + "]");
+        var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
+        if (subscriberResponse is http:Response) {
+            var respStringPayload = subscriberResponse.getTextPayload();
+            if (respStringPayload is string) {
+                if (respStringPayload != challenge) {
+                    log:print("Intent verification failed for mode: [" + MODE_SUBSCRIBE + "], for callback URL: ["
+                            + <string> message.hubCallback + "]: Challenge not echoed correctly.");
+                } else {
+                    VerifiedSubscriptionMessage verifiedMessage = {
+                        verificationSuccess: true,
+                        hubMode: message.hubMode,
+                        hubCallback: message.hubCallback,
+                        hubTopic: message.hubTopic,
+                        hubLeaseSeconds: message.hubLeaseSeconds,
+                        hubSecret: message.hubSecret
+                    };
+                    callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
+                }
+            } else {
+                log:print("Intent verification failed for mode: [" + MODE_SUBSCRIBE + "], for callback URL: ["
+                            + <string> message.hubCallback + "]: Challenge not echoed correctly.");
+            }
+        }
+    }
+}
+
+isolated function getEncodedValueFromRequest(map<string> params, string 'key) returns string? {
+    string? topic = ();
+    var topicFromParams = params['key];
     if topicFromParams is string {
         var decodedValue = encoding:decodeUriComponent(topicFromParams, "UTF-8");
         topic = decodedValue is string ? decodedValue : topicFromParams;
@@ -87,5 +193,12 @@ isolated function updateSuccessResponse(http:Response response, map<string>? mes
                 }
             }
         }
+    }
+}
+
+isolated function respondToRequest(http:Caller caller, http:Response response) {
+    var responseError = caller->respond(response);
+    if (responseError is error) {
+        log:printError("Error responding remote topic registration status", err = responseError);
     }
 }

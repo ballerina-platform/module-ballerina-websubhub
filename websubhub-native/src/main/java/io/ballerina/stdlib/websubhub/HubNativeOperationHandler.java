@@ -50,6 +50,18 @@ public class HubNativeOperationHandler {
         return invokeRemoteFunction(env, bHubService, message, "callUnregisterMethod", "onUnregisterTopic");
     }
 
+    public static Object callOnSubscriptionMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionMethod", "onSubscription");
+    }
+
+    public static Object callOnSubscriptionValidationMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionValidationMethod", "onSubscriptionValidation");
+    }
+
+    public static void callOnSubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionIntentVerifiedMethod", "onSubscriptionIntentVerified");
+    }    
+
     private static Object invokeRemoteFunction(Environment env, BObject bHubService, BMap<BString, Object> message,
                                 String parentFunctionName, String remoteFunctionName) {
         Module module = ModuleUtils.getModule();

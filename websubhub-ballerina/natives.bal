@@ -25,3 +25,17 @@ isolated function callUnregisterMethod(HubService hubService, UnregisterTopicMes
 returns TopicUnregistrationSuccess|TopicUnregistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
+
+isolated function callOnSubscriptionMethod(HubService hubService, SubscriptionMessage msg)
+returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError|InternalSubscriptionError = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;
+
+isolated function callOnSubscriptionValidationMethod(HubService hubService, SubscriptionMessage msg)
+returns SubscriptionDenied? = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;
+
+isolated function callOnSubscriptionIntentVerifiedMethod(HubService hubService, VerifiedSubscriptionMessage msg) = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;

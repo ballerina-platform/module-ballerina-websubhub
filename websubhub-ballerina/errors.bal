@@ -20,3 +20,9 @@ public type WebSubError distinct error;
 public type TopicRegistrationError distinct error;
 
 public type TopicUnregistrationError distinct error;
+
+public type BadSubscriptionError distinct error;
+
+public type InternalSubscriptionError distinct error;
+
+public type SubscriptionDenied distinct error;

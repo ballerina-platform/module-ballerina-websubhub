@@ -14,8 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/http;
 import ballerina/test;
+
+boolean isIntentVerified = false;
+boolean isValidationFailed = false;
 
 http:Client httpClient = checkpanic new("http://localhost:9090/websubhub");
 
@@ -49,6 +53,36 @@ service /websubhub on functionWithArgumentsListener {
        } else {
             return error TopicUnregistrationError("Topic Unregistration Failed!");
         }
+    }
+
+    remote function onSubscription(SubscriptionMessage msg)
+                returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
+                |InternalSubscriptionError {
+        SubscriptionAccepted successResult = {
+                body: {
+                       isSuccess: "true"
+                    }
+            };
+        if (msg.hubTopic is string && msg.hubTopic == "test") {
+            return successResult;
+        } else if (msg.hubTopic == "test1") {
+            return successResult;
+        } else {
+            return error BadSubscriptionError("Bad subscription");
+        }
+    }
+
+    remote function onSubscriptionValidation(SubscriptionMessage msg)
+                returns SubscriptionDenied? {
+        if (msg.hubTopic == "test1") {
+            return error SubscriptionDenied("Denied subscription for topic 'test1'");
+        }
+        return ();
+    }
+
+    remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg) {
+        io:println("Intent verified invoked!");
+        isIntentVerified = true;
     }
 }
 
@@ -127,6 +161,72 @@ function testUnregistrationFailure() returns @tainted error? {
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
         test:assertEquals(response.getTextPayload(), expectedPayload);
+    } else {
+        test:assertFail("Unregistration test failed");
+    }
+}
+
+service /subscriber on new http:Listener(9091) {
+
+    resource function get .(http:Caller caller, http:Request req)
+            returns error? {
+        map<string[]> payload = req.getQueryParams();
+        string[] challengeArray = <string[]> payload["hub.challenge"];
+        check caller->respond(challengeArray[0]);
+    }
+
+    resource function post .(http:Caller caller, http:Request req)
+            returns error? {
+        io:println("Subscriber Validation failed post", req.getTextPayload());
+        isValidationFailed = true;
+        check caller->respond();
+    }
+}
+
+@test:Config {
+}
+function testSubscriptionFailure() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 400);
+    } else {
+        test:assertFail("Unregistration test failed");
+    }
+}
+
+@test:Config {
+}
+function testSubscriptionValidationFailure() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber", 
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+        // todo Validate post request invoked, as of now manually checked through logs
+        // test:assertEquals(isValidationFailed, true);
+    } else {
+        test:assertFail("Unregistration test failed");
+    }
+}
+
+@test:Config {
+}
+function testSubscriptionIntentVerification() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+        // todo Validate post request invoked, as of now manually checked through logs
+        // test:assertEquals(isIntentVerified, true);
     } else {
         test:assertFail("Unregistration test failed");
     }
