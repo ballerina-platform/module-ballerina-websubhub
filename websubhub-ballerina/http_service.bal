@@ -23,6 +23,8 @@ service class HttpService {
     private boolean isSubscriptionAvailable = false;
     private boolean isSubscriptionValidationAvailable = false;
     private boolean isUnsubscriptionAvailable = false;
+    private boolean isRegisterAvailable = false;
+    private boolean isUnregisterAvailable = false;
 
     public isolated function init(Service hubService) {
         self.hubService = hubService;
@@ -52,6 +54,24 @@ service class HttpService {
                 break;
             } else {
                self.isUnsubscriptionAvailable = false;
+            }
+        }
+
+        foreach var methodName in methodNames {
+            if (methodName == "onRegisterTopic") {
+                self.isRegisterAvailable = true;
+                break;
+            } else {
+               self.isRegisterAvailable = false;
+            }
+        }
+
+        foreach var methodName in methodNames {
+            if (methodName == "onUnregisterTopic") {
+                self.isUnregisterAvailable = true;
+                break;
+            } else {
+               self.isUnregisterAvailable = false;
             }
         }
     }
@@ -86,11 +106,19 @@ service class HttpService {
         string mode = params[HUB_MODE] ?: "";
         match mode {
             MODE_REGISTER => {
-                processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                if (self.isRegisterAvailable) {
+                    processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                } else {
+                    response.statusCode = http:STATUS_NOT_IMPLEMENTED;
+                }
                 respondToRequest(caller, response);
             }
             MODE_UNREGISTER => {
-                processUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+                if (self.isUnregisterAvailable) {
+                    processUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+                } else {
+                    response.statusCode = http:STATUS_NOT_IMPLEMENTED;
+                }
                 respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {

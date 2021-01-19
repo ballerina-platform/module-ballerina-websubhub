@@ -18,12 +18,11 @@ public type Service service object {
 
    //todo Remove methods and write compiler plugin for service
 
-   // todo L1 onRegisterTopic & onUnregisterTopic is also optional, not implemented status code if not present (501)
-   remote function onRegisterTopic(TopicRegistration msg)
-               returns TopicRegistrationSuccess|TopicRegistrationError;
+//   remote function onRegisterTopic(TopicRegistration msg)
+//               returns TopicRegistrationSuccess|TopicRegistrationError;
 
-   remote function onUnregisterTopic(TopicUnregistration msg)
-               returns TopicUnregistrationSuccess|TopicUnregistrationError;
+//   remote function onUnregisterTopic(TopicUnregistration msg)
+//               returns TopicUnregistrationSuccess|TopicUnregistrationError;
 
    remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError;
