@@ -98,6 +98,9 @@ task updateTomlFile {
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
         def stdlibDependentMimeVersion = project.stdlibMimeVersion.split("-")[0]
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
+        def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
+        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.split("-")[0]
+        def stdlibDependentUuidVersion = project.stdlibUuidVersion.split("-")[0]
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
@@ -106,6 +109,9 @@ task updateTomlFile {
         newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newConfig = newConfig.replace("@stdlib.mime.version@", stdlibDependentMimeVersion)
         newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
+        newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
+        newConfig = newConfig.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
+        newConfig = newConfig.replace("@stdlib.uuid.version@", stdlibDependentUuidVersion)
 
         ballerinaConfigFile.text = newConfig
     }
