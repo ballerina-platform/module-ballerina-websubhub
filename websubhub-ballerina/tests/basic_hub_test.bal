@@ -329,7 +329,7 @@ function testPublishContentFailure() returns @tainted error? {
 
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
-        test:assertEquals(response.statusCode, 400);
+        test:assertEquals(response.statusCode, 202);
     } else {
         test:assertFail("UnsubscriptionIntentVerification test failed");
     }
