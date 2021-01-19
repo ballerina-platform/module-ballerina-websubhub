@@ -48,6 +48,7 @@ const string MODE_UNSUBSCRIBE = "unsubscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
+// todo L1 Remove ReadableByteChannel
 # Record to represent a WebSub content delivery.
 #
 # + payload - The payload to be sent
@@ -65,6 +66,7 @@ public type TopicUnregistration record {|
     string topic;
 |};
 
+// todo L1 Verify with the design
 public type Subscription record {|
     string hubMode;
     string? hubCallback = ();
@@ -73,6 +75,7 @@ public type Subscription record {|
     string? hubSecret = ();
 |};
 
+// todo L1 not inheriting and no nil
 public type VerifiedSubscription record {
     *Subscription;
     boolean verificationSuccess;

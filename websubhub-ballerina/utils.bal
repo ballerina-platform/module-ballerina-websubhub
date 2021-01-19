@@ -74,7 +74,7 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
             respondToRequest(caller, response);
         } else {
-            //todo Redirect record is not done
+            //todo L1 Redirect record is not done
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
             proceedToValidationAndVerification(hubService, message, isSubscriptionValidationAvailable);

@@ -21,7 +21,8 @@ public class Listener {
     private http:Listener httpListener;
     private HttpService? httpService;
 
-    # Invoked during the initialization of a `websubhub:Listener`. Either an `http:Listner` or a port number must be
+    // todo HTTP config needs to be passed as optional parameter
+    # Invoked during the initialization of a `websubhub:Listener`. Either an `http:Listener` or a port number must be
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the service
