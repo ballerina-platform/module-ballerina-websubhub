@@ -34,8 +34,6 @@ service class HttpService {
             if (methodName == "onSubscription") {
                 self.isSubscriptionAvailable = true;
                 break;
-            } else {
-                self.isSubscriptionAvailable = false;
             }
         }
 
@@ -43,8 +41,6 @@ service class HttpService {
             if (methodName == "onSubscriptionValidation") {
                 self.isSubscriptionValidationAvailable = true;
                 break;
-            } else {
-                self.isSubscriptionValidationAvailable = false;
             }
         }
 
@@ -52,8 +48,6 @@ service class HttpService {
             if (methodName == "onUnsubscription") {
                 self.isUnsubscriptionAvailable = true;
                 break;
-            } else {
-               self.isUnsubscriptionAvailable = false;
             }
         }
 
@@ -61,8 +55,6 @@ service class HttpService {
             if (methodName == "onRegisterTopic") {
                 self.isRegisterAvailable = true;
                 break;
-            } else {
-               self.isRegisterAvailable = false;
             }
         }
 
@@ -70,8 +62,6 @@ service class HttpService {
             if (methodName == "onUnregisterTopic") {
                 self.isUnregisterAvailable = true;
                 break;
-            } else {
-               self.isUnregisterAvailable = false;
             }
         }
     }
