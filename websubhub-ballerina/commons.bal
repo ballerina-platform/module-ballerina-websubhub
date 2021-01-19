@@ -43,6 +43,9 @@ const string MODE_UNREGISTER = "unregister";
 # `hub.mode` value indicating "subscribe" mode, used by a subscriber to subscribe a topic at a hub.
 const string MODE_SUBSCRIBE = "subscribe";
 
+# `hub.mode` value indicating "unsubscribe" mode, used by a subscriber to unsubscribe a topic at a hub.
+const string MODE_UNSUBSCRIBE = "unsubscribe";
+
 const string CONTENT_TYPE = "Content-Type";
 
 # Record to represent a WebSub content delivery.
@@ -75,6 +78,18 @@ public type VerifiedSubscriptionMessage record {
     boolean verificationSuccess;
 };
 
+public type UnsubscriptionMessage record {|
+    string hubMode;
+    string? hubCallback = ();
+    string? hubTopic = ();
+    string? hubSecret = ();
+|};
+
+public type VerifiedUnsubscriptionMessage record {
+    *UnsubscriptionMessage;
+    boolean verificationSuccess;
+};
+
 type CommonResponse record {|
     map<string|string[]> headers?;
     map<string> body?;
@@ -95,4 +110,8 @@ public type SubscriptionAccepted record {
 public type SubscriptionRedirect record {
     *CommonResponse;
     string[] redirectUrls;
+};
+
+public type UnsubscriptionAccepted record {
+    *CommonResponse;
 };

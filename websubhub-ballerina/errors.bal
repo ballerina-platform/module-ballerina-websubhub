@@ -26,3 +26,7 @@ public type BadSubscriptionError distinct error;
 public type InternalSubscriptionError distinct error;
 
 public type SubscriptionDenied distinct error;
+
+public type BadUnsubscriptionError distinct error;
+
+public type InternalUnsubscriptionError distinct error;

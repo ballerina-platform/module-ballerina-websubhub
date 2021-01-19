@@ -79,6 +79,10 @@ service class HttpService {
                                                         <@untainted> self.isSubscriptionAvailable,
                                                         <@untainted> self.isSubscriptionValidationAvailable);
             }
+            MODE_UNSUBSCRIBE => {
+                processUnsubscriptionRequestAndRespond(caller, response, <@untainted> params,
+                                                        self.hubService, self.isUnsubscriptionAvailable);
+            }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "The request need to include valid `hub.mode` form param";

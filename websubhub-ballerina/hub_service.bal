@@ -17,10 +17,10 @@
 public type HubService service object {
 
    remote function onRegisterTopic(RegisterTopicMessage msg)
-                 returns TopicRegistrationSuccess|TopicRegistrationError;
+               returns TopicRegistrationSuccess|TopicRegistrationError;
 
    remote function onUnregisterTopic(UnregisterTopicMessage msg)
-                 returns TopicUnregistrationSuccess|TopicUnregistrationError;
+               returns TopicUnregistrationSuccess|TopicUnregistrationError;
 
 //   remote function onUpdateMessage(websub:UpdateMessage msg)
 //               returns websub:Acknowledgement
@@ -35,11 +35,9 @@ public type HubService service object {
 
    remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg);
 
-//  remote function onUnsubscription(websub:UnsubscriptionMessage msg)
-//               returns websub:UnsubscriptionAccepted
-//                       |websub:BadUnsubscriptionError
-//                       |websub:InternalUnsubscriptionError;
+//   remote function onUnsubscription(UnsubscriptionMessage msg)
+//               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError;
 
-//  remote function onUnsubscriptionIntentVerified(websub:VerifiedUnsubscriptionMessage msg);
+   remote function onUnsubscriptionIntentVerified(VerifiedUnsubscriptionMessage msg);
 
 };

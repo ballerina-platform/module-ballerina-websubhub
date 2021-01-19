@@ -39,3 +39,13 @@ returns SubscriptionDenied? = @java:Method {
 isolated function callOnSubscriptionIntentVerifiedMethod(HubService hubService, VerifiedSubscriptionMessage msg) = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
+
+isolated function callOnUnsubscriptionMethod(HubService hubService, UnsubscriptionMessage msg)
+returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;
+
+isolated function callOnUnsubscriptionIntentVerifiedMethod(HubService hubService, 
+                                VerifiedUnsubscriptionMessage msg) = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;

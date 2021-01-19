@@ -81,8 +81,26 @@ service /websubhub on functionWithArgumentsListener {
     }
 
     remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg) {
-        io:println("Intent verified invoked!");
+        io:println("Subscription Intent verified invoked!");
         isIntentVerified = true;
+    }
+
+    remote function onUnsubscription(UnsubscriptionMessage msg)
+               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
+        if (msg.hubTopic == "test") {
+            UnsubscriptionAccepted successResult = {
+                body: {
+                       isSuccess: "true"
+                    }
+            };
+            return successResult;
+        } else {
+            return error BadUnsubscriptionError("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
+        }
+    }
+
+    remote function onUnsubscriptionIntentVerified(VerifiedUnsubscriptionMessage msg){
+        io:println("Unsubscription Intent verified invoked!");
     }
 }
 
@@ -181,6 +199,19 @@ service /subscriber on new http:Listener(9091) {
         isValidationFailed = true;
         check caller->respond();
     }
+
+    resource function get unsubscribe(http:Caller caller, http:Request req)
+            returns error? {
+        map<string[]> payload = req.getQueryParams();
+        string[] challengeArray = <string[]> payload["hub.challenge"];
+        check caller->respond(challengeArray[0]);
+    }
+
+    resource function post unsubscribe(http:Caller caller, http:Request req)
+            returns error? {
+        io:println("Unsubscribe Validation failed post", req.getTextPayload());
+        check caller->respond();
+    }
 }
 
 @test:Config {
@@ -229,5 +260,37 @@ function testSubscriptionIntentVerification() returns @tainted error? {
         // test:assertEquals(isIntentVerified, true);
     } else {
         test:assertFail("Unregistration test failed");
+    }
+}
+
+@test:Config {
+}
+function testUnsubscriptionFailure() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 400);
+    } else {
+        test:assertFail("UnsubscriptionFailure test failed");
+    }
+}
+
+@test:Config {
+}
+function testUnsubscriptionIntentVerification() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+        // todo Validate post request invoked, as of now manually checked through logs
+        // test:assertEquals(isIntentVerified, true);
+    } else {
+        test:assertFail("UnsubscriptionIntentVerification test failed");
     }
 }

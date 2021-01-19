@@ -157,6 +157,70 @@ function proceedToValidationAndVerification(HubService hubService, SubscriptionM
     }
 }
 
+function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Response response,
+                                              map<string> params, HubService hubService,
+                                              boolean isUnsubscriptionAvailable) {
+    UnsubscriptionMessage message = {
+        hubMode: MODE_SUBSCRIBE,
+        hubCallback: getEncodedValueFromRequest(params, HUB_CALLBACK),
+        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
+        hubSecret: params[HUB_LEASE_SECONDS]
+    };
+    if (!isUnsubscriptionAvailable) {
+        response.statusCode = http:STATUS_ACCEPTED;
+        respondToRequest(caller, response);
+    } else {
+        UnsubscriptionAccepted|BadUnsubscriptionError
+            |InternalUnsubscriptionError onUnsubscriptionResult = callOnUnsubscriptionMethod(hubService, message);
+        if (onUnsubscriptionResult is UnsubscriptionAccepted) {
+            response.statusCode = http:STATUS_ACCEPTED;
+            respondToRequest(caller, response);
+            proceedToVerification(hubService, message);
+        } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            respondToRequest(caller, response);
+        } else {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            respondToRequest(caller, response);
+        } 
+    }
+}
+
+function proceedToVerification(HubService hubService, UnsubscriptionMessage message) {
+    http:Client httpClient = checkpanic new(<string> message.hubCallback);
+    http:Request request = new;
+
+    string challenge = uuid:createType4AsString();
+    string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
+                            + HUB_MODE + "=" + MODE_UNSUBSCRIBE
+                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
+                            + "&" + HUB_CHALLENGE + "=" + challenge;
+    log:print("Sending unsubscribing intent verification request to callback[" + <string> message.hubCallback + 
+                    "] for topic[" + <string> message.hubTopic + "]");
+    var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
+    if (subscriberResponse is http:Response) {
+        var respStringPayload = subscriberResponse.getTextPayload();
+        if (respStringPayload is string) {
+            if (respStringPayload != challenge) {
+                log:print("Intent verification failed for mode: [" + MODE_UNSUBSCRIBE + "], for callback URL: ["
+                        + <string> message.hubCallback + "]: Challenge not echoed correctly.");
+            } else {
+                VerifiedUnsubscriptionMessage verifiedMessage = {
+                    verificationSuccess: true,
+                    hubMode: message.hubMode,
+                    hubCallback: message.hubCallback,
+                    hubTopic: message.hubTopic,
+                    hubSecret: message.hubSecret
+                };
+                callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
+            }
+        } else {
+            log:print("Intent verification failed for mode: [" + MODE_UNSUBSCRIBE + "], for callback URL: ["
+                        + <string> message.hubCallback + "]: Challenge not echoed correctly.");
+        }
+    }
+}
+
 isolated function getEncodedValueFromRequest(map<string> params, string 'key) returns string? {
     string? topic = ();
     var topicFromParams = params['key];
