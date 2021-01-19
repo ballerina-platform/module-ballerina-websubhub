@@ -24,7 +24,7 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
                                             map<string> params, HubService hubService) {
     string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
     string topic = topicVar is () ? "" : topicVar;
-    RegisterTopicMessage msg = {
+    TopicRegistration msg = {
         topic: topic
     };
 
@@ -42,7 +42,7 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
                                             map<string> params, HubService hubService) {
     string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
     string topic = topicVar is () ? "" : topicVar;
-    UnregisterTopicMessage msg = {
+    TopicUnregistration msg = {
         topic: topic
     };
     TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
@@ -59,7 +59,7 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
                                               map<string> params, HubService hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable) {
 
-    SubscriptionMessage message = {
+    Subscription message = {
         hubMode: MODE_SUBSCRIBE,
         hubCallback: getEncodedValueFromRequest(params, HUB_CALLBACK),
         hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
@@ -97,24 +97,24 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
     }
 }   
 
-function proceedToValidationAndVerification(HubService hubService, SubscriptionMessage message, 
+function proceedToValidationAndVerification(HubService hubService, Subscription message, 
                                                     boolean isSubscriptionValidationAvailable) {
-    SubscriptionDenied? validationResult = ();
+    SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message);
     } else {
         if (message.hubCallback is () || message.hubCallback == "") {
-            validationResult = error SubscriptionDenied("Invalid hub.callback param in the request.");
+            validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
         }
         if (message.hubTopic is () || message.hubTopic == "") {
-            validationResult = error SubscriptionDenied("Invalid hub.topic param in the request.'");
+            validationResult = error SubscriptionDeniedError("Invalid hub.topic param in the request.'");
         }
     }
 
     http:Client httpClient = checkpanic new(<string> message.hubCallback);
     string challenge = uuid:createType4AsString();
 
-    if (validationResult is SubscriptionDenied) {
+    if (validationResult is SubscriptionDeniedError) {
         http:Request request = new;
         string payload = "hub.mode=subscribe&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
         request.setTextPayload(payload);
@@ -139,7 +139,7 @@ function proceedToValidationAndVerification(HubService hubService, SubscriptionM
                     log:print("Intent verification failed for mode: [" + MODE_SUBSCRIBE + "], for callback URL: ["
                             + <string> message.hubCallback + "]: Challenge not echoed correctly.");
                 } else {
-                    VerifiedSubscriptionMessage verifiedMessage = {
+                    VerifiedSubscription verifiedMessage = {
                         verificationSuccess: true,
                         hubMode: message.hubMode,
                         hubCallback: message.hubCallback,
@@ -160,7 +160,7 @@ function proceedToValidationAndVerification(HubService hubService, SubscriptionM
 function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Response response,
                                               map<string> params, HubService hubService,
                                               boolean isUnsubscriptionAvailable) {
-    UnsubscriptionMessage message = {
+    Unsubscription message = {
         hubMode: MODE_SUBSCRIBE,
         hubCallback: getEncodedValueFromRequest(params, HUB_CALLBACK),
         hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
@@ -186,7 +186,7 @@ function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Respons
     }
 }
 
-function proceedToVerification(HubService hubService, UnsubscriptionMessage message) {
+function proceedToVerification(HubService hubService, Unsubscription message) {
     http:Client httpClient = checkpanic new(<string> message.hubCallback);
     http:Request request = new;
 
@@ -205,7 +205,7 @@ function proceedToVerification(HubService hubService, UnsubscriptionMessage mess
                 log:print("Intent verification failed for mode: [" + MODE_UNSUBSCRIBE + "], for callback URL: ["
                         + <string> message.hubCallback + "]: Challenge not echoed correctly.");
             } else {
-                VerifiedUnsubscriptionMessage verifiedMessage = {
+                VerifiedUnsubscription verifiedMessage = {
                     verificationSuccess: true,
                     hubMode: message.hubMode,
                     hubCallback: message.hubCallback,

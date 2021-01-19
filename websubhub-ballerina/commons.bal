@@ -57,15 +57,15 @@ type WebSubContent record {|
     string contentType = "";
 |};
 
-public type RegisterTopicMessage record {|
+public type TopicRegistration record {|
     string topic;
 |};
 
-public type UnregisterTopicMessage record {|
+public type TopicUnregistration record {|
     string topic;
 |};
 
-public type SubscriptionMessage record {|
+public type Subscription record {|
     string hubMode;
     string? hubCallback = ();
     string? hubTopic = ();
@@ -73,20 +73,20 @@ public type SubscriptionMessage record {|
     string? hubSecret = ();
 |};
 
-public type VerifiedSubscriptionMessage record {
-    *SubscriptionMessage;
+public type VerifiedSubscription record {
+    *Subscription;
     boolean verificationSuccess;
 };
 
-public type UnsubscriptionMessage record {|
+public type Unsubscription record {|
     string hubMode;
     string? hubCallback = ();
     string? hubTopic = ();
     string? hubSecret = ();
 |};
 
-public type VerifiedUnsubscriptionMessage record {
-    *UnsubscriptionMessage;
+public type VerifiedUnsubscription record {
+    *Unsubscription;
     boolean verificationSuccess;
 };
 

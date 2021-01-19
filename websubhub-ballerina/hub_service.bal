@@ -16,27 +16,27 @@
 
 public type HubService service object {
 
-   remote function onRegisterTopic(RegisterTopicMessage msg)
+   remote function onRegisterTopic(TopicRegistration msg)
                returns TopicRegistrationSuccess|TopicRegistrationError;
 
-   remote function onUnregisterTopic(UnregisterTopicMessage msg)
+   remote function onUnregisterTopic(TopicUnregistration msg)
                returns TopicUnregistrationSuccess|TopicUnregistrationError;
 
    remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError;
 
-//   remote function onSubscription(SubscriptionMessage msg)
+//   remote function onSubscription(Subscription msg)
 //              returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
 //                      |InternalSubscriptionError;
 
-//   remote function onSubscriptionValidation(SubscriptionMessage msg)
-//              returns SubscriptionDenied?;
+//   remote function onSubscriptionValidation(Subscription msg)
+//              returns SubscriptionDeniedError?;
 
-   remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg);
+   remote function onSubscriptionIntentVerified(VerifiedSubscription msg);
 
-//   remote function onUnsubscription(UnsubscriptionMessage msg)
+//   remote function onUnsubscription(Unsubscription msg)
 //               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError;
 
-   remote function onUnsubscriptionIntentVerified(VerifiedUnsubscriptionMessage msg);
+   remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg);
 
 };
