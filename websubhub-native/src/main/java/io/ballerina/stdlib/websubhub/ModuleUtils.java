@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2020 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,7 +16,22 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.websubhub {
-    requires io.ballerina.lang;
-    requires io.ballerina.runtime;
+package io.ballerina.stdlib.websubhub;
+
+import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Module;
+
+public class ModuleUtils {
+
+    private static Module module;
+
+    private ModuleUtils() {}
+
+    public static void setModule(Environment environment) {
+        module = environment.getCurrentModule();
+    }
+
+    public static Module getModule() {
+        return module;
+    }
 }

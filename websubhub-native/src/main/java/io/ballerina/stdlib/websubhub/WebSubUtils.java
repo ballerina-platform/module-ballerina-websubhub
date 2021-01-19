@@ -36,8 +36,7 @@ public class WebSubUtils {
      * @return Ballerina error value
      */
     public static BError createError(String errMsg) {
-        return ErrorCreator.createDistinctError(WEBSUB_ERROR, WebSubSubscriberConstants.WEBSUB_PACKAGE_ID,
-                                                 StringUtils.fromString(errMsg));
+        return ErrorCreator.createDistinctError(WEBSUB_ERROR, ModuleUtils.getModule(), StringUtils.fromString(errMsg));
     }
 
 }

@@ -29,76 +29,6 @@ dependencies {
         transitive = false
     }
     compile project(':websubhub-native')
-    compile group: 'org.ballerinalang', name: 'toml-parser', version: "${ballerinaTomlParserVersion}"
-    
-    externalJars (group: 'io.netty', name: 'netty-common', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-buffer', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-transport', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-resolver', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-handler', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-codec-http', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-codec', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-handler-proxy', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-codec-http2', version: "${nettyVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: "${nettyTcnativeVersion}") {
-        transitive = false
-    }
-    
-    externalJars (group: 'io.ballerina.messaging', name: 'broker-common', version: "${ballerinaMessageBrokerVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.ballerina.messaging', name: 'broker-core', version: "${ballerinaMessageBrokerCoreVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.ballerina.messaging', name: 'broker-auth', version: "${ballerinaMessageBrokerVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.ballerina.messaging', name: 'broker-rest-runner', version: "${ballerinaMessageBrokerVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'io.ballerina.messaging', name: 'broker-coordination', version: "${ballerinaMessageBrokerVersion}") {
-        transitive = false
-    }
-
-    externalJars (group: 'commons-pool.wso2', name: 'commons-pool', version: "${wso2CommonsPoolVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'org.wso2.orbit.org.yaml', name: 'snakeyaml', version: "${wso2SnakeYamlVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: "${bouncycastleVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: "${bouncycastleVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'com.google.guava', name: 'guava', version: "${guavaVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'org.wso2.carbon.metrics', name: 'org.wso2.carbon.metrics.core', version: "${wso2CarbonMetricsVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'org.ballerinalang', name: 'http-native', version: "${stdlibHttpVersion}") {
-        transitive = false
-    }
 }
 
 clean {
@@ -167,16 +97,9 @@ task updateTomlFile {
     doLast {
         def stdlibDependentHttpVersion = project.stdlibHttpVersion.split("-")[0]
         def stdlibDependentMimeVersion = project.stdlibMimeVersion.split("-")[0]
-        def stdlibDependentAuthVersion = project.stdlibAuthVersion.split("-")[0]
-        def stdlibDependentCacheVersion = project.stdlibCacheVersion.split("-")[0]
-        def stdlibDependentCryptoVersion = project.stdlibCryptoVersion.split("-")[0]
-        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.split("-")[0]
-        def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
-        def stdlibDependentTimeVersion = project.stdlibTimeVersion.split("-")[0]
-        def stdlibDependentOsVersion = project.stdlibOsVersion.split("-")[0]
-        def stdlibDependentConfigApiVersion = project.stdlibConfigApiVersion.split("-")[0]
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
-        def stdlibDependentRegexVersion = project.stdlibRegexVersion.split("-")[0]
+        def stdlibDependentLogVersion = project.stdlibLogVersion.split("-")[0]
+        def stdlibDependentEncodingVersion = project.stdlibEncodingVersion.split("-")[0]
         def stdlibDependentUuidVersion = project.stdlibUuidVersion.split("-")[0]
 
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
@@ -185,29 +108,10 @@ task updateTomlFile {
         // Dynamic version update of stdlib dependencies
         newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
         newConfig = newConfig.replace("@stdlib.mime.version@", stdlibDependentMimeVersion)
-        newConfig = newConfig.replace("@stdlib.auth.version@", stdlibDependentAuthVersion)
-        newConfig = newConfig.replace("@stdlib.cache.version@", stdlibDependentCacheVersion)
-        newConfig = newConfig.replace("@stdlib.crypto.version@", stdlibDependentCryptoVersion)
-        newConfig = newConfig.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
-        newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
-        newConfig = newConfig.replace("@stdlib.time.version@", stdlibDependentTimeVersion)
-        newConfig = newConfig.replace("@stdlib.os.version@", stdlibDependentOsVersion)
-        newConfig = newConfig.replace("@stdlib.configapi.version@", stdlibDependentConfigApiVersion)
         newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
-        newConfig = newConfig.replace("@stdlib.regex.version@", stdlibDependentRegexVersion)
+        newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
+        newConfig = newConfig.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
         newConfig = newConfig.replace("@stdlib.uuid.version@", stdlibDependentUuidVersion)
-
-        // Dynamic version update of external dependencies
-        newConfig = newConfig.replace("@netty.version@", project.nettyVersion)
-        newConfig = newConfig.replace("@wso2commonspool.version@", project.wso2CommonsPoolVersion)
-        newConfig = newConfig.replace("@wso2snakeyaml.version@", project.wso2SnakeYamlVersion)
-        newConfig = newConfig.replace("@bouncycastle.version@", project.bouncycastleVersion)
-        newConfig = newConfig.replace("@nettytcnative.version@", project.nettyTcnativeVersion)
-        newConfig = newConfig.replace("@ballerinambcore.version@", project.ballerinaMessageBrokerCoreVersion)
-        newConfig = newConfig.replace("@ballerinamb.version@", project.ballerinaMessageBrokerVersion)
-        newConfig = newConfig.replace("@wso2carbonmetrics.version@", project.wso2CarbonMetricsVersion)
-        newConfig = newConfig.replace("@guava.version@", project.guavaVersion)
-        newConfig = newConfig.replace("@http.native.version@", project.stdlibHttpVersion)
 
         ballerinaConfigFile.text = newConfig
     }

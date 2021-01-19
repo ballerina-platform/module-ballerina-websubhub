@@ -14,18 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
-import ballerina/test;
+import ballerina/java;
 
-@test:Config{}
-public function testStartTestHubAndPublish() {
-    PublisherClient websubHubClientEP = checkpanic new ("http://localhost:9191/websub/publish");
-    var registrationResponse =
-                    websubHubClientEP->registerTopic("http://websubpubtopic.com");
-
-    if (registrationResponse is error) {
-        io:println(registrationResponse.message());
-    } else {
-        test:assertFail("Topic registration passed");
-    }
+isolated function init() {
+    setModule();
 }
+
+isolated function setModule() = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.ModuleUtils"
+} external;

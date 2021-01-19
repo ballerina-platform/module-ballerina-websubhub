@@ -14,8 +14,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents a hub startup error.
-public type HubStartupError distinct error;
-
 # Represents a webSub distinct error.
 public type WebSubError distinct error;
+
+public type TopicRegistrationError distinct error;
+
+public type TopicUnregistrationError distinct error;
+
+public type BadSubscriptionError distinct error;
+
+public type InternalSubscriptionError distinct error;
+
+public type SubscriptionDenied distinct error;
+
+public type BadUnsubscriptionError distinct error;
+
+public type InternalUnsubscriptionError distinct error;
+
+public type UpdateMessageError distinct error;
