@@ -17,7 +17,6 @@
 import ballerina/lang.'string as strings;
 import ballerina/encoding;
 import ballerina/http;
-import ballerina/log;
 import ballerina/uuid;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,

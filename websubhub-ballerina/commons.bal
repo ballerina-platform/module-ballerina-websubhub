@@ -92,7 +92,7 @@ public type VerifiedUnsubscription record {
 
 public type UpdateMessage record {
     string? hubTopic;
-    json|xml|byte[]? content;
+    string|json|xml|byte[]? content;
 };
 
 type CommonResponse record {|

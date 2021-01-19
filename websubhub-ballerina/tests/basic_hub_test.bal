@@ -126,7 +126,7 @@ function testFailurePost() returns @tainted error? {
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 400);
-        test:assertEquals(response.getTextPayload(), "The request need to include valid `hub.mode` form param");
+        test:assertEquals(response.getTextPayload(), "The request does not include valid `hub.mode` form param.");
     } else {
         test:assertFail("Malformed request was successful");
     }
