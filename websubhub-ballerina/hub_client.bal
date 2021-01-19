@@ -43,8 +43,7 @@ public class HubClient {
 
     # Distributes the published content to subscribers.
     # ```ballerina
-    # error? publishUpdate = websubHubClientEP->publishUpdate("http://websubpubtopic.com",{"action": "publish",
-    # "mode": "remote-hub"});
+    # error? publishUpdate = websubHubClientEP->publishUpdate("http://websubpubtopic.com",{ secret: "seckey1", content: "This is a test content."});
     #  ```
     #
     # + msg - content to be distributed to the topic-subscriber 
