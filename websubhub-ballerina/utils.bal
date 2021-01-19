@@ -67,25 +67,22 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
     } else {
         SubscriptionAccepted|SubscriptionRedirect|
         BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(hubService, message);
-        if (onSubscriptionResult is BadSubscriptionError) {
-            response.statusCode = http:STATUS_BAD_REQUEST;
-            respondToRequest(caller, response);
-        } else if (onSubscriptionResult is InternalSubscriptionError) {
-            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            respondToRequest(caller, response);
-        } else {
-            //todo L1 Redirect record is not done
+        if (onSubscriptionResult is SubscriptionRedirect) {
+            SubscriptionRedirect redirMsg = <SubscriptionRedirect> onSubscriptionResult;
+            response.statusCode = http:REDIRECT_TEMPORARY_REDIRECT_307;
+            var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307,
+                                                 onSubscriptionResult.redirectUrls);
+        } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
             proceedToValidationAndVerification(hubService, message, isSubscriptionValidationAvailable);
-        } 
-        
-    //    else if (onSubscriptionResult is SubscriptionRedirect) {
-    //         SubscriptionRedirect redirMsg = <SubscriptionRedirect> onSubscriptionResult;
-    //         response.statusCode = http:REDIRECT_TEMPORARY_REDIRECT_307;
-    //         var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307, 
-    //                                     onSubscriptionResult.redirectUrls);
-    //    } 
+        } else if (onSubscriptionResult is BadSubscriptionError) {
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            respondToRequest(caller, response);
+        } else {
+            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            respondToRequest(caller, response);
+        }
     }
 }   
 
