@@ -132,7 +132,7 @@ service class HttpService {
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
-                string errorMessage = "The request need to include valid `hub.mode` form param";
+                string errorMessage = "The request does not include valid `hub.mode` form param.";
                 response.setTextPayload(errorMessage);
                 respondToRequest(caller, response);
             }
