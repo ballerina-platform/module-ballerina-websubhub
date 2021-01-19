@@ -16,6 +16,7 @@
 
 import ballerina/http;
 import ballerina/log;
+import ballerina/mime;
 import ballerina/java;
 
 service class HttpService {
@@ -60,8 +61,28 @@ service class HttpService {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
 
-        var reqFormParamMap = request.getFormParams();
-        map<string> params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+        map<string> params = {};
+
+        string contentType = checkpanic request.getHeader(CONTENT_TYPE);
+        // todo: Use constants form mime/http
+        match contentType {
+            "application/x-www-form-urlencoded" => {
+                var reqFormParamMap = request.getFormParams();
+                params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+            }
+            "application/json"|"application/xml"|"application/octet-stream" => {
+                params = {
+                    HUB_MODE: MODE_PUBLISH
+                };
+            }
+            _ => {
+                response.statusCode = http:STATUS_BAD_REQUEST;
+                string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
+                                        "application/json, application/xml and application/octet-stream";
+                response.setTextPayload(errorMessage);
+                respondToRequest(caller, response);
+            }
+        }
 
         string mode = params[HUB_MODE] ?: "";
         match mode {
@@ -82,6 +103,32 @@ service class HttpService {
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(caller, response, <@untainted> params,
                                                         self.hubService, self.isUnsubscriptionAvailable);
+            }
+            MODE_PUBLISH => {
+                // todo Proper error handling instead of checkpanic
+                UpdateMessage updateMsg;
+                if (contentType == mime:APPLICATION_FORM_URLENCODED) {
+                    updateMsg = {
+                        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
+                        content: ()
+                    };
+                } else if (contentType == mime:APPLICATION_JSON) {
+                    updateMsg = {
+                        hubTopic: (),
+                        content: checkpanic request.getJsonPayload()
+                    };
+                } else if (contentType == mime:APPLICATION_XML) {
+                    updateMsg = {
+                        hubTopic: (),
+                        content: checkpanic request.getXmlPayload()
+                    };
+                } else {
+                    updateMsg = {
+                        hubTopic: (),
+                        content: checkpanic request.getBinaryPayload()
+                    };
+                }
+                processPublishRequestAndRespond(caller, response, self.hubService, <@untainted> updateMsg);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;

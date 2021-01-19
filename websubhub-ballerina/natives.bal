@@ -26,6 +26,11 @@ returns TopicUnregistrationSuccess|TopicUnregistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
+isolated function callOnUpdateMethod(HubService hubService, UpdateMessage msg)
+returns Acknowledgement|UpdateMessageError = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;
+
 isolated function callOnSubscriptionMethod(HubService hubService, SubscriptionMessage msg)
 returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError|InternalSubscriptionError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"

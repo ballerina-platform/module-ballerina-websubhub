@@ -221,6 +221,21 @@ function proceedToVerification(HubService hubService, UnsubscriptionMessage mess
     }
 }
 
+function processPublishRequestAndRespond(http:Caller caller, http:Response response,
+                                         HubService hubService, UpdateMessage updateMsg) {
+    
+    Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg);
+
+    response.statusCode = http:STATUS_ACCEPTED;
+    if (updateResult is Acknowledgement) {
+        response.setTextPayload("hub.mode=accepted");
+        response.setHeader("Content-type","application/x-www-form-urlencoded");
+    } else {
+        updateErrorResponse(response, updateMsg.hubTopic is () ? "" : <string> updateMsg.hubTopic, updateResult.message());
+    }
+    respondToRequest(caller, response);
+}
+
 isolated function getEncodedValueFromRequest(map<string> params, string 'key) returns string? {
     string? topic = ();
     var topicFromParams = params['key];

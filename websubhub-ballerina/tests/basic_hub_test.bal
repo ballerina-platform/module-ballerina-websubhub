@@ -55,6 +55,18 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
+    remote function onUpdateMessage(UpdateMessage msg)
+               returns Acknowledgement|UpdateMessageError {
+        Acknowledgement ack = {};
+        if (msg.hubTopic is string && msg.hubTopic == "test") {
+            return ack;
+        } else if (!(msg.content is ())) {
+            return ack;
+        } else {
+            return error UpdateMessageError("Error in accessing content");
+        }
+    }
+    
     remote function onSubscription(SubscriptionMessage msg)
                 returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
                 |InternalSubscriptionError {
@@ -290,6 +302,34 @@ function testUnsubscriptionIntentVerification() returns @tainted error? {
         test:assertEquals(response.statusCode, 202);
         // todo Validate post request invoked, as of now manually checked through logs
         // test:assertEquals(isIntentVerified, true);
+    } else {
+        test:assertFail("UnsubscriptionIntentVerification test failed");
+    }
+}
+
+@test:Config {
+}
+function testPublishContent() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=publish&hub.topic=test", "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+    } else {
+        test:assertFail("UnsubscriptionIntentVerification test failed");
+    }
+}
+
+@test:Config {
+}
+function testPublishContentFailure() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=publish&hub.topic=test1", "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 400);
     } else {
         test:assertFail("UnsubscriptionIntentVerification test failed");
     }

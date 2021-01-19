@@ -30,3 +30,5 @@ public type SubscriptionDenied distinct error;
 public type BadUnsubscriptionError distinct error;
 
 public type InternalUnsubscriptionError distinct error;
+
+public type UpdateMessageError distinct error;

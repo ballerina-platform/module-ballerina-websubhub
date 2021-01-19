@@ -90,6 +90,11 @@ public type VerifiedUnsubscriptionMessage record {
     boolean verificationSuccess;
 };
 
+public type UpdateMessage record {
+    string? hubTopic;
+    json|xml|byte[]? content;
+};
+
 type CommonResponse record {|
     map<string|string[]> headers?;
     map<string> body?;
@@ -113,5 +118,9 @@ public type SubscriptionRedirect record {
 };
 
 public type UnsubscriptionAccepted record {
+    *CommonResponse;
+};
+
+public type Acknowledgement record {
     *CommonResponse;
 };
