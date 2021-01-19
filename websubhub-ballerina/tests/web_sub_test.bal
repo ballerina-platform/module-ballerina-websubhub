@@ -23,7 +23,7 @@ public function startTestHub() returns string {
     string resultString = "";
     Hub webSubHub;
 
-    var result = startHub(new http:Listener(9191), "/websub", "/hub");
+    var result = startHub(checkpanic new http:Listener(9191), "/websub", "/hub");
     if (result is Hub) {
         webSubHub = result;
     } else if (result is HubStartedUpError) {
