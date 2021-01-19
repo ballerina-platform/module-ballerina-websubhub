@@ -70,7 +70,7 @@ service class HttpService {
                 var reqFormParamMap = request.getFormParams();
                 params = reqFormParamMap is map<string> ? reqFormParamMap : {};
             }
-            "application/json"|"application/xml"|"application/octet-stream" => {
+            "application/json"|"application/xml"|"application/octet-stream"|"text/plain" => {
                 params = {
                     HUB_MODE: MODE_PUBLISH
                 };
@@ -78,7 +78,7 @@ service class HttpService {
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
-                                        "application/json, application/xml and application/octet-stream";
+                                        "application/json, application/xml, application/octet-stream and text/plain";
                 response.setTextPayload(errorMessage);
                 respondToRequest(caller, response);
             }
@@ -121,6 +121,11 @@ service class HttpService {
                     updateMsg = {
                         hubTopic: (),
                         content: checkpanic request.getXmlPayload()
+                    };
+                } else if (contentType == "text/plain") {
+                    updateMsg = {
+                        hubTopic: (),
+                        content: checkpanic request.getTextPayload()
                     };
                 } else {
                     updateMsg = {
