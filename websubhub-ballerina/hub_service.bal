@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type HubService service object {
+public type Service service object {
 
    remote function onRegisterTopic(TopicRegistration msg)
                returns TopicRegistrationSuccess|TopicRegistrationError;

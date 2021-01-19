@@ -16,41 +16,41 @@
 
 import ballerina/java;
 
-isolated function callRegisterMethod(HubService hubService, TopicRegistration msg)
+isolated function callRegisterMethod(Service hubService, TopicRegistration msg)
 returns TopicRegistrationSuccess|TopicRegistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callUnregisterMethod(HubService hubService, TopicUnregistration msg)
+isolated function callUnregisterMethod(Service hubService, TopicUnregistration msg)
 returns TopicUnregistrationSuccess|TopicUnregistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUpdateMethod(HubService hubService, UpdateMessage msg)
+isolated function callOnUpdateMethod(Service hubService, UpdateMessage msg)
 returns Acknowledgement|UpdateMessageError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionMethod(HubService hubService, Subscription msg)
+isolated function callOnSubscriptionMethod(Service hubService, Subscription msg)
 returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError|InternalSubscriptionError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionValidationMethod(HubService hubService, Subscription msg)
+isolated function callOnSubscriptionValidationMethod(Service hubService, Subscription msg)
 returns SubscriptionDeniedError? = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionIntentVerifiedMethod(HubService hubService, VerifiedSubscription msg) = @java:Method {
+isolated function callOnSubscriptionIntentVerifiedMethod(Service hubService, VerifiedSubscription msg) = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUnsubscriptionMethod(HubService hubService, Unsubscription msg)
+isolated function callOnUnsubscriptionMethod(Service hubService, Unsubscription msg)
 returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUnsubscriptionIntentVerifiedMethod(HubService hubService, 
+isolated function callOnUnsubscriptionIntentVerifiedMethod(Service hubService,
                                 VerifiedUnsubscription msg) = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

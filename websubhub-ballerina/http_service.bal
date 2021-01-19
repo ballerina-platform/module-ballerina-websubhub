@@ -20,12 +20,12 @@ import ballerina/mime;
 import ballerina/java;
 
 service class HttpService {
-    private HubService hubService;
+    private Service hubService;
     private boolean isSubscriptionAvailable = false;
     private boolean isSubscriptionValidationAvailable = false;
     private boolean isUnsubscriptionAvailable = false;
 
-    public isolated function init(HubService hubService) {
+    public isolated function init(Service hubService) {
         self.hubService = hubService;
 
         string[] methodNames = getServiceMethodNames(hubService);
@@ -141,6 +141,6 @@ service class HttpService {
     }
 }
 
-isolated function getServiceMethodNames(HubService hubService) returns string[] = @java:Method {
+isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

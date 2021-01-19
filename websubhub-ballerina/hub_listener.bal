@@ -16,7 +16,7 @@
 
 import ballerina/http;
 
-# Represents a HubService listener endpoint.
+# Represents a Service listener endpoint.
 public class Listener {
     private http:Listener httpListener;
     private HttpService? httpService;
@@ -34,25 +34,25 @@ public class Listener {
         self.httpService = ();
     }
 
-    # Attaches the provided HubService to the Listener.
+    # Attaches the provided Service to the Listener.
     #
     # + s - The `websubhub:Service` object to attach
-    # + name - The path of the HubService to be hosted
+    # + name - The path of the Service to be hosted
     # + return - An `error`, if an error occurred during the service attaching process
-    public isolated function attach(HubService s, string[]|string? name = ()) returns error? {
+    public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         self.httpService = new(s);
         checkpanic self.httpListener.attach(<HttpService> self.httpService, name);
     }
 
-    # Detaches the provided HubService from the Listener.
+    # Detaches the provided Service from the Listener.
     #
     # + s - The service to be detached
     # + return - An `error`, if an error occurred during the service detaching process
-    public isolated function detach(HubService s) returns error? {
+    public isolated function detach(Service s) returns error? {
         checkpanic self.httpListener.detach(<HttpService> self.httpService);
     }
 
-    # Starts the attached HubService.
+    # Starts the attached Service.
     #
     # + return - An `error`, if an error occurred during the listener starting process
     public isolated function 'start() returns error? {

@@ -21,7 +21,7 @@ import ballerina/log;
 import ballerina/uuid;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
-                                            map<string> params, HubService hubService) {
+                                            map<string> params, Service hubService) {
     string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
     string topic = topicVar is () ? "" : topicVar;
     TopicRegistration msg = {
@@ -39,7 +39,7 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
 }
 
 isolated function processUnregisterRequest(http:Caller caller, http:Response response,
-                                            map<string> params, HubService hubService) {
+                                            map<string> params, Service hubService) {
     string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
     string topic = topicVar is () ? "" : topicVar;
     TopicUnregistration msg = {
@@ -56,7 +56,7 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
 }
 
 function processSubscriptionRequestAndRespond(http:Caller caller, http:Response response,
-                                              map<string> params, HubService hubService,
+                                              map<string> params, Service hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable) {
 
     Subscription message = {
@@ -97,8 +97,8 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
     }
 }   
 
-function proceedToValidationAndVerification(HubService hubService, Subscription message, 
-                                                    boolean isSubscriptionValidationAvailable) {
+function proceedToValidationAndVerification(Service hubService, Subscription message,
+                                            boolean isSubscriptionValidationAvailable) {
     SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message);
@@ -158,7 +158,7 @@ function proceedToValidationAndVerification(HubService hubService, Subscription 
 }
 
 function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Response response,
-                                              map<string> params, HubService hubService,
+                                              map<string> params, Service hubService,
                                               boolean isUnsubscriptionAvailable) {
     Unsubscription message = {
         hubMode: MODE_SUBSCRIBE,
@@ -186,7 +186,7 @@ function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Respons
     }
 }
 
-function proceedToVerification(HubService hubService, Unsubscription message) {
+function proceedToVerification(Service hubService, Unsubscription message) {
     http:Client httpClient = checkpanic new(<string> message.hubCallback);
     http:Request request = new;
 
@@ -222,7 +222,7 @@ function proceedToVerification(HubService hubService, Unsubscription message) {
 }
 
 function processPublishRequestAndRespond(http:Caller caller, http:Response response,
-                                         HubService hubService, UpdateMessage updateMsg) {
+                                         Service hubService, UpdateMessage updateMsg) {
     
     Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg);
 
