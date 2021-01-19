@@ -25,9 +25,9 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the service
-    public isolated function init(int|http:Listener listenTo) {
+    public isolated function init(int|http:Listener listenTo) returns error? {
         if (listenTo is int) {
-            self.httpListener = new(listenTo);
+            self.httpListener = check new(listenTo);
         } else {
             self.httpListener = listenTo;
         }

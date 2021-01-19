@@ -19,7 +19,7 @@ import ballerina/test;
 
 @test:Config{}
 public function testStartTestHubAndPublish() {
-    PublisherClient websubHubClientEP = new ("http://localhost:9191/websub/publish");
+    PublisherClient websubHubClientEP = checkpanic new ("http://localhost:9191/websub/publish");
     var registrationResponse =
                     websubHubClientEP->registerTopic("http://websubpubtopic.com");
 

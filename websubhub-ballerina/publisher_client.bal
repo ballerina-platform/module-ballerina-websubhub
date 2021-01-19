@@ -31,9 +31,9 @@ public client class PublisherClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
-    public function init(string url, http:ClientConfiguration? config = ()) {
+    public function init(string url, http:ClientConfiguration? config = ()) returns error? {
         self.url = url;
-        self.httpClient = new (self.url, config);
+        self.httpClient = check new (self.url, config);
     }
 
     # Registers a topic in a Ballerina WebSub Hub against which subscribers can subscribe and the publisher will
