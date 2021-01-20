@@ -84,8 +84,8 @@ public type VerifiedSubscription record {
 
 public type Unsubscription record {
     string hubMode;
-    string? hubCallback = ();
-    string? hubTopic = ();
+    string hubCallback;
+    string hubTopic;
     string? hubSecret = ();
     http:Request request;
 };

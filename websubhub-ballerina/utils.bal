@@ -103,11 +103,10 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message);
     } else {
-        // todo L1 Validate if hub.secret present
-        if (message.hubCallback == "") {
+        if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
         }
-        if (message.hubTopic == "") {
+        if (!message.hubTopic.startsWith("http://") && !message.hubTopic.startsWith("https://")) {
             validationResult = error SubscriptionDeniedError("Invalid hub.topic param in the request.'");
         }
     }
@@ -194,11 +193,10 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, Servic
     if (isUnsubscriptionValidationAvailable) {
         validationResult = callOnUnsubscriptionValidationMethod(hubService, message);
     } else {
-        // todo L1 Validate if hub.secret present
-        if (message.hubCallback == "") {
+        if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error UnsubscriptionDeniedError("Invalid hub.callback param in the request.");
         }
-        if (message.hubTopic == "") {
+        if (!message.hubTopic.startsWith("http://") && !message.hubTopic.startsWith("https://")) {
             validationResult = error UnsubscriptionDeniedError("Invalid hub.topic param in the request.'");
         }
     }
