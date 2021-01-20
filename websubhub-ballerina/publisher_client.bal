@@ -53,7 +53,8 @@ public client class PublisherClient {
             var result = registrationResponse.getTextPayload();
             string payload = result is string ? result : "";
             if (registrationResponse.statusCode != http:STATUS_OK) {
-                return error TopicRegistrationError("Error occurred during topic registration: " + payload);
+                return error TopicRegistrationError("Error occurred during topic registration, Status code : "
+                               +  registrationResponse.statusCode.toString() + ", payload: " + payload);
             } else {
                 map<string>? params = getFormData(payload);
                 if (params[HUB_MODE] == "accepted") {
@@ -87,7 +88,8 @@ public client class PublisherClient {
             var result = unregistrationResponse.getTextPayload();
             string payload = result is string ? result : "";
             if (unregistrationResponse.statusCode != http:STATUS_OK) {
-                return error TopicUnregistrationError("Error occurred during topic registration: " + payload);
+                return error TopicUnregistrationError("Error occurred during topic registration, Status code : "
+                        +  unregistrationResponse.statusCode.toString() + ", payload: " + payload);
             } else {
                 map<string>? params = getFormData(payload);
                 if (params[HUB_MODE] == "accepted") {
