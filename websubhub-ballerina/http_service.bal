@@ -23,6 +23,7 @@ service class HttpService {
     private boolean isSubscriptionAvailable = false;
     private boolean isSubscriptionValidationAvailable = false;
     private boolean isUnsubscriptionAvailable = false;
+    private boolean isUnsubscriptionValidationAvailable = false;
     private boolean isRegisterAvailable = false;
     private boolean isUnregisterAvailable = false;
 
@@ -47,6 +48,13 @@ service class HttpService {
         foreach var methodName in methodNames {
             if (methodName == "onUnsubscription") {
                 self.isUnsubscriptionAvailable = true;
+                break;
+            }
+        }
+
+        foreach var methodName in methodNames {
+            if (methodName == "onUnsubscriptionValidation") {
+                self.isUnsubscriptionValidationAvailable = true;
                 break;
             }
         }
@@ -118,8 +126,9 @@ service class HttpService {
                                                         <@untainted> self.isSubscriptionValidationAvailable);
             }
             MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(request, caller, response, <@untainted> params,
-                                                        self.hubService, self.isUnsubscriptionAvailable);
+                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params,
+                                                        self.hubService, self.isUnsubscriptionAvailable,
+                                                        <@untainted> self.isUnsubscriptionValidationAvailable);
             }
             MODE_PUBLISH => {
                 // todo Proper error handling instead of checkpanic

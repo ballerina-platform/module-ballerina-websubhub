@@ -50,6 +50,11 @@ returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionErro
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
+isolated function callOnUnsubscriptionValidationMethod(Service hubService, Unsubscription msg)
+returns UnsubscriptionDeniedError? = @java:Method {
+    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+} external;
+
 isolated function callOnUnsubscriptionIntentVerifiedMethod(Service hubService,
                                 VerifiedUnsubscription msg) = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"

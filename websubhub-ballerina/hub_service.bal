@@ -39,6 +39,9 @@ public type Service service object {
 //   remote function onUnsubscription(Unsubscription msg)
 //               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError;
 
+//   remote function onUnsubscriptionValidation(Unsubscription msg)
+//              returns UnsubscriptionDeniedError?;
+
    remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg);
 
 };

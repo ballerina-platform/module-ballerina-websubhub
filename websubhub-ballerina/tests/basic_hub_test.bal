@@ -99,7 +99,7 @@ service /websubhub on functionWithArgumentsListener {
 
     remote function onUnsubscription(Unsubscription msg)
                returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
-        if (msg.hubTopic == "test") {
+        if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             UnsubscriptionAccepted successResult = {
                 body: {
                        isSuccess: "true"
@@ -109,6 +109,14 @@ service /websubhub on functionWithArgumentsListener {
         } else {
             return error BadUnsubscriptionError("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
         }
+    }
+
+    remote function onUnsubscriptionValidation(Unsubscription msg)
+                returns UnsubscriptionDeniedError? {
+        if (msg.hubTopic == "test1") {
+            return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
+        }
+        return ();
     }
 
     remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg){
@@ -279,7 +287,7 @@ function testSubscriptionIntentVerification() returns @tainted error? {
 }
 function testUnsubscriptionFailure() returns @tainted error? {
     http:Request request = new;
-    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
 
     var response = check httpClient->post("/", request);
@@ -287,6 +295,23 @@ function testUnsubscriptionFailure() returns @tainted error? {
         test:assertEquals(response.statusCode, 400);
     } else {
         test:assertFail("UnsubscriptionFailure test failed");
+    }
+}
+
+@test:Config {
+}
+function testUnsubscriptionValidationFailure() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe",
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+        // todo Validate post request invoked, as of now manually checked through logs
+        // test:assertEquals(isValidationFailed, true);
+    } else {
+        test:assertFail("Unregistration test failed");
     }
 }
 

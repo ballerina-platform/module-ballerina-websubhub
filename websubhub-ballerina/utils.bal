@@ -117,7 +117,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
 
     if (validationResult is SubscriptionDeniedError) {
         http:Request request = new;
-        string payload = "hub.mode=subscribe&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
+        string payload = "hub.mode=denied&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
         request.setTextPayload(payload);
         request.setHeader("Content-type","application/x-www-form-urlencoded");
         var validationFailureRequest = httpClient->post("", request);
@@ -150,7 +150,8 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
 
 function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
-                                              boolean isUnsubscriptionAvailable) {
+                                              boolean isUnsubscriptionAvailable,
+                                              boolean isUnsubscriptionValidationAvailable) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
         return;
@@ -175,7 +176,7 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            proceedToVerification(request, hubService, message);
+            proceedToUnsubscriptionVerification(request, hubService, message, isUnsubscriptionValidationAvailable);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             respondToRequest(caller, response);
@@ -186,29 +187,50 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     }
 }
 
-function proceedToVerification(http:Request initialRequest, Service hubService, Unsubscription message) {
+function proceedToUnsubscriptionVerification(http:Request initialRequest, Service hubService, Unsubscription message,
+                                            boolean isUnsubscriptionValidationAvailable) {
+
+    UnsubscriptionDeniedError? validationResult = ();
+    if (isUnsubscriptionValidationAvailable) {
+        validationResult = callOnUnsubscriptionValidationMethod(hubService, message);
+    } else {
+        // todo L1 Validate if hub.secret present
+        if (message.hubCallback == "") {
+            validationResult = error UnsubscriptionDeniedError("Invalid hub.callback param in the request.");
+        }
+        if (message.hubTopic == "") {
+            validationResult = error UnsubscriptionDeniedError("Invalid hub.topic param in the request.'");
+        }
+    }
+
     http:Client httpClient = checkpanic new(<string> message.hubCallback);
     http:Request request = new;
-
-    string challenge = uuid:createType4AsString();
-    string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
-                            + HUB_MODE + "=" + MODE_UNSUBSCRIBE
-                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                            + "&" + HUB_CHALLENGE + "=" + challenge;
-    var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
-    if (subscriberResponse is http:Response) {
-        var respStringPayload = subscriberResponse.getTextPayload();
-        if (respStringPayload is string) {
-            if (respStringPayload == challenge) {
-                VerifiedUnsubscription verifiedMessage = {
-                    verificationSuccess: true,
-                    hubMode: message.hubMode,
-                    hubCallback: message.hubCallback,
-                    hubTopic: message.hubTopic,
-                    hubSecret: message.hubSecret,
-                    request: initialRequest
-                };
-                callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
+    if (validationResult is UnsubscriptionDeniedError) {
+        string payload = "hub.mode=denied&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
+        request.setTextPayload(payload);
+        request.setHeader("Content-type","application/x-www-form-urlencoded");
+        var validationFailureRequest = httpClient->post("", request);
+    } else {
+        string challenge = uuid:createType4AsString();
+        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
+                                + HUB_MODE + "=" + MODE_UNSUBSCRIBE
+                                + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
+                                + "&" + HUB_CHALLENGE + "=" + challenge;
+        var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
+        if (subscriberResponse is http:Response) {
+            var respStringPayload = subscriberResponse.getTextPayload();
+            if (respStringPayload is string) {
+                if (respStringPayload == challenge) {
+                    VerifiedUnsubscription verifiedMessage = {
+                        verificationSuccess: true,
+                        hubMode: message.hubMode,
+                        hubCallback: message.hubCallback,
+                        hubTopic: message.hubTopic,
+                        hubSecret: message.hubSecret,
+                        request: initialRequest
+                    };
+                    callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
+                }
             }
         }
     }
