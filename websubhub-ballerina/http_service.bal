@@ -34,42 +34,21 @@ service class HttpService {
         foreach var methodName in methodNames {
             if (methodName == "onSubscription") {
                 self.isSubscriptionAvailable = true;
-                break;
             }
-        }
-
-        foreach var methodName in methodNames {
             if (methodName == "onSubscriptionValidation") {
                 self.isSubscriptionValidationAvailable = true;
-                break;
             }
-        }
-
-        foreach var methodName in methodNames {
             if (methodName == "onUnsubscription") {
                 self.isUnsubscriptionAvailable = true;
-                break;
             }
-        }
-
-        foreach var methodName in methodNames {
             if (methodName == "onUnsubscriptionValidation") {
                 self.isUnsubscriptionValidationAvailable = true;
-                break;
             }
-        }
-
-        foreach var methodName in methodNames {
             if (methodName == "onRegisterTopic") {
                 self.isRegisterAvailable = true;
-                break;
             }
-        }
-
-        foreach var methodName in methodNames {
             if (methodName == "onUnregisterTopic") {
                 self.isUnregisterAvailable = true;
-                break;
             }
         }
     }
