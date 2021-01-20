@@ -52,7 +52,7 @@ service /websubhub on testListener {
     remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError {
         Acknowledgement ack = {};
-        if (msg.hubTopic is string && msg.hubTopic == "test") {
+        if (msg.hubTopic == "test") {
             return ack;
         } else if (!(msg.content is ())) {
             return ack;

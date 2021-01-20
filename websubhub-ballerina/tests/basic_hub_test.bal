@@ -58,7 +58,7 @@ service /websubhub on functionWithArgumentsListener {
     remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError {
         Acknowledgement ack = {};
-        if (msg.hubTopic is string && msg.hubTopic == "test") {
+        if (msg.hubTopic == "test") {
             return ack;
         } else if (!(msg.content is ())) {
             return ack;
@@ -353,6 +353,21 @@ function testPublishContentFailure() returns @tainted error? {
     request.setTextPayload("hub.mode=publish&hub.topic=test1", "application/x-www-form-urlencoded");
 
     var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+    } else {
+        test:assertFail("UnsubscriptionIntentVerification test failed");
+    }
+}
+
+@test:Config {
+}
+function testPublishContentLocal() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("event=event1", "application/x-www-form-urlencoded");
+    request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+
+    var response = check httpClient->post("/?hub.mode=publish&hub.topic=test", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 202);
     } else {
