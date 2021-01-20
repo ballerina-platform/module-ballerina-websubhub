@@ -21,15 +21,17 @@ import ballerina/crypto;
 
 # HTTP Based client for WebSub content publishing to subscribers
 public client class HubClient {
+    private string callBack;
     private string hubUrl;
     private string topic;
     private string linkHeaderValue;
-    private string secret? = ();
+    private string? secret = ();
     private http:Client httpClient;
 
     # Initializes the `websubhub:HubClient`.
     # ```ballerina
     # websubhub:HubClient hubClientEP = new({
+    #   hubUrl: "https://hub.com"
     #   hubMode: "subscribe", 
     #   hubCallback = "http://subscriber.com/callback", 
     #   hubTopic: "https://topic.com", 
@@ -39,10 +41,11 @@ public client class HubClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
-    public function init(SubscriptionMessage subscription, http:ClientConfiguration? config = ()) returns error? {
-        self.hubUrl = "";
-        self.topic = check subscription.hubTopic;
-        self.linkHeaderValue = "";
+    public function init(Subscription subscription, http:ClientConfiguration? config = ()) returns error? {
+        self.callBack = subscription.hubCallback;
+        self.hubUrl = subscription.hubUrl;
+        self.topic = subscription.hubTopic;
+        self.linkHeaderValue = check generateLinkUrl();
         self.secret = subscription.hubSecret;
         self.httpClient = check new(subscription.hubCallback, config);
     }
@@ -56,7 +59,7 @@ public client class HubClient {
     #
     # + msg - content to be distributed to the topic-subscriber 
     # + return -  An `error`if an error occurred with the update or else `()`
-    remote function notifyContentDistribution(ContentDistributionMessage msg) returns @tainted error? {
+    remote function notifyContentDistribution(ContentDistributionMessage msg) returns ContentDistributionSuccess | SubscriptionDeletedError | @tainted error? {
         http:Request request = new;
         
         string contentType = retrieveContentType(msg.contentType, msg.content);
@@ -76,13 +79,19 @@ public client class HubClient {
 
         if (secret is string && secret?.length() >= 0) {
             check string hash = retrievePayloadSignature(secret, msg.content);
-            request.setHeader(X_HUB_SIGNATURE, "sha1:"+hash);
+            request.setHeader(X_HUB_SIGNATURE, "sha256="+hash);
         }
 
         var response = self.httpClient->post(request);
 
         if (response is http:Response) {
-            if (!isSuccessStatusCode(response.statusCode)) {
+            var status = response.statusCode;
+            if (isSuccess(status)) {
+                return new ContentDistributionSuccess(self.callBack, self.topic);
+            } else if (isWithInRangeOrEquals(status, 410)) {
+                // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
+                return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
+            } else {
                 var result = response.getTextPayload();
                 string textPayload = result is string ? result : "";
                 return error WebSubError("Error occurred distributing updated content: " + textPayload);
@@ -114,11 +123,15 @@ public client class HubClient {
         byte[] keyArr = key.toBytes();
         byte[] hashedContent = [];
         if (payload is byte[]) {
-            hashedContent = crypto:hmacSha1(payload, keyArr);
+            hashedContent = crypto:hmacSha256(payload, keyArr);
         } else {
             byte[] inputArr = payload.toBytes();
-            hashedContent = crypto:hmacSha1(inputArr, keyArr);
+            hashedContent = crypto:hmacSha256(inputArr, keyArr);
         }
         return hashedContent.toBase64();
+    }
+
+    isolated function generateLinkUrl() returns string {
+        return self.hubUrl + "; rel=\"hub\", " + self.topic + "; rel=\"self\"";
     }
 }

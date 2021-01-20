@@ -34,3 +34,5 @@ public type InternalUnsubscriptionError distinct error;
 public type UnsubscriptionDeniedError distinct error;
 
 public type UpdateMessageError distinct error;
+
+public type SubscriptionDeletedError distinct error;

@@ -54,10 +54,15 @@ const string CONTENT_TYPE = "Content-Type";
 # + headers - Additional Request headers to include when distributing content
 # + payload - The payload to be sent
 # + contentType - The content-type of the payload
-type ContentDistributionMessage record {|
+public type ContentDistributionMessage record {|
     map<string|string[]>? headers = ();
     string? contentType = ();
     json|xml|string|byte[] content;
+|};
+
+public type ContentDistributionSuccess record {|
+    string hubCallback;
+    string topic;
 |};
 
 public type TopicRegistration record {|
@@ -70,6 +75,7 @@ public type TopicUnregistration record {|
 
 // todo Any other params set in the payload(subscribers)
 public type Subscription record {
+    string hubUrl;
     string hubMode;
     string hubCallback;
     string hubTopic;
@@ -155,3 +161,15 @@ public readonly class StatusPermanentRedirect {
 final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
 
 final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
+
+isolated function isSuccess(int statusCode) returns boolean {
+    return isWithInRangeOrEquals(statusCode, 200, 300);
+}
+
+isolated function isWithInRangeOrEquals(int statusCode, int start, int? end = ()) returns boolean {
+    if (end is int) {
+        return (start <= statusCode && statusCode < end);
+    } else {
+        return start == statusCode;
+    }
+}
