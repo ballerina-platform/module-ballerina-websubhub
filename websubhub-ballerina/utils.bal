@@ -76,13 +76,13 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         response.statusCode = http:STATUS_ACCEPTED;
         respondToRequest(caller, response);
     } else {
-        SubscriptionAccepted|SubscriptionRedirect|
+        SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
         BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(hubService, message);
-        if (onSubscriptionResult is SubscriptionRedirect) {
-            SubscriptionRedirect redirMsg = <SubscriptionRedirect> onSubscriptionResult;
-            response.statusCode = http:REDIRECT_TEMPORARY_REDIRECT_307;
-            var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307,
-                                                 onSubscriptionResult.redirectUrls);
+        if (onSubscriptionResult is SubscriptionPermanentRedirect) {
+            var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
+        } else if (onSubscriptionResult is SubscriptionPermanentRedirect) {
+           SubscriptionPermanentRedirect redirMsg = <SubscriptionPermanentRedirect> onSubscriptionResult;
+           var result = caller->redirect(response, http:REDIRECT_PERMANENT_REDIRECT_308, redirMsg.redirectUrls);
         } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);

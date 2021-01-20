@@ -31,8 +31,8 @@ returns Acknowledgement|UpdateMessageError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionMethod(Service hubService, Subscription msg)
-returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError|InternalSubscriptionError = @java:Method {
+isolated function callOnSubscriptionMethod(Service hubService, Subscription msg) returns SubscriptionAccepted|
+    SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError|InternalSubscriptionError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 

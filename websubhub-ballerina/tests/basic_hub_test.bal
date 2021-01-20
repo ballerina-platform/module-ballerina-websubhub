@@ -68,8 +68,8 @@ service /websubhub on functionWithArgumentsListener {
     }
     
     remote function onSubscription(Subscription msg)
-                returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
-                |InternalSubscriptionError {
+                returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect
+                |BadSubscriptionError|InternalSubscriptionError {
         SubscriptionAccepted successResult = {
                 body: {
                        isSuccess: "true"

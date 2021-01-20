@@ -117,9 +117,16 @@ public type SubscriptionAccepted record {
     *CommonResponse;
 };
 
-public type SubscriptionRedirect record {
+public type SubscriptionPermanentRedirect record {
     *CommonResponse;
     string[] redirectUrls;
+    readonly StatusPermanentRedirect code = STATUS_PERMANENT_REDIRECT;
+};
+
+public type SubscriptionTemporaryRedirect record {
+    *CommonResponse;
+    string[] redirectUrls;
+    readonly StatusTemporaryRedirect code = STATUS_TEMPORARY_REDIRECT;
 };
 
 public type UnsubscriptionAccepted record {
@@ -129,3 +136,21 @@ public type UnsubscriptionAccepted record {
 public type Acknowledgement record {
     *CommonResponse;
 };
+
+type StatusCode distinct object {
+     public int code;
+};
+
+public readonly class StatusTemporaryRedirect {
+    *StatusCode;
+    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
+}
+
+public readonly class StatusPermanentRedirect {
+    *StatusCode;
+    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
+}
+
+final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
+
+final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;

@@ -28,8 +28,8 @@ public type Service service object {
                returns Acknowledgement|UpdateMessageError;
 
 //   remote function onSubscription(Subscription msg)
-//              returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
-//                      |InternalSubscriptionError;
+//              returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
+//                        BadSubscriptionError|InternalSubscriptionError;
 
 //   remote function onSubscriptionValidation(Subscription msg)
 //              returns SubscriptionDeniedError?;
