@@ -48,15 +48,6 @@ const string MODE_UNSUBSCRIBE = "unsubscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
-# Record to represent a WebSub content delivery.
-#
-# + payload - The payload to be sent
-# + contentType - The content-type of the payload
-type WebSubContent record {|
-    string|xml|json|byte[]|io:ReadableByteChannel payload = "";
-    string contentType = "";
-|};
-
 public type RegisterTopicMessage record {|
     string topic;
 |};
@@ -120,9 +111,8 @@ public type SubscriptionAccepted record {
 type ContentDistributionMessage record {|
     map<string|string[]>? headers = ();
     string? contentType = ();
-    string? secret = ();
     json|xml|string|byte[] content;
-|}
+|};
 
 isolated function isSuccessStatusCode(int statusCode) returns boolean {
     return (200 <= statusCode && statusCode < 300);

@@ -166,7 +166,3 @@ isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @u
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
     return request;
 }
-
-isolated function isSuccessStatusCode(int statusCode) returns boolean {
-    return (200 <= statusCode && statusCode < 300);
-}
