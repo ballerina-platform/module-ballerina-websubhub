@@ -226,10 +226,6 @@ isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @u
     return request;
 }
 
-isolated function isSuccessStatusCode(int statusCode) returns boolean {
-    return (200 <= statusCode && statusCode < 300);
-}
-
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
 
