@@ -121,3 +121,15 @@ public function testPublisherUnregisterFailure() {
         test:assertFail("Topic registration passed");
     }
 }
+
+@test:Config{}
+public function testPublisherNotifyEvenSuccess() {
+    Acknowledgement|UpdateMessageError response = websubHubClientEP->notifyUpdate("test");
+
+    if (response is Acknowledgement) {
+        io:println(response);
+    } else {
+        io:println(response);
+        test:assertFail("Event notify failed");
+    }
+}

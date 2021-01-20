@@ -156,26 +156,36 @@ public client class PublisherClient {
     # + topic - The topic for which the update occurred
     # + headers - The headers that need to be set (if any)
     # + return -  An `error`if an error occurred with the notification or else `()`
-    remote function notifyUpdate(string topic, map<string>? headers = ()) returns @tainted error? {
+    remote function notifyUpdate(string topic) returns @tainted Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
-        string queryParams = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
+        string reqPayload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
+        request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
 
-        if (headers is map<string>) {
-            foreach var [key, value] in headers.entries() {
-                request.setHeader(key, value);
-            }
-        }
+        request.setHeader(BALLERINA_PUBLISH_HEADER, "event");
 
-        var response = httpClient->post(<@untainted string> ("?" + queryParams), request);
+        var response = httpClient->post("/", request);
         if (response is http:Response) {
-            if (!isSuccessStatusCode(response.statusCode)) {
-                var result = response.getTextPayload();
-                string textPayload = result is string ? result : "";
-                return error WebSubError("Error occurred notifying update availability: " + textPayload);
+            var result = response.getTextPayload();
+            string payload = result is string ? result : "";
+            if (response.statusCode != http:STATUS_OK) {
+                return error UpdateMessageError("Error occurred during notify update, Status code : "
+                +  response.statusCode.toString() + ", payload: " + payload);
+            } else {
+                map<string>? params = getFormData(payload);
+                if (params[HUB_MODE] == "accepted") {
+                    Acknowledgement successResult = {
+                        headers: getHeaders(response),
+                        body: params
+                    };
+                    return successResult;
+                } else {
+                    string? failureReason = params["hub.reason"];
+                    return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
+                }
             }
         } else {
-            return error WebSubError("Update availability notification failed for topic [" + topic + "]");
+            return error UpdateMessageError("Update availability notification failed for topic [" + topic + "]");
         }
     }
 }

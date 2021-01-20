@@ -340,7 +340,7 @@ function testPublishContent() returns @tainted error? {
 
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
-        test:assertEquals(response.statusCode, 202);
+        test:assertEquals(response.statusCode, 200);
     } else {
         test:assertFail("UnsubscriptionIntentVerification test failed");
     }
@@ -354,7 +354,7 @@ function testPublishContentFailure() returns @tainted error? {
 
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
-        test:assertEquals(response.statusCode, 202);
+        test:assertEquals(response.statusCode, 200);
     } else {
         test:assertFail("UnsubscriptionIntentVerification test failed");
     }
@@ -369,7 +369,7 @@ function testPublishContentLocal() returns @tainted error? {
 
     var response = check httpClient->post("/?hub.mode=publish&hub.topic=test", request);
     if (response is http:Response) {
-        test:assertEquals(response.statusCode, 202);
+        test:assertEquals(response.statusCode, 200);
     } else {
         test:assertFail("UnsubscriptionIntentVerification test failed");
     }

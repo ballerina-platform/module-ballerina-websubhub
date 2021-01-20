@@ -239,7 +239,7 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
     
     Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg);
 
-    response.statusCode = http:STATUS_ACCEPTED;
+    response.statusCode = http:STATUS_OK;
     if (updateResult is Acknowledgement) {
         response.setTextPayload("hub.mode=accepted");
         response.setHeader("Content-type","application/x-www-form-urlencoded");
