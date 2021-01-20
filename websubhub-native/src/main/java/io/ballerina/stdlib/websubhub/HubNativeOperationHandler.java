@@ -70,6 +70,10 @@ public class HubNativeOperationHandler {
         return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionMethod", "onUnsubscription");
     }
 
+    public static Object callOnUnsubscriptionValidationMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionValidationMethod", "onUnsubscriptionValidation");
+    }
+
     public static void callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
         invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionIntentVerifiedMethod", "onUnsubscriptionIntentVerified");
     }

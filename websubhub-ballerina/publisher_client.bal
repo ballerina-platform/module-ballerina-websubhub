@@ -155,6 +155,10 @@ public client class PublisherClient {
     }
 }
 
+isolated function isSuccessStatusCode(int statusCode) returns boolean {
+    return (200 <= statusCode && statusCode < 300);
+}
+
 # Builds the topic registration change request to register or unregister a topic at the hub.
 #
 # + mode - Whether the request is for registration or unregistration

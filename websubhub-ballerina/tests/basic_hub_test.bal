@@ -27,7 +27,7 @@ listener Listener functionWithArgumentsListener = new(9090);
 
 service /websubhub on functionWithArgumentsListener {
 
-    remote function onRegisterTopic(RegisterTopicMessage message)
+    remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationSuccess|TopicRegistrationError {
         if (message.topic == "test") {
             TopicRegistrationSuccess successResult = {
@@ -41,7 +41,7 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    remote function onUnregisterTopic(UnregisterTopicMessage message)
+    remote function onUnregisterTopic(TopicUnregistration message)
                         returns TopicUnregistrationSuccess|TopicUnregistrationError {
         TopicRegistrationSuccess unregisterResult = {
             body: {
@@ -67,15 +67,15 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
     
-    remote function onSubscription(SubscriptionMessage msg)
-                returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
-                |InternalSubscriptionError {
+    remote function onSubscription(Subscription msg)
+                returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect
+                |BadSubscriptionError|InternalSubscriptionError {
         SubscriptionAccepted successResult = {
                 body: {
                        isSuccess: "true"
                     }
             };
-        if (msg.hubTopic is string && msg.hubTopic == "test") {
+        if (msg.hubTopic == "test") {
             return successResult;
         } else if (msg.hubTopic == "test1") {
             return successResult;
@@ -84,22 +84,22 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    remote function onSubscriptionValidation(SubscriptionMessage msg)
-                returns SubscriptionDenied? {
+    remote function onSubscriptionValidation(Subscription msg)
+                returns SubscriptionDeniedError? {
         if (msg.hubTopic == "test1") {
-            return error SubscriptionDenied("Denied subscription for topic 'test1'");
+            return error SubscriptionDeniedError("Denied subscription for topic 'test1'");
         }
         return ();
     }
 
-    remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg) {
+    remote function onSubscriptionIntentVerified(VerifiedSubscription msg) {
         io:println("Subscription Intent verified invoked!");
         isIntentVerified = true;
     }
 
-    remote function onUnsubscription(UnsubscriptionMessage msg)
+    remote function onUnsubscription(Unsubscription msg)
                returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
-        if (msg.hubTopic == "test") {
+        if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             UnsubscriptionAccepted successResult = {
                 body: {
                        isSuccess: "true"
@@ -111,7 +111,15 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    remote function onUnsubscriptionIntentVerified(VerifiedUnsubscriptionMessage msg){
+    remote function onUnsubscriptionValidation(Unsubscription msg)
+                returns UnsubscriptionDeniedError? {
+        if (msg.hubTopic == "test1") {
+            return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
+        }
+        return ();
+    }
+
+    remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg){
         io:println("Unsubscription Intent verified invoked!");
     }
 }
@@ -126,7 +134,7 @@ function testFailurePost() returns @tainted error? {
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 400);
-        test:assertEquals(response.getTextPayload(), "The request need to include valid `hub.mode` form param");
+        test:assertEquals(response.getTextPayload(), "The request does not include valid `hub.mode` form param.");
     } else {
         test:assertFail("Malformed request was successful");
     }
@@ -279,7 +287,7 @@ function testSubscriptionIntentVerification() returns @tainted error? {
 }
 function testUnsubscriptionFailure() returns @tainted error? {
     http:Request request = new;
-    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
 
     var response = check httpClient->post("/", request);
@@ -287,6 +295,23 @@ function testUnsubscriptionFailure() returns @tainted error? {
         test:assertEquals(response.statusCode, 400);
     } else {
         test:assertFail("UnsubscriptionFailure test failed");
+    }
+}
+
+@test:Config {
+}
+function testUnsubscriptionValidationFailure() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe",
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+        // todo Validate post request invoked, as of now manually checked through logs
+        // test:assertEquals(isValidationFailed, true);
+    } else {
+        test:assertFail("Unregistration test failed");
     }
 }
 

@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/io;
+import ballerina/http;
 
 # Parameter `hub.mode` representing the mode of the request from hub to subscriber or subscriber to hub.
 const string HUB_MODE = "hub.mode";
@@ -27,7 +28,7 @@ const string HUB_CALLBACK = "hub.callback";
 
 const string HUB_LEASE_SECONDS = "hub.lease_seconds";
 
-const string HUB_SECRET = "hub.lease_seconds";
+const string HUB_SECRET = "hub.secret";
 
 const string HUB_CHALLENGE = "hub.challenge";
 
@@ -48,42 +49,56 @@ const string MODE_UNSUBSCRIBE = "unsubscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
-public type RegisterTopicMessage record {|
+# Record to represent a WebSub content delivery.
+#
+# + headers - Additional Request headers to include when distributing content
+# + payload - The payload to be sent
+# + contentType - The content-type of the payload
+type ContentDistributionMessage record {|
+    map<string|string[]>? headers = ();
+    string? contentType = ();
+    json|xml|string|byte[] content;
+|};
+
+public type TopicRegistration record {|
     string topic;
 |};
 
-public type UnregisterTopicMessage record {|
+public type TopicUnregistration record {|
     string topic;
 |};
 
-public type SubscriptionMessage record {|
+// todo Any other params set in the payload(subscribers)
+public type Subscription record {
     string hubMode;
-    string? hubCallback = ();
-    string? hubTopic = ();
+    string hubCallback;
+    string hubTopic;
     string? hubLeaseSeconds = ();
     string? hubSecret = ();
-|};
+    http:Request request;
+};
 
-public type VerifiedSubscriptionMessage record {
-    *SubscriptionMessage;
+public type VerifiedSubscription record {
+    *Subscription;
     boolean verificationSuccess;
 };
 
-public type UnsubscriptionMessage record {|
+public type Unsubscription record {
     string hubMode;
-    string? hubCallback = ();
-    string? hubTopic = ();
+    string hubCallback;
+    string hubTopic;
     string? hubSecret = ();
-|};
+    http:Request request;
+};
 
-public type VerifiedUnsubscriptionMessage record {
-    *UnsubscriptionMessage;
+public type VerifiedUnsubscription record {
+    *Unsubscription;
     boolean verificationSuccess;
 };
 
 public type UpdateMessage record {
     string? hubTopic;
-    json|xml|byte[]? content;
+    string|json|xml|byte[]? content;
 };
 
 type CommonResponse record {|
@@ -103,23 +118,16 @@ public type SubscriptionAccepted record {
     *CommonResponse;
 };
 
-# Record to represent a WebSub content delivery.
-#
-# + headers - Additional Request headers to include when distributing content
-# + payload - The payload to be sent
-# + contentType - The content-type of the payload
-type ContentDistributionMessage record {|
-    map<string|string[]>? headers = ();
-    string? contentType = ();
-    json|xml|string|byte[] content;
-|};
-
-isolated function isSuccessStatusCode(int statusCode) returns boolean {
-    return (200 <= statusCode && statusCode < 300);
-}
-public type SubscriptionRedirect record {
+public type SubscriptionPermanentRedirect record {
     *CommonResponse;
     string[] redirectUrls;
+    readonly StatusPermanentRedirect code = STATUS_PERMANENT_REDIRECT;
+};
+
+public type SubscriptionTemporaryRedirect record {
+    *CommonResponse;
+    string[] redirectUrls;
+    readonly StatusTemporaryRedirect code = STATUS_TEMPORARY_REDIRECT;
 };
 
 public type UnsubscriptionAccepted record {
@@ -129,3 +137,21 @@ public type UnsubscriptionAccepted record {
 public type Acknowledgement record {
     *CommonResponse;
 };
+
+type StatusCode distinct object {
+     public int code;
+};
+
+public readonly class StatusTemporaryRedirect {
+    *StatusCode;
+    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
+}
+
+public readonly class StatusPermanentRedirect {
+    *StatusCode;
+    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
+}
+
+final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
+
+final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;

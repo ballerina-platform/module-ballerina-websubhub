@@ -15,17 +15,19 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/log;
 import ballerina/mime;
 import ballerina/java;
 
 service class HttpService {
-    private HubService hubService;
+    private Service hubService;
     private boolean isSubscriptionAvailable = false;
     private boolean isSubscriptionValidationAvailable = false;
     private boolean isUnsubscriptionAvailable = false;
+    private boolean isUnsubscriptionValidationAvailable = false;
+    private boolean isRegisterAvailable = false;
+    private boolean isUnregisterAvailable = false;
 
-    public isolated function init(HubService hubService) {
+    public isolated function init(Service hubService) {
         self.hubService = hubService;
 
         string[] methodNames = getServiceMethodNames(hubService);
@@ -33,8 +35,6 @@ service class HttpService {
             if (methodName == "onSubscription") {
                 self.isSubscriptionAvailable = true;
                 break;
-            } else {
-                self.isSubscriptionAvailable = false;
             }
         }
 
@@ -42,8 +42,6 @@ service class HttpService {
             if (methodName == "onSubscriptionValidation") {
                 self.isSubscriptionValidationAvailable = true;
                 break;
-            } else {
-                self.isSubscriptionValidationAvailable = false;
             }
         }
 
@@ -51,8 +49,27 @@ service class HttpService {
             if (methodName == "onUnsubscription") {
                 self.isUnsubscriptionAvailable = true;
                 break;
-            } else {
-               self.isUnsubscriptionAvailable = false;
+            }
+        }
+
+        foreach var methodName in methodNames {
+            if (methodName == "onUnsubscriptionValidation") {
+                self.isUnsubscriptionValidationAvailable = true;
+                break;
+            }
+        }
+
+        foreach var methodName in methodNames {
+            if (methodName == "onRegisterTopic") {
+                self.isRegisterAvailable = true;
+                break;
+            }
+        }
+
+        foreach var methodName in methodNames {
+            if (methodName == "onUnregisterTopic") {
+                self.isUnregisterAvailable = true;
+                break;
             }
         }
     }
@@ -70,7 +87,7 @@ service class HttpService {
                 var reqFormParamMap = request.getFormParams();
                 params = reqFormParamMap is map<string> ? reqFormParamMap : {};
             }
-            "application/json"|"application/xml"|"application/octet-stream" => {
+            "application/json"|"application/xml"|"application/octet-stream"|"text/plain" => {
                 params = {
                     HUB_MODE: MODE_PUBLISH
                 };
@@ -78,7 +95,7 @@ service class HttpService {
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
-                                        "application/json, application/xml and application/octet-stream";
+                                        "application/json, application/xml, application/octet-stream and text/plain";
                 response.setTextPayload(errorMessage);
                 respondToRequest(caller, response);
             }
@@ -87,29 +104,43 @@ service class HttpService {
         string mode = params[HUB_MODE] ?: "";
         match mode {
             MODE_REGISTER => {
-                processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                if (self.isRegisterAvailable) {
+                    processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                } else {
+                    response.statusCode = http:STATUS_NOT_IMPLEMENTED;
+                }
                 respondToRequest(caller, response);
             }
             MODE_UNREGISTER => {
-                processUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+                if (self.isUnregisterAvailable) {
+                    processUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+                } else {
+                    response.statusCode = http:STATUS_NOT_IMPLEMENTED;
+                }
                 respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {
-                processSubscriptionRequestAndRespond(caller, response, <@untainted> params, 
+                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params, 
                                                         <@untainted> self.hubService,
                                                         <@untainted> self.isSubscriptionAvailable,
                                                         <@untainted> self.isSubscriptionValidationAvailable);
             }
             MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(caller, response, <@untainted> params,
-                                                        self.hubService, self.isUnsubscriptionAvailable);
+                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params,
+                                                        self.hubService, self.isUnsubscriptionAvailable,
+                                                        <@untainted> self.isUnsubscriptionValidationAvailable);
             }
             MODE_PUBLISH => {
                 // todo Proper error handling instead of checkpanic
+                string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
+                if (topic is ()) {
+                    respondToRequest(caller, response);
+                    return;
+                }
                 UpdateMessage updateMsg;
                 if (contentType == mime:APPLICATION_FORM_URLENCODED) {
                     updateMsg = {
-                        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
+                        hubTopic: <string> topic,
                         content: ()
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
@@ -122,6 +153,11 @@ service class HttpService {
                         hubTopic: (),
                         content: checkpanic request.getXmlPayload()
                     };
+                } else if (contentType == "text/plain") {
+                    updateMsg = {
+                        hubTopic: (),
+                        content: checkpanic request.getTextPayload()
+                    };
                 } else {
                     updateMsg = {
                         hubTopic: (),
@@ -132,15 +168,14 @@ service class HttpService {
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
-                string errorMessage = "The request need to include valid `hub.mode` form param";
+                string errorMessage = "The request does not include valid `hub.mode` form param.";
                 response.setTextPayload(errorMessage);
-                log:print("Hub request unsuccessful :" + errorMessage);
                 respondToRequest(caller, response);
             }
         }
     }
 }
 
-isolated function getServiceMethodNames(HubService hubService) returns string[] = @java:Method {
+isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

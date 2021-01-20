@@ -14,29 +14,34 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type HubService service object {
+public type Service service object {
 
-   remote function onRegisterTopic(RegisterTopicMessage msg)
-               returns TopicRegistrationSuccess|TopicRegistrationError;
+   //todo Remove methods and write compiler plugin for service
 
-   remote function onUnregisterTopic(UnregisterTopicMessage msg)
-               returns TopicUnregistrationSuccess|TopicUnregistrationError;
+//   remote function onRegisterTopic(TopicRegistration msg)
+//               returns TopicRegistrationSuccess|TopicRegistrationError;
+
+//   remote function onUnregisterTopic(TopicUnregistration msg)
+//               returns TopicUnregistrationSuccess|TopicUnregistrationError;
 
    remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError;
 
-//   remote function onSubscription(SubscriptionMessage msg)
-//              returns SubscriptionAccepted|SubscriptionRedirect|BadSubscriptionError
-//                      |InternalSubscriptionError;
+//   remote function onSubscription(Subscription msg)
+//              returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
+//                        BadSubscriptionError|InternalSubscriptionError;
 
-//   remote function onSubscriptionValidation(SubscriptionMessage msg)
-//              returns SubscriptionDenied?;
+//   remote function onSubscriptionValidation(Subscription msg)
+//              returns SubscriptionDeniedError?;
 
-   remote function onSubscriptionIntentVerified(VerifiedSubscriptionMessage msg);
+   remote function onSubscriptionIntentVerified(VerifiedSubscription msg);
 
-//   remote function onUnsubscription(UnsubscriptionMessage msg)
+//   remote function onUnsubscription(Unsubscription msg)
 //               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError;
 
-   remote function onUnsubscriptionIntentVerified(VerifiedUnsubscriptionMessage msg);
+//   remote function onUnsubscriptionValidation(Unsubscription msg)
+//              returns UnsubscriptionDeniedError?;
+
+   remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg);
 
 };
