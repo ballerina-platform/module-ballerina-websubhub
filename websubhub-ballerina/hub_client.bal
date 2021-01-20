@@ -15,15 +15,16 @@
 // under the License.
 
 import ballerina/http;
-// import ballerina/io;
-// import ballerina/mime;
-// import ballerina/crypto;
+import ballerina/io;
+import ballerina/mime;
+import ballerina/crypto;
 
 
 public client class HubClient {
     private string hubUrl;
     private string topic;
     private string linkHeaderValue;
+    private string secret? = ();
     private http:Client httpClient;
 
     # Initializes the `websubhub:HubClient`.
@@ -40,9 +41,10 @@ public client class HubClient {
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
     public function init(SubscriptionMessage subscription, http:ClientConfiguration? config = ()) returns error? {
         self.hubUrl = "";
-        self.topic = check subscription?.hubTopic;
+        self.topic = check subscription.hubTopic;
         self.linkHeaderValue = "";
-        self.httpClient = check new(subscription?.hubCallback ?: "", config);
+        self.secret = subscription.hubSecret;
+        self.httpClient = check new(subscription.hubCallback, config);
     }
 
     # Distributes the published content to subscribers.
@@ -60,6 +62,34 @@ public client class HubClient {
         string contentType = retrieveContentType(msg.contentType, msg.content);
 
         check request.setContentType(contentType);
+        
+        foreach var [header, values] is msg?.headers {
+            if (values is string) {
+                req.addHeader(header, values);
+            } else {
+                string headerValue = ";".'join(...<string[]>values) + ";"
+                req.addHeader(header, headerValue);
+            }
+        }
+
+        request.setHeader("Link", linkHeaderValue);
+
+        if (secret is string && secret?.length() >= 0) {
+            check string hash = retrievePayloadSignature(secret, msg.content);
+            request.setHeader(X_HUB_SIGNATURE, "sha1:"+hash);
+        }
+
+        var response = self.httpClient->post(request);
+
+        if (response is http:Response) {
+            if (!isSuccessStatusCode(response.statusCode)) {
+                var result = response.getTextPayload();
+                string textPayload = result is string ? result : "";
+                return error WebSubError("Error occurred distributing updated content: " + textPayload);
+            }
+        } else {
+            return error WebSubError("Content distribution failed for topic [" + topic + "]");
+        }
     }
 
     isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
@@ -78,5 +108,17 @@ public client class HubClient {
                 return mime:APPLICATION_OCTET_STREAM;
             }
         }
+    }
+
+    isolated function retrievePayloadSignature(string key, string|xml|json|byte[] payload) returns string | error {
+        byte[] keyArr = key.toBytes();
+        byte[] hashedContent = [];
+        if (payload is byte[]) {
+            hashedContent = crypto:hmacSha1(payload, keyArr);
+        } else {
+            byte[] inputArr = payload.toBytes();
+            hashedContent = crypto:hmacSha1(inputArr, keyArr);
+        }
+        return hashedContent.toBase64();
     }
 }
