@@ -112,13 +112,13 @@ service class HttpService {
                 respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {
-                processSubscriptionRequestAndRespond(caller, response, <@untainted> params, 
+                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params, 
                                                         <@untainted> self.hubService,
                                                         <@untainted> self.isSubscriptionAvailable,
                                                         <@untainted> self.isSubscriptionValidationAvailable);
             }
             MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(caller, response, <@untainted> params,
+                processUnsubscriptionRequestAndRespond(request, caller, response, <@untainted> params,
                                                         self.hubService, self.isUnsubscriptionAvailable);
             }
             MODE_PUBLISH => {

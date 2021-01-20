@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/io;
+import ballerina/http;
 
 # Parameter `hub.mode` representing the mode of the request from hub to subscriber or subscriber to hub.
 const string HUB_MODE = "hub.mode";
@@ -66,12 +67,14 @@ public type TopicUnregistration record {|
     string topic;
 |};
 
+// todo Any other params set in the payload(subscribers)
 public type Subscription record {
     string hubMode;
     string hubCallback;
     string hubTopic;
     string? hubLeaseSeconds = ();
     string? hubSecret = ();
+    http:Request request;
 };
 
 public type VerifiedSubscription record {
@@ -84,6 +87,7 @@ public type Unsubscription record {
     string? hubCallback = ();
     string? hubTopic = ();
     string? hubSecret = ();
+    http:Request request;
 };
 
 public type VerifiedUnsubscription record {

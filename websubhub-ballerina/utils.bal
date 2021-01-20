@@ -52,7 +52,7 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
     }
 }
 
-function processSubscriptionRequestAndRespond(http:Caller caller, http:Response response,
+function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable) {
 
@@ -69,7 +69,8 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
         hubLeaseSeconds: params[HUB_LEASE_SECONDS],
-        hubSecret: params[HUB_SECRET]
+        hubSecret: params[HUB_SECRET],
+        request: request
     };
     if (!isAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -137,7 +138,8 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
                         hubCallback: message.hubCallback,
                         hubTopic: message.hubTopic,
                         hubLeaseSeconds: message.hubLeaseSeconds,
-                        hubSecret: message.hubSecret
+                        hubSecret: message.hubSecret,
+                        request: request
                     };
                     callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
                 }
@@ -146,7 +148,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
     }
 }
 
-function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Response response,
+function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
                                               boolean isUnsubscriptionAvailable) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
@@ -161,7 +163,8 @@ function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Respons
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
-        hubSecret: params[HUB_SECRET]
+        hubSecret: params[HUB_SECRET],
+        request: request
     };
     if (!isUnsubscriptionAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -172,7 +175,7 @@ function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Respons
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            proceedToVerification(hubService, message);
+            proceedToVerification(request, hubService, message);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             respondToRequest(caller, response);
@@ -183,7 +186,7 @@ function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Respons
     }
 }
 
-function proceedToVerification(Service hubService, Unsubscription message) {
+function proceedToVerification(http:Request initialRequest, Service hubService, Unsubscription message) {
     http:Client httpClient = checkpanic new(<string> message.hubCallback);
     http:Request request = new;
 
@@ -202,7 +205,8 @@ function proceedToVerification(Service hubService, Unsubscription message) {
                     hubMode: message.hubMode,
                     hubCallback: message.hubCallback,
                     hubTopic: message.hubTopic,
-                    hubSecret: message.hubSecret
+                    hubSecret: message.hubSecret,
+                    request: initialRequest
                 };
                 callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
             }
