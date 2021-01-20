@@ -101,8 +101,8 @@ public type UpdateMessage record {
 };
 
 type CommonResponse record {|
-    map<string|string[]> headers?;
-    map<string> body?;
+    map<string|string[]>? headers = ();
+    map<string>? body = ();
 |};
 
 public type TopicRegistrationSuccess record {
