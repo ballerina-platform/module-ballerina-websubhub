@@ -31,9 +31,9 @@ public client class PublisherClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
-    public function init(string url, http:ClientConfiguration? config = ()) {
+    public function init(string url, http:ClientConfiguration? config = ()) returns error? {
         self.url = url;
-        self.httpClient = checkpanic new (self.url, config);
+        self.httpClient = check new (self.url, config);
     }
 
     # Registers a topic in a Ballerina WebSub Hub against which subscribers can subscribe and the publisher will
@@ -165,4 +165,8 @@ isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @u
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
     return request;
+}
+
+isolated function isSuccessStatusCode(int statusCode) returns boolean {
+    return (200 <= statusCode && statusCode < 300);
 }
