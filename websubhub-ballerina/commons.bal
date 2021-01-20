@@ -49,6 +49,8 @@ const string MODE_UNSUBSCRIBE = "unsubscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
+const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
+
 // todo L1 Remove ReadableByteChannel
 # Record to represent a WebSub content delivery.
 #
@@ -95,14 +97,22 @@ public type VerifiedUnsubscription record {
     boolean verificationSuccess;
 };
 
+public enum MessageType {
+    EVENT,
+    PUBLISH
+}
+
 public type UpdateMessage record {
-    string? hubTopic;
-    string|json|xml|byte[]? content;
+    http:Request request;
+    MessageType msgType;
+    string hubTopic;
+    string contentType;
+    string|byte[]|json|xml|map<string>? content;
 };
 
 type CommonResponse record {|
-    map<string|string[]> headers?;
-    map<string> body?;
+    map<string|string[]>? headers = ();
+    map<string>? body = ();
 |};
 
 public type TopicRegistrationSuccess record {
