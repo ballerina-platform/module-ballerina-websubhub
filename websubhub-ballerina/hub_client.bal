@@ -19,7 +19,7 @@ import ballerina/io;
 import ballerina/mime;
 import ballerina/crypto;
 
-
+# HTTP Based client for WebSub content publishing to subscribers
 public client class HubClient {
     private string hubUrl;
     private string topic;
