@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/io;
 import ballerina/mime;
 import ballerina/regex;
 
@@ -120,32 +119,55 @@ public client class PublisherClient {
     # + contentType - The type of the update content to set as the `ContentType` header
     # + headers - The headers that need to be set (if any)
     # + return -  An `error`if an error occurred with the update or else `()`
-    remote function publishUpdate(string topic, string|xml|json|byte[]|io:ReadableByteChannel payload,
-                                         string? contentType = (), map<string>? headers = ()) returns @tainted error? {
+    remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
+                                  string? contentType = ()) returns @tainted Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
         string queryParams = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
-        request.setPayload(payload);
 
-        if (contentType is string) {
-            check request.setContentType(contentType);
+        if (payload is map<string>) {
+            string reqPayload = "";
+            foreach var ['key, value] in payload.entries() {
+                reqPayload = reqPayload + 'key + "=" + value + "&";
+            }
+            if (reqPayload != "") {
+                reqPayload = reqPayload.substring(0, reqPayload.length() - 2);
+            }
+            request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
+            request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+        } else {
+            request.setPayload(payload);
         }
 
-        if (headers is map<string>) {
-            foreach var [key, value] in headers.entries() {
-                request.setHeader(key, value);
-            }
+        if (contentType is string) {
+            var setContent = request.setContentType(contentType);
+            if (setContent is error) {
+                return error UpdateMessageError("Invalid content type is set, found " + contentType);
+             }
         }
 
         var response = httpClient->post(<@untainted string> ("?" + queryParams), request);
         if (response is http:Response) {
-            if (!isSuccessStatusCode(response.statusCode)) {
-                var result = response.getTextPayload();
-                string textPayload = result is string ? result : "";
-                return error WebSubError("Error occurred publishing update: " + textPayload);
+            var result = response.getTextPayload();
+            string responsePayload = result is string ? result : "";
+            if (response.statusCode != http:STATUS_OK) {
+                return error UpdateMessageError("Error occurred during event publish update, Status code : "
+                +  response.statusCode.toString() + ", payload: " + responsePayload);
+            } else {
+                map<string>? params = getFormData(responsePayload);
+                if (params[HUB_MODE] == "accepted") {
+                    Acknowledgement successResult = {
+                        headers: getHeaders(response),
+                        body: params
+                    };
+                    return successResult;
+                } else {
+                    string? failureReason = params["hub.reason"];
+                    return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
+                }
             }
         } else {
-            return error WebSubError("Publish failed for topic [" + topic + "]");
+            return error UpdateMessageError("Publish failed for topic [" + topic + "]");
         }
     }
 

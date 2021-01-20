@@ -133,3 +133,16 @@ public function testPublisherNotifyEvenSuccess() {
         test:assertFail("Event notify failed");
     }
 }
+
+@test:Config{}
+public function testPublisherPubishEventSuccess() {
+    map<string> params = { event: "event"};
+    Acknowledgement|UpdateMessageError response = websubHubClientEP->publishUpdate("test", params);
+
+    if (response is Acknowledgement) {
+        io:println(response);
+    } else {
+        io:println(response);
+        test:assertFail("Event publish failed");
+    }
+}
