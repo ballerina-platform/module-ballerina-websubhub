@@ -27,7 +27,7 @@ const string HUB_CALLBACK = "hub.callback";
 
 const string HUB_LEASE_SECONDS = "hub.lease_seconds";
 
-const string HUB_SECRET = "hub.lease_seconds";
+const string HUB_SECRET = "hub.secret";
 
 const string HUB_CHALLENGE = "hub.challenge";
 
@@ -66,27 +66,25 @@ public type TopicUnregistration record {|
     string topic;
 |};
 
-// todo L1 Verify with the design
-public type Subscription record {|
+public type Subscription record {
     string hubMode;
-    string? hubCallback = ();
-    string? hubTopic = ();
+    string hubCallback;
+    string hubTopic;
     string? hubLeaseSeconds = ();
     string? hubSecret = ();
-|};
+};
 
-// todo L1 not inheriting and no nil
 public type VerifiedSubscription record {
     *Subscription;
     boolean verificationSuccess;
 };
 
-public type Unsubscription record {|
+public type Unsubscription record {
     string hubMode;
     string? hubCallback = ();
     string? hubTopic = ();
     string? hubSecret = ();
-|};
+};
 
 public type VerifiedUnsubscription record {
     *Unsubscription;

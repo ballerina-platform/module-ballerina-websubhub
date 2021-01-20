@@ -75,7 +75,7 @@ service /websubhub on functionWithArgumentsListener {
                        isSuccess: "true"
                     }
             };
-        if (msg.hubTopic is string && msg.hubTopic == "test") {
+        if (msg.hubTopic == "test") {
             return successResult;
         } else if (msg.hubTopic == "test1") {
             return successResult;

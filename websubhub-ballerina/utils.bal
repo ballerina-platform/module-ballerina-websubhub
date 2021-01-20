@@ -21,32 +21,34 @@ import ballerina/uuid;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
                                             map<string> params, Service hubService) {
-    string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
-    string topic = topicVar is () ? "" : topicVar;
-    TopicRegistration msg = {
-        topic: topic
-    };
+    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
+    if (topic is string) {
+        TopicRegistration msg = {
+            topic: topic
+        };
 
-    TopicRegistrationSuccess|TopicRegistrationError registerStatus = callRegisterMethod(hubService, msg);
-    if (registerStatus is TopicRegistrationError) {
-        updateErrorResponse(response, topic, registerStatus.message());
-    } else {
-        updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
+        TopicRegistrationSuccess|TopicRegistrationError registerStatus = callRegisterMethod(hubService, msg);
+        if (registerStatus is TopicRegistrationError) {
+            updateErrorResponse(response, topic, registerStatus.message());
+        } else {
+            updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
+        }
     }
 }
 
 isolated function processUnregisterRequest(http:Caller caller, http:Response response,
                                             map<string> params, Service hubService) {
-    string? topicVar = getEncodedValueFromRequest(params, HUB_TOPIC);
-    string topic = topicVar is () ? "" : topicVar;
-    TopicUnregistration msg = {
-        topic: topic
-    };
-    TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
-    if (unregisterStatus is TopicUnregistrationError) {
-        updateErrorResponse(response, topic, unregisterStatus.message());
-    } else {
-        updateSuccessResponse(response, unregisterStatus["body"], unregisterStatus["headers"]);
+    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
+    if (topic is string) {
+        TopicUnregistration msg = {
+            topic: topic
+        };
+        TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
+        if (unregisterStatus is TopicUnregistrationError) {
+            updateErrorResponse(response, topic, unregisterStatus.message());
+        } else {
+            updateSuccessResponse(response, unregisterStatus["body"], unregisterStatus["headers"]);
+        }
     }
 }
 
@@ -54,12 +56,20 @@ function processSubscriptionRequestAndRespond(http:Caller caller, http:Response 
                                               map<string> params, Service hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable) {
 
+    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
+    if (topic is ()) {
+        return;
+    }
+    string? hubCallback = getEncodedValueOrUpdatedErrorResponse(params, HUB_CALLBACK, response);
+    if (hubCallback is ()) {
+        return;
+    }                             
     Subscription message = {
         hubMode: MODE_SUBSCRIBE,
-        hubCallback: getEncodedValueFromRequest(params, HUB_CALLBACK),
-        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
+        hubCallback: <string> hubCallback,
+        hubTopic: <string> topic,
         hubLeaseSeconds: params[HUB_LEASE_SECONDS],
-        hubSecret: params[HUB_LEASE_SECONDS]
+        hubSecret: params[HUB_SECRET]
     };
     if (!isAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -92,10 +102,11 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message);
     } else {
-        if (message.hubCallback is () || message.hubCallback == "") {
+        // todo L1 Validate if hub.secret present
+        if (message.hubCallback == "") {
             validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
         }
-        if (message.hubTopic is () || message.hubTopic == "") {
+        if (message.hubTopic == "") {
             validationResult = error SubscriptionDeniedError("Invalid hub.topic param in the request.'");
         }
     }
@@ -138,11 +149,19 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
 function processUnsubscriptionRequestAndRespond(http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
                                               boolean isUnsubscriptionAvailable) {
+    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
+    if (topic is ()) {
+        return;
+    }
+    string? hubCallback = getEncodedValueOrUpdatedErrorResponse(params, HUB_CALLBACK, response);
+    if (hubCallback is ()) {
+        return;
+    } 
     Unsubscription message = {
         hubMode: MODE_SUBSCRIBE,
-        hubCallback: getEncodedValueFromRequest(params, HUB_CALLBACK),
-        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
-        hubSecret: params[HUB_LEASE_SECONDS]
+        hubCallback: <string> hubCallback,
+        hubTopic: <string> topic,
+        hubSecret: params[HUB_SECRET]
     };
     if (!isUnsubscriptionAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -206,14 +225,30 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
     respondToRequest(caller, response);
 }
 
-isolated function getEncodedValueFromRequest(map<string> params, string 'key) returns string? {
-    string? topic = ();
+isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, http:Response response) 
+                                            returns string? {
+    string|error? topic = ();
     var topicFromParams = params['key];
     if topicFromParams is string {
-        var decodedValue = encoding:decodeUriComponent(topicFromParams, "UTF-8");
-        topic = decodedValue is string ? decodedValue : topicFromParams;
+        topic = encoding:decodeUriComponent(topicFromParams, "UTF-8");
     }
-    return topic;
+    if (topic is string && topic != "") {
+       return <string> topic;
+    } else {
+        updateBadRequestErrorResponse(response, 'key, topic);
+        return ();
+    }
+}
+
+isolated function updateBadRequestErrorResponse(http:Response response, string paramName, string|error? topicParameter) {
+    string errorMessage = "";
+    if (topicParameter is error) {
+        errorMessage = "Invalid value found for parameter '" + paramName + "' : " + topicParameter.message();
+    } else {
+        errorMessage = "Empty value found for parameter '" + paramName + "'"; 
+    }
+    response.statusCode = http:STATUS_BAD_REQUEST;
+    response.setTextPayload(errorMessage);
 }
 
 isolated function updateErrorResponse(http:Response response, string topic, string reason) {

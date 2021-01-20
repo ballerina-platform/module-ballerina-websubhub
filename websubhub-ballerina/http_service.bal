@@ -123,10 +123,15 @@ service class HttpService {
             }
             MODE_PUBLISH => {
                 // todo Proper error handling instead of checkpanic
+                string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
+                if (topic is ()) {
+                    respondToRequest(caller, response);
+                    return;
+                }
                 UpdateMessage updateMsg;
                 if (contentType == mime:APPLICATION_FORM_URLENCODED) {
                     updateMsg = {
-                        hubTopic: getEncodedValueFromRequest(params, HUB_TOPIC),
+                        hubTopic: <string> topic,
                         content: ()
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
