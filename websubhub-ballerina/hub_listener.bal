@@ -19,7 +19,8 @@ import ballerina/http;
 # Represents a Service listener endpoint.
 public class Listener {
     private http:Listener httpListener;
-    private string hub;
+    private http:ListenerConfiguration listenerConfig;
+    private int port;
     private HttpService? httpService;
 
     // todo HTTP config needs to be passed as optional parameter
@@ -27,13 +28,14 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the service
-    public isolated function init(int|http:Listener listenTo, string hubUrl) returns error? {
+    public isolated function init(int|http:Listener listenTo) returns error? {
         if (listenTo is int) {
             self.httpListener = check new(listenTo);
         } else {
             self.httpListener = listenTo;
         }
-        self.hub = hubUrl;
+        self.listenerConfig = self.httpListener.getConfig();
+        self.port = self.httpListener.getPort();
         self.httpService = ();
     }
 
@@ -43,8 +45,26 @@ public class Listener {
     # + name - The path of the Service to be hosted
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
-        self.httpService = new(s, self.hub);
+        string hubUrl = self.retrieveHubUrl(name);
+        self.httpService = new(s, hubUrl);
         checkpanic self.httpListener.attach(<HttpService> self.httpService, name);
+    }
+
+    isolated function retrieveHubUrl(string[]|string? servicePath) returns string {
+        string host = self.listenerConfig.host;
+        string protocol = self.listenerConfig.secureSocket is () ? "http" : "https";
+        
+        string concatenatedServicePath = "";
+        
+        if (servicePath is string) {
+            concatenatedServicePath += "/" + <string>servicePath;
+        } else if (servicePath is string[]) {
+            foreach var pathSegment in <string[]>servicePath {
+                concatenatedServicePath += "/" + pathSegment;
+            }
+        }
+
+        return protocol + "://" + host + ":" + self.port.toString() + concatenatedServicePath;
     }
 
     # Detaches the provided Service from the Listener.
