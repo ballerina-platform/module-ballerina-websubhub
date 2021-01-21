@@ -65,6 +65,8 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         return;
     }                             
     Subscription message = {
+        // todo properly include hubURL here L1
+        hubUrl: "https://sample.hub.com",
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
@@ -132,6 +134,8 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
             if (respStringPayload is string) {
                 if (respStringPayload == challenge) {
                     VerifiedSubscription verifiedMessage = {
+                        // todo properly include hubURL here L1
+                        hubUrl: "https://sample.hub.com",
                         verificationSuccess: true,
                         hubMode: message.hubMode,
                         hubCallback: message.hubCallback,

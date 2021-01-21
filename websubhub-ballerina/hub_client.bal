@@ -20,7 +20,7 @@ import ballerina/crypto;
 
 # HTTP Based client for WebSub content publishing to subscribers
 public client class HubClient {
-    private string callBack;
+    private string callback;
     private string hubUrl;
     private string topic;
     private string linkHeaderValue;
@@ -30,9 +30,9 @@ public client class HubClient {
     # Initializes the `websubhub:HubClient`.
     # ```ballerina
     # websubhub:HubClient hubClientEP = new({
-    #   hubUrl: "https://hub.com"
+    #   hubUrl: "https://hub.com",
     #   hubMode: "subscribe", 
-    #   hubCallback = "http://subscriber.com/callback", 
+    #   hubCallback: "http://subscriber.com/callback", 
     #   hubTopic: "https://topic.com", 
     #   hubSecret: "key"
     # });
@@ -41,7 +41,7 @@ public client class HubClient {
     # + url    - The URL to publish/notify updates
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
     public function init(Subscription subscription, http:ClientConfiguration? config = ()) returns error? {
-        self.callBack = subscription.hubCallback;
+        self.callback = subscription.hubCallback;
         self.hubUrl = subscription.hubUrl;
         self.topic = subscription.hubTopic;
         self.linkHeaderValue = generateLinkUrl(self.hubUrl,  self.topic);
@@ -86,13 +86,15 @@ public client class HubClient {
             request.setHeader(X_HUB_SIGNATURE, "sha256="+hash);
         }
 
+        request.setPayload(msg.content);
+
         var response = httpClient->post("", request);
 
         if (response is http:Response) {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
                 return {
-                    hubCallback: self.callBack,
+                    hubCallback: self.callback,
                     topic: self.topic
                 };
             } else if (status == 410) {

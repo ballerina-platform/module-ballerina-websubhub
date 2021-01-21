@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/io;
 import ballerina/mime;
 
 # The HTTP based client for WebSub topic registration and unregistration, and notifying the hub of new updates.
@@ -93,7 +92,7 @@ public client class PublisherClient {
     # + contentType - The type of the update content to set as the `ContentType` header
     # + headers - The headers that need to be set (if any)
     # + return -  An `error`if an error occurred with the update or else `()`
-    remote function publishUpdate(string topic, string|xml|json|byte[]|io:ReadableByteChannel payload,
+    remote function publishUpdate(string topic, string|xml|json|byte[] payload,
                                          string? contentType = (), map<string>? headers = ()) returns @tainted error? {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
