@@ -54,7 +54,7 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
 
 function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
-                                              boolean isAvailable, boolean isSubscriptionValidationAvailable) {
+                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, string hubUrl) {
 
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
@@ -65,6 +65,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         return;
     }                             
     Subscription message = {
+        hub: hubUrl,
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
@@ -133,6 +134,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
             if (respStringPayload is string) {
                 if (respStringPayload == challenge) {
                     VerifiedSubscription verifiedMessage = {
+                        hub: message.hub,
                         verificationSuccess: true,
                         hubMode: message.hubMode,
                         hubCallback: message.hubCallback,
@@ -283,7 +285,7 @@ isolated function updateErrorResponse(http:Response response, string reason) {
     response.setHeader("Content-type","application/x-www-form-urlencoded");
 }
 
-isolated function updateSuccessResponse(http:Response response, map<string>? messageBody, 
+isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
     string payload = "hub.mode=accepted";
     if (messageBody is map<string>) {
