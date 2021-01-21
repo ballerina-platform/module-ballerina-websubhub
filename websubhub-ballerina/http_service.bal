@@ -142,7 +142,7 @@ service class HttpService {
                         msgType: EVENT,
                         contentType: "application/x-www-form-urlencoded",
                         content: (),
-                        request: request
+                        rawRequest: request
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
                     updateMsg = {
@@ -150,7 +150,7 @@ service class HttpService {
                         msgType: PUBLISH,
                         contentType: "application/json",
                         content: checkpanic request.getJsonPayload(),
-                        request: request
+                        rawRequest: request
                     };
                 } else if (contentType == mime:APPLICATION_XML) {
                     updateMsg = {
@@ -158,7 +158,7 @@ service class HttpService {
                         msgType: PUBLISH,
                         contentType: "application/xml",
                         content: checkpanic request.getXmlPayload(),
-                        request: request
+                        rawRequest: request
                     };
                 } else if (contentType == "text/plain") {
                     updateMsg = {
@@ -166,7 +166,7 @@ service class HttpService {
                         msgType: PUBLISH,
                         contentType: "text/plain",
                         content: checkpanic request.getTextPayload(),
-                        request: request
+                        rawRequest: request
                     };
                 } else {
                     updateMsg = {
@@ -174,7 +174,7 @@ service class HttpService {
                         msgType: PUBLISH,
                         contentType: "application/octet-stream",
                         content: checkpanic request.getBinaryPayload(),
-                        request: request
+                        rawRequest: request
                     };
                 }
                 processPublishRequestAndRespond(caller, response, self.hubService, <@untainted> updateMsg);

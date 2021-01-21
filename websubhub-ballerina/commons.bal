@@ -71,12 +71,12 @@ public type TopicUnregistration record {|
 
 // todo Any other params set in the payload(subscribers)
 public type Subscription record {
+    http:Request rawRequest;
     string hubMode;
     string hubCallback;
     string hubTopic;
     string? hubLeaseSeconds = ();
     string? hubSecret = ();
-    http:Request request;
 };
 
 public type VerifiedSubscription record {
@@ -85,11 +85,11 @@ public type VerifiedSubscription record {
 };
 
 public type Unsubscription record {
+    http:Request rawRequest;
     string hubMode;
     string hubCallback;
     string hubTopic;
     string? hubSecret = ();
-    http:Request request;
 };
 
 public type VerifiedUnsubscription record {
@@ -103,7 +103,7 @@ public enum MessageType {
 }
 
 public type UpdateMessage record {
-    http:Request request;
+    http:Request rawRequest;
     MessageType msgType;
     string hubTopic;
     string contentType;
