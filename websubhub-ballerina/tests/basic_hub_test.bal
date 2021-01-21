@@ -23,7 +23,7 @@ boolean isValidationFailed = false;
 
 http:Client httpClient = checkpanic new("http://localhost:9090/websubhub");
 
-listener Listener functionWithArgumentsListener = new(9090);
+listener Listener functionWithArgumentsListener = new(9090, "https://sample.hub.com");
 
 service /websubhub on functionWithArgumentsListener {
 

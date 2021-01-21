@@ -21,7 +21,7 @@ import ballerina/crypto;
 # HTTP Based client for WebSub content publishing to subscribers
 public client class HubClient {
     private string callback;
-    private string hubUrl;
+    private string hub;
     private string topic;
     private string linkHeaderValue;
     private string secret = "";
@@ -30,7 +30,7 @@ public client class HubClient {
     # Initializes the `websubhub:HubClient`.
     # ```ballerina
     # websubhub:HubClient hubClientEP = new({
-    #   hubUrl: "https://hub.com",
+    #   hub: "https://hub.com",
     #   hubMode: "subscribe", 
     #   hubCallback: "http://subscriber.com/callback", 
     #   hubTopic: "https://topic.com", 
@@ -42,9 +42,9 @@ public client class HubClient {
     # + config - The `http:ClientConfiguration` for the underlying client or else `()`
     public function init(Subscription subscription, http:ClientConfiguration? config = ()) returns error? {
         self.callback = subscription.hubCallback;
-        self.hubUrl = subscription.hubUrl;
+        self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
-        self.linkHeaderValue = generateLinkUrl(self.hubUrl,  self.topic);
+        self.linkHeaderValue = generateLinkUrl(self.hub,  self.topic);
         self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
         self.httpClient = check new(subscription.hubCallback, config);
     }

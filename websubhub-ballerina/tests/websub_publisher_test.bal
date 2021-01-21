@@ -17,7 +17,7 @@
 import ballerina/io;
 import ballerina/test;
 
-listener Listener testListener = new(9191);
+listener Listener testListener = new(9191, "https://sample.hub.com");
 
 service /websubhub on testListener {
 

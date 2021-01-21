@@ -54,7 +54,7 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
 
 function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
-                                              boolean isAvailable, boolean isSubscriptionValidationAvailable) {
+                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, string hubUrl) {
 
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
@@ -65,8 +65,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         return;
     }                             
     Subscription message = {
-        // todo properly include hubURL here L1
-        hubUrl: "https://sample.hub.com",
+        hub: hubUrl,
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
@@ -134,8 +133,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
             if (respStringPayload is string) {
                 if (respStringPayload == challenge) {
                     VerifiedSubscription verifiedMessage = {
-                        // todo properly include hubURL here L1
-                        hubUrl: "https://sample.hub.com",
+                        hub: message.hub,
                         verificationSuccess: true,
                         hubMode: message.hubMode,
                         hubCallback: message.hubCallback,

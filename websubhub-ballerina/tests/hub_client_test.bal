@@ -49,7 +49,7 @@ isolated function printHeaders(http:Request req) {
 
 isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscription {
     return {
-        hubUrl: "https://hub.com", 
+        hub: "https://hub.com", 
         hubMode: "subscribe", 
         hubCallback: callbackUrl, 
         hubTopic: "https://topic.com", 

@@ -19,6 +19,7 @@ import ballerina/http;
 # Represents a Service listener endpoint.
 public class Listener {
     private http:Listener httpListener;
+    private string hub;
     private HttpService? httpService;
 
     // todo HTTP config needs to be passed as optional parameter
@@ -26,12 +27,13 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the service
-    public isolated function init(int|http:Listener listenTo) returns error? {
+    public isolated function init(int|http:Listener listenTo, string hubUrl) returns error? {
         if (listenTo is int) {
             self.httpListener = check new(listenTo);
         } else {
             self.httpListener = listenTo;
         }
+        self.hub = hubUrl;
         self.httpService = ();
     }
 
@@ -41,7 +43,7 @@ public class Listener {
     # + name - The path of the Service to be hosted
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
-        self.httpService = new(s);
+        self.httpService = new(s, self.hub);
         checkpanic self.httpListener.attach(<HttpService> self.httpService, name);
     }
 

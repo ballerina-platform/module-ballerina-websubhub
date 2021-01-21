@@ -78,7 +78,7 @@ public type TopicUnregistration record {|
 
 // todo Any other params set in the payload(subscribers)
 public type Subscription record {
-    string hubUrl;
+    string hub;
     http:Request rawRequest;
     string hubMode;
     string hubCallback;
