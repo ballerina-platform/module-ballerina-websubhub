@@ -72,7 +72,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         hubTopic: <string> topic,
         hubLeaseSeconds: params[HUB_LEASE_SECONDS],
         hubSecret: params[HUB_SECRET],
-        request: request
+        rawRequest: request
     };
     if (!isAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -142,7 +142,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
                         hubTopic: message.hubTopic,
                         hubLeaseSeconds: message.hubLeaseSeconds,
                         hubSecret: message.hubSecret,
-                        request: request
+                        rawRequest: request
                     };
                     callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
                 }
@@ -168,7 +168,7 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
         hubSecret: params[HUB_SECRET],
-        request: request
+        rawRequest: request
     };
     if (!isUnsubscriptionAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -229,7 +229,7 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, Servic
                         hubCallback: message.hubCallback,
                         hubTopic: message.hubTopic,
                         hubSecret: message.hubSecret,
-                        request: initialRequest
+                        rawRequest: initialRequest
                     };
                     callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
                 }
