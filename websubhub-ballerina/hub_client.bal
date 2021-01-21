@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/io;
 import ballerina/mime;
 import ballerina/crypto;
 
@@ -25,7 +24,7 @@ public client class HubClient {
     private string hubUrl;
     private string topic;
     private string linkHeaderValue;
-    private string? secret = ();
+    private string secret = "";
     private http:Client httpClient;
 
     # Initializes the `websubhub:HubClient`.
@@ -45,8 +44,8 @@ public client class HubClient {
         self.callBack = subscription.hubCallback;
         self.hubUrl = subscription.hubUrl;
         self.topic = subscription.hubTopic;
-        self.linkHeaderValue = check generateLinkUrl();
-        self.secret = subscription.hubSecret;
+        self.linkHeaderValue = generateLinkUrl(self.hubUrl,  self.topic);
+        self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
         self.httpClient = check new(subscription.hubCallback, config);
     }
 
@@ -59,36 +58,44 @@ public client class HubClient {
     #
     # + msg - content to be distributed to the topic-subscriber 
     # + return -  An `error`if an error occurred with the update or else `()`
-    remote function notifyContentDistribution(ContentDistributionMessage msg) returns ContentDistributionSuccess | SubscriptionDeletedError | @tainted error? {
+    remote function notifyContentDistribution(ContentDistributionMessage msg) returns @tainted ContentDistributionSuccess | SubscriptionDeletedError | error? {
+        http:Client httpClient = self.httpClient;
+
         http:Request request = new;
         
-        string contentType = retrieveContentType(msg.contentType, msg.content);
+        string contentType = self.retrieveContentType(msg.contentType, msg.content);
 
         check request.setContentType(contentType);
         
-        foreach var [header, values] is msg?.headers {
-            if (values is string) {
-                req.addHeader(header, values);
-            } else {
-                string headerValue = ";".'join(...<string[]>values) + ";"
-                req.addHeader(header, headerValue);
+        if (msg?.headers is map<string|string[]>) {
+            var headers = <map<string|string[]>>msg?.headers;
+            foreach var [header, values] in headers.entries() {
+                if (values is string) {
+                    request.addHeader(header, values);
+                } else {
+                    string headerValue = ";".'join(...<string[]>values) + ";";
+                    request.addHeader(header, headerValue);
+                }
             }
         }
 
-        request.setHeader("Link", linkHeaderValue);
+        request.setHeader("Link", self.linkHeaderValue);
 
-        if (secret is string && secret?.length() >= 0) {
-            check string hash = retrievePayloadSignature(secret, msg.content);
+        if (self.secret.length() > 0) {
+            string hash = check self.retrievePayloadSignature(self.secret, msg.content);
             request.setHeader(X_HUB_SIGNATURE, "sha256="+hash);
         }
 
-        var response = self.httpClient->post(request);
+        var response = httpClient->post("", request);
 
         if (response is http:Response) {
             var status = response.statusCode;
-            if (isSuccess(status)) {
-                return new ContentDistributionSuccess(self.callBack, self.topic);
-            } else if (isWithInRangeOrEquals(status, 410)) {
+            if (isSuccessStatusCode(status)) {
+                return {
+                    hubCallback: self.callBack,
+                    topic: self.topic
+                };
+            } else if (status == 410) {
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
                 return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
             } else {
@@ -97,7 +104,7 @@ public client class HubClient {
                 return error WebSubError("Error occurred distributing updated content: " + textPayload);
             }
         } else {
-            return error WebSubError("Content distribution failed for topic [" + topic + "]");
+            return error WebSubError("Content distribution failed for topic [" + self.topic + "]");
         }
     }
 
@@ -124,14 +131,16 @@ public client class HubClient {
         byte[] hashedContent = [];
         if (payload is byte[]) {
             hashedContent = crypto:hmacSha256(payload, keyArr);
+        } else if (payload is string) {
+            byte[] inputArr = (<string>payload).toBytes();
+            hashedContent = crypto:hmacSha256(inputArr, keyArr);
+        } else if (payload is xml) {
+            byte[] inputArr = (<xml>payload).toString().toBytes();
+            hashedContent = crypto:hmacSha256(inputArr, keyArr);   
         } else {
-            byte[] inputArr = payload.toBytes();
+            byte[] inputArr = (<json>payload).toString().toBytes();
             hashedContent = crypto:hmacSha256(inputArr, keyArr);
         }
         return hashedContent.toBase64();
-    }
-
-    isolated function generateLinkUrl() returns string {
-        return self.hubUrl + "; rel=\"hub\", " + self.topic + "; rel=\"self\"";
     }
 }

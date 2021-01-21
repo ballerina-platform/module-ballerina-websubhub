@@ -13,8 +13,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
-import ballerina/io;
 import ballerina/http;
 
 # Parameter `hub.mode` representing the mode of the request from hub to subscriber or subscriber to hub.
@@ -49,11 +47,13 @@ const string MODE_UNSUBSCRIBE = "unsubscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
+const string X_HUB_SIGNATURE = "X-Hub-Signature";
+
 # Record to represent a WebSub content delivery.
 #
 # + headers - Additional Request headers to include when distributing content
-# + payload - The payload to be sent
 # + contentType - The content-type of the payload
+# + content - The payload to be sent
 public type ContentDistributionMessage record {|
     map<string|string[]>? headers = ();
     string? contentType = ();
@@ -162,14 +162,10 @@ final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
 
 final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
 
-isolated function isSuccess(int statusCode) returns boolean {
-    return isWithInRangeOrEquals(statusCode, 200, 300);
+isolated function isSuccessStatusCode(int statusCode) returns boolean {
+    return (200 <= statusCode && statusCode < 300);
 }
 
-isolated function isWithInRangeOrEquals(int statusCode, int start, int? end = ()) returns boolean {
-    if (end is int) {
-        return (start <= statusCode && statusCode < end);
-    } else {
-        return start == statusCode;
-    }
+isolated function generateLinkUrl(string hubUrl, string topic) returns string {
+    return hubUrl + "; rel=\"hub\", " + topic + "; rel=\"self\"";
 }
