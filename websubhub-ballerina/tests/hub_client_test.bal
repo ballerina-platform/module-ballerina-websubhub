@@ -65,10 +65,12 @@ function testTextContentDelivery() returns @tainted error? {
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
 
-    var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.hubCallback, "http://localhost:9092/callback/success");
-        test:assertEquals(publishResponse.topic, "https://topic.com");
+        test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, msg.content);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -86,10 +88,12 @@ function testJsonContentDelivery() returns @tainted error? {
         contentMsg: "Enjoy free offers this season"
     };
 
-    var publishResponse = hubClientEP->notifyContentDistribution({content: publishedContent});   
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.hubCallback, "http://localhost:9092/callback/success");
-        test:assertEquals(publishResponse.topic, "https://topic.com");
+        test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, msg.content);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -107,10 +111,12 @@ function testXmlContentDelivery() returns @tainted error? {
         <contentMsg>Enjoy free offers this season</contentMsg>
     </content>`;
 
-    var publishResponse = hubClientEP->notifyContentDistribution({content: publishedContent});   
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.hubCallback, "http://localhost:9092/callback/success");
-        test:assertEquals(publishResponse.topic, "https://topic.com");
+        test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, msg.content);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -125,10 +131,11 @@ function testByteArrayContentDelivery() returns @tainted error? {
     
     byte[] publishedContent = "This is sample content".toBytes();
 
-    var publishResponse = hubClientEP->notifyContentDistribution({content: publishedContent});   
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.hubCallback, "http://localhost:9092/callback/success");
-        test:assertEquals(publishResponse.topic, "https://topic.com");
+        test:assertEquals(publishResponse.status.code, 200);
     } else {
        test:assertFail("Content Publishing Failed.");
     }    

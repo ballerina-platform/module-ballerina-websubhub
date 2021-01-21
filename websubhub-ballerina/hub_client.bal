@@ -95,10 +95,11 @@ public client class HubClient {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
                 return {
-                    hubCallback: self.callback,
-                    topic: self.topic
+                    headers: msg?.headers,
+                    mediaType: msg?.contentType,
+                    body: msg.content
                 };
-            } else if (status == 410) {
+            } else if (status == http:STATUS_GONE) {
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
                 return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
             } else {

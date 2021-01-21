@@ -283,7 +283,7 @@ isolated function updateErrorResponse(http:Response response, string reason) {
     response.setHeader("Content-type","application/x-www-form-urlencoded");
 }
 
-isolated function updateSuccessResponse(http:Response response, map<string>? messageBody, 
+isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
     string payload = "hub.mode=accepted";
     if (messageBody is map<string>) {

@@ -55,7 +55,27 @@ const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 
 const string SHA256_HMAC = "sha256";
 
-// todo L1 Remove ReadableByteChannel
+const int STATUS_OK = 200;
+
+const int STATUS_GONE = 410;
+
+type Status distinct object {
+    public int code;
+};
+
+public readonly class StatusOK {
+    *Status;
+    public STATUS_OK code = STATUS_OK;
+}
+
+final StatusOK STATUS_OK_OBJ = new;
+
+type CommonResponse record {|
+    string? mediaType = ();
+    map<string|string[]>? headers = ();
+    string|byte[]|json|xml|map<string>? body = ();
+|};
+
 # Record to represent a WebSub content delivery.
 #
 # + headers - Additional Request headers to include when distributing content
@@ -68,8 +88,8 @@ public type ContentDistributionMessage record {|
 |};
 
 public type ContentDistributionSuccess record {|
-    string hubCallback;
-    string topic;
+    *CommonResponse;
+    readonly StatusOK status = STATUS_OK_OBJ;
 |};
 
 public type TopicRegistration record {|
@@ -121,11 +141,6 @@ public type UpdateMessage record {
     string contentType;
     string|byte[]|json|xml|map<string>? content;
 };
-
-type CommonResponse record {|
-    map<string|string[]>? headers = ();
-    map<string>? body = ();
-|};
 
 public type TopicRegistrationSuccess record {
     *CommonResponse;
