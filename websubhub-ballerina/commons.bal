@@ -49,7 +49,11 @@ const string CONTENT_TYPE = "Content-Type";
 
 const string X_HUB_SIGNATURE = "X-Hub-Signature";
 
+const string LINK = "Link";
+
 const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
+
+const string SHA256_HMAC = "sha256";
 
 // todo L1 Remove ReadableByteChannel
 # Record to represent a WebSub content delivery.

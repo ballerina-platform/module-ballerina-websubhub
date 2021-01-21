@@ -74,17 +74,17 @@ public client class HubClient {
                     request.addHeader(header, values);
                 } else {
                     foreach var value in <string[]>values {
-                        request.addHeader(header, headerValue);
+                        request.addHeader(header, value);
                     }
                 }
             }
         }
 
-        request.setHeader("Link", self.linkHeaderValue);
+        request.setHeader(LINK, self.linkHeaderValue);
 
         if (self.secret.length() > 0) {
             string hash = check self.retrievePayloadSignature(self.secret, msg.content);
-            request.setHeader(X_HUB_SIGNATURE, "sha256="+hash);
+            request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash);
         }
 
         request.setPayload(msg.content);
