@@ -64,6 +64,7 @@ task unpackStdLibs() {
 def packageName = "websubhub"
 def packageOrg = "ballerina"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
+def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
 def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
 def artifactCacheParent = file("$project.projectDir/build/cache_parent/")
 def artifactLibParent = file("$project.projectDir/build/lib_parent/")
@@ -105,15 +106,16 @@ task updateTomlFile {
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
 
-        // Dynamic version update of stdlib dependencies
-        newConfig = newConfig.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
-        newConfig = newConfig.replace("@stdlib.mime.version@", stdlibDependentMimeVersion)
-        newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
-        newConfig = newConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
-        newConfig = newConfig.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
-        newConfig = newConfig.replace("@stdlib.uuid.version@", stdlibDependentUuidVersion)
-
         ballerinaConfigFile.text = newConfig
+
+        // Dynamic version update of stdlib dependencies
+        def newDependencyConfig = ballerinaDependencyFile.text.replace("@stdlib.http.version@", stdlibDependentHttpVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.mime.version@", stdlibDependentMimeVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.log.version@", stdlibDependentLogVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.encoding.version@", stdlibDependentEncodingVersion)
+        newDependencyConfig = newDependencyConfig.replace("@stdlib.uuid.version@", stdlibDependentUuidVersion)
+        ballerinaDependencyFile.text = newDependencyConfig
     }
 }
 
