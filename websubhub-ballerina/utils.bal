@@ -116,10 +116,11 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
 
     if (validationResult is SubscriptionDeniedError) {
         http:Request request = new;
-        string payload = "hub.mode=denied&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
-        request.setTextPayload(payload);
-        request.setHeader("Content-type","application/x-www-form-urlencoded");
-        var validationFailureRequest = httpClient->post("", request);
+        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
+                            + HUB_MODE + "=denied"
+                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
+                            + "&" + "hub.reason" + "=" + validationResult.message();
+        var validationFailureRequest = httpClient->get(<@untainted string> queryParams, request);
     } else {
         http:Request request = new;
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
@@ -204,10 +205,11 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, Servic
     http:Client httpClient = checkpanic new(<string> message.hubCallback);
     http:Request request = new;
     if (validationResult is UnsubscriptionDeniedError) {
-        string payload = "hub.mode=denied&hub.topic=" + <string> message.hubTopic + "&hub.reason=" + validationResult.message();
-        request.setTextPayload(payload);
-        request.setHeader("Content-type","application/x-www-form-urlencoded");
-        var validationFailureRequest = httpClient->post("", request);
+        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
+                            + HUB_MODE + "=denied"
+                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
+                            + "&" + "hub.reason" + "=" + validationResult.message();
+        var validationFailureRequest = httpClient->get(<@untainted string> queryParams, request);
     } else {
         string challenge = uuid:createType4AsString();
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
