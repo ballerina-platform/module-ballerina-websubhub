@@ -35,17 +35,17 @@ service /websubhub on testListener {
         }
     }
 
-    remote function onUnregisterTopic(TopicUnregistration message)
-                        returns TopicUnregistrationSuccess|TopicUnregistrationError {
-        TopicRegistrationSuccess unregisterResult = {
+    remote function onDeregisterTopic(TopicDeregistration message)
+                        returns TopicDeregistrationSuccess|TopicDeregistrationError {
+        TopicRegistrationSuccess deregisterResult = {
             body: {
-                   isUnregisterSuccess: "true"
+                   isDeregisterSuccess: "true"
                 }
         };
         if (message.topic == "test") {
-            return unregisterResult;
+            return deregisterResult;
        } else {
-            return error TopicUnregistrationError("Topic Unregistration Failed!");
+            return error TopicDeregistrationError("Topic Deregistration Failed!");
         }
     }
 
@@ -98,12 +98,12 @@ public function testPublisherRegisterFailure() {
 }
 
 @test:Config{}
-public function testPublisherUnregisterSuccess() {
-    TopicUnregistrationSuccess|TopicUnregistrationError unRegistrationResponse =
-                    websubHubClientEP->unregisterTopic("test");
+public function testPublisherDeregisterSuccess() {
+    TopicDeregistrationSuccess|TopicDeregistrationError deRegistrationResponse =
+                    websubHubClientEP->deregisterTopic("test");
 
-    if (unRegistrationResponse is TopicUnregistrationSuccess) {
-        io:println(unRegistrationResponse);
+    if (deRegistrationResponse is TopicDeregistrationSuccess) {
+        io:println(deRegistrationResponse);
     } else {
         test:assertFail("Topic registration failed");
     }
@@ -111,12 +111,12 @@ public function testPublisherUnregisterSuccess() {
 
 
 @test:Config{}
-public function testPublisherUnregisterFailure() {
-    TopicUnregistrationSuccess|TopicUnregistrationError unRegistrationResponse =
-                    websubHubClientEP->unregisterTopic("test1");
+public function testPublisherDeregisterFailure() {
+    TopicDeregistrationSuccess|TopicDeregistrationError deRegistrationResponse =
+                    websubHubClientEP->deregisterTopic("test1");
 
-    if (unRegistrationResponse is TopicUnregistrationError) {
-        io:println(unRegistrationResponse);
+    if (deRegistrationResponse is TopicDeregistrationError) {
+        io:println(deRegistrationResponse);
     } else {
         test:assertFail("Topic registration passed");
     }

@@ -16,7 +16,7 @@
 
 public type TopicRegistrationError distinct error;
 
-public type TopicUnregistrationError distinct error;
+public type TopicDeregistrationError distinct error;
 
 public type BadSubscriptionError distinct error;
 

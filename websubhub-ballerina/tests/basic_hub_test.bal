@@ -41,17 +41,17 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    remote function onUnregisterTopic(TopicUnregistration message)
-                        returns TopicUnregistrationSuccess|TopicUnregistrationError {
-        TopicRegistrationSuccess unregisterResult = {
+    remote function onDeregisterTopic(TopicDeregistration message)
+                        returns TopicDeregistrationSuccess|TopicDeregistrationError {
+        TopicRegistrationSuccess deregisterResult = {
             body: {
-                   isUnregisterSuccess: "true"
+                   isDeregisterSuccess: "true"
                 }
         };
         if (message.topic == "test") {
-            return unregisterResult;
+            return deregisterResult;
        } else {
-            return error TopicUnregistrationError("Topic Unregistration Failed!");
+            return error TopicDeregistrationError("Topic Deregistration Failed!");
         }
     }
 
@@ -174,33 +174,33 @@ function testRegistrationFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testUnregistrationSuccess() returns @tainted error? {
+function testDeregistrationSuccess() returns @tainted error? {
     http:Request request = new;
-    request.setTextPayload("hub.mode=unregister&hub.topic=test", "application/x-www-form-urlencoded");
+    request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded");
 
-    string expectedPayload = "hub.mode=accepted&isUnregisterSuccess=true";
+    string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
         test:assertEquals(response.getTextPayload(), expectedPayload);
     } else {
-        test:assertFail("Unregistration test failed");
+        test:assertFail("Deregistration test failed");
     }
 }
 
 @test:Config {
 }
-function testUnregistrationFailure() returns @tainted error? {
+function testDeregistrationFailure() returns @tainted error? {
     http:Request request = new;
-    request.setTextPayload("hub.mode=unregister&hub.topic=test1", "application/x-www-form-urlencoded");
+    request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
 
-    string expectedPayload = "hub.mode=denied&hub.reason=Topic Unregistration Failed!";
+    string expectedPayload = "hub.mode=denied&hub.reason=Topic Deregistration Failed!";
     var response = check httpClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
         test:assertEquals(response.getTextPayload(), expectedPayload);
     } else {
-        test:assertFail("Unregistration test failed");
+        test:assertFail("Deregistration test failed");
     }
 }
 
@@ -245,7 +245,7 @@ function testSubscriptionFailure() returns @tainted error? {
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 400);
     } else {
-        test:assertFail("Unregistration test failed");
+        test:assertFail("Deregistration test failed");
     }
 }
 
@@ -262,7 +262,7 @@ function testSubscriptionValidationFailure() returns @tainted error? {
         // todo Validate post request invoked, as of now manually checked through logs
         // test:assertEquals(isValidationFailed, true);
     } else {
-        test:assertFail("Unregistration test failed");
+        test:assertFail("Deregistration test failed");
     }
 }
 
@@ -279,7 +279,7 @@ function testSubscriptionIntentVerification() returns @tainted error? {
         // todo Validate post request invoked, as of now manually checked through logs
         // test:assertEquals(isIntentVerified, true);
     } else {
-        test:assertFail("Unregistration test failed");
+        test:assertFail("Deregistration test failed");
     }
 }
 
@@ -311,7 +311,7 @@ function testUnsubscriptionValidationFailure() returns @tainted error? {
         // todo Validate post request invoked, as of now manually checked through logs
         // test:assertEquals(isValidationFailed, true);
     } else {
-        test:assertFail("Unregistration test failed");
+        test:assertFail("Deregistration test failed");
     }
 }
 

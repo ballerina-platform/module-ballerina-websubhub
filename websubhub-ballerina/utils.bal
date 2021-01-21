@@ -36,18 +36,18 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
     }
 }
 
-isolated function processUnregisterRequest(http:Caller caller, http:Response response,
+isolated function processDeregisterRequest(http:Caller caller, http:Response response,
                                             map<string> params, Service hubService) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
-        TopicUnregistration msg = {
+        TopicDeregistration msg = {
             topic: topic
         };
-        TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
-        if (unregisterStatus is TopicUnregistrationError) {
-            updateErrorResponse(response, unregisterStatus.message());
+        TopicDeregistrationSuccess|TopicDeregistrationError deregisterStatus = callDeregisterMethod(hubService, msg);
+        if (deregisterStatus is TopicDeregistrationError) {
+            updateErrorResponse(response, deregisterStatus.message());
         } else {
-            updateSuccessResponse(response, unregisterStatus["body"], unregisterStatus["headers"]);
+            updateSuccessResponse(response, deregisterStatus["body"], deregisterStatus["headers"]);
         }
     }
 }
