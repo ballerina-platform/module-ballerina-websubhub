@@ -209,27 +209,38 @@ service /subscriber on new http:Listener(9091) {
     resource function get .(http:Caller caller, http:Request req)
             returns error? {
         map<string[]> payload = req.getQueryParams();
-        string[] challengeArray = <string[]> payload["hub.challenge"];
-        check caller->respond(challengeArray[0]);
+        string[] hubMode = <string[]> payload["hub.mode"];
+        if (hubMode[0] == "denied") {
+            io:println("Subscriber Validation failed get", payload);
+            isValidationFailed = true;
+            check caller->respond("");
+        } else {
+            string[] challengeArray = <string[]> payload["hub.challenge"];
+            check caller->respond(challengeArray[0]);
+        }
     }
 
     resource function post .(http:Caller caller, http:Request req)
             returns error? {
-        io:println("Subscriber Validation failed post", req.getTextPayload());
-        isValidationFailed = true;
         check caller->respond();
     }
 
     resource function get unsubscribe(http:Caller caller, http:Request req)
             returns error? {
         map<string[]> payload = req.getQueryParams();
-        string[] challengeArray = <string[]> payload["hub.challenge"];
-        check caller->respond(challengeArray[0]);
+        string[] hubMode = <string[]> payload["hub.mode"];
+        if (hubMode[0] == "denied") {
+            io:println("Unsubscription Validation failed get", payload);
+            isValidationFailed = true;
+            check caller->respond("");
+        } else {
+            string[] challengeArray = <string[]> payload["hub.challenge"];
+            check caller->respond(challengeArray[0]);
+        }
     }
 
     resource function post unsubscribe(http:Caller caller, http:Request req)
             returns error? {
-        io:println("Unsubscribe Validation failed post", req.getTextPayload());
         check caller->respond();
     }
 }
