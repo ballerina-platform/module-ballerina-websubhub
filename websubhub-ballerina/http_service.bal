@@ -60,16 +60,35 @@ service class HttpService {
         map<string> params = {};
 
         string contentType = checkpanic request.getHeader(CONTENT_TYPE);
+        map<string[]> queryParams = request.getQueryParams();
         // todo: Use constants form mime/http
         match contentType {
             "application/x-www-form-urlencoded" => {
-                var reqFormParamMap = request.getFormParams();
-                params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+                string|http:HeaderNotFoundError publisherHeader = request.getHeader(BALLERINA_PUBLISH_HEADER);
+                if (publisherHeader is string) {
+                    if (publisherHeader == "publish") {
+                        string[] hubMode = queryParams.get(HUB_MODE);
+                        string[] hubTopic = queryParams.get(HUB_TOPIC);
+                        params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
+                        params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
+                    } else if (publisherHeader == "event") {
+                        var reqFormParamMap = request.getFormParams();
+                        params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+                    } else {
+                        response.statusCode = http:STATUS_BAD_REQUEST;
+                        response.setTextPayload("Invalid value for header " + BALLERINA_PUBLISH_HEADER);
+                        respondToRequest(caller, response);
+                    }
+                } else {
+                    var reqFormParamMap = request.getFormParams();
+                    params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+                }
             }
             "application/json"|"application/xml"|"application/octet-stream"|"text/plain" => {
-                params = {
-                    HUB_MODE: MODE_PUBLISH
-                };
+                string[] hubMode = queryParams.get(HUB_MODE);
+                string[] hubTopic = queryParams.get(HUB_TOPIC);
+                params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
+                params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
@@ -120,27 +139,42 @@ service class HttpService {
                 if (contentType == mime:APPLICATION_FORM_URLENCODED) {
                     updateMsg = {
                         hubTopic: <string> topic,
-                        content: ()
+                        msgType: EVENT,
+                        contentType: "application/x-www-form-urlencoded",
+                        content: (),
+                        request: request
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
                     updateMsg = {
-                        hubTopic: (),
-                        content: checkpanic request.getJsonPayload()
+                        hubTopic: <string> topic,
+                        msgType: PUBLISH,
+                        contentType: "application/json",
+                        content: checkpanic request.getJsonPayload(),
+                        request: request
                     };
                 } else if (contentType == mime:APPLICATION_XML) {
                     updateMsg = {
-                        hubTopic: (),
-                        content: checkpanic request.getXmlPayload()
+                        hubTopic: <string> topic,
+                        msgType: PUBLISH,
+                        contentType: "application/xml",
+                        content: checkpanic request.getXmlPayload(),
+                        request: request
                     };
                 } else if (contentType == "text/plain") {
                     updateMsg = {
-                        hubTopic: (),
-                        content: checkpanic request.getTextPayload()
+                        hubTopic: <string> topic,
+                        msgType: PUBLISH,
+                        contentType: "text/plain",
+                        content: checkpanic request.getTextPayload(),
+                        request: request
                     };
                 } else {
                     updateMsg = {
-                        hubTopic: (),
-                        content: checkpanic request.getBinaryPayload()
+                        hubTopic: <string> topic,
+                        msgType: PUBLISH,
+                        contentType: "application/octet-stream",
+                        content: checkpanic request.getBinaryPayload(),
+                        request: request
                     };
                 }
                 processPublishRequestAndRespond(caller, response, self.hubService, <@untainted> updateMsg);

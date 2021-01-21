@@ -14,9 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents a webSub distinct error.
-public type WebSubError distinct error;
-
 public type TopicRegistrationError distinct error;
 
 public type TopicUnregistrationError distinct error;
@@ -36,3 +33,5 @@ public type UnsubscriptionDeniedError distinct error;
 public type UpdateMessageError distinct error;
 
 public type SubscriptionDeletedError distinct error;
+
+public type ContentDeliveryError distinct error;

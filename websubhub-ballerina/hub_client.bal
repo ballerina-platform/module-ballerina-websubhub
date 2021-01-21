@@ -103,10 +103,10 @@ public client class HubClient {
             } else {
                 var result = response.getTextPayload();
                 string textPayload = result is string ? result : "";
-                return error WebSubError("Error occurred distributing updated content: " + textPayload);
+                return error ContentDeliveryError("Error occurred distributing updated content: " + textPayload);
             }
         } else {
-            return error WebSubError("Content distribution failed for topic [" + self.topic + "]");
+            return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");
         }
     }
 

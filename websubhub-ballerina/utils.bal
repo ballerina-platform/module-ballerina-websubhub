@@ -29,7 +29,7 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
 
         TopicRegistrationSuccess|TopicRegistrationError registerStatus = callRegisterMethod(hubService, msg);
         if (registerStatus is TopicRegistrationError) {
-            updateErrorResponse(response, topic, registerStatus.message());
+            updateErrorResponse(response, registerStatus.message());
         } else {
             updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
         }
@@ -45,7 +45,7 @@ isolated function processUnregisterRequest(http:Caller caller, http:Response res
         };
         TopicUnregistrationSuccess|TopicUnregistrationError unregisterStatus = callUnregisterMethod(hubService, msg);
         if (unregisterStatus is TopicUnregistrationError) {
-            updateErrorResponse(response, topic, unregisterStatus.message());
+            updateErrorResponse(response, unregisterStatus.message());
         } else {
             updateSuccessResponse(response, unregisterStatus["body"], unregisterStatus["headers"]);
         }
@@ -243,12 +243,12 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
     
     Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg);
 
-    response.statusCode = http:STATUS_ACCEPTED;
+    response.statusCode = http:STATUS_OK;
     if (updateResult is Acknowledgement) {
         response.setTextPayload("hub.mode=accepted");
         response.setHeader("Content-type","application/x-www-form-urlencoded");
     } else {
-        updateErrorResponse(response, updateMsg.hubTopic is () ? "" : <string> updateMsg.hubTopic, updateResult.message());
+        updateErrorResponse(response, updateResult.message());
     }
     respondToRequest(caller, response);
 }
@@ -279,8 +279,8 @@ isolated function updateBadRequestErrorResponse(http:Response response, string p
     response.setTextPayload(errorMessage);
 }
 
-isolated function updateErrorResponse(http:Response response, string topic, string reason) {
-    string payload = "hub.mode=denied&hub.topic=" + topic + "&hub.reason=" + reason;
+isolated function updateErrorResponse(http:Response response, string reason) {
+    string payload = "hub.mode=denied" + "&hub.reason=" + reason;
     response.setTextPayload(payload);
     response.setHeader("Content-type","application/x-www-form-urlencoded");
 }
