@@ -43,10 +43,10 @@ service /websubhub on functionWithArgumentsListener {
 
     remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess|TopicDeregistrationError {
-        TopicRegistrationSuccess deregisterResult = {
-            body: <map<string>>{
-                   isDeregisterSuccess: "true"
-                }
+
+        map<string> body = { isDeregisterSuccess: "true" };
+        TopicDeregistrationSuccess deregisterResult = {
+            body
         };
         if (message.topic == "test") {
             return deregisterResult;
