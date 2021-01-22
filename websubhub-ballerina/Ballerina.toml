@@ -3,36 +3,6 @@ org = "ballerina"
 name = "websubhub"
 version = "@toml.version@"
 
-[[dependency]]
-org = "ballerina"
-name = "io"
-version = "@stdlib.io.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "mime"
-version = "@stdlib.mime.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "http"
-version = "@stdlib.http.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "log"
-version = "@stdlib.log.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "encoding"
-version = "@stdlib.encoding.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "uuid"
-version = "@stdlib.uuid.version@"
-
 [[platform.java11.dependency]]
 path = "../websubhub-native/build/libs/websubhub-native-@project.version@.jar"
 groupId = "ballerina"

@@ -1,0 +1,29 @@
+[[dependency]]
+org = "ballerina"
+name = "io"
+version = "0.5.5"
+
+[[dependency]]
+org = "ballerina"
+name = "mime"
+version = "1.0.5"
+
+[[dependency]]
+org = "ballerina"
+name = "http"
+version = "1.0.5"
+
+[[dependency]]
+org = "ballerina"
+name = "log"
+version = "1.0.5"
+
+[[dependency]]
+org = "ballerina"
+name = "encoding"
+version = "1.0.7"
+
+[[dependency]]
+org = "ballerina"
+name = "uuid"
+version = "0.9.1"

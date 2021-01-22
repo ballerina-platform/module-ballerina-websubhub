@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/mime;
 import ballerina/regex;
 
-# The HTTP based client for WebSub topic registration and unregistration, and notifying the hub of new updates.
+# The HTTP based client for WebSub topic registration and deregistration, and notifying the hub of new updates.
 public client class PublisherClient {
 
     private string url;
@@ -72,39 +72,39 @@ public client class PublisherClient {
         }
     }
 
-    # Unregisters a topic in a Ballerina WebSub Hub.
+    # Deregisters a topic in a Ballerina WebSub Hub.
     # ```ballerina
-    # error? unregisterTopic = websubHubClientEP->unregisterTopic("http://websubpubtopic.com");
+    # error? deregisterTopic = websubHubClientEP->deregisterTopic("http://websubpubtopic.com");
     #  ```
     #
-    # + topic - The topic to unregister
+    # + topic - The topic to deregister
     # + return -  An `error`if an error occurred un registering the topic or else `()`
-    remote function unregisterTopic(string topic) returns @tainted TopicUnregistrationSuccess|TopicUnregistrationError {
+    remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Client httpClient = self.httpClient;
-        http:Request request = buildTopicRegistrationChangeRequest(MODE_UNREGISTER, topic);
-        var unregistrationResponse = httpClient->post("", request);
-        if (unregistrationResponse is http:Response) {
-            var result = unregistrationResponse.getTextPayload();
+        http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
+        var deregistrationResponse = httpClient->post("", request);
+        if (deregistrationResponse is http:Response) {
+            var result = deregistrationResponse.getTextPayload();
             string payload = result is string ? result : "";
-            if (unregistrationResponse.statusCode != http:STATUS_OK) {
-                return error TopicUnregistrationError("Error occurred during topic registration, Status code : "
-                        +  unregistrationResponse.statusCode.toString() + ", payload: " + payload);
+            if (deregistrationResponse.statusCode != http:STATUS_OK) {
+                return error TopicDeregistrationError("Error occurred during topic registration, Status code : "
+                        +  deregistrationResponse.statusCode.toString() + ", payload: " + payload);
             } else {
                 map<string>? params = getFormData(payload);
                 if (params[HUB_MODE] == "accepted") {
-                    TopicUnregistrationSuccess successResult = {
-                        headers: getHeaders(unregistrationResponse),
+                    TopicDeregistrationSuccess successResult = {
+                        headers: getHeaders(deregistrationResponse),
                         body: params
                     };
                     return successResult;
                 } else {
                     string? failureReason = params["hub.reason"];
-                    return error TopicUnregistrationError(failureReason is () ? "" : <string> failureReason);
+                    return error TopicDeregistrationError(failureReason is () ? "" : <string> failureReason);
                 }
             }
         } else {
-            return error TopicUnregistrationError("Error sending topic unregistration request: "
-                                    + (<error>unregistrationResponse).message());
+            return error TopicDeregistrationError("Error sending topic deregistration request: "
+                                    + (<error>deregistrationResponse).message());
         }
     }
 
@@ -214,11 +214,11 @@ public client class PublisherClient {
     }
 }
 
-# Builds the topic registration change request to register or unregister a topic at the hub.
+# Builds the topic registration change request to register or deregister a topic at the hub.
 #
-# + mode - Whether the request is for registration or unregistration
-# + topic - The topic to register/unregister
-# + return - An `http:Request` to be sent to the hub to register/unregister
+# + mode - Whether the request is for registration or deregistration
+# + topic - The topic to register/deregister
+# + return - An `http:Request` to be sent to the hub to register/deregister
 isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @untainted string topic) returns (http:Request) {
     http:Request request = new;
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);

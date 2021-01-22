@@ -18,7 +18,7 @@
 public type TopicRegistrationError distinct error;
 
 # Error Type representing the errors in topic unregistration action
-public type TopicUnregistrationError distinct error;
+public type TopicDeregistrationError distinct error;
 
 # Error Type representing the errors in subscription request
 public type BadSubscriptionError distinct error;

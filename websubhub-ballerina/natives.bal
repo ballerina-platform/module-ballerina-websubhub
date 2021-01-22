@@ -14,15 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/java;
+import ballerina/jballerina.java;
 
 isolated function callRegisterMethod(Service hubService, TopicRegistration msg)
 returns TopicRegistrationSuccess|TopicRegistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callUnregisterMethod(Service hubService, TopicUnregistration msg)
-returns TopicUnregistrationSuccess|TopicUnregistrationError = @java:Method {
+isolated function callDeregisterMethod(Service hubService, TopicDeregistration msg)
+returns TopicDeregistrationSuccess|TopicDeregistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
