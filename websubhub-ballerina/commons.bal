@@ -13,8 +13,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
-import ballerina/io;
 import ballerina/http;
 
 # Parameter `hub.mode` representing the mode of the request from hub to subscriber or subscriber to hub.
@@ -49,16 +47,49 @@ const string MODE_UNSUBSCRIBE = "unsubscribe";
 
 const string CONTENT_TYPE = "Content-Type";
 
+const string X_HUB_SIGNATURE = "X-Hub-Signature";
+
+const string LINK = "Link";
+
 const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 
-// todo L1 Remove ReadableByteChannel
+const string SHA256_HMAC = "sha256";
+
+const int STATUS_OK = 200;
+
+const int STATUS_GONE = 410;
+
+type Status distinct object {
+    public int code;
+};
+
+public readonly class StatusOK {
+    *Status;
+    public STATUS_OK code = STATUS_OK;
+}
+
+final StatusOK STATUS_OK_OBJ = new;
+
+type CommonResponse record {|
+    string? mediaType = ();
+    map<string|string[]>? headers = ();
+    string|byte[]|json|xml|map<string>? body = ();
+|};
+
 # Record to represent a WebSub content delivery.
 #
-# + payload - The payload to be sent
+# + headers - Additional Request headers to include when distributing content
 # + contentType - The content-type of the payload
-type WebSubContent record {|
-    string|xml|json|byte[]|io:ReadableByteChannel payload = "";
-    string contentType = "";
+# + content - The payload to be sent
+public type ContentDistributionMessage record {|
+    map<string|string[]>? headers = ();
+    string? contentType = ();
+    json|xml|string|byte[] content;
+|};
+
+public type ContentDistributionSuccess record {|
+    *CommonResponse;
+    readonly StatusOK status = STATUS_OK_OBJ;
 |};
 
 public type TopicRegistration record {|
@@ -71,6 +102,7 @@ public type TopicDeregistration record {|
 
 // todo Any other params set in the payload(subscribers)
 public type Subscription record {
+    string hub;
     http:Request rawRequest;
     string hubMode;
     string hubCallback;
@@ -109,11 +141,6 @@ public type UpdateMessage record {
     string contentType;
     string|byte[]|json|xml|map<string>? content;
 };
-
-type CommonResponse record {|
-    map<string|string[]>? headers = ();
-    map<string>? body = ();
-|};
 
 public type TopicRegistrationSuccess record {
     *CommonResponse;
@@ -164,3 +191,11 @@ public readonly class StatusPermanentRedirect {
 final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
 
 final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
+
+isolated function isSuccessStatusCode(int statusCode) returns boolean {
+    return (200 <= statusCode && statusCode < 300);
+}
+
+isolated function generateLinkUrl(string hubUrl, string topic) returns string {
+    return hubUrl + "; rel=\"hub\", " + topic + "; rel=\"self\"";
+}
