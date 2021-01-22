@@ -21,8 +21,8 @@ public type Service service object {
 //   remote function onRegisterTopic(TopicRegistration msg)
 //               returns TopicRegistrationSuccess|TopicRegistrationError;
 
-//   remote function onUnregisterTopic(TopicUnregistration msg)
-//               returns TopicUnregistrationSuccess|TopicUnregistrationError;
+//   remote function onDeregisterTopic(TopicDeregistration msg)
+//               returns TopicDeregistrationSuccess|TopicDeregistrationError;
 
    remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError;

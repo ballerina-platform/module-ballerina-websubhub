@@ -46,8 +46,8 @@ public class HubNativeOperationHandler {
         return invokeRemoteFunction(env, bHubService, message, "callRegisterMethod", "onRegisterTopic");
     }
 
-    public static Object callUnregisterMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callUnregisterMethod", "onUnregisterTopic");
+    public static Object callDeregisterMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callDeregisterMethod", "onDeregisterTopic");
     }
 
     public static Object callOnUpdateMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {

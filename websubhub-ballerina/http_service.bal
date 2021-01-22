@@ -26,7 +26,7 @@ service class HttpService {
     private boolean isUnsubscriptionAvailable = false;
     private boolean isUnsubscriptionValidationAvailable = false;
     private boolean isRegisterAvailable = false;
-    private boolean isUnregisterAvailable = false;
+    private boolean isDeregisterAvailable = false;
 
     public isolated function init(Service hubService, string hubUrl) {
         self.hubService = hubService;
@@ -48,8 +48,8 @@ service class HttpService {
             if (methodName == "onRegisterTopic") {
                 self.isRegisterAvailable = true;
             }
-            if (methodName == "onUnregisterTopic") {
-                self.isUnregisterAvailable = true;
+            if (methodName == "onDeregisterTopic") {
+                self.isDeregisterAvailable = true;
             }
         }
     }
@@ -110,9 +110,9 @@ service class HttpService {
                 }
                 respondToRequest(caller, response);
             }
-            MODE_UNREGISTER => {
-                if (self.isUnregisterAvailable) {
-                    processUnregisterRequest(caller, response, <@untainted> params, self.hubService);
+            MODE_DEREGISTER => {
+                if (self.isDeregisterAvailable) {
+                    processDeregisterRequest(caller, response, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }

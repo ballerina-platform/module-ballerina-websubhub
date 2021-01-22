@@ -36,8 +36,8 @@ const string MODE_PUBLISH = "publish";
 # `hub.mode` value indicating "register" mode, used by a publisher to register a topic at a hub.
 const string MODE_REGISTER = "register";
 
-# `hub.mode` value indicating "unregister" mode, used by a publisher to unregister a topic at a hub.
-const string MODE_UNREGISTER = "unregister";
+# `hub.mode` value indicating "deregister" mode, used by a publisher to deregister a topic at a hub.
+const string MODE_DEREGISTER = "deregister";
 
 # `hub.mode` value indicating "subscribe" mode, used by a subscriber to subscribe a topic at a hub.
 const string MODE_SUBSCRIBE = "subscribe";
@@ -96,7 +96,7 @@ public type TopicRegistration record {|
     string topic;
 |};
 
-public type TopicUnregistration record {|
+public type TopicDeregistration record {|
     string topic;
 |};
 
@@ -146,7 +146,7 @@ public type TopicRegistrationSuccess record {
     *CommonResponse;
 };
 
-public type TopicUnregistrationSuccess record {
+public type TopicDeregistrationSuccess record {
     *CommonResponse;
 };
 

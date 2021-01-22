@@ -21,8 +21,8 @@ returns TopicRegistrationSuccess|TopicRegistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callUnregisterMethod(Service hubService, TopicUnregistration msg)
-returns TopicUnregistrationSuccess|TopicUnregistrationError = @java:Method {
+isolated function callDeregisterMethod(Service hubService, TopicDeregistration msg)
+returns TopicDeregistrationSuccess|TopicDeregistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
