@@ -1,15 +1,20 @@
 ## Module Overview
 
-This module contains an implementation of the W3C [**WebSub**](https://www.w3.org/TR/websub/) recommendation, which facilitates a push-based content delivery/notification mechanism between publishers and subscribers.
+W3C [**WebSub**](https://w3c.github.io/websub/) is a recommendation, which facilitates a push-based content delivery / notification mechanism
+between publishers and subscribers.
 
-This implementation supports introducing following WebSub components:
- 
-- Publisher - A party that advertises topics to which interested parties subscribe in order to receive notifications
- on occurrence of events.
-- Hub - A party that accepts subscription requests from subscribers and delivers content to the subscribers when the topic 
-is updated by the topic's publisher.
+This module contains following components :
+
+1. API Specification of W3C [**WebSub Hub**](https://w3c.github.io/websub/#hub) specification.
+
+2. `HTTP` based **Hub Listener** implementation.
+
+3. ```HTTP``` based implementation of **Hub Client** which is responsible for delivering content to subscribers.
+
+4. ```HTTP``` based implementation of W3C [**WebSub Publisher**](https://w3c.github.io/websub/#publisher) specification.
 
 ### Basic flow with WebSub
+
 1. The subscriber discovers from the publisher, the topic it needs to subscribe to and the hub(s) that deliver notifications on updates of the topic.
 
 2. The subscriber sends a subscription request to one or more discovered hub(s) specifying the discovered topic along 
@@ -18,140 +23,136 @@ is updated by the topic's publisher.
     - (Optional) The lease period (in seconds) the subscriber wants the subscription to stay active.
     - (Optional) A secret to use for [authenticated content distribution](https://www.w3.org/TR/websub/#signing-content).
   
-3. The hub sends an intent verification request to the specified callback URL. If the response indicates 
-verification
- (by echoing a challenge specified in the request) by the subscriber, the subscription is added for the topic at the 
- hub.
-   
+3. The hub sends an intent verification request to the specified callback URL. If the response indicates
+verification (by echoing a challenge specified in the request) by the subscriber, the subscription is added for the topic at the hub.
+
 4. The publisher notifies the hub of updates to the topic and the content to deliver is identified.
 
 5. The hub delivers the identified content to the subscribers of the topic.
 
 ### Features
 
-#### Hub
+#### WebSub Hub Specification
 
-A WebSub compliant hub based on the Ballerina Message Broker is also available. This can be used as a remote hub or to be used by publishers who want to have their own internal hub. Ballerina's WebSub hub honors specified lease periods and supports authenticated content distribution.
+One of the key features of this module is the ```ballerina``` specific API abstraction for **WebSub Hub** specification.
 
-##### Enabling Basic Auth support for the hub
+According to the W3C [**WebSub**](https://w3c.github.io/websub/) specification **Hub** has following responsibilities.
 
-The Ballerina WebSub Hub can be secured by enforcing authentication (Basic Authentication) and (optionally) authorization. 
-The `AuthProvider` and `authConfig` need to be specified for the hub listener and service respectively. If the 
-`authStoreProvider` of the `AuthProvider` is set as "http:CONFIG_AUTH_STORE", usernames and passwords for authentication and scopes for authorization would be read from a config TOML file.
-A user can specify `AuthProvider` as follows and set it to the `hubListenerConfig` record, which is passed when starting the hub.
+- Register / Deregister ```topics``` advertised by the ```publishers```.
+- Subscribe / Unsubscribe ```subscribers``` to advertised ```topics```.
+- Verify the valid ```subscriptions```.
+- Distribute published ```content``` to the ```subscriber base``` of a ```topic```.
 
-```ballerina
-http:BasicAuthHandler basicAuthHandler = new(new auth:InboundBasicAuthProvider());
+In the API specification for **WebSub Hub**, module provides following abstractions to be implemented.
 
-http:ServiceEndpointConfiguration hubListenerConfig = {
-    auth: {
-        authHandlers: [basicAuthHandler]
-    },
-    secureSocket: {
-        keyStore: {
-            path: config:getAsString("b7a.home") + "bre/security/ballerinaKeystore.p12",
-            password: "ballerina"
-        }
-    }
-};
-
-var val = websub:startHub(new http:Listener(9191, hubListenerConfig));
-```
-In addition to the `BasicAuthHandler` for the listener, a user also has to specify the `authConfig` properties at the service or resource levels. 
-
- 
-They can be set by passing arguments for the `serviceAuth`, `subscriptionResourceAuth` or `publisherResourceAuth` parameters when starting up the hub.
-
-Recognized users can be specified in a `.toml` file, which can be passed as a configuration file when running the program. 
-
-```
-[b7a.users]
-
-[b7a.users.tom]
-password="1234"
-scopes="scope1"
-```
-
-Once the hub is secured using basic auth, a subscriber should provide the relevant `auth` config in the 
-`hubClientConfig` field of the subscriber service annotation.
+- Publisher Interactions
 
 ```ballerina
-auth:OutboundBasicAuthProvider basicAuthProvider = new({
-    username: "tom",
-    password: "1234"
-});
+    remote function onRegisterTopic(websubhub:TopicRegistration msg)
+                 returns websubhub:TopicRegistrationSuccess | websubhub:TopicRegistrationError;
 
-http:BasicAuthHandler basicAuthHandler = new(basicAuthProvider);
+    remote function onDeregisterTopic(websubhub:TopicDeregistration msg)
+                 returns websubhub:TopicDeregistrationSuccess | websubhub:TopicDeregistrationError;
 
-@websub:SubscriberServiceConfig {
-    path: "/ordereventsubscriber",
-    hubClientConfig: {
-        auth: {
-            authHandler: basicAuthHandler
-        }
-    }
-}
+    remote function onUpdateMessage(websubhub:UpdateMessage msg)
+                returns websubhub:Acknowledgement | websubhub:UpdateMessageError;
 ```
 
-##### Enabling data persistence for the hub
+- Subscriber Interactions
 
-The Ballerina WebSub Hub supports persistence of topic and subscription data that needs to be restored when the hub is 
-restarted.
- 
-Users can introduce their own persistence implementation, by introducing an object type that is structurally 
-equivalent to the `websub:HubPersistenceStore` abstract object.
+```ballerina
+   remote function onSubscription(websubhub:Subscription msg)
+                returns websubhub:SubscriptionAccepted 
+                        |websubhub:SubscriptionPermanentRedirect
+                        |websubhub:SubscriptionTemporaryRedirect 
+                        |websubhub:BadSubscriptionError 
+                        |websubhub:InternalSubscriptionError;
 
-Persistence can be enabled by setting a suitable `websub:HubPersistenceStore` value for the `hubPersistenceStore` field 
-in the `HubConfiguration` record, which is passed to the `websub:startHub()` function.
+   remote function onSubscriptionValidation(websubhub:Subscription msg)
+                returns websubhub:SubscriptionDeniedError?;
 
-Any subscriptions added at the hub will be available even after the hub is restarted.
+   remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg); 
 
-#### Publisher
+   remote function onUnsubscription(websubhub:Unsubscription msg)
+                returns websubhub:UnsubscriptionAccepted
+                        |websubhub:BadUnsubscriptionError
+                        |websubhub:InternalUnsubscriptionError;
 
-Ballerina WebSub publishers can use utility functions to add WebSub link headers indicating the hub and topic 
-URLs, which facilitates WebSub discovery.
+   remote function onUnsubscriptionIntenVerified(websubhub:VerifiedUnsubscription msg);
+```
 
-A hub client endpoint is also made available to publishers and subscribers to perform the following:
-- Publishers
-  - Register a topic at the Hub
-    ```ballerina
-    websub:PublisherClient websubHubClientEP = new ("http://localhost:9191/websub/publish");
-    error? registrationResponse = websubHubClientEP->registerTopic("http://websubpubtopic.com");
-    ```
-    
-  - Publish to the hub indicating an update of the topic
-    ```ballerina
-    websub:PublisherClient websubHubClientEP = new ("http://localhost:9191/websub/publish");
-    error? publishResponse = websubHubClientEP.publishUpdate("http://websubpubtopic.com",
-                                {"action": "publish", "mode": "internal-hub"});   
-    ```
-    
-- Subscribers
-  - Subscribe/Unsubscribe to/from topics at a hub
-    
-    ```ballerina
-    websub:SubscriptionClient websubHubClientEP = new("<HUB_URL>");
-    
-    // Send subscription request for a subscriber service.
-    websub:SubscriptionChangeRequest subscriptionRequest = {
-        topic: "<TOPIC_URL>", 
-        callback: "<CALLBACK_URL>",
-        secret: "<SECRET>"
-    };
-    websub:SubscriptionChangeResponse|error subscriptionChangeResponse = websubHubClientEP->subscribe(subscriptionRequest);
-    
-    // Send unsubscription request for the subscriber service.
-    websub:SubscriptionChangeRequest unsubscriptionRequest = {
-        topic: "<TOPIC_URL>",
-        callback: "<CALLBACK_URL>"
-    };
-    websub:SubscriptionChangeResponse|error subscriptionChangeResponse = websubHubClientEP->unsubscribe(unsubscriptionRequest);
-    ```
+Since **WebSub Specification** is not thorough enough with regard to the relationship between the ```Publisher``` and ```Hub```;
 
-For a step-by-step guide on introducing custom subscriber services, see the ["Create Webhook Callback Services"](https://ballerina.io/learn/how-to-extend-ballerina/#create-webhook-callback-services) section of "How to Extend Ballerina". 
- 
-For information on the operations, which you can perform with this module, see the below **Functions**. For examples on the usage of the operations, see the following.
- * [Internal Hub Sample Example](https://ballerina.io/learn/by-example/websub-internal-hub-sample.html)
- * [Remote Hub Sample Example](https://ballerina.io/learn/by-example/websub-remote-hub-sample.html)
- * [Hub Client Sample Example](https://ballerina.io/learn/by-example/websub-hub-client-sample.html)
- * [Service Integration Sample Example](https://ballerina.io/learn/by-example/websub-service-integration-sample.html)
+- Below methods are strictly websub compliant
+    - onSubscription
+    - onSubscriptionIntentVerified
+    - onUnsubscritpion
+    - onUnsubscriptionIntenVerified
+
+- Below methods are not strictly websub compliant
+    - onRegisterTopic
+    - onDeregisterTopic
+    - onUpdateMessage
+
+#### Hub Listener
+
+HubListener is essentially a wrapper for ```ballerina HTTP Listener```. Following is a sample of the hub-listener.
+
+```ballerina
+    listener websubhub:Listener hub = new(new http:Listener());
+    listener websubhub:Listener hub = new(9090);
+```
+
+#### Hub Client
+
+**WebSub HubClient** can be used to distribute the published content among ```subscriber base```. Current implementation is based on
+```ballerina HTTP Client```.
+
+```ballerina
+    client class HubClient {
+        remote function notifyContentDistribution(websubhub:ContentDistributionMessage msg) 
+                returns ContentDistributionSuccess | SubscriptionDeletedError | error?
+    }
+```
+
+Following is a sample of **WebSub HubClient**.
+
+```ballerina
+    type HubService service object {
+        remote function onSubscriptionIntentVerified(websubhub:Subscription msg) {
+
+            // you can pass client config if you want 
+            // say maybe retry config
+            websub:HubClient hubclient = new(msg);
+            check start notifySubscriber(hubclient);
+        }
+
+        function notifySubscriber(websubhub:HubClient hubclient) returns error? {
+            while (true) {
+                // fetch the message from MB
+                check hubclient->notifyContentDistribution({
+                    content: "This is sample content delivery"
+                });
+            }   
+        }
+    }
+```
+
+#### WebSub Publisher Client
+
+PublisherClient APIs are defined by the Ballerina standard library team and it has nothing to do with websub specification. As mentioned earlier, Even though the
+websub specification extensively discusses the relationship between the subscriber and hub, it does not really discuss much about the relationship between the publisher and hub.
+
+Following is a sample of **WebSub Publisher Client**.
+
+```ballerina
+    websubhub:PublisherClient publisherClient = new ("http://localhost:9191/websub/hub");
+
+    check publisherClient->registerTopic("http://websubpubtopic.com");
+
+    // supported types would be json|xml|byte[]|map<string>|string
+    // default content type mapping would be json -> application/json, xml -> application/xml, byte[] -> application/octect-stream, 
+    // map<string> -> application/x-www-form-urlencoded, string -> text/plain
+   
+    var publishResponse = publisherClient->publishUpdate("http://websubpubtopic.com",{"action": "publish", "mode": "remote-hub"});
+```
