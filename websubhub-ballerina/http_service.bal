@@ -16,7 +16,7 @@
 
 import ballerina/http;
 import ballerina/mime;
-import ballerina/java;
+import ballerina/jballerina.java;
 
 service class HttpService {
     private Service hubService;
