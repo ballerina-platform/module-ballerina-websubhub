@@ -16,10 +16,11 @@
 
 import ballerina/http;
 import ballerina/mime;
-import ballerina/java;
+import ballerina/jballerina.java;
 
 service class HttpService {
     private Service hubService;
+    private string hub;
     private boolean isSubscriptionAvailable = false;
     private boolean isSubscriptionValidationAvailable = false;
     private boolean isUnsubscriptionAvailable = false;
@@ -27,9 +28,9 @@ service class HttpService {
     private boolean isRegisterAvailable = false;
     private boolean isDeregisterAvailable = false;
 
-    public isolated function init(Service hubService) {
+    public isolated function init(Service hubService, string hubUrl) {
         self.hubService = hubService;
-
+        self.hub = hubUrl;
         string[] methodNames = getServiceMethodNames(hubService);
         foreach var methodName in methodNames {
             if (methodName == "onSubscription") {
@@ -121,7 +122,8 @@ service class HttpService {
                 processSubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params, 
                                                         <@untainted> self.hubService,
                                                         <@untainted> self.isSubscriptionAvailable,
-                                                        <@untainted> self.isSubscriptionValidationAvailable);
+                                                        <@untainted> self.isSubscriptionValidationAvailable,
+                                                        <@untainted> self.hub);
             }
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params,

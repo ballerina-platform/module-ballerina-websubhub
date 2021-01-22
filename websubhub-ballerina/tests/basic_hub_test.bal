@@ -31,7 +31,7 @@ service /websubhub on functionWithArgumentsListener {
                                 returns TopicRegistrationSuccess|TopicRegistrationError {
         if (message.topic == "test") {
             TopicRegistrationSuccess successResult = {
-                body: {
+                body: <map<string>>{
                        isSuccess: "true"
                     }
             };
@@ -44,7 +44,7 @@ service /websubhub on functionWithArgumentsListener {
     remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess|TopicDeregistrationError {
         TopicRegistrationSuccess deregisterResult = {
-            body: {
+            body: <map<string>>{
                    isDeregisterSuccess: "true"
                 }
         };
@@ -71,7 +71,7 @@ service /websubhub on functionWithArgumentsListener {
                 returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect
                 |BadSubscriptionError|InternalSubscriptionError {
         SubscriptionAccepted successResult = {
-                body: {
+                body: <map<string>>{
                        isSuccess: "true"
                     }
             };
@@ -101,7 +101,7 @@ service /websubhub on functionWithArgumentsListener {
                returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             UnsubscriptionAccepted successResult = {
-                body: {
+                body: <map<string>>{
                        isSuccess: "true"
                     }
             };

@@ -25,7 +25,7 @@ service /websubhub on testListener {
                                 returns TopicRegistrationSuccess|TopicRegistrationError {
         if (message.topic == "test") {
             TopicRegistrationSuccess successResult = {
-                body: {
+                body: <map<string>>{
                        isSuccess: "true"
                     }
             };
@@ -38,7 +38,7 @@ service /websubhub on testListener {
     remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess|TopicDeregistrationError {
         TopicRegistrationSuccess deregisterResult = {
-            body: {
+            body: <map<string>>{
                    isDeregisterSuccess: "true"
                 }
         };
