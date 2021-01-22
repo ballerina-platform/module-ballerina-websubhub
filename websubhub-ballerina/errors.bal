@@ -14,24 +14,36 @@
 // specific language governing permissions and limitations
 // under the License.
 
+# Error Type representing the errors in topic registration action
 public type TopicRegistrationError distinct error;
 
+# Error Type representing the errors in topic unregistration action
 public type TopicDeregistrationError distinct error;
 
+# Error Type representing the errors in subscription request
 public type BadSubscriptionError distinct error;
 
+# Error Type representing the internal errors in subscription action
 public type InternalSubscriptionError distinct error;
 
+# Error Type representing the validation errors in subscription request body
 public type SubscriptionDeniedError distinct error;
 
+# Error Type representing the errors in unsubscription request
 public type BadUnsubscriptionError distinct error;
 
+# Error Type representing the internal errors in unsubscription action
 public type InternalUnsubscriptionError distinct error;
 
+# Error Type representing the validation errors in unsubscription request body
 public type UnsubscriptionDeniedError distinct error;
 
+# Error Type representing the errors in content update request
 public type UpdateMessageError distinct error;
 
+# Error Type representing the subscriber ending the subscription 
+# by sending `HTTP 410` for content delivery response
 public type SubscriptionDeletedError distinct error;
 
+# Error Type representing the internal errors in content distribution
 public type ContentDeliveryError distinct error;

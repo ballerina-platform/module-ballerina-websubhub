@@ -39,25 +39,28 @@ public client class HubClient {
     # ```
     #
     # + url    - The URL to publish/notify updates
-    # + config - The `http:ClientConfiguration` for the underlying client or else `()`
-    public function init(Subscription subscription, http:ClientConfiguration? config = ()) returns error? {
+    # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
+    public function init(Subscription subscription, ClientConfiguration? config = ()) returns error? {
         self.callback = subscription.hubCallback;
         self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
         self.linkHeaderValue = generateLinkUrl(self.hub,  self.topic);
         self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
-        self.httpClient = check new(subscription.hubCallback, config);
+        self.httpClient = check new(subscription.hubCallback, <http:ClientConfiguration?>config);
     }
 
     # Distributes the published content to subscribers.
     # ```ballerina
-    # error? publishUpdate = websubHubClientEP->notifyContentDistribution({
-    #   content: "This is sample content"
-    # });
+    # ContentDistributionSuccess | SubscriptionDeletedError | error? publishUpdate = websubHubClientEP->notifyContentDistribution(
+    #   { 
+    #       content: "This is sample content" 
+    #   }
+    # );
     #  ```
     #
     # + msg - content to be distributed to the topic-subscriber 
-    # + return -  An `error`if an error occurred with the update or else `()`
+    # + return - an `error` if an error occurred or `SubscriptionDeletedError` if the subscriber responded with `HTTP 410` 
+    # or else `ContentDistributionSuccess` for successful content delivery
     remote function notifyContentDistribution(ContentDistributionMessage msg) returns @tainted ContentDistributionSuccess | SubscriptionDeletedError | error? {
         http:Client httpClient = self.httpClient;
 

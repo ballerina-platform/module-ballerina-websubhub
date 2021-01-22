@@ -22,12 +22,17 @@ const string HUB_MODE = "hub.mode";
 # which the request is initiated.
 const string HUB_TOPIC = "hub.topic";
 
+# Parameter `hub.callback` represents the callback URL for subscriber to receive distributed contents
 const string HUB_CALLBACK = "hub.callback";
 
+# Parameter `hub.lease_seconds` represents the lease time in seconds until which the subscription is valid
 const string HUB_LEASE_SECONDS = "hub.lease_seconds";
 
+# Parameter `hub.secret` represents the secret-key which `hub` should use to sign the content
+# in content distribution
 const string HUB_SECRET = "hub.secret";
 
+# Parameter `hub.challenge` represents a hub-generated, random string that MUST be echoed by the subscriber to verify the subscription
 const string HUB_CHALLENGE = "hub.challenge";
 
 # `hub.mode` value indicating "publish" mode, used by a publisher to notify an update to a topic.
@@ -45,31 +50,57 @@ const string MODE_SUBSCRIBE = "subscribe";
 # `hub.mode` value indicating "unsubscribe" mode, used by a subscriber to unsubscribe a topic at a hub.
 const string MODE_UNSUBSCRIBE = "unsubscribe";
 
+# `HTTP Content-Type` Header Name, used to include `Content-Type` header value manually to `HTTP Request`.
 const string CONTENT_TYPE = "Content-Type";
 
+# `HTTP X-Hub-Signature` Header Name, used to include `X-Hub-Signature` header value manually to `HTTP Request`,
+#  value of this `HTTP Header` is used by subscriber to verify whether the content is published by a valid hub.
 const string X_HUB_SIGNATURE = "X-Hub-Signature";
 
+# `HTTP Link` Header Name, used to include `Link` header value manually to `HTTP Request`.
 const string LINK = "Link";
 
 const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 
+# `SHA256 HMAC` algorithm name, this is prepended to the generated signature value.
 const string SHA256_HMAC = "sha256";
 
-const int STATUS_OK = 200;
-
-const int STATUS_GONE = 410;
-
+# Response Status object, used to communicate status of the executed actions.
+# 
+# + code - status code value
 type Status distinct object {
     public int code;
 };
 
+# Response status OK
 public readonly class StatusOK {
     *Status;
-    public STATUS_OK code = STATUS_OK;
+    public http:STATUS_OK code = http:STATUS_OK;
+}
+
+# Response status Temporary Redirect
+public readonly class StatusTemporaryRedirect {
+    *Status;
+    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
+}
+
+# Response status Permanent Redirect
+public readonly class StatusPermanentRedirect {
+    *Status;
+    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
 }
 
 final StatusOK STATUS_OK_OBJ = new;
 
+final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
+
+final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
+
+# Record to represent the parent type for all the response records.
+# 
+# + mediaType - Content-Type of the request received
+# + headers - Additional request headers received to be included in the request
+# + body - Received request body
 type CommonResponse record {|
     string? mediaType = ();
     map<string|string[]>? headers = ();
@@ -87,20 +118,40 @@ public type ContentDistributionMessage record {|
     json|xml|string|byte[] content;
 |};
 
+# Record to represent the successful WebSub content delivery
+# 
+# + status - Status of the request processing , this is `200 OK` by default since
+# this is a success reponse
 public type ContentDistributionSuccess record {|
     *CommonResponse;
     readonly StatusOK status = STATUS_OK_OBJ;
 |};
 
+# Record to represent Topic-Registration request body
+# 
+# + topic - `Topic` which should be registered in the `hub`
 public type TopicRegistration record {|
     string topic;
 |};
 
+# Record to represent Topic-Deregistration request body
+# 
+# + topic - `Topic` which should be unregistered from the `hub`
 public type TopicDeregistration record {|
     string topic;
 |};
 
 // todo Any other params set in the payload(subscribers)
+//todo: update this accordingly [ayesh]
+# Record to represent subscription request body
+# 
+# + hub - URL of the `hub` where subscriber has subscribed
+# + rawRequest - Original `HTTP Request`
+# + hubMode - Current `hub` action
+# + hubCallback - Callback URL for subscriber to receive distributed content
+# + hubTopic - Topic to which subscriber has subscribed
+# + hubLeaseSeconds - Amount of time in seconds during when the subscription is valid
+# + hubSecret - Secret Key to sign the distributed content
 public type Subscription record {
     string hub;
     http:Request rawRequest;
@@ -111,11 +162,21 @@ public type Subscription record {
     string? hubSecret = ();
 };
 
+# Record to represent completed subscription
+# 
+# + verificationSuccess - true / false based on subscription is successfully completed or not
 public type VerifiedSubscription record {
     *Subscription;
     boolean verificationSuccess;
 };
 
+# Record to represent the unsubscription request body
+# 
+# + rawRequest - Original `HTTP Reuqest`
+# + hubMode - Current `hub` action
+# + hubCallback - Callback URL for subscriber to received distributed content
+# + hubTopic - Topic from which subscriber wants to unsubscribe
+# + hubSecret - Secret Key to sign the distributed content
 public type Unsubscription record {
     http:Request rawRequest;
     string hubMode;
@@ -124,16 +185,31 @@ public type Unsubscription record {
     string? hubSecret = ();
 };
 
+# Record to represent completed unsubscription
+# 
+# + verificationSuccess - true / false based on unsubscription is successfully completed or not
 public type VerifiedUnsubscription record {
     *Unsubscription;
     boolean verificationSuccess;
 };
 
+//todo: update this accordingly [ayesh]
+# Enum to differenciate the type of content-update message
+# 
+# + EVENT - 
+# + PUBLISH -
 public enum MessageType {
     EVENT,
     PUBLISH
 }
 
+# Record to represent content-update message
+# 
+# + rawRequest - Original `HTTP Request`
+# + msgType - Type of the content update message
+# + hubTopic - Topic to which the content should be updated
+# + contentType - Content-Type of the update-message
+# + content - Content to be distributed to subscribers
 public type UpdateMessage record {
     http:Request rawRequest;
     MessageType msgType;
@@ -142,60 +218,75 @@ public type UpdateMessage record {
     string|byte[]|json|xml|map<string>? content;
 };
 
+# Record to represent Topic Registration success
 public type TopicRegistrationSuccess record {
     *CommonResponse;
 };
 
+# Record to represent Topic Deregistration Success
 public type TopicDeregistrationSuccess record {
     *CommonResponse;
 };
 
+# Record to represent accepted subscription by the `hub`
 public type SubscriptionAccepted record {
     *CommonResponse;
 };
 
+# Record to represent permanent subscription redirects
+# 
+# + redirectUrls - URLs to which subscription has redirected
+# + code - Status code for action
 public type SubscriptionPermanentRedirect record {
     *CommonResponse;
     string[] redirectUrls;
     readonly StatusPermanentRedirect code = STATUS_PERMANENT_REDIRECT;
 };
 
+# Record to represent temporary subscription redirects
+# 
+# + redirectUrls - URLs to which subscription has redirects
+# + code - Status code of the action
 public type SubscriptionTemporaryRedirect record {
     *CommonResponse;
     string[] redirectUrls;
     readonly StatusTemporaryRedirect code = STATUS_TEMPORARY_REDIRECT;
 };
 
+# Record to represent unsubscription acceptance
 public type UnsubscriptionAccepted record {
     *CommonResponse;
 };
 
+# Record to represent acknowledgement of content updated by the publisher
 public type Acknowledgement record {
     *CommonResponse;
 };
 
-type StatusCode distinct object {
-     public int code;
+# Record to represent client configuration for HubClient / PublisherClient
+public type ClientConfiguration record {
+   *http:ClientConfiguration;
 };
 
-public readonly class StatusTemporaryRedirect {
-    *StatusCode;
-    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
-}
-
-public readonly class StatusPermanentRedirect {
-    *StatusCode;
-    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
-}
-
-final StatusTemporaryRedirect STATUS_TEMPORARY_REDIRECT = new;
-
-final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
-
+# Checks whether `HTTP Response` is a success response
+# ```ballerina
+#       boolean isSuccess = websubhub:isSuccessStatusCode(300);
+# ```
+# 
+# + statusCode - `HTTP Status Code` of current response
+# + return - a `boolean` if the `statusCode` is in `2XX` range
 isolated function isSuccessStatusCode(int statusCode) returns boolean {
     return (200 <= statusCode && statusCode < 300);
 }
 
+# Generates the `HTTP Link Header` for content-distribution request
+# ```ballerina
+#       string linkHeaderValue = websubhub:generateLinkUrl("https://sample.hub.com", "https://sample.topic.com");
+# ```
+# 
+# + hubUrl - URL for the current `hub`
+# + topic - Name of the `topic`
+# + return - a `string` containing the value for `HTTP Link Header`
 isolated function generateLinkUrl(string hubUrl, string topic) returns string {
     return hubUrl + "; rel=\"hub\", " + topic + "; rel=\"self\"";
 }
