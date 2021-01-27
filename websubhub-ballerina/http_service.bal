@@ -29,6 +29,11 @@ service class HttpService {
     private boolean isRegisterAvailable = false;
     private boolean isDeregisterAvailable = false;
 
+    # Invoked during the initialization of a `websubhub:HttpService`
+    #
+    # + hubService   - {@code websubhub:Service} provided service
+    # + hubUrl       - {@code string} current Hub URL
+    # + leaseSeconds - {@code int} default value for subscription lease-seconds 
     public isolated function init(Service hubService, string hubUrl, int leaseSeconds) {
         self.hubService = hubService;
         self.hub = hubUrl;
