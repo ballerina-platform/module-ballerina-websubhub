@@ -54,7 +54,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
 
 function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
-                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, string hubUrl) {
+                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, string hubUrl, int defaultHubLeaseSeconds) {
 
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
@@ -63,13 +63,19 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     string? hubCallback = getEncodedValueOrUpdatedErrorResponse(params, HUB_CALLBACK, response);
     if (hubCallback is ()) {
         return;
-    }                             
+    }
+
+    var hubLeaseSeconds = params[HUB_LEASE_SECONDS];
+    if (hubLeaseSeconds is () || 'int:fromString(hubLeaseSeconds) == 0) {
+        hubLeaseSeconds = defaultHubLeaseSeconds.toString();
+    }
+
     Subscription message = {
         hub: hubUrl,
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
-        hubLeaseSeconds: params[HUB_LEASE_SECONDS],
+        hubLeaseSeconds: hubLeaseSeconds,
         hubSecret: params[HUB_SECRET],
         rawRequest: request
     };
@@ -127,7 +133,8 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=" + MODE_SUBSCRIBE
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                            + "&" + HUB_CHALLENGE + "=" + challenge;
+                            + "&" + HUB_CHALLENGE + "=" + challenge
+                            + "&" + HUB_LEASE_SECONDS + "=" + <string>message.hubLeaseSeconds;
         var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
         if (subscriberResponse is http:Response) {
             var respStringPayload = subscriberResponse.getTextPayload();

@@ -18,6 +18,7 @@ import ballerina/http;
 
 # Represents a Service listener endpoint.
 public class Listener {
+    private final int defaultHubLeaseSeconds = 864000;
     private http:Listener httpListener;
     private http:ListenerConfiguration listenerConfig;
     private int port;
@@ -46,7 +47,8 @@ public class Listener {
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         string hubUrl = self.retrieveHubUrl(name);
-        self.httpService = new(s, hubUrl);
+        // todo implement to retrieve hub-lease-seconds via annotation configuration
+        self.httpService = new(s, hubUrl, self.defaultHubLeaseSeconds);
         checkpanic self.httpListener.attach(<HttpService> self.httpService, name);
     }
 
