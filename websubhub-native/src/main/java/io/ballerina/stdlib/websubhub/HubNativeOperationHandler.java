@@ -32,6 +32,11 @@ import io.ballerina.runtime.api.values.BString;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * {@code HubNativeOprationHandler} handles the native method invocations.
+ * For every remote method there is a seperate method to be called
+ * with {@code Environment}, {@code BObject} hubService and {@code BMap} message.
+ */
 public class HubNativeOperationHandler {
 
     public static BArray getServiceMethodNames(BObject bHubService) {
@@ -58,24 +63,33 @@ public class HubNativeOperationHandler {
         return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionMethod", "onSubscription");
     }
 
-    public static Object callOnSubscriptionValidationMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionValidationMethod", "onSubscriptionValidation");
+    public static Object callOnSubscriptionValidationMethod(Environment env, BObject bHubService, 
+                                                            BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionValidationMethod", 
+                                    "onSubscriptionValidation");
     }
 
-    public static void callOnSubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionIntentVerifiedMethod", "onSubscriptionIntentVerified");
+    public static void callOnSubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
+                                                              BMap<BString, Object> message) {
+        invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionIntentVerifiedMethod", 
+                            "onSubscriptionIntentVerified");
     }
 
-    public static Object callOnUnsubscriptionMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
+    public static Object callOnUnsubscriptionMethod(Environment env, BObject bHubService, 
+                                                    BMap<BString, Object> message) {
         return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionMethod", "onUnsubscription");
     }
 
-    public static Object callOnUnsubscriptionValidationMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionValidationMethod", "onUnsubscriptionValidation");
+    public static Object callOnUnsubscriptionValidationMethod(Environment env, BObject bHubService, 
+                                                              BMap<BString, Object> message) {
+        return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionValidationMethod", 
+                                    "onUnsubscriptionValidation");
     }
 
-    public static void callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionIntentVerifiedMethod", "onUnsubscriptionIntentVerified");
+    public static void callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
+                                                                BMap<BString, Object> message) {
+        invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionIntentVerifiedMethod", 
+                            "onUnsubscriptionIntentVerified");
     }
 
     private static Object invokeRemoteFunction(Environment env, BObject bHubService, BMap<BString, Object> message,

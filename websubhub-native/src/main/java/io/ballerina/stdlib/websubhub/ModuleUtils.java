@@ -21,6 +21,9 @@ package io.ballerina.stdlib.websubhub;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
 
+/**
+ * {@code ModuleUtils} contains the utility methods for the module.
+ */
 public class ModuleUtils {
 
     private static Module module;
