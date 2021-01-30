@@ -151,6 +151,24 @@ task revertTomlFile {
     }
 }
 
+task ballerinaTest {
+    dependsOn(updateTomlFile)
+    dependsOn(initializeVariables)
+    finalizedBy(revertTomlFile)
+
+    doLast {
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat test --code-coverage --includes=* ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+            } else {
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal test --code-coverage --includes=* ${groupParams} ${disableGroups} ${debugParams}"
+            }
+        }
+    }
+}
+
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
     dependsOn(initializeVariables)
@@ -158,6 +176,9 @@ task ballerinaBuild {
 
     def testParams = "--skip-tests"
     gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(':graphql-ballerina:build')) {
+            ballerinaTest.enabled = false
+        }
         if (graph.hasTask(':websubhub-ballerina:test')) {
             testParams = "--code-coverage --includes=*"
         }
