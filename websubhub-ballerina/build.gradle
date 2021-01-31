@@ -169,6 +169,10 @@ task ballerinaTest {
     }
 }
 
+test {
+    dependsOn(ballerinaTest)
+}
+
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
     dependsOn(initializeVariables)
@@ -272,6 +276,7 @@ publishing {
 }
 
 ballerinaBuild.dependsOn ":websubhub-native:build"
+ballerinaTest.dependsOn ":websubhub-native:build"
 unpackJballerinaTools.dependsOn copyToLib
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
