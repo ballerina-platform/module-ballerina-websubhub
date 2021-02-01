@@ -176,11 +176,12 @@ test {
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
     dependsOn(initializeVariables)
+    dependsOn(updateTomlFile)
     finalizedBy(revertTomlFile)
 
     def testParams = "--skip-tests"
     gradle.taskGraph.whenReady { graph ->
-        if (graph.hasTask(':graphql-ballerina:build')) {
+        if (graph.hasTask(':graphql-ballerina:build') || graph.hasTask(':graphql-ballerina:publish')) {
             ballerinaTest.enabled = false
         }
         if (graph.hasTask(':websubhub-ballerina:test')) {
