@@ -54,7 +54,8 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
 
 function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               map<string> params, Service hubService,
-                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, string hubUrl) {
+                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, 
+                                              string hubUrl, int defaultHubLeaseSeconds) {
 
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
@@ -63,13 +64,19 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     string? hubCallback = getEncodedValueOrUpdatedErrorResponse(params, HUB_CALLBACK, response);
     if (hubCallback is ()) {
         return;
-    }                             
+    }
+
+    var hubLeaseSeconds = params[HUB_LEASE_SECONDS];
+    if (hubLeaseSeconds is () || 'int:fromString(hubLeaseSeconds) == 0) {
+        hubLeaseSeconds = defaultHubLeaseSeconds.toString();
+    }
+
     Subscription message = {
         hub: hubUrl,
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
-        hubLeaseSeconds: params[HUB_LEASE_SECONDS],
+        hubLeaseSeconds: hubLeaseSeconds,
         hubSecret: params[HUB_SECRET],
         rawRequest: request
     };
@@ -78,12 +85,15 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         respondToRequest(caller, response);
     } else {
         SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
-        BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(hubService, message);
+        BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(
+                                                                                        hubService, message);
         if (onSubscriptionResult is SubscriptionPermanentRedirect) {
-            var result = caller->redirect(response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
+            var result = caller->redirect(
+                response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
         } else if (onSubscriptionResult is SubscriptionPermanentRedirect) {
            SubscriptionPermanentRedirect redirMsg = <SubscriptionPermanentRedirect> onSubscriptionResult;
-           var result = caller->redirect(response, http:REDIRECT_PERMANENT_REDIRECT_308, redirMsg.redirectUrls);
+           var result = caller->redirect(
+               response, http:REDIRECT_PERMANENT_REDIRECT_308, redirMsg.redirectUrls);
         } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
@@ -127,7 +137,8 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=" + MODE_SUBSCRIBE
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                            + "&" + HUB_CHALLENGE + "=" + challenge;
+                            + "&" + HUB_CHALLENGE + "=" + challenge
+                            + "&" + HUB_LEASE_SECONDS + "=" + <string>message.hubLeaseSeconds;
         var subscriberResponse = httpClient->get(<@untainted string> queryParams, request);
         if (subscriberResponse is http:Response) {
             var respStringPayload = subscriberResponse.getTextPayload();
@@ -150,10 +161,10 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
     }
 }
 
-function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
-                                              map<string> params, Service hubService,
-                                              boolean isUnsubscriptionAvailable,
-                                              boolean isUnsubscriptionValidationAvailable) {
+function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
+                                                map<string> params, Service hubService,
+                                                boolean isUnsubscriptionAvailable, 
+                                                boolean isUnsubscriptionValidationAvailable) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
         return;
@@ -174,11 +185,13 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
         respondToRequest(caller, response);
     } else {
         UnsubscriptionAccepted|BadUnsubscriptionError
-            |InternalUnsubscriptionError onUnsubscriptionResult = callOnUnsubscriptionMethod(hubService, message);
+            |InternalUnsubscriptionError onUnsubscriptionResult = callOnUnsubscriptionMethod(
+                                                                            hubService, message);
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            proceedToUnsubscriptionVerification(request, hubService, message, isUnsubscriptionValidationAvailable);
+            proceedToUnsubscriptionVerification(
+                request, hubService, message, isUnsubscriptionValidationAvailable);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             respondToRequest(caller, response);
@@ -189,8 +202,8 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     }
 }
 
-function proceedToUnsubscriptionVerification(http:Request initialRequest, Service hubService, Unsubscription message,
-                                            boolean isUnsubscriptionValidationAvailable) {
+function proceedToUnsubscriptionVerification(http:Request initialRequest, Service hubService, 
+                                             Unsubscription message, boolean isUnsubscriptionValidationAvailable) {
 
     UnsubscriptionDeniedError? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
@@ -253,8 +266,8 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
     respondToRequest(caller, response);
 }
 
-isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, http:Response response) 
-                                            returns string? {
+isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, 
+                                                        http:Response response) returns string? {
     string|error? topic = ();
     var topicFromParams = params['key];
     if topicFromParams is string {
@@ -268,7 +281,8 @@ isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, stri
     }
 }
 
-isolated function updateBadRequestErrorResponse(http:Response response, string paramName, string|error? topicParameter) {
+isolated function updateBadRequestErrorResponse(http:Response response, string paramName, 
+                                                string|error? topicParameter) {
     string errorMessage = "";
     if (topicParameter is error) {
         errorMessage = "Invalid value found for parameter '" + paramName + "' : " + topicParameter.message();
