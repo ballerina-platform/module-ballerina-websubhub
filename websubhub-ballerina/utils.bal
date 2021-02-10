@@ -32,8 +32,7 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
         io:println("Retrieved result: ", result);
         if (result is TopicRegistrationError) {
             var errorDetails = result.detail();
-            anydata messageBody = errorDetails["body"] is () ? result.message() : errorDetails["body"];
-            updateErrorResponse(response, messageBody, errorDetails["headers"]);
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
         } else {
             updateSuccessResponse(response, result["body"], result["headers"]);
         }
@@ -50,8 +49,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
         TopicDeregistrationSuccess|TopicDeregistrationError result = callDeregisterMethod(hubService, msg);
         if (result is TopicDeregistrationError) {
             var errorDetails = result.detail();
-            anydata messageBody = errorDetails["body"] is () ? result.message() : errorDetails["body"];
-            updateErrorResponse(response, messageBody, errorDetails["headers"]);
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
         } else {
             updateSuccessResponse(response, result["body"], result["headers"]);
         }
@@ -107,15 +105,13 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         } else if (onSubscriptionResult is BadSubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onSubscriptionResult.detail();
-            anydata messageBody = errorDetails["body"] is () ? onSubscriptionResult.message() : errorDetails["body"];
-            updateErrorResponse(response, messageBody, errorDetails["headers"]);
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onSubscriptionResult.message());
             respondToRequest(caller, response);
         } else {
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
             onSubscriptionResult = <InternalSubscriptionError>onSubscriptionResult;
             var errorDetails = onSubscriptionResult.detail();
-            anydata messageBody = errorDetails["body"] is () ? onSubscriptionResult.message() : errorDetails["body"];
-            updateErrorResponse(response, messageBody, errorDetails["headers"]);
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onSubscriptionResult.message());
             respondToRequest(caller, response);
         }
     }
@@ -208,15 +204,13 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onUnsubscriptionResult.detail();
-            anydata messageBody = errorDetails["body"] is () ? onUnsubscriptionResult.message() : errorDetails["body"];
-            updateErrorResponse(response, messageBody, errorDetails["headers"]);
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onUnsubscriptionResult.message());
             respondToRequest(caller, response);
         } else {
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
             onUnsubscriptionResult = <InternalUnsubscriptionError>onUnsubscriptionResult;
             var errorDetails = onUnsubscriptionResult.detail();
-            anydata messageBody = errorDetails["body"] is () ? onUnsubscriptionResult.message() : errorDetails["body"];
-            updateErrorResponse(response, messageBody, errorDetails["headers"]);
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onUnsubscriptionResult.message());
             respondToRequest(caller, response);
         } 
     }
@@ -282,8 +276,7 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
         response.setHeader("Content-type","application/x-www-form-urlencoded");
     } else {
         var errorDetails = updateResult.detail();
-        anydata messageBody = errorDetails["body"] is () ? updateResult.message() : errorDetails["body"];
-        updateErrorResponse(response, messageBody, errorDetails["headers"]);
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
     }
     respondToRequest(caller, response);
 }
@@ -316,8 +309,8 @@ isolated function updateBadRequestErrorResponse(http:Response response, string p
 }
 
 isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
-                                        map<string|string[]>? headers) {
-    updateHubResponse(response, "denied", messageBody, headers);
+                                        map<string|string[]>? headers, string reason) {
+    updateHubResponse(response, "denied", messageBody, headers, reason);
 }
 
 isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
@@ -326,10 +319,11 @@ isolated function updateSuccessResponse(http:Response response, anydata? message
 }
 
 isolated function updateHubResponse(http:Response response, string hubMode, 
-                                    anydata? messageBody, map<string|string[]>? headers) {
+                                    anydata? messageBody, map<string|string[]>? headers, 
+                                    string? reason = ()) {
     response.setHeader("Content-type","application/x-www-form-urlencoded");
 
-    string payload = generateResponsePayload(hubMode, messageBody);
+    string payload = generateResponsePayload(hubMode, messageBody, reason);
 
     response.setTextPayload(payload);
 
@@ -346,15 +340,20 @@ isolated function updateHubResponse(http:Response response, string hubMode,
     }
 }
 
-isolated function generateResponsePayload(string hubMode, anydata? messageBody) returns string {
+isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
     string payload = "hub.mode=" + hubMode;
-    if (messageBody is string) {
-        payload += "&hub.reason=" + messageBody;
-    } else if (messageBody is map<string>) {
+    
+    payload += reason is string ? "&hub.reason=" + reason : "";
+
+    if (messageBody is map<string> && messageBody.length() > 0) {
+        string[] messageParams = [];
+        payload += "&";
         foreach var ['key, value] in messageBody.entries() {
-            payload += "&" + 'key + "=" + value;
-        } 
+            messageParams.push('key + "=" + value);
+        }
+        payload += strings:'join("&", ...messageParams);
     }
+
     return payload;
 }
 
