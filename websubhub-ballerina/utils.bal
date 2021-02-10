@@ -18,6 +18,7 @@ import ballerina/lang.'string as strings;
 import ballerina/encoding;
 import ballerina/http;
 import ballerina/uuid;
+import ballerina/io;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
                                             map<string> params, Service hubService) {
@@ -27,11 +28,14 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
             topic: topic
         };
 
-        TopicRegistrationSuccess|TopicRegistrationError registerStatus = callRegisterMethod(hubService, msg);
-        if (registerStatus is TopicRegistrationError) {
-            updateErrorResponse(response, registerStatus.message());
+        TopicRegistrationSuccess|TopicRegistrationError result = callRegisterMethod(hubService, msg);
+        io:println("Retrieved result: ", result);
+        if (result is TopicRegistrationError) {
+            var errorDetails = result.detail();
+            anydata messageBody = errorDetails["body"] is () ? result.message() : errorDetails["body"];
+            updateErrorResponse(response, messageBody, errorDetails["headers"]);
         } else {
-            updateSuccessResponse(response, registerStatus["body"], registerStatus["headers"]);
+            updateSuccessResponse(response, result["body"], result["headers"]);
         }
     }
 }
@@ -43,11 +47,13 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
         TopicDeregistration msg = {
             topic: topic
         };
-        TopicDeregistrationSuccess|TopicDeregistrationError deregisterStatus = callDeregisterMethod(hubService, msg);
-        if (deregisterStatus is TopicDeregistrationError) {
-            updateErrorResponse(response, deregisterStatus.message());
+        TopicDeregistrationSuccess|TopicDeregistrationError result = callDeregisterMethod(hubService, msg);
+        if (result is TopicDeregistrationError) {
+            var errorDetails = result.detail();
+            anydata messageBody = errorDetails["body"] is () ? result.message() : errorDetails["body"];
+            updateErrorResponse(response, messageBody, errorDetails["headers"]);
         } else {
-            updateSuccessResponse(response, deregisterStatus["body"], deregisterStatus["headers"]);
+            updateSuccessResponse(response, result["body"], result["headers"]);
         }
     }
 }
@@ -100,9 +106,16 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
             proceedToValidationAndVerification(hubService, message, isSubscriptionValidationAvailable);
         } else if (onSubscriptionResult is BadSubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
+            var errorDetails = onSubscriptionResult.detail();
+            anydata messageBody = errorDetails["body"] is () ? onSubscriptionResult.message() : errorDetails["body"];
+            updateErrorResponse(response, messageBody, errorDetails["headers"]);
             respondToRequest(caller, response);
         } else {
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            onSubscriptionResult = <InternalSubscriptionError>onSubscriptionResult;
+            var errorDetails = onSubscriptionResult.detail();
+            anydata messageBody = errorDetails["body"] is () ? onSubscriptionResult.message() : errorDetails["body"];
+            updateErrorResponse(response, messageBody, errorDetails["headers"]);
             respondToRequest(caller, response);
         }
     }
@@ -194,9 +207,16 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
                 request, hubService, message, isUnsubscriptionValidationAvailable);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
+            var errorDetails = onUnsubscriptionResult.detail();
+            anydata messageBody = errorDetails["body"] is () ? onUnsubscriptionResult.message() : errorDetails["body"];
+            updateErrorResponse(response, messageBody, errorDetails["headers"]);
             respondToRequest(caller, response);
         } else {
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+            onUnsubscriptionResult = <InternalUnsubscriptionError>onUnsubscriptionResult;
+            var errorDetails = onUnsubscriptionResult.detail();
+            anydata messageBody = errorDetails["body"] is () ? onUnsubscriptionResult.message() : errorDetails["body"];
+            updateErrorResponse(response, messageBody, errorDetails["headers"]);
             respondToRequest(caller, response);
         } 
     }
@@ -261,7 +281,9 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
         response.setTextPayload("hub.mode=accepted");
         response.setHeader("Content-type","application/x-www-form-urlencoded");
     } else {
-        updateErrorResponse(response, updateResult.message());
+        var errorDetails = updateResult.detail();
+        anydata messageBody = errorDetails["body"] is () ? updateResult.message() : errorDetails["body"];
+        updateErrorResponse(response, messageBody, errorDetails["headers"]);
     }
     respondToRequest(caller, response);
 }
@@ -293,22 +315,24 @@ isolated function updateBadRequestErrorResponse(http:Response response, string p
     response.setTextPayload(errorMessage);
 }
 
-isolated function updateErrorResponse(http:Response response, string reason) {
-    string payload = "hub.mode=denied" + "&hub.reason=" + reason;
-    response.setTextPayload(payload);
-    response.setHeader("Content-type","application/x-www-form-urlencoded");
+isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
+                                        map<string|string[]>? headers) {
+    updateHubResponse(response, "denied", messageBody, headers);
 }
 
 isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
-    string payload = "hub.mode=accepted";
-    if (messageBody is map<string>) {
-        foreach var ['key, value] in messageBody.entries() {
-            payload = payload + "&" + 'key + "=" + value;
-        }
-    }
-    response.setTextPayload(payload);
+    updateHubResponse(response, "accepted", messageBody, headers);
+}
+
+isolated function updateHubResponse(http:Response response, string hubMode, 
+                                    anydata? messageBody, map<string|string[]>? headers) {
     response.setHeader("Content-type","application/x-www-form-urlencoded");
+
+    string payload = generateResponsePayload(hubMode, messageBody);
+
+    response.setTextPayload(payload);
+
     if (headers is map<string|string[]>) {
         foreach var [header, value] in headers.entries() {
             if (value is string) {
@@ -320,6 +344,18 @@ isolated function updateSuccessResponse(http:Response response, anydata? message
             }
         }
     }
+}
+
+isolated function generateResponsePayload(string hubMode, anydata? messageBody) returns string {
+    string payload = "hub.mode=" + hubMode;
+    if (messageBody is string) {
+        payload += "&hub.reason=" + messageBody;
+    } else if (messageBody is map<string>) {
+        foreach var ['key, value] in messageBody.entries() {
+            payload += "&" + 'key + "=" + value;
+        } 
+    }
+    return payload;
 }
 
 isolated function respondToRequest(http:Caller caller, http:Response response) {
