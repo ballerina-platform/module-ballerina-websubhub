@@ -27,7 +27,7 @@ var simpleSubscriber = service object {
         map<string[]> payload = req.getQueryParams();
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
-            log:print("Subscriber Validation failed ", payload.toString());
+            log:print("Subscriber Validation failed ", retrievedPayload = payload);
             isValidationFailed = true;
             check caller->respond("");
         } else {
@@ -46,7 +46,7 @@ var simpleSubscriber = service object {
         map<string[]> payload = req.getQueryParams();
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
-            log:print("Unsubscription Validation failed ", payload.toString());
+            log:print("Unsubscription Validation failed ", retrievedPayload = payload);
             isValidationFailed = true;
             check caller->respond("");
         } else {
