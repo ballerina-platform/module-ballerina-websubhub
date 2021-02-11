@@ -86,8 +86,8 @@ public client class HubClient {
         request.setHeader(LINK, self.linkHeaderValue);
 
         if (self.secret.length() > 0) {
-            string hash = check self.retrievePayloadSignature(self.secret, msg.content);
-            request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash);
+            var hash = check self.retrievePayloadSignature(self.secret, msg.content);
+            request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash.toBase64());
         }
 
         request.setPayload(msg.content);
@@ -133,9 +133,9 @@ public client class HubClient {
         }
     }
 
-    isolated function retrievePayloadSignature(string key, string|xml|json|byte[] payload) returns string | error {
-        byte[] keyArr = key.toBytes();
-        byte[] hashedContent = [];
+    isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+        byte[] keyArr = 'key.toBytes();
+        byte[]|crypto:Error hashedContent;
         if (payload is byte[]) {
             hashedContent = crypto:hmacSha256(payload, keyArr);
         } else if (payload is string) {
@@ -148,6 +148,6 @@ public client class HubClient {
             byte[] inputArr = (<json>payload).toString().toBytes();
             hashedContent = crypto:hmacSha256(inputArr, keyArr);
         }
-        return hashedContent.toBase64();
+        return hashedContent;
     }
 }
