@@ -1,9 +1,9 @@
-## Module Overview
+## Package Overview
 
 W3C [**WebSub**](https://w3c.github.io/websub/) is a recommendation, which facilitates a push-based content delivery / notification mechanism
 between publishers and subscribers.
 
-This module contains following components :
+This package contains following components :
 
 1. API Specification of W3C [**WebSub Hub**](https://w3c.github.io/websub/#hub) specification.
 
@@ -34,7 +34,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 #### WebSub Hub Specification
 
-One of the key features of this module is the ```ballerina``` specific API abstraction for **WebSub Hub** specification.
+One of the key features of this package is the ```ballerina``` specific API abstraction for **WebSub Hub** specification.
 
 According to the W3C [**WebSub**](https://w3c.github.io/websub/) specification **Hub** has following responsibilities.
 
@@ -43,7 +43,7 @@ According to the W3C [**WebSub**](https://w3c.github.io/websub/) specification *
 - Verify the valid ```subscriptions```.
 - Distribute published ```content``` to the ```subscriber base``` of a ```topic```.
 
-In the API specification for **WebSub Hub**, module provides following abstractions to be implemented.
+In the API specification for **WebSub Hub**, package provides following abstractions to be implemented.
 
 - Publisher Interactions
 
