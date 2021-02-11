@@ -274,10 +274,6 @@ task createTestableJarZip(type: Zip) {
     }
 }
 
-def getCheckedOutGitCommitHash() {
-    'git rev-parse --verify --short HEAD'.execute().text.trim()
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
