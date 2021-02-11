@@ -18,7 +18,7 @@ import ballerina/io;
 import ballerina/http;
 import ballerina/test;
 
-service /callback on new http:Listener(9092) {
+service /callback on new http:Listener(9094) {
     resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
         printHeaders(req);
@@ -61,7 +61,7 @@ isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscripti
 @test:Config {
 }
 function testTextContentDelivery() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9092/callback/success");
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
 
@@ -79,7 +79,7 @@ function testTextContentDelivery() returns @tainted error? {
 @test:Config {
 }
 function testJsonContentDelivery() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9092/callback/success");
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
@@ -102,7 +102,7 @@ function testJsonContentDelivery() returns @tainted error? {
 @test:Config {
 }
 function testXmlContentDelivery() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9092/callback/success");
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
@@ -125,7 +125,7 @@ function testXmlContentDelivery() returns @tainted error? {
 @test:Config {
 }
 function testByteArrayContentDelivery() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9092/callback/success");
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
@@ -144,7 +144,7 @@ function testByteArrayContentDelivery() returns @tainted error? {
 @test:Config {
 }
 function testSubscriptionDeleted() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9092/callback/deleted");
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
 

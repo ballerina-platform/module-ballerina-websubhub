@@ -17,7 +17,7 @@
 import ballerina/io;
 import ballerina/test;
 
-listener Listener testListener = new(9191);
+listener Listener testListener = new(9092);
 
 service /websubhub on testListener {
 
@@ -71,7 +71,7 @@ service /websubhub on testListener {
     }
 }
 
-PublisherClient websubHubClientEP = checkpanic new ("http://localhost:9191/websubhub");
+PublisherClient websubHubClientEP = checkpanic new ("http://localhost:9092/websubhub");
 
 @test:Config{}
 public function testPublisherRegisterSuccess() {

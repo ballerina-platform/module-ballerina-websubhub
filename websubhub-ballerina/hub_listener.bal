@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/log;
 
 # Represents a Service listener endpoint.
 public class Listener {
@@ -46,6 +47,10 @@ public class Listener {
     # + name - The path of the Service to be hosted
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
+        if (self.listenerConfig.secureSocket is ()) {
+            log:print("HTTPS is recommended but using HTTP");
+        }
+
         string hubUrl = self.retrieveHubUrl(name);
         // todo implement to retrieve hub-lease-seconds via annotation configuration
         self.httpService = new(s, hubUrl, self.defaultHubLeaseSeconds);
