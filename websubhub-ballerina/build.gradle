@@ -301,6 +301,7 @@ copyStdlibs.dependsOn unpackStdLibs
 updateTomlFile.dependsOn copyStdlibs
 
 build.dependsOn ballerinaBuild
+test.dependsOn ballerinaTest
 createTestableJarZip.dependsOn ballerinaBuild
 ballerinaPublish.dependsOn ballerinaBuild
 publish.dependsOn ballerinaPublish
