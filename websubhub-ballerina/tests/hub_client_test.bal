@@ -53,8 +53,7 @@ isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscripti
         hubMode: "subscribe", 
         hubCallback: callbackUrl, 
         hubTopic: "https://topic.com", 
-        hubSecret: "secretkey1",
-        rawRequest: new http:Request()
+        hubSecret: "secretkey1"
     };
 }
 

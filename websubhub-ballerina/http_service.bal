@@ -151,40 +151,35 @@ service class HttpService {
                         hubTopic: <string> topic,
                         msgType: EVENT,
                         contentType: "application/x-www-form-urlencoded",
-                        content: (),
-                        rawRequest: request
+                        content: ()
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "application/json",
-                        content: checkpanic request.getJsonPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getJsonPayload()
                     };
                 } else if (contentType == mime:APPLICATION_XML) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "application/xml",
-                        content: checkpanic request.getXmlPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getXmlPayload()
                     };
                 } else if (contentType == "text/plain") {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "text/plain",
-                        content: checkpanic request.getTextPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getTextPayload()
                     };
                 } else {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "application/octet-stream",
-                        content: checkpanic request.getBinaryPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getBinaryPayload()
                     };
                 }
                 processPublishRequestAndRespond(caller, response, self.hubService, <@untainted> updateMsg);

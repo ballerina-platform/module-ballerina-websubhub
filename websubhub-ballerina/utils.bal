@@ -71,8 +71,15 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     }
 
     var hubLeaseSeconds = params[HUB_LEASE_SECONDS];
-    if (hubLeaseSeconds is () || 'int:fromString(hubLeaseSeconds) == 0) {
+    if (hubLeaseSeconds is ()) {
         hubLeaseSeconds = defaultHubLeaseSeconds.toString();
+    } else {
+        var retrievedLeaseSeconds = 'int:fromString(hubLeaseSeconds);
+        if (retrievedLeaseSeconds is error) {
+            hubLeaseSeconds = defaultHubLeaseSeconds.toString();
+        } else if (retrievedLeaseSeconds == 0) {
+            hubLeaseSeconds = defaultHubLeaseSeconds.toString();
+        }
     }
 
     Subscription message = {
@@ -81,8 +88,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
         hubLeaseSeconds: hubLeaseSeconds,
-        hubSecret: params[HUB_SECRET],
-        rawRequest: request
+        hubSecret: params[HUB_SECRET]
     };
     if (!isAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -160,8 +166,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
                         hubCallback: message.hubCallback,
                         hubTopic: message.hubTopic,
                         hubLeaseSeconds: message.hubLeaseSeconds,
-                        hubSecret: message.hubSecret,
-                        rawRequest: request
+                        hubSecret: message.hubSecret
                     };
                     callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
                 }
@@ -186,8 +191,7 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
         hubMode: MODE_SUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
-        hubSecret: params[HUB_SECRET],
-        rawRequest: request
+        hubSecret: params[HUB_SECRET]
     };
     if (!isUnsubscriptionAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
@@ -255,8 +259,7 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, Servic
                         hubMode: message.hubMode,
                         hubCallback: message.hubCallback,
                         hubTopic: message.hubTopic,
-                        hubSecret: message.hubSecret,
-                        rawRequest: initialRequest
+                        hubSecret: message.hubSecret
                     };
                     callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
                 }

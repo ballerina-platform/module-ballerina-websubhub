@@ -154,7 +154,6 @@ public type TopicDeregistration record {|
 # + hubSecret - Secret Key to sign the distributed content
 public type Subscription record {
     string hub;
-    http:Request rawRequest;
     string hubMode;
     string hubCallback;
     string hubTopic;
@@ -178,7 +177,6 @@ public type VerifiedSubscription record {
 # + hubTopic - Topic from which subscriber wants to unsubscribe
 # + hubSecret - Secret Key to sign the distributed content
 public type Unsubscription record {
-    http:Request rawRequest;
     string hubMode;
     string hubCallback;
     string hubTopic;
@@ -211,7 +209,6 @@ public enum MessageType {
 # + contentType - Content-Type of the update-message
 # + content - Content to be distributed to subscribers
 public type UpdateMessage record {
-    http:Request rawRequest;
     MessageType msgType;
     string hubTopic;
     string contentType;
