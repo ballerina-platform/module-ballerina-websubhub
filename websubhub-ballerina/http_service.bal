@@ -67,12 +67,12 @@ service class HttpService {
 
         map<string> params = {};
 
-        string contentType = checkpanic request.getHeader(CONTENT_TYPE);
+        string contentType = checkpanic headers.getHeader(CONTENT_TYPE);
         map<string[]> queryParams = request.getQueryParams();
         // todo: Use constants form mime/http
         match contentType {
             "application/x-www-form-urlencoded" => {
-                string|http:HeaderNotFoundError publisherHeader = request.getHeader(BALLERINA_PUBLISH_HEADER);
+                string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
                 if (publisherHeader is string) {
                     if (publisherHeader == "publish") {
                         string[] hubMode = queryParams.get(HUB_MODE);
