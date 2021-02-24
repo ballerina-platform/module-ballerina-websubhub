@@ -61,7 +61,7 @@ service class HttpService {
         }
     }
 
-    resource function post .(http:Caller caller, http:Request request) {
+    resource function post .(http:Caller caller, http:Request request, http:Headers headers) {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
 
@@ -111,7 +111,7 @@ service class HttpService {
         match mode {
             MODE_REGISTER => {
                 if (self.isRegisterAvailable) {
-                    processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                    processRegisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -119,24 +119,26 @@ service class HttpService {
             }
             MODE_DEREGISTER => {
                 if (self.isDeregisterAvailable) {
-                    processDeregisterRequest(caller, response, <@untainted> params, self.hubService);
+                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
                 respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {
-                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params, 
-                                                        <@untainted> self.hubService,
-                                                        <@untainted> self.isSubscriptionAvailable,
-                                                        <@untainted> self.isSubscriptionValidationAvailable,
-                                                        <@untainted> self.hub,
-                                                        <@untainted> self.defaultHubLeaseSeconds);
+                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
+                                                     headers, <@untainted> params, 
+                                                     <@untainted> self.hubService, 
+                                                     <@untainted> self.isSubscriptionAvailable,
+                                                     <@untainted> self.isSubscriptionValidationAvailable, 
+                                                     <@untainted> self.hub, 
+                                                     <@untainted> self.defaultHubLeaseSeconds);
             }
             MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params,
-                                                        self.hubService, self.isUnsubscriptionAvailable,
-                                                        <@untainted> self.isUnsubscriptionValidationAvailable);
+                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
+                                                       headers, <@untainted> params, self.hubService, 
+                                                       self.isUnsubscriptionAvailable,
+                                                       <@untainted> self.isUnsubscriptionValidationAvailable);
             }
             MODE_PUBLISH => {
                 // todo Proper error handling instead of checkpanic
@@ -182,7 +184,7 @@ service class HttpService {
                         content: checkpanic request.getBinaryPayload()
                     };
                 }
-                processPublishRequestAndRespond(caller, response, self.hubService, <@untainted> updateMsg);
+                processPublishRequestAndRespond(caller, response, headers, self.hubService, <@untainted> updateMsg);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;

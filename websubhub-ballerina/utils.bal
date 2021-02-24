@@ -21,14 +21,15 @@ import ballerina/uuid;
 import ballerina/io;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
-                                            map<string> params, Service hubService) {
+                                        http:Headers headers, map<string> params, 
+                                        Service hubService) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicRegistration msg = {
             topic: topic
         };
 
-        TopicRegistrationSuccess|TopicRegistrationError result = callRegisterMethod(hubService, msg);
+        TopicRegistrationSuccess|TopicRegistrationError result = callRegisterMethod(hubService, msg, headers);
         io:println("Retrieved result: ", result);
         if (result is TopicRegistrationError) {
             var errorDetails = result.detail();
@@ -40,13 +41,14 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
 }
 
 isolated function processDeregisterRequest(http:Caller caller, http:Response response,
-                                            map<string> params, Service hubService) {
+                                           http:Headers headers, map<string> params, 
+                                           Service hubService) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicDeregistration msg = {
             topic: topic
         };
-        TopicDeregistrationSuccess|TopicDeregistrationError result = callDeregisterMethod(hubService, msg);
+        TopicDeregistrationSuccess|TopicDeregistrationError result = callDeregisterMethod(hubService, msg, headers);
         if (result is TopicDeregistrationError) {
             var errorDetails = result.detail();
             updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
@@ -57,7 +59,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
 }
 
 function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
-                                              map<string> params, Service hubService,
+                                              http:Headers headers, map<string> params, Service hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable, 
                                               string hubUrl, int defaultHubLeaseSeconds) {
 
@@ -96,7 +98,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     } else {
         SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
         BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(
-                                                                                        hubService, message);
+                                                                                        hubService, message, headers);
         if (onSubscriptionResult is SubscriptionPermanentRedirect) {
             var result = caller->redirect(
                 response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
@@ -107,7 +109,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            proceedToValidationAndVerification(hubService, message, isSubscriptionValidationAvailable);
+            proceedToValidationAndVerification(headers, hubService, message, isSubscriptionValidationAvailable);
         } else if (onSubscriptionResult is BadSubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onSubscriptionResult.detail();
@@ -123,11 +125,11 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     }
 }   
 
-function proceedToValidationAndVerification(Service hubService, Subscription message,
+function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
                                             boolean isSubscriptionValidationAvailable) {
     SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
-        validationResult = callOnSubscriptionValidationMethod(hubService, message);
+        validationResult = callOnSubscriptionValidationMethod(hubService, message, headers);
     } else {
         if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
@@ -168,7 +170,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
                         hubLeaseSeconds: message.hubLeaseSeconds,
                         hubSecret: message.hubSecret
                     };
-                    callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
+                    callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
                 }
             }
         }
@@ -176,7 +178,7 @@ function proceedToValidationAndVerification(Service hubService, Subscription mes
 }
 
 function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
-                                                map<string> params, Service hubService,
+                                                http:Headers headers, map<string> params, Service hubService,
                                                 boolean isUnsubscriptionAvailable, 
                                                 boolean isUnsubscriptionValidationAvailable) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
@@ -199,12 +201,12 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     } else {
         UnsubscriptionAccepted|BadUnsubscriptionError
             |InternalUnsubscriptionError onUnsubscriptionResult = callOnUnsubscriptionMethod(
-                                                                            hubService, message);
+                                                                            hubService, message, headers);
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
             proceedToUnsubscriptionVerification(
-                request, hubService, message, isUnsubscriptionValidationAvailable);
+                request, headers, hubService, message, isUnsubscriptionValidationAvailable);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onUnsubscriptionResult.detail();
@@ -220,12 +222,12 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     }
 }
 
-function proceedToUnsubscriptionVerification(http:Request initialRequest, Service hubService, 
+function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
                                              Unsubscription message, boolean isUnsubscriptionValidationAvailable) {
 
     UnsubscriptionDeniedError? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
-        validationResult = callOnUnsubscriptionValidationMethod(hubService, message);
+        validationResult = callOnUnsubscriptionValidationMethod(hubService, message, headers);
     } else {
         if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error UnsubscriptionDeniedError("Invalid hub.callback param in the request.");
@@ -261,7 +263,7 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, Servic
                         hubTopic: message.hubTopic,
                         hubSecret: message.hubSecret
                     };
-                    callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage);
+                    callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
                 }
             }
         }
@@ -269,9 +271,10 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, Servic
 }
 
 function processPublishRequestAndRespond(http:Caller caller, http:Response response,
-                                         Service hubService, UpdateMessage updateMsg) {
+                                         http:Headers headers, Service hubService, 
+                                         UpdateMessage updateMsg) {
     
-    Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg);
+    Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg, headers);
 
     response.statusCode = http:STATUS_OK;
     if (updateResult is Acknowledgement) {

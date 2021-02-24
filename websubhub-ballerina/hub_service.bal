@@ -24,8 +24,8 @@ public type Service service object {
 //   remote function onDeregisterTopic(TopicDeregistration msg)
 //               returns TopicDeregistrationSuccess|TopicDeregistrationError;
 
-   remote function onUpdateMessage(UpdateMessage msg)
-               returns Acknowledgement|UpdateMessageError;
+   // remote function onUpdateMessage(UpdateMessage msg)
+   //             returns Acknowledgement|UpdateMessageError;
 
 //   remote function onSubscription(Subscription msg)
 //              returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
@@ -34,7 +34,7 @@ public type Service service object {
 //   remote function onSubscriptionValidation(Subscription msg)
 //              returns SubscriptionDeniedError?;
 
-   remote function onSubscriptionIntentVerified(VerifiedSubscription msg);
+   // remote function onSubscriptionIntentVerified(VerifiedSubscription msg);
 
 //   remote function onUnsubscription(Unsubscription msg)
 //               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError;
@@ -42,6 +42,6 @@ public type Service service object {
 //   remote function onUnsubscriptionValidation(Unsubscription msg)
 //              returns UnsubscriptionDeniedError?;
 
-   remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg);
+   // remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg);
 
 };

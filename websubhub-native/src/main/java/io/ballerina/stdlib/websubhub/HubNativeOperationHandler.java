@@ -47,52 +47,65 @@ public class HubNativeOperationHandler {
         return ValueCreator.createArrayValue(methodNamesList.toArray(BString[]::new));
     }
 
-    public static Object callRegisterMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callRegisterMethod", "onRegisterTopic");
+    public static Object callRegisterMethod(Environment env, BObject bHubService, 
+                                            BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callRegisterMethod", "onRegisterTopic");
     }
 
-    public static Object callDeregisterMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callDeregisterMethod", "onDeregisterTopic");
+    public static Object callDeregisterMethod(Environment env, BObject bHubService, 
+                                              BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callDeregisterMethod", "onDeregisterTopic");
     }
 
-    public static Object callOnUpdateMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnUpdateMethod", "onUpdateMessage");
+    public static Object callOnUpdateMethod(Environment env, BObject bHubService, 
+                                            BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callOnUpdateMethod", "onUpdateMessage");
     }
 
-    public static Object callOnSubscriptionMethod(Environment env, BObject bHubService, BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionMethod", "onSubscription");
+    public static Object callOnSubscriptionMethod(Environment env, BObject bHubService, 
+                                                  BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callOnSubscriptionMethod", "onSubscription");
     }
 
     public static Object callOnSubscriptionValidationMethod(Environment env, BObject bHubService, 
-                                                            BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionValidationMethod", 
+                                                            BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callOnSubscriptionValidationMethod", 
                                     "onSubscriptionValidation");
     }
 
     public static void callOnSubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
-                                                              BMap<BString, Object> message) {
-        invokeRemoteFunction(env, bHubService, message, "callOnSubscriptionIntentVerifiedMethod", 
+                                                              BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        invokeRemoteFunction(env, bHubService, args, "callOnSubscriptionIntentVerifiedMethod", 
                             "onSubscriptionIntentVerified");
     }
 
     public static Object callOnUnsubscriptionMethod(Environment env, BObject bHubService, 
-                                                    BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionMethod", "onUnsubscription");
+                                                    BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionMethod", "onUnsubscription");
     }
 
     public static Object callOnUnsubscriptionValidationMethod(Environment env, BObject bHubService, 
-                                                              BMap<BString, Object> message) {
-        return invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionValidationMethod", 
+                                                              BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionValidationMethod", 
                                     "onUnsubscriptionValidation");
     }
 
     public static void callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
-                                                                BMap<BString, Object> message) {
-        invokeRemoteFunction(env, bHubService, message, "callOnUnsubscriptionIntentVerifiedMethod", 
+                                                                BMap<BString, Object> message, BObject bHttpHeaders) {
+        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionIntentVerifiedMethod", 
                             "onUnsubscriptionIntentVerified");
     }
 
-    private static Object invokeRemoteFunction(Environment env, BObject bHubService, BMap<BString, Object> message,
+    private static Object invokeRemoteFunction(Environment env, BObject bHubService, Object[] args,
                                 String parentFunctionName, String remoteFunctionName) {
         Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
@@ -100,7 +113,6 @@ public class HubNativeOperationHandler {
         CountDownLatch latch = new CountDownLatch(1);
         CallableUnitCallback callback = new CallableUnitCallback(latch);
 
-        Object[] args = new Object[]{message, true};
         env.getRuntime().invokeMethodAsync(bHubService, remoteFunctionName, null, metadata, callback, args);
 
         try {
