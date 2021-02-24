@@ -190,7 +190,7 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
         return;
     } 
     Unsubscription message = {
-        hubMode: MODE_SUBSCRIBE,
+        hubMode: MODE_UNSUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
         hubSecret: params[HUB_SECRET]
@@ -289,15 +289,15 @@ function processPublishRequestAndRespond(http:Caller caller, http:Response respo
 
 isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, 
                                                         http:Response response) returns string? {
-    string|error? topic = ();
-    var topicFromParams = params['key];
-    if topicFromParams is string {
-        topic = encoding:decodeUriComponent(topicFromParams, "UTF-8");
+    string|error? requestedValue = ();
+    var retrievedValue = params['key];
+    if retrievedValue is string {
+        requestedValue = encoding:decodeUriComponent(retrievedValue, "UTF-8");
     }
-    if (topic is string && topic != "") {
-       return <string> topic;
+    if (requestedValue is string && requestedValue != "") {
+       return <string> requestedValue;
     } else {
-        updateBadRequestErrorResponse(response, 'key, topic);
+        updateBadRequestErrorResponse(response, 'key, requestedValue);
         return ();
     }
 }
