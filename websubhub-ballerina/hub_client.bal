@@ -87,7 +87,7 @@ public client class HubClient {
 
         if (self.secret.length() > 0) {
             var hash = check self.retrievePayloadSignature(self.secret, msg.content);
-            request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash.toBase64());
+            request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash.toBase16());
         }
 
         request.setPayload(msg.content);
