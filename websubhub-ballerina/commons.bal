@@ -261,9 +261,9 @@ public type Acknowledgement record {
 };
 
 # Record to represent client configuration for HubClient / PublisherClient
-public type ClientConfiguration record {
-   *http:ClientConfiguration;
-};
+public type ClientConfiguration record {|
+    *http:ClientConfiguration;
+|};
 
 # Checks whether `HTTP Response` is a success response
 # ```ballerina

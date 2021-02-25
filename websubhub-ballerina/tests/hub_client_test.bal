@@ -18,6 +18,8 @@ import ballerina/io;
 import ballerina/http;
 import ballerina/test;
 
+int retrySuccessCount = 0;
+int retryFailCount = 0;
 service /callback on new http:Listener(9094) {
     resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
@@ -30,6 +32,18 @@ service /callback on new http:Listener(9094) {
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
         var result = caller->respond(res);
+    }
+
+    resource function post retrySuccess(http:Caller caller, http:Request req) {
+        io:println("Hub Content Distribution message received [RETRY_SUCCESS] : ", req.getTextPayload());
+        retrySuccessCount += 1;
+        if (retrySuccessCount == 3) {
+            var result = caller->respond("Content Delivery Success");
+        } else {
+            http:Response res = new ();
+            res.statusCode = http:STATUS_BAD_REQUEST;
+            var result = caller->respond(res);
+        }
     }
 }
 
@@ -154,4 +168,34 @@ function testSubscriptionDeleted() returns @tainted error? {
     } else {
        test:assertFail("Content Publishing Failed.");
     }    
+}
+
+@test:Config {
+    groups: ["clientConfigTest"]
+}
+function testContentDeliveryRetrySuccess() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retrySuccess");
+
+    ClientConfiguration config = {
+	        retryConfig: {
+		        intervalInMillis: 3000,
+                count: 3,
+                backOffFactor: 2.0,
+                maxWaitIntervalInMillis: 20000,
+                statusCodes: [400]
+            },
+            timeoutInMillis: 2000
+    };
+
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
+
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);
+    if (publishResponse is ContentDistributionSuccess) {
+        test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, msg.content);
+    } else {
+       test:assertFail("Content Publishing Failed.");
+    }
 }
