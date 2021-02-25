@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/log;
-import ballerina/io;
 import ballerina/http;
 import ballerina/test;
 
@@ -25,8 +24,7 @@ var hubWithHeaderDetails = service object {
 
     remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
                                 returns TopicRegistrationSuccess {
-        log:print("Executing topic registration", message = message);
-        var res = logHeaderDetails(headers);
+        log:print("Executing topic registration", message = message, headers = headers.getHeaderNames());
         TopicRegistrationSuccess successResult = {
                 body: <map<string>>{
                        isSuccess: "true"
@@ -37,8 +35,7 @@ var hubWithHeaderDetails = service object {
 
     remote function onDeregisterTopic(TopicDeregistration message, http:Headers headers)
                         returns TopicDeregistrationSuccess {
-        log:print("Executing topic de-registration", message = message);
-        var res = logHeaderDetails(headers);
+        log:print("Executing topic de-registration", message = message, headers = headers.getHeaderNames());
         map<string> body = { isDeregisterSuccess: "true" };
         TopicDeregistrationSuccess deregisterResult = {
             body
@@ -90,13 +87,5 @@ function testDeregistrationSuccessWithHeaderDetails() returns @tainted error? {
         test:assertEquals(response.getTextPayload(), expectedPayload);
     } else {
         test:assertFail("Deregistration test failed");
-    }
-}
-
-function logHeaderDetails(http:Headers headers) returns error? {
-    log:print("Printing http header details");
-    foreach var headerName in headers.getHeaderNames() {
-        string headerVal = headerName + " : " + check headers.getHeader(headerName);
-        io:println(headerVal);
     }
 }

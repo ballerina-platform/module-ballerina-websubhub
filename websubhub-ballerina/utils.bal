@@ -18,7 +18,6 @@ import ballerina/lang.'string as strings;
 import ballerina/encoding;
 import ballerina/http;
 import ballerina/uuid;
-import ballerina/io;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
                                         http:Headers headers, map<string> params, 
@@ -30,7 +29,6 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
         };
 
         TopicRegistrationSuccess|TopicRegistrationError result = callRegisterMethod(hubService, msg, headers);
-        io:println("Retrieved result: ", result);
         if (result is TopicRegistrationError) {
             var errorDetails = result.detail();
             updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
