@@ -25,7 +25,7 @@ var hubWithHeaderDetails = service object {
 
     remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
                                 returns TopicRegistrationSuccess {
-        log:print("Executing topic registration for ", req = message);
+        log:print("Executing topic registration", message = message);
         var res = logHeaderDetails(headers);
         TopicRegistrationSuccess successResult = {
                 body: <map<string>>{
