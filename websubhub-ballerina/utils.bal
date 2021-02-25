@@ -77,9 +77,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         hubLeaseSeconds = defaultHubLeaseSeconds.toString();
     } else {
         var retrievedLeaseSeconds = 'int:fromString(hubLeaseSeconds);
-        if (retrievedLeaseSeconds is error) {
-            hubLeaseSeconds = defaultHubLeaseSeconds.toString();
-        } else if (retrievedLeaseSeconds == 0) {
+        if (retrievedLeaseSeconds is error || retrievedLeaseSeconds == 0) {
             hubLeaseSeconds = defaultHubLeaseSeconds.toString();
         }
     }
