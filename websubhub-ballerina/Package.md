@@ -1,7 +1,7 @@
 ## Package Overview
 
-W3C [**WebSub**](https://w3c.github.io/websub/) is a recommendation, which facilitates a push-based content delivery / notification mechanism
-between publishers and subscribers.
+This package contains an API specification to implement W3C [**WebSub Hub**](https://w3c.github.io/websub/) which facilitates 
+a push-based content delivery / notification mechanism.
 
 This package contains following components :
 
