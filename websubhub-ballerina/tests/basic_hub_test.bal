@@ -255,6 +255,23 @@ function testSubscriptionIntentVerification() returns @tainted error? {
 
 @test:Config {
 }
+function testSubscriptionWithAdditionalParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber&param1=value1&param2=value2", 
+                            "application/x-www-form-urlencoded");
+
+    var response = check httpClient->post("/", request);
+    if (response is http:Response) {
+        test:assertEquals(response.statusCode, 202);
+        // todo Validate post request invoked, as of now manually checked through logs
+        // test:assertEquals(isIntentVerified, true);
+    } else {
+        test:assertFail("Deregistration test failed");
+    }
+}
+
+@test:Config {
+}
 function testUnsubscriptionFailure() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",

@@ -69,8 +69,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     if (hubCallback is ()) {
         return;
     }
-
-    var hubLeaseSeconds = params[HUB_LEASE_SECONDS];
+    var hubLeaseSeconds = params.removeIfHasKey(HUB_LEASE_SECONDS);
     if (hubLeaseSeconds is ()) {
         hubLeaseSeconds = defaultHubLeaseSeconds.toString();
     } else {
@@ -88,6 +87,11 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         hubLeaseSeconds: hubLeaseSeconds,
         hubSecret: params[HUB_SECRET]
     };
+    
+    foreach var ['key, value] in params.entries() {
+        message['key] = value;
+    }
+
     if (!isAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
         respondToRequest(caller, response);
@@ -185,12 +189,18 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     if (hubCallback is ()) {
         return;
     } 
+
     Unsubscription message = {
         hubMode: MODE_UNSUBSCRIBE,
         hubCallback: <string> hubCallback,
         hubTopic: <string> topic,
-        hubSecret: params[HUB_SECRET]
+        hubSecret: params.removeIfHasKey(HUB_SECRET)
     };
+    
+    foreach var ['key, value] in params.entries() {
+        message['key] = value;
+    }
+
     if (!isUnsubscriptionAvailable) {
         response.statusCode = http:STATUS_ACCEPTED;
         respondToRequest(caller, response);
@@ -286,7 +296,7 @@ isolated function processPublishRequestAndRespond(http:Caller caller, http:Respo
 isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, 
                                                         http:Response response) returns string? {
     string|error? requestedValue = ();
-    var retrievedValue = params['key];
+    var retrievedValue = params.removeIfHasKey('key);
     if retrievedValue is string {
         requestedValue = encoding:decodeUriComponent(retrievedValue, "UTF-8");
     }
