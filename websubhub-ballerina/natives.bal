@@ -14,48 +14,48 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import ballerina/jballerina.java;
 
-isolated function callRegisterMethod(Service hubService, TopicRegistration msg)
+isolated function callRegisterMethod(Service hubService, TopicRegistration msg, http:Headers headers)
 returns TopicRegistrationSuccess|TopicRegistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callDeregisterMethod(Service hubService, TopicDeregistration msg)
+isolated function callDeregisterMethod(Service hubService, TopicDeregistration msg, http:Headers headers)
 returns TopicDeregistrationSuccess|TopicDeregistrationError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUpdateMethod(Service hubService, UpdateMessage msg)
+isolated function callOnUpdateMethod(Service hubService, UpdateMessage msg, http:Headers headers)
 returns Acknowledgement|UpdateMessageError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionMethod(Service hubService, Subscription msg) returns SubscriptionAccepted|
+isolated function callOnSubscriptionMethod(Service hubService, Subscription msg, http:Headers headers) returns SubscriptionAccepted|
     SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError|InternalSubscriptionError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionValidationMethod(Service hubService, Subscription msg)
+isolated function callOnSubscriptionValidationMethod(Service hubService, Subscription msg, http:Headers headers)
 returns SubscriptionDeniedError? = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnSubscriptionIntentVerifiedMethod(Service hubService, VerifiedSubscription msg) = @java:Method {
+isolated function callOnSubscriptionIntentVerifiedMethod(Service hubService, VerifiedSubscription msg, http:Headers headers) = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUnsubscriptionMethod(Service hubService, Unsubscription msg)
+isolated function callOnUnsubscriptionMethod(Service hubService, Unsubscription msg, http:Headers headers)
 returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUnsubscriptionValidationMethod(Service hubService, Unsubscription msg)
+isolated function callOnUnsubscriptionValidationMethod(Service hubService, Unsubscription msg, http:Headers headers)
 returns UnsubscriptionDeniedError? = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;
 
-isolated function callOnUnsubscriptionIntentVerifiedMethod(Service hubService,
-                                VerifiedUnsubscription msg) = @java:Method {
+isolated function callOnUnsubscriptionIntentVerifiedMethod(Service hubService, VerifiedUnsubscription msg, http:Headers headers) = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

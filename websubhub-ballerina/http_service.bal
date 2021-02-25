@@ -61,18 +61,18 @@ service class HttpService {
         }
     }
 
-    resource function post .(http:Caller caller, http:Request request) {
+    resource function post .(http:Caller caller, http:Request request, http:Headers headers) {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
 
         map<string> params = {};
 
-        string contentType = checkpanic request.getHeader(CONTENT_TYPE);
+        string contentType = checkpanic headers.getHeader(CONTENT_TYPE);
         map<string[]> queryParams = request.getQueryParams();
         // todo: Use constants form mime/http
         match contentType {
             "application/x-www-form-urlencoded" => {
-                string|http:HeaderNotFoundError publisherHeader = request.getHeader(BALLERINA_PUBLISH_HEADER);
+                string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
                 if (publisherHeader is string) {
                     if (publisherHeader == "publish") {
                         string[] hubMode = queryParams.get(HUB_MODE);
@@ -111,7 +111,7 @@ service class HttpService {
         match mode {
             MODE_REGISTER => {
                 if (self.isRegisterAvailable) {
-                    processRegisterRequest(caller, response, <@untainted> params, self.hubService);
+                    processRegisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -119,24 +119,26 @@ service class HttpService {
             }
             MODE_DEREGISTER => {
                 if (self.isDeregisterAvailable) {
-                    processDeregisterRequest(caller, response, <@untainted> params, self.hubService);
+                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
                 respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {
-                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params, 
-                                                        <@untainted> self.hubService,
-                                                        <@untainted> self.isSubscriptionAvailable,
-                                                        <@untainted> self.isSubscriptionValidationAvailable,
-                                                        <@untainted> self.hub,
-                                                        <@untainted> self.defaultHubLeaseSeconds);
+                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
+                                                     headers, <@untainted> params, 
+                                                     <@untainted> self.hubService, 
+                                                     <@untainted> self.isSubscriptionAvailable,
+                                                     <@untainted> self.isSubscriptionValidationAvailable, 
+                                                     <@untainted> self.hub, 
+                                                     <@untainted> self.defaultHubLeaseSeconds);
             }
             MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, <@untainted> params,
-                                                        self.hubService, self.isUnsubscriptionAvailable,
-                                                        <@untainted> self.isUnsubscriptionValidationAvailable);
+                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
+                                                       headers, <@untainted> params, self.hubService, 
+                                                       self.isUnsubscriptionAvailable,
+                                                       <@untainted> self.isUnsubscriptionValidationAvailable);
             }
             MODE_PUBLISH => {
                 // todo Proper error handling instead of checkpanic
@@ -151,43 +153,38 @@ service class HttpService {
                         hubTopic: <string> topic,
                         msgType: EVENT,
                         contentType: "application/x-www-form-urlencoded",
-                        content: (),
-                        rawRequest: request
+                        content: ()
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "application/json",
-                        content: checkpanic request.getJsonPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getJsonPayload()
                     };
                 } else if (contentType == mime:APPLICATION_XML) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "application/xml",
-                        content: checkpanic request.getXmlPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getXmlPayload()
                     };
                 } else if (contentType == "text/plain") {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "text/plain",
-                        content: checkpanic request.getTextPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getTextPayload()
                     };
                 } else {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: "application/octet-stream",
-                        content: checkpanic request.getBinaryPayload(),
-                        rawRequest: request
+                        content: checkpanic request.getBinaryPayload()
                     };
                 }
-                processPublishRequestAndRespond(caller, response, self.hubService, <@untainted> updateMsg);
+                processPublishRequestAndRespond(caller, response, headers, self.hubService, <@untainted> updateMsg);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;

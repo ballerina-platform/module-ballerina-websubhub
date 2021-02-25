@@ -73,18 +73,21 @@ type Status distinct object {
 };
 
 # Response status OK
+# + code - Status code for action
 public readonly class StatusOK {
     *Status;
     public http:STATUS_OK code = http:STATUS_OK;
 }
 
 # Response status Temporary Redirect
+# + code - Status code for action
 public readonly class StatusTemporaryRedirect {
     *Status;
     public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
 }
 
 # Response status Permanent Redirect
+# + code - Status code for action
 public readonly class StatusPermanentRedirect {
     *Status;
     public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
@@ -146,7 +149,6 @@ public type TopicDeregistration record {|
 # Record to represent subscription request body
 # 
 # + hub - URL of the `hub` where subscriber has subscribed
-# + rawRequest - Original `HTTP Request`
 # + hubMode - Current `hub` action
 # + hubCallback - Callback URL for subscriber to receive distributed content
 # + hubTopic - Topic to which subscriber has subscribed
@@ -154,7 +156,6 @@ public type TopicDeregistration record {|
 # + hubSecret - Secret Key to sign the distributed content
 public type Subscription record {
     string hub;
-    http:Request rawRequest;
     string hubMode;
     string hubCallback;
     string hubTopic;
@@ -172,13 +173,11 @@ public type VerifiedSubscription record {
 
 # Record to represent the unsubscription request body
 # 
-# + rawRequest - Original `HTTP Reuqest`
 # + hubMode - Current `hub` action
 # + hubCallback - Callback URL for subscriber to received distributed content
 # + hubTopic - Topic from which subscriber wants to unsubscribe
 # + hubSecret - Secret Key to sign the distributed content
 public type Unsubscription record {
-    http:Request rawRequest;
     string hubMode;
     string hubCallback;
     string hubTopic;
@@ -205,13 +204,11 @@ public enum MessageType {
 
 # Record to represent content-update message
 # 
-# + rawRequest - Original `HTTP Request`
 # + msgType - Type of the content update message
 # + hubTopic - Topic to which the content should be updated
 # + contentType - Content-Type of the update-message
 # + content - Content to be distributed to subscribers
 public type UpdateMessage record {
-    http:Request rawRequest;
     MessageType msgType;
     string hubTopic;
     string contentType;
