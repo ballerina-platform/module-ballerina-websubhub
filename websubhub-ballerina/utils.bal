@@ -270,7 +270,7 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, http:H
     }
 }
 
-function processPublishRequestAndRespond(http:Caller caller, http:Response response,
+isolated function processPublishRequestAndRespond(http:Caller caller, http:Response response,
                                          http:Headers headers, Service hubService, 
                                          UpdateMessage updateMsg) {
     

@@ -117,7 +117,6 @@ public client class PublisherClient {
     # + topic - The topic for which the update occurred
     # + payload - The update payload
     # + contentType - The type of the update content to set as the `ContentType` header
-    # + headers - The headers that need to be set (if any)
     # + return -  An `error`if an error occurred with the update or else `()`
     remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
                                   string? contentType = ()) returns @tainted Acknowledgement|UpdateMessageError {
@@ -178,7 +177,6 @@ public client class PublisherClient {
     #   ```
     #
     # + topic - The topic for which the update occurred
-    # + headers - The headers that need to be set (if any)
     # + return -  An `error`if an error occurred with the notification or else `()`
     remote function notifyUpdate(string topic) returns @tainted Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
