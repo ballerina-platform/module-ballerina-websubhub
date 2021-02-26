@@ -22,7 +22,6 @@ int retrySuccessCount = 0;
 service /callback on new http:Listener(9094) {
     resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
-        printHeaders(req);
         var result = caller->respond("Content Delivery Success");
     }
 
@@ -51,20 +50,6 @@ service /callback on new http:Listener(9094) {
         res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
         var result = caller->respond(res);
     }
-}
-
-isolated function printHeaders(http:Request req) {
-    string[] headerNames = req.getHeaderNames();
-    string[] headers = [];
-    foreach var header in headerNames {
-        var headerValues = req.getHeaders(header);
-        if (headerValues is string[]) {
-            var concatenatedHeaderValues = " ,".'join(...<string[]>headerValues);
-            headers.push(header + " : " + concatenatedHeaderValues);
-        }
-    }
-    var headerString = ";".'join(...headers);
-    io:println("Headers : ", headerString); 
 }
 
 isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscription {
