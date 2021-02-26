@@ -19,7 +19,6 @@ import ballerina/http;
 import ballerina/test;
 
 int retrySuccessCount = 0;
-int retryFailCount = 0;
 service /callback on new http:Listener(9094) {
     resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
@@ -44,6 +43,13 @@ service /callback on new http:Listener(9094) {
             res.statusCode = http:STATUS_BAD_REQUEST;
             var result = caller->respond(res);
         }
+    }
+
+    resource function post retryFailed(http:Caller caller, http:Request req) {
+        io:println("Hub Content Distribution message received [RETRY_FAILED] : ", req.getTextPayload());
+        http:Response res = new ();
+        res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+        var result = caller->respond(res);
     }
 }
 
@@ -171,7 +177,6 @@ function testSubscriptionDeleted() returns @tainted error? {
 }
 
 @test:Config {
-    groups: ["clientConfigTest"]
 }
 function testContentDeliveryRetrySuccess() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retrySuccess");
@@ -198,4 +203,28 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
     } else {
        test:assertFail("Content Publishing Failed.");
     }
+}
+
+@test:Config {
+}
+function testContentDeliveryRetryFailed() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retryFailed");
+
+    ClientConfiguration config = {
+	        retryConfig: {
+		        intervalInMillis: 3000,
+                count: 3,
+                backOffFactor: 2.0,
+                maxWaitIntervalInMillis: 20000,
+                statusCodes: [500]
+            },
+            timeoutInMillis: 2000
+    };
+
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
+
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);
+    test:assertTrue(publishResponse is error);
 }
