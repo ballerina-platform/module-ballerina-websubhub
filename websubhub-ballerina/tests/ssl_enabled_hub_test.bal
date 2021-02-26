@@ -36,41 +36,25 @@ service /websubhub on hubListener {
     remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationSuccess {
         log:print("Received topic-registration request ", message = message);
-        return {
-            body : <map<string>>{
-                isSuccess: "true" 
-            }
-        };
+        return TOPIC_REGISTRATION_SUCCESS;
     }
 
     remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess {
         log:print("Received topic-deregistration request ", message = message);
-        return {
-            body : <map<string>>{
-                isSuccess: "true" 
-            }
-        };
+        return TOPIC_DEREGISTRATION_SUCCESS;
     }
 
     remote function onUpdateMessage(UpdateMessage message)
                returns Acknowledgement|UpdateMessageError {
         log:print("Received content-update request ", message = message);
-        return {
-            body : <map<string>>{
-                isSuccess: "true" 
-            }
-        };
+        return ACKNOWLEDGEMENT;
     }
     
     remote function onSubscription(Subscription message)
                 returns SubscriptionAccepted {
         log:print("Received subscription request ", message = message);
-        return {
-            body : <map<string>>{
-                isSuccess: "true" 
-            }
-        };
+        return SUBSCRIPTION_ACCEPTED;
     }
 
     remote function onSubscriptionValidation(Subscription message)
@@ -83,11 +67,7 @@ service /websubhub on hubListener {
     remote function onUnsubscription(Unsubscription message)
                returns UnsubscriptionAccepted {
         log:print("Received unsubscription request ", message = message);
-        return {
-            body : <map<string>>{
-                isSuccess: "true" 
-            }
-        };
+        return UNSUBSCRIPTION_ACCEPTED;
     }
 
     remote function onUnsubscriptionValidation(Unsubscription message)

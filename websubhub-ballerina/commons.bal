@@ -260,6 +260,22 @@ public type Acknowledgement record {
     *CommonResponse;
 };
 
+# Common Responses to be used in hub-implementation
+final TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
+final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed");
+final TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};
+final TopicDeregistrationError TOPIC_DEREGISTRATION_ERROR = error TopicDeregistrationError("Topic Deregistration Failed!");
+final Acknowledgement ACKNOWLEDGEMENT = {};
+final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError("Error in accessing content");
+final SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
+final BadSubscriptionError BAD_SUBSCRIPTION_ERROR = error BadSubscriptionError("Bad subscription request");
+final InternalSubscriptionError INTERNAL_SUBSCRIPTION_ERROR = error InternalSubscriptionError("Internal error occurred while processing subscription request");
+final SubscriptionDeniedError SUBSCRIPTION_DENIED_ERROR = error SubscriptionDeniedError("Denied subscription");
+final UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {};
+final BadUnsubscriptionError BAD_UNSUBSCRIPTION_ERROR = error BadUnsubscriptionError("Bad unsubscription request");
+final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error InternalUnsubscriptionError("Internal error occurred while processing unsubscription request");
+final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Denied unsubscription");
+
 # Record to represent client configuration for HubClient / PublisherClient
 public type ClientConfiguration record {|
     *http:ClientConfiguration;
