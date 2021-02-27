@@ -67,10 +67,9 @@ isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscripti
 function testTextContentDelivery() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
-
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -83,17 +82,15 @@ function testTextContentDelivery() returns @tainted error? {
 @test:Config {
 }
 function testJsonContentDelivery() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");    
     
     json publishedContent = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
     };
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -107,16 +104,14 @@ function testJsonContentDelivery() returns @tainted error? {
 }
 function testXmlContentDelivery() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
     xml publishedContent = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
     </content>`;
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -130,13 +125,11 @@ function testXmlContentDelivery() returns @tainted error? {
 }
 function testByteArrayContentDelivery() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
     byte[] publishedContent = "This is sample content".toBytes();
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -151,7 +144,6 @@ function testSubscriptionDeleted() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
-
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
@@ -166,6 +158,8 @@ function testSubscriptionDeleted() returns @tainted error? {
 function testContentDeliveryRetrySuccess() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retrySuccess");
 
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+
     ClientConfiguration config = {
 	        retryConfig: {
 		        intervalInMillis: 3000,
@@ -176,11 +170,7 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
             },
             timeoutInMillis: 2000
     };
-
     HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
-
-    ContentDistributionMessage msg = {content: "This is sample content delivery"};
-
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -195,6 +185,8 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
 function testContentDeliveryRetryFailed() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retryFailed");
 
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+    
     ClientConfiguration config = {
 	        retryConfig: {
 		        intervalInMillis: 3000,
@@ -205,11 +197,7 @@ function testContentDeliveryRetryFailed() returns @tainted error? {
             },
             timeoutInMillis: 2000
     };
-
     HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
-
-    ContentDistributionMessage msg = {content: "This is sample content delivery"};
-
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     test:assertTrue(publishResponse is error);
 }

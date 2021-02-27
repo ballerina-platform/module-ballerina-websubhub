@@ -54,10 +54,9 @@ ClientConfiguration hubClientSslConfig = {
 function testTextContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
-
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -71,16 +70,14 @@ function testTextContentDeliveryWithSsl() returns @tainted error? {
 }
 function testJsonContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     
     json publishedContent = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
     };
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -94,16 +91,14 @@ function testJsonContentDeliveryWithSsl() returns @tainted error? {
 }
 function testXmlContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     
     xml publishedContent = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
     </content>`;
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -117,13 +112,11 @@ function testXmlContentDeliveryWithSsl() returns @tainted error? {
 }
 function testByteArrayContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     
     byte[] publishedContent = "This is sample content".toBytes();
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -138,7 +131,6 @@ function testSubscriptionDeletedWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/deleted");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
-
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {

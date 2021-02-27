@@ -95,7 +95,6 @@ http:Client sslEnabledClient = checkpanic new("https://localhost:9096/websubhub"
 public function testPublisherRegisterSuccessWithSsl() {
     TopicRegistrationSuccess|TopicRegistrationError response =
                     sslEnabledPublisher->registerTopic("test");
-
     if (response is TopicRegistrationSuccess) {
         log:print("Received topic-registration response ", res = response);
     } else {
@@ -107,7 +106,6 @@ public function testPublisherRegisterSuccessWithSsl() {
 public function testPublisherDeregisterSuccessWithSsl() {
     TopicDeregistrationSuccess|TopicDeregistrationError response =
                     sslEnabledPublisher->deregisterTopic("test");
-
     if (response is TopicDeregistrationSuccess) {
         log:print("Received topic-deregistration response ", res = response);
     } else {
@@ -118,7 +116,6 @@ public function testPublisherDeregisterSuccessWithSsl() {
 @test:Config{}
 public function testPublisherNotifyEvenSuccessWithSsl() {
     Acknowledgement|UpdateMessageError response = sslEnabledPublisher->notifyUpdate("test");
-
     if (response is Acknowledgement) {
         log:print("Received event-notify response ", res = response);
     } else {
@@ -130,7 +127,6 @@ public function testPublisherNotifyEvenSuccessWithSsl() {
 public function testPublisherPubishEventSuccessWithSsl() {
     map<string> params = { event: "event"};
     Acknowledgement|UpdateMessageError response = sslEnabledPublisher->publishUpdate("test", params);
-
     if (response is Acknowledgement) {
         log:print("Received content-publish response ", res = response);
     } else {

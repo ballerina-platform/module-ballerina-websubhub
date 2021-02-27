@@ -77,7 +77,6 @@ PublisherClient websubHubClientEP = checkpanic new ("http://localhost:9092/websu
 public function testPublisherRegisterSuccess() {
     TopicRegistrationSuccess|TopicRegistrationError registrationResponse =
                     websubHubClientEP->registerTopic("test");
-
     if (registrationResponse is TopicRegistrationSuccess) {
         io:println(registrationResponse);
     } else {
@@ -89,7 +88,6 @@ public function testPublisherRegisterSuccess() {
 public function testPublisherRegisterFailure() {
     TopicRegistrationSuccess|TopicRegistrationError registrationResponse =
                     websubHubClientEP->registerTopic("test1");
-
     if (registrationResponse is TopicRegistrationError) {
         io:println(registrationResponse);
     } else {
@@ -101,7 +99,6 @@ public function testPublisherRegisterFailure() {
 public function testPublisherDeregisterSuccess() {
     TopicDeregistrationSuccess|TopicDeregistrationError deRegistrationResponse =
                     websubHubClientEP->deregisterTopic("test");
-
     if (deRegistrationResponse is TopicDeregistrationSuccess) {
         io:println(deRegistrationResponse);
     } else {
@@ -114,7 +111,6 @@ public function testPublisherDeregisterSuccess() {
 public function testPublisherDeregisterFailure() {
     TopicDeregistrationSuccess|TopicDeregistrationError deRegistrationResponse =
                     websubHubClientEP->deregisterTopic("test1");
-
     if (deRegistrationResponse is TopicDeregistrationError) {
         io:println(deRegistrationResponse);
     } else {
@@ -125,7 +121,6 @@ public function testPublisherDeregisterFailure() {
 @test:Config{}
 public function testPublisherNotifyEvenSuccess() {
     Acknowledgement|UpdateMessageError response = websubHubClientEP->notifyUpdate("test");
-
     if (response is Acknowledgement) {
         io:println(response);
     } else {
@@ -138,7 +133,6 @@ public function testPublisherNotifyEvenSuccess() {
 public function testPublisherPubishEventSuccess() {
     map<string> params = { event: "event"};
     Acknowledgement|UpdateMessageError response = websubHubClientEP->publishUpdate("test", params);
-
     if (response is Acknowledgement) {
         io:println(response);
     } else {
