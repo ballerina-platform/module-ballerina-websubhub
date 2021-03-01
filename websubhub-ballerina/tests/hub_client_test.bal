@@ -18,10 +18,10 @@ import ballerina/io;
 import ballerina/http;
 import ballerina/test;
 
+int retrySuccessCount = 0;
 service /callback on new http:Listener(9094) {
     resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
-        printHeaders(req);
         var result = caller->respond("Content Delivery Success");
     }
 
@@ -31,20 +31,25 @@ service /callback on new http:Listener(9094) {
         res.statusCode = http:STATUS_GONE;
         var result = caller->respond(res);
     }
-}
 
-isolated function printHeaders(http:Request req) {
-    string[] headerNames = req.getHeaderNames();
-    string[] headers = [];
-    foreach var header in headerNames {
-        var headerValues = req.getHeaders(header);
-        if (headerValues is string[]) {
-            var concatenatedHeaderValues = " ,".'join(...<string[]>headerValues);
-            headers.push(header + " : " + concatenatedHeaderValues);
+    resource function post retrySuccess(http:Caller caller, http:Request req) {
+        io:println("Hub Content Distribution message received [RETRY_SUCCESS] : ", req.getTextPayload());
+        retrySuccessCount += 1;
+        if (retrySuccessCount == 3) {
+            var result = caller->respond("Content Delivery Success");
+        } else {
+            http:Response res = new ();
+            res.statusCode = http:STATUS_BAD_REQUEST;
+            var result = caller->respond(res);
         }
     }
-    var headerString = ";".'join(...headers);
-    io:println("Headers : ", headerString); 
+
+    resource function post retryFailed(http:Caller caller, http:Request req) {
+        io:println("Hub Content Distribution message received [RETRY_FAILED] : ", req.getTextPayload());
+        http:Response res = new ();
+        res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+        var result = caller->respond(res);
+    }
 }
 
 isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscription {
@@ -62,10 +67,9 @@ isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscripti
 function testTextContentDelivery() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
-
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -78,17 +82,15 @@ function testTextContentDelivery() returns @tainted error? {
 @test:Config {
 }
 function testJsonContentDelivery() returns @tainted error? {
-    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");    
     
     json publishedContent = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
     };
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -102,16 +104,14 @@ function testJsonContentDelivery() returns @tainted error? {
 }
 function testXmlContentDelivery() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
     xml publishedContent = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
     </content>`;
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -125,13 +125,11 @@ function testXmlContentDelivery() returns @tainted error? {
 }
 function testByteArrayContentDelivery() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     
     byte[] publishedContent = "This is sample content".toBytes();
-
     ContentDistributionMessage msg = {content: publishedContent};
 
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -146,7 +144,6 @@ function testSubscriptionDeleted() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
 
     HubClient hubClientEP = checkpanic new(subscriptionMsg);
-
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
@@ -154,4 +151,53 @@ function testSubscriptionDeleted() returns @tainted error? {
     } else {
        test:assertFail("Content Publishing Failed.");
     }    
+}
+
+@test:Config {
+}
+function testContentDeliveryRetrySuccess() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retrySuccess");
+
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+
+    ClientConfiguration config = {
+	        retryConfig: {
+		        intervalInMillis: 3000,
+                count: 3,
+                backOffFactor: 2.0,
+                maxWaitIntervalInMillis: 20000,
+                statusCodes: [400]
+            },
+            timeoutInMillis: 2000
+    };
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);
+    if (publishResponse is ContentDistributionSuccess) {
+        test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, msg.content);
+    } else {
+       test:assertFail("Content Publishing Failed.");
+    }
+}
+
+@test:Config {
+}
+function testContentDeliveryRetryFailed() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retryFailed");
+
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+    
+    ClientConfiguration config = {
+	        retryConfig: {
+		        intervalInMillis: 3000,
+                count: 3,
+                backOffFactor: 2.0,
+                maxWaitIntervalInMillis: 20000,
+                statusCodes: [500]
+            },
+            timeoutInMillis: 2000
+    };
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);
+    test:assertTrue(publishResponse is error);
 }
