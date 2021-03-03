@@ -112,7 +112,7 @@ function testRegistrationFailureErrorDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
 
-    var response = check errorDetailsTestClientEp->post("/", request);
+    var response = errorDetailsTestClientEp->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
         var payload = response.getTextPayload();
@@ -137,7 +137,7 @@ function testDeregistrationFailureErrorDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
 
-    var response = check errorDetailsTestClientEp->post("/", request);
+    var response = errorDetailsTestClientEp->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
         var payload = response.getTextPayload();
@@ -161,7 +161,7 @@ function testUpdateMessageErrorDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test", "application/x-www-form-urlencoded");
 
-    var response = check errorDetailsTestClientEp->post("/", request);
+    var response = errorDetailsTestClientEp->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 200);
         var payload = response.getTextPayload();

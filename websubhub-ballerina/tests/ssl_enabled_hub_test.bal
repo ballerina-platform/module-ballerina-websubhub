@@ -140,7 +140,7 @@ function testSubscriptionWithSsl() returns @tainted error? {
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
 
-    var response = check sslEnabledClient->post("/", request);
+    var response = sslEnabledClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 202);
     } else {
@@ -154,7 +154,7 @@ function testUnsubscriptionWithSsl() returns @tainted error? {
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
 
-    var response = check sslEnabledClient->post("/", request);
+    var response = sslEnabledClient->post("/", request);
     if (response is http:Response) {
         test:assertEquals(response.statusCode, 202);
     } else {
