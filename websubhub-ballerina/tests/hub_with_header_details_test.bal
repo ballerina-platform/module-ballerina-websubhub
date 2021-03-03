@@ -64,13 +64,9 @@ function testRegistrationWithHeaderDetails() returns @tainted error? {
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded");
 
     string expectedPayload = "hub.mode=accepted&isSuccess=true";
-    var response = httpHeaderDetailsTestClientEp->post("/", request);
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 200);
-        test:assertEquals(response.getTextPayload(), expectedPayload);
-    } else {
-        test:assertFail("Registration test failed");
-    }
+    var response = check httpHeaderDetailsTestClientEp->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    test:assertEquals(response.getTextPayload(), expectedPayload);
 }
 
 @test:Config {
@@ -81,11 +77,7 @@ function testDeregistrationSuccessWithHeaderDetails() returns @tainted error? {
     request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded");
 
     string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";
-    var response = httpHeaderDetailsTestClientEp->post("/", request);
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 200);
-        test:assertEquals(response.getTextPayload(), expectedPayload);
-    } else {
-        test:assertFail("Deregistration test failed");
-    }
+    var response = check httpHeaderDetailsTestClientEp->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    test:assertEquals(response.getTextPayload(), expectedPayload);
 }
