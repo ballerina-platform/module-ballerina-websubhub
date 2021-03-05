@@ -69,7 +69,7 @@ function testTextContentDelivery() returns @tainted error? {
 
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -90,7 +90,7 @@ function testJsonContentDelivery() returns @tainted error? {
     };
     ContentDistributionMessage msg = {content: publishedContent};
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -111,7 +111,7 @@ function testXmlContentDelivery() returns @tainted error? {
     </content>`;
     ContentDistributionMessage msg = {content: publishedContent};
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -129,7 +129,7 @@ function testByteArrayContentDelivery() returns @tainted error? {
     byte[] publishedContent = "This is sample content".toBytes();
     ContentDistributionMessage msg = {content: publishedContent};
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -143,7 +143,7 @@ function testByteArrayContentDelivery() returns @tainted error? {
 function testSubscriptionDeleted() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+    HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
@@ -170,7 +170,7 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
             },
             timeoutInMillis: 2000
     };
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
+    HubClient hubClientEP = check new(subscriptionMsg, config);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
@@ -197,7 +197,7 @@ function testContentDeliveryRetryFailed() returns @tainted error? {
             },
             timeoutInMillis: 2000
     };
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, config);
+    HubClient hubClientEP = check new(subscriptionMsg, config);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     test:assertTrue(publishResponse is error);
 }

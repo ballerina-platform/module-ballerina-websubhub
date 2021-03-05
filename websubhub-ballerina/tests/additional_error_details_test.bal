@@ -112,22 +112,13 @@ function testRegistrationFailureErrorDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
 
-    var response = check errorDetailsTestClientEp->post("/", request);
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 200);
-        var payload = response.getTextPayload();
-        if (payload is error) {
-            test:assertFail("Could not retrieve response body for topic-registration failure");
-        } else {
-            var responseBody = decodeResponseBody(payload);
-            log:print("Retrieved error-response for topic registration failure ", responseBody = responseBody);
-            test:assertEquals(responseBody["hub.mode"], "denied");
-            test:assertEquals(responseBody["hub.reason"], "Topic registration failed!");
-            test:assertEquals(responseBody["hub.additional.details"], "Feature is not supported in the hub");
-        }
-    } else {
-        test:assertFail("Topic registration test failed");
-    }
+    http:Response response = check errorDetailsTestClientEp->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    string payload = check response.getTextPayload();
+    map<string> responseBody = decodeResponseBody(payload);
+    test:assertEquals(responseBody["hub.mode"], "denied");
+    test:assertEquals(responseBody["hub.reason"], "Topic registration failed!");
+    test:assertEquals(responseBody["hub.additional.details"], "Feature is not supported in the hub");
 }
 
 @test:Config {
@@ -137,21 +128,12 @@ function testDeregistrationFailureErrorDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
 
-    var response = check errorDetailsTestClientEp->post("/", request);
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 200);
-        var payload = response.getTextPayload();
-        if (payload is error) {
-            test:assertFail("Could not retrieve response body for topic-deregistration failure");
-        } else {
-            var responseBody = decodeResponseBody(payload);
-            log:print("Retrieved error-response for topic de-registration failure ", responseBody = responseBody);
-            test:assertEquals(responseBody["hub.mode"], "denied");
-            test:assertEquals(responseBody["hub.reason"], "Topic deregistration failed!");
-        }
-    } else {
-        test:assertFail("Topic deregistration test failed");
-    }
+    http:Response response = check errorDetailsTestClientEp->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    string payload = check response.getTextPayload();
+    map<string> responseBody = decodeResponseBody(payload);
+    test:assertEquals(responseBody["hub.mode"], "denied");
+    test:assertEquals(responseBody["hub.reason"], "Topic deregistration failed!");
 }
 
 @test:Config {
@@ -161,21 +143,12 @@ function testUpdateMessageErrorDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test", "application/x-www-form-urlencoded");
 
-    var response = check errorDetailsTestClientEp->post("/", request);
-    if (response is http:Response) {
-        test:assertEquals(response.statusCode, 200);
-        var payload = response.getTextPayload();
-        if (payload is error) {
-            test:assertFail("Could not retrieve response body for content update");
-        } else {
-            var responseBody = decodeResponseBody(payload);
-            log:print("Retrieved error-response for content-update failure ", responseBody = responseBody);
-            test:assertEquals(responseBody["hub.mode"], "denied");
-            test:assertEquals(responseBody["hub.reason"], "Error in accessing content");
-        }        
-    } else {
-        test:assertFail("Content update test failed");
-    }
+    http:Response response = check errorDetailsTestClientEp->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    string payload = check response.getTextPayload();
+    var responseBody = decodeResponseBody(payload);
+    test:assertEquals(responseBody["hub.mode"], "denied");
+    test:assertEquals(responseBody["hub.reason"], "Error in accessing content"); 
 }
 
 isolated function decodeResponseBody(string payload) returns map<string> {
