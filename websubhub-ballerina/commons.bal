@@ -281,6 +281,11 @@ public type ClientConfiguration record {|
     *http:ClientConfiguration;
 |};
 
+# Provides a set of configurations for configure the underlying HTTP listener of the WebSubHub listener.
+public type ListenerConfiguration record {|
+    *http:ListenerConfiguration;
+|};
+
 # Checks whether `HTTP Response` is a success response
 # ```ballerina
 #       boolean isSuccess = websubhub:isSuccessStatusCode(300);

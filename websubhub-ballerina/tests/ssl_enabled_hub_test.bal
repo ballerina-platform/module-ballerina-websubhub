@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/log;
 import ballerina/test;
 
-http:ListenerConfiguration httpListenerConfig = {
+ListenerConfiguration listenerConfigs = {
     secureSocket: {
         keyStore: {
             path: "tests/resources/ballerinaKeystore.pkcs12",
@@ -27,9 +27,7 @@ http:ListenerConfiguration httpListenerConfig = {
     }
 };
 
-listener http:Listener httpListener = new (9096, httpListenerConfig);
-
-listener Listener hubListener = new(httpListener);
+listener Listener hubListener = new(9096, listenerConfigs);
 
 service /websubhub on hubListener {
 
