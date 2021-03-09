@@ -15,7 +15,7 @@
 // under the License.
 
 import ballerina/lang.'string as strings;
-import ballerina/encoding;
+import ballerina/url;
 import ballerina/http;
 import ballerina/uuid;
 
@@ -298,7 +298,7 @@ isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, stri
     string|error? requestedValue = ();
     var retrievedValue = params.removeIfHasKey('key);
     if retrievedValue is string {
-        requestedValue = encoding:decodeUriComponent(retrievedValue, "UTF-8");
+        requestedValue = url:decode(retrievedValue, "UTF-8");
     }
     if (requestedValue is string && requestedValue != "") {
        return <string> requestedValue;
