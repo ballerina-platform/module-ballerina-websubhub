@@ -33,25 +33,25 @@ service /websubhub on hubListener {
 
     remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationSuccess {
-        log:print("Received topic-registration request ", message = message);
+        log:printDebug("Received topic-registration request ", message = message);
         return TOPIC_REGISTRATION_SUCCESS;
     }
 
     remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess {
-        log:print("Received topic-deregistration request ", message = message);
+        log:printDebug("Received topic-deregistration request ", message = message);
         return TOPIC_DEREGISTRATION_SUCCESS;
     }
 
     remote function onUpdateMessage(UpdateMessage message)
                returns Acknowledgement|UpdateMessageError {
-        log:print("Received content-update request ", message = message);
+        log:printDebug("Received content-update request ", message = message);
         return ACKNOWLEDGEMENT;
     }
     
     remote function onSubscription(Subscription message)
                 returns SubscriptionAccepted {
-        log:print("Received subscription request ", message = message);
+        log:printDebug("Received subscription request ", message = message);
         return SUBSCRIPTION_ACCEPTED;
     }
 
@@ -64,7 +64,7 @@ service /websubhub on hubListener {
 
     remote function onUnsubscription(Unsubscription message)
                returns UnsubscriptionAccepted {
-        log:print("Received unsubscription request ", message = message);
+        log:printDebug("Received unsubscription request ", message = message);
         return UNSUBSCRIPTION_ACCEPTED;
     }
 
@@ -94,7 +94,7 @@ public function testPublisherRegisterSuccessWithSsl() {
     TopicRegistrationSuccess|TopicRegistrationError response =
                     sslEnabledPublisher->registerTopic("test");
     if (response is TopicRegistrationSuccess) {
-        log:print("Received topic-registration response ", res = response);
+        log:printDebug("Received topic-registration response ", res = response);
     } else {
         test:assertFail("Topic registration failed");
     }
@@ -105,7 +105,7 @@ public function testPublisherDeregisterSuccessWithSsl() {
     TopicDeregistrationSuccess|TopicDeregistrationError response =
                     sslEnabledPublisher->deregisterTopic("test");
     if (response is TopicDeregistrationSuccess) {
-        log:print("Received topic-deregistration response ", res = response);
+        log:printDebug("Received topic-deregistration response ", res = response);
     } else {
         test:assertFail("Topic registration failed");
     }
@@ -115,7 +115,7 @@ public function testPublisherDeregisterSuccessWithSsl() {
 public function testPublisherNotifyEvenSuccessWithSsl() {
     Acknowledgement|UpdateMessageError response = sslEnabledPublisher->notifyUpdate("test");
     if (response is Acknowledgement) {
-        log:print("Received event-notify response ", res = response);
+        log:printDebug("Received event-notify response ", res = response);
     } else {
         test:assertFail("Event notify failed");
     }
@@ -126,7 +126,7 @@ public function testPublisherPubishEventSuccessWithSsl() {
     map<string> params = { event: "event"};
     Acknowledgement|UpdateMessageError response = sslEnabledPublisher->publishUpdate("test", params);
     if (response is Acknowledgement) {
-        log:print("Received content-publish response ", res = response);
+        log:printDebug("Received content-publish response ", res = response);
     } else {
         test:assertFail("Event publish failed");
     }

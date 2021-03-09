@@ -36,7 +36,7 @@ public class Listener {
             self.httpListener = check new(listenTo, config);
         } else {
             if (config is ListenerConfiguration) {
-                log:print("Provided `websubhub:ListenerConfiguration` will be overridden by the given http listener configurations");
+                log:printWarn("Provided `websubhub:ListenerConfiguration` will be overridden by the given http listener configurations");
             }
             self.httpListener = listenTo;
         }
@@ -53,7 +53,7 @@ public class Listener {
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         if (self.listenerConfig.secureSocket is ()) {
-            log:print("HTTPS is recommended but using HTTP");
+            log:printWarn("HTTPS is recommended but using HTTP");
         }
 
         string hubUrl = self.retrieveHubUrl(name);
