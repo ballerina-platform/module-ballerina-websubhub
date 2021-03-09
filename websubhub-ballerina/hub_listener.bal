@@ -30,6 +30,7 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the service
+    # + config - `websub:ListenerConfiguration` to be provided to underlying HTTP Listener
     public isolated function init(int|http:Listener listenTo, ListenerConfiguration? config = ()) returns error? {
         if (listenTo is int) {
             self.httpListener = check new(listenTo, config);
