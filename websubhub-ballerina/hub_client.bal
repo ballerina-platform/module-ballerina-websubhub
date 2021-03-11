@@ -136,18 +136,19 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
 
 isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
-    byte[]|crypto:Error hashedContent;
     if (payload is byte[]) {
-        hashedContent = crypto:hmacSha256(payload, keyArr);
+        return check crypto:hmacSha256(payload, keyArr);
     } else if (payload is string) {
         byte[] inputArr = (<string>payload).toBytes();
-        hashedContent = crypto:hmacSha256(inputArr, keyArr);
+        return check crypto:hmacSha256(inputArr, keyArr);
     } else if (payload is xml) {
         byte[] inputArr = (<xml>payload).toString().toBytes();
-        hashedContent = crypto:hmacSha256(inputArr, keyArr);   
+        return check crypto:hmacSha256(inputArr, keyArr);   
+    } else if (payload is map<string>) {
+        byte[] inputArr = (<map<string>>payload).toString().toBytes();
+        return check crypto:hmacSha256(inputArr, keyArr); 
     } else {
         byte[] inputArr = (<json>payload).toString().toBytes();
-        hashedContent = crypto:hmacSha256(inputArr, keyArr);
+        return check crypto:hmacSha256(inputArr, keyArr);
     }
-    return hashedContent;
 }
