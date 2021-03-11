@@ -66,7 +66,7 @@ public client class HubClient {
 
         http:Request request = new;
         
-        string contentType = self.retrieveContentType(msg.contentType, msg.content);
+        string contentType = retrieveContentType(msg.contentType, msg.content);
 
         check request.setContentType(contentType);
         
@@ -86,7 +86,7 @@ public client class HubClient {
         request.setHeader(LINK, self.linkHeaderValue);
 
         if (self.secret.length() > 0) {
-            var hash = check self.retrievePayloadSignature(self.secret, msg.content);
+            var hash = check retrievePayloadSignature(self.secret, msg.content);
             request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash.toBase16());
         }
 
@@ -114,40 +114,40 @@ public client class HubClient {
             return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");
         }
     }
+}
 
-    isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
-        if (contentType is string) {
-            return contentType;
-        } else {
-            if (payload is string) {
-                return mime:TEXT_PLAIN;
-            } else if (payload is xml) {
-                return mime:APPLICATION_XML;
-            } else if (payload is map<string>) {
-                return mime: APPLICATION_FORM_URLENCODED;
-            } else if (payload is map<json>) {
-                return mime:APPLICATION_JSON;
-            } else {
-                return mime:APPLICATION_OCTET_STREAM;
-            }
-        }
-    }
-
-    isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
-        byte[] keyArr = 'key.toBytes();
-        byte[]|crypto:Error hashedContent;
-        if (payload is byte[]) {
-            hashedContent = crypto:hmacSha256(payload, keyArr);
-        } else if (payload is string) {
-            byte[] inputArr = (<string>payload).toBytes();
-            hashedContent = crypto:hmacSha256(inputArr, keyArr);
+isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
+    if (contentType is string) {
+        return contentType;
+    } else {
+        if (payload is string) {
+            return mime:TEXT_PLAIN;
         } else if (payload is xml) {
-            byte[] inputArr = (<xml>payload).toString().toBytes();
-            hashedContent = crypto:hmacSha256(inputArr, keyArr);   
+            return mime:APPLICATION_XML;
+        } else if (payload is map<string>) {
+            return mime: APPLICATION_FORM_URLENCODED;
+        } else if (payload is map<json>) {
+            return mime:APPLICATION_JSON;
         } else {
-            byte[] inputArr = (<json>payload).toString().toBytes();
-            hashedContent = crypto:hmacSha256(inputArr, keyArr);
+            return mime:APPLICATION_OCTET_STREAM;
         }
-        return hashedContent;
     }
+}
+
+isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+    byte[] keyArr = 'key.toBytes();
+    byte[]|crypto:Error hashedContent;
+    if (payload is byte[]) {
+        hashedContent = crypto:hmacSha256(payload, keyArr);
+    } else if (payload is string) {
+        byte[] inputArr = (<string>payload).toBytes();
+        hashedContent = crypto:hmacSha256(inputArr, keyArr);
+    } else if (payload is xml) {
+        byte[] inputArr = (<xml>payload).toString().toBytes();
+        hashedContent = crypto:hmacSha256(inputArr, keyArr);   
+    } else {
+        byte[] inputArr = (<json>payload).toString().toBytes();
+        hashedContent = crypto:hmacSha256(inputArr, keyArr);
+    }
+    return hashedContent;
 }
