@@ -24,7 +24,7 @@ var hubWithHeaderDetails = service object {
 
     remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
                                 returns TopicRegistrationSuccess {
-        log:print("Executing topic registration", message = message, headers = headers.getHeaderNames());
+        log:printDebug("Executing topic registration", message = message, headers = headers.getHeaderNames());
         TopicRegistrationSuccess successResult = {
                 body: <map<string>>{
                        isSuccess: "true"
@@ -35,7 +35,7 @@ var hubWithHeaderDetails = service object {
 
     remote function onDeregisterTopic(TopicDeregistration message, http:Headers headers)
                         returns TopicDeregistrationSuccess {
-        log:print("Executing topic de-registration", message = message, headers = headers.getHeaderNames());
+        log:printDebug("Executing topic de-registration", message = message, headers = headers.getHeaderNames());
         map<string> body = { isDeregisterSuccess: "true" };
         TopicDeregistrationSuccess deregisterResult = {
             body
