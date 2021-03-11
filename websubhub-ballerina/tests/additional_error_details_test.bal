@@ -62,7 +62,7 @@ var hubServiceToTestAdditionalErrorDetails = service object {
     }
 
     remote function onSubscriptionIntentVerified(VerifiedSubscription msg) {
-        log:print("Subscription Intent verified invoked!");
+        log:printDebug("Subscription Intent verified invoked!");
         isIntentVerified = true;
     }
 
@@ -89,7 +89,7 @@ var hubServiceToTestAdditionalErrorDetails = service object {
     }
 
     remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg){
-        log:print("Unsubscription Intent verified invoked!");
+        log:printDebug("Unsubscription Intent verified invoked!");
     }
 };
 

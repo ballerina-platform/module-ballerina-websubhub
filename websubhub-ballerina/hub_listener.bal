@@ -30,12 +30,17 @@ public class Listener {
     # provided to initialize the listener.
     #
     # + listenTo - An `http:Listener` or a port number to listen for the service
-    public isolated function init(int|http:Listener listenTo) returns error? {
+    # + config - `websub:ListenerConfiguration` to be provided to underlying HTTP Listener
+    public isolated function init(int|http:Listener listenTo, ListenerConfiguration? config = ()) returns error? {
         if (listenTo is int) {
-            self.httpListener = check new(listenTo);
+            self.httpListener = check new(listenTo, config);
         } else {
+            if (config is ListenerConfiguration) {
+                log:printWarn("Provided `websubhub:ListenerConfiguration` will be overridden by the given http listener configurations");
+            }
             self.httpListener = listenTo;
         }
+
         self.listenerConfig = self.httpListener.getConfig();
         self.port = self.httpListener.getPort();
         self.httpService = ();
@@ -48,7 +53,7 @@ public class Listener {
     # + return - An `error`, if an error occurred during the service attaching process
     public isolated function attach(Service s, string[]|string? name = ()) returns error? {
         if (self.listenerConfig.secureSocket is ()) {
-            log:print("HTTPS is recommended but using HTTP");
+            log:printWarn("HTTPS is recommended but using HTTP");
         }
 
         string hubUrl = self.retrieveHubUrl(name);
