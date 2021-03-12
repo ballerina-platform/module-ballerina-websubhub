@@ -162,13 +162,13 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
 
     ClientConfiguration config = {
 	        retryConfig: {
-		        intervalInMillis: 3000,
+		        interval: 3,
                 count: 3,
                 backOffFactor: 2.0,
-                maxWaitIntervalInMillis: 20000,
+                maxWaitInterval: 20,
                 statusCodes: [400]
             },
-            timeoutInMillis: 2000
+            timeout: 2
     };
     HubClient hubClientEP = check new(subscriptionMsg, config);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
@@ -189,13 +189,13 @@ function testContentDeliveryRetryFailed() returns @tainted error? {
     
     ClientConfiguration config = {
 	        retryConfig: {
-		        intervalInMillis: 3000,
+		        interval: 3,
                 count: 3,
                 backOffFactor: 2.0,
-                maxWaitIntervalInMillis: 20000,
+                maxWaitInterval: 20,
                 statusCodes: [500]
             },
-            timeoutInMillis: 2000
+            timeout: 2
     };
     HubClient hubClientEP = check new(subscriptionMsg, config);
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
