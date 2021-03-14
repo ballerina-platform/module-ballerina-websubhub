@@ -99,7 +99,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
         BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(
                                                                                         hubService, message, headers);
-        if (onSubscriptionResult is SubscriptionPermanentRedirect) {
+        if (onSubscriptionResult is SubscriptionTemporaryRedirect) {
             var result = caller->redirect(
                 response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
         } else if (onSubscriptionResult is SubscriptionPermanentRedirect) {
