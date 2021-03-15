@@ -90,7 +90,7 @@ public readonly class StatusTemporaryRedirect {
 # + code - Status code for action
 public readonly class StatusPermanentRedirect {
     *Status;
-    public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
+    public http:STATUS_PERMANENT_REDIRECT code = http:STATUS_PERMANENT_REDIRECT;
 }
 
 final StatusOK STATUS_OK_OBJ = new;
@@ -230,24 +230,28 @@ public type SubscriptionAccepted record {
     *CommonResponse;
 };
 
-# Record to represent permanent subscription redirects
+# Common Record to represent subscription redirects
 # 
 # + redirectUrls - URLs to which subscription has redirected
-# + code - Status code for action
-public type SubscriptionPermanentRedirect record {
+type SubscriptionRedirect record {
     *CommonResponse;
     string[] redirectUrls;
-    readonly StatusPermanentRedirect code = STATUS_PERMANENT_REDIRECT;
+};
+
+# Record to represent permanent subscription redirects
+# 
+# + code - Status code for action
+public type SubscriptionPermanentRedirect record {
+    *SubscriptionRedirect;
+    readonly http:STATUS_PERMANENT_REDIRECT code = http:STATUS_PERMANENT_REDIRECT;
 };
 
 # Record to represent temporary subscription redirects
 # 
-# + redirectUrls - URLs to which subscription has redirects
 # + code - Status code of the action
 public type SubscriptionTemporaryRedirect record {
-    *CommonResponse;
-    string[] redirectUrls;
-    readonly StatusTemporaryRedirect code = STATUS_TEMPORARY_REDIRECT;
+    *SubscriptionRedirect;
+    readonly http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
 };
 
 # Record to represent unsubscription acceptance
