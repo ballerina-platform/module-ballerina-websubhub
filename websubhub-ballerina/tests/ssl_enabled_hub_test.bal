@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/http;
 import ballerina/log;
 import ballerina/test;
@@ -45,7 +46,8 @@ service /websubhub on hubListener {
 
     remote function onUpdateMessage(UpdateMessage message)
                returns Acknowledgement|UpdateMessageError {
-        log:printDebug("Received content-update request ", message = message);
+        //log:printDebug("Received content-update request ", message = message);
+        io:println("Received content-update request ", message);
         return ACKNOWLEDGEMENT;
     }
     

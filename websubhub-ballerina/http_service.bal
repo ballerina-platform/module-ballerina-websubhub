@@ -67,7 +67,11 @@ service class HttpService {
 
         map<string> params = {};
 
-        string contentType = checkpanic headers.getHeader(CONTENT_TYPE);
+        string contentType = checkpanic request.getHeader(CONTENT_TYPE);
+        if (contentType.includes("multipart")) {
+            contentType = "multipart";
+        }
+
         map<string[]> queryParams = request.getQueryParams();
         // todo: Use constants form mime/http
         match contentType {
@@ -92,7 +96,7 @@ service class HttpService {
                     params = reqFormParamMap is map<string> ? reqFormParamMap : {};
                 }
             }
-            "application/json"|"application/xml"|"application/octet-stream"|"text/plain" => {
+            "application/json"|"application/xml"|"application/octet-stream"|"text/plain"|"multipart" => {
                 string[] hubMode = queryParams.get(HUB_MODE);
                 string[] hubTopic = queryParams.get(HUB_TOPIC);
                 params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
@@ -101,7 +105,8 @@ service class HttpService {
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
-                                        "application/json, application/xml, application/octet-stream and text/plain";
+                                        "application/json, application/xml, application/octet-stream, text/plain, " +
+                                        "multipart/form-data, multipart/mixed and multipart/alternative";
                 response.setTextPayload(errorMessage);
                 respondToRequest(caller, response);
             }
@@ -175,6 +180,13 @@ service class HttpService {
                         msgType: PUBLISH,
                         contentType: "text/plain",
                         content: checkpanic request.getTextPayload()
+                    };
+                } else if (contentType == "multipart") {
+                    updateMsg = {
+                        hubTopic: <string> topic,
+                        msgType: PUBLISH,
+                        contentType: request.getContentType(), 
+                        content: checkpanic request.getBodyParts()
                     };
                 } else {
                     updateMsg = {

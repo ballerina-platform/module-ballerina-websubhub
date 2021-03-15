@@ -64,6 +64,23 @@ function testContentTypeRetrievalForFormUrlEncoded() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
+function testContentTypeRetrievalForMime() returns @tainted error? {
+    mime:Entity jsonBodyPart = new;
+    jsonBodyPart.setContentDisposition(getContentDispositionForFormData("json part"));
+    jsonBodyPart.setJson({"name": "wso2"});
+
+    mime:Entity textBodyPart = new;
+    textBodyPart.setContentDisposition(getContentDispositionForFormData("text part"));
+    textBodyPart.setText("Sample text");
+
+    mime:Entity[] content = [jsonBodyPart, textBodyPart];
+    string contentType = retrieveContentType((), content);
+    test:assertEquals(contentType, mime:MULTIPART_FORM_DATA);
+}
+
+@test:Config { 
+    groups: ["contentTypeRetrieval"]
+}
 function testContentTypeRetrievalForByteArray() returns @tainted error? {
     byte[] content = "This is sample content delivery".toBytes();
     string contentType = retrieveContentType((), content);
