@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/mime;
 import ballerina/test;
 
 http:ListenerConfiguration listenerConfiguration = {
@@ -60,7 +61,7 @@ function testTextContentDeliveryWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -81,7 +82,7 @@ function testJsonContentDeliveryWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -102,10 +103,35 @@ function testXmlContentDeliveryWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
+}
+
+@test:Config {
+}
+function testMimeContentDeliveryWithSsl() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
+    
+    mime:Entity jsonBodyPart = new;
+    jsonBodyPart.setContentDisposition(getContentDispositionForFormData("json part"));
+    jsonBodyPart.setJson({"name": "wso2"});
+
+    mime:Entity textBodyPart = new;
+    textBodyPart.setContentDisposition(getContentDispositionForFormData("text part"));
+    textBodyPart.setText("Sample text");
+
+    mime:Entity[] publishedContent = [jsonBodyPart, textBodyPart];
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
+    if (publishResponse is ContentDistributionSuccess) {
+        test:assertEquals(publishResponse.status.code, 200);
+    } else {
+       test:assertFail("Content Publishing Failed.");
+    }  
 }
 
 @test:Config {

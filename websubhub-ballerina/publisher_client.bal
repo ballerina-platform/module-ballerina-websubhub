@@ -118,7 +118,7 @@ public client class PublisherClient {
     # + payload - The update payload
     # + contentType - The type of the update content to set as the `ContentType` header
     # + return -  An `error`if an error occurred with the update or else `()`
-    remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
+    remote function publishUpdate(string topic, map<string>|string|xml|json|byte[]|mime:Entity[] payload,
                                   string? contentType = ()) returns @tainted Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;

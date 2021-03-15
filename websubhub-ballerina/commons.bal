@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 import ballerina/http;
+import ballerina/mime;
 
 # Parameter `hub.mode` representing the mode of the request from hub to subscriber or subscriber to hub.
 const string HUB_MODE = "hub.mode";
@@ -118,7 +119,7 @@ type CommonResponse record {|
 public type ContentDistributionMessage record {|
     map<string|string[]>? headers = ();
     string? contentType = ();
-    json|xml|string|byte[] content;
+    json|xml|string|byte[]|mime:Entity[] content;
 |};
 
 # Record to represent the successful WebSub content delivery
@@ -212,7 +213,7 @@ public type UpdateMessage record {
     MessageType msgType;
     string hubTopic;
     string contentType;
-    string|byte[]|json|xml|map<string>? content;
+    string|byte[]|json|xml|map<string>?|mime:Entity[] content;
 };
 
 # Record to represent Topic Registration success

@@ -16,6 +16,7 @@
 
 import ballerina/io;
 import ballerina/http;
+import ballerina/mime;
 import ballerina/test;
 
 int retrySuccessCount = 0;
@@ -62,6 +63,14 @@ isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscripti
     };
 }
 
+isolated function getContentDispositionForFormData(string partName)
+                                    returns (mime:ContentDisposition) {
+    mime:ContentDisposition contentDisposition = new;
+    contentDisposition.name = partName;
+    contentDisposition.disposition = "form-data";
+    return contentDisposition;
+}
+
 @test:Config {
 }
 function testTextContentDelivery() returns @tainted error? {
@@ -73,7 +82,7 @@ function testTextContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -94,7 +103,7 @@ function testJsonContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -115,7 +124,7 @@ function testXmlContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -136,6 +145,33 @@ function testByteArrayContentDelivery() returns @tainted error? {
     } else {
        test:assertFail("Content Publishing Failed.");
     }    
+}
+
+@test:Config {
+}
+function testMimeContentDelivery() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
+
+    HubClient hubClientEP = checkpanic new(subscriptionMsg);
+
+    mime:Entity jsonBodyPart = new;
+    jsonBodyPart.setContentDisposition(getContentDispositionForFormData("json part"));
+    jsonBodyPart.setJson({"name": "wso2"});
+
+    mime:Entity textBodyPart = new;
+    textBodyPart.setContentDisposition(getContentDispositionForFormData("text part"));
+    textBodyPart.setText("Sample text");
+
+    mime:Entity[] publishedContent = [jsonBodyPart, textBodyPart];
+
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
+    if (publishResponse is ContentDistributionSuccess) {
+        test:assertEquals(publishResponse.status.code, 200);
+    } else {
+       test:assertFail("Content Publishing Failed.");
+    } 
 }
 
 @test:Config {
@@ -174,7 +210,7 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, "ok");
     } else {
        test:assertFail("Content Publishing Failed.");
     }
