@@ -29,11 +29,11 @@ http:ListenerConfiguration listenerConfiguration = {
 listener http:Listener serviceListener = new (9097, listenerConfiguration);
 
 service /callback on serviceListener {
-    resource function post success(http:Caller caller, http:Request req) {
+    isolated resource function post success(http:Caller caller, http:Request req) {
         var result = caller->respond("Content Delivery Success");
     }
 
-    resource function post deleted(http:Caller caller, http:Request req) {
+    isolated resource function post deleted(http:Caller caller, http:Request req) {
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
         var result = caller->respond(res);
@@ -60,7 +60,7 @@ function testTextContentDeliveryWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -81,7 +81,7 @@ function testJsonContentDeliveryWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -102,7 +102,7 @@ function testXmlContentDeliveryWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }

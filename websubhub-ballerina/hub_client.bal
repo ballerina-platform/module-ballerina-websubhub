@@ -40,7 +40,7 @@ public client class HubClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
-    public function init(Subscription subscription, ClientConfiguration? config = ()) returns error? {
+    public isolated function init(Subscription subscription, ClientConfiguration? config = ()) returns error? {
         self.callback = subscription.hubCallback;
         self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
@@ -61,13 +61,12 @@ public client class HubClient {
     # + msg - content to be distributed to the topic-subscriber 
     # + return - an `error` if an error occurred or `SubscriptionDeletedError` if the subscriber responded with `HTTP 410` 
     # or else `ContentDistributionSuccess` for successful content delivery
-    remote function notifyContentDistribution(ContentDistributionMessage msg) returns @tainted ContentDistributionSuccess | SubscriptionDeletedError | error? {
+    isolated remote function notifyContentDistribution(ContentDistributionMessage msg) returns @tainted ContentDistributionSuccess | SubscriptionDeletedError | error? {
         http:Client httpClient = self.httpClient;
 
         http:Request request = new;
         
         string contentType = retrieveContentType(msg.contentType, msg.content);
-
         check request.setContentType(contentType);
         
         if (msg?.headers is map<string|string[]>) {
@@ -84,23 +83,20 @@ public client class HubClient {
         }
 
         request.setHeader(LINK, self.linkHeaderValue);
-
         if (self.secret.length() > 0) {
             var hash = check retrievePayloadSignature(self.secret, msg.content);
             request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash.toBase16());
         }
-
         request.setPayload(msg.content);
 
         var response = httpClient->post("", request);
-
         if (response is http:Response) {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
                 return {
-                    headers: msg?.headers,
-                    mediaType: msg?.contentType,
-                    body: msg.content
+                    headers: check retrieveResponseHeaders(response),
+                    mediaType: response.getContentType(),
+                    body: check retrieveResponseBody(response)
                 };
             } else if (status == http:STATUS_GONE) {
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
@@ -112,6 +108,40 @@ public client class HubClient {
             }
         } else {
             return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");
+        }
+    }
+}
+
+isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]>|error {
+    map<string|string[]> responseHeaders = {};
+    foreach var headerName in subscriberResponse.getHeaderNames() {
+        string[] retrievedValue = check subscriberResponse.getHeaders(headerName);
+        if (retrievedValue.length() == 1) {
+            responseHeaders[headerName] = retrievedValue[0];
+        } else {
+            responseHeaders[headerName] = retrievedValue;
+        }
+    }
+    return responseHeaders;
+}
+
+isolated function retrieveResponseBody(http:Response subscriberResponse) returns string|byte[]|json|xml|map<string>|error {
+    string & readonly contentType = subscriberResponse.getContentType();
+    match contentType {
+        "application/json" => {
+            return check subscriberResponse.getJsonPayload();
+        }
+        "application/xml" => {
+            return check subscriberResponse.getXmlPayload(); 
+        }
+        "text/plain" => {
+            return check subscriberResponse.getTextPayload();             
+        }
+        "application/octet-stream" => {
+            return check subscriberResponse.getBinaryPayload();
+        }
+        _ => {
+            return error ContentDeliveryError(string`Unrecognized content-type [${contentType}] found`);
         }
     }
 }
