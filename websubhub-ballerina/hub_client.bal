@@ -93,11 +93,19 @@ public client class HubClient {
         if (response is http:Response) {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
-                return {
-                    headers: check retrieveResponseHeaders(response),
-                    mediaType: response.getContentType(),
-                    body: check retrieveResponseBody(response)
-                };
+                string & readonly responseContentType = response.getContentType();
+                map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
+                if (responseContentType.trim().length() > 1) {
+                    return {
+                        headers: responseHeaders,
+                        mediaType: responseContentType,
+                        body: check retrieveResponseBody(response, responseContentType)
+                    };
+                } else {
+                    return {
+                        headers: responseHeaders
+                    };
+                }
             } else if (status == http:STATUS_GONE) {
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
                 return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
@@ -125,8 +133,7 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
     return responseHeaders;
 }
 
-isolated function retrieveResponseBody(http:Response subscriberResponse) returns string|byte[]|json|xml|map<string>|error {
-    string & readonly contentType = subscriberResponse.getContentType();
+isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>|error {
     match contentType {
         "application/json" => {
             return check subscriberResponse.getJsonPayload();

@@ -62,8 +62,8 @@ var simpleSubscriber = service object {
     }
 
     isolated resource function post addPayload(http:Caller caller, http:Request req) returns error? {
-        string payload = check req.getTextPayload();
-        json|xml|string|byte[] samplePayload = "This is a test message";
+        string & readonly payload = check req.getTextPayload();
+        json|xml|string|byte[]? samplePayload = ();
         match payload {
             "json" => {
                 samplePayload = {
@@ -76,9 +76,10 @@ var simpleSubscriber = service object {
             "xml" => {
                 samplePayload = xml `<content><message>This is a test message</message></content>`;
             }
-            _ => {
+            "byte" => {
                 samplePayload = "This is a test message".toBytes();
             }
+            _ => {}
         }
         http:Response resp = new;
         resp.setPayload(samplePayload);

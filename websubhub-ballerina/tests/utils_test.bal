@@ -170,7 +170,7 @@ function testResponsePayloadRetrievalForText() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("text");
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
-    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse);
+    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse, retrievedResponse.getContentType());
     test:assertTrue(responseBody is string);
     test:assertEquals(responseBody, "This is a test message");
 }
@@ -185,7 +185,7 @@ function testResponsePayloadRetrievalForJson() returns @tainted error? {
                     "message": "This is a test message"
     };
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
-    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse);
+    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse, retrievedResponse.getContentType());
     test:assertTrue(responseBody is json);
     test:assertEquals(responseBody, expectedPayload);
 }
@@ -198,7 +198,7 @@ function testResponsePayloadRetrievalForXml() returns @tainted error? {
     request.setTextPayload("xml");
     xml expectedPayload = xml `<content><message>This is a test message</message></content>`;
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
-    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse);
+    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse, retrievedResponse.getContentType());
     test:assertTrue(responseBody is xml);
     test:assertEquals(responseBody, expectedPayload);
 }
@@ -206,14 +206,24 @@ function testResponsePayloadRetrievalForXml() returns @tainted error? {
 @test:Config { 
     groups: ["clientResponseBodyRetrieval"]
 }
-function testResponsePayloadRetrievalForBteArray() returns @tainted error? {
+function testResponsePayloadRetrievalForByteArray() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("byte");
     byte[] expectedPayload = "This is a test message".toBytes();
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
-    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse);
+    string|byte[]|json|xml|map<string> responseBody = check retrieveResponseBody(retrievedResponse, retrievedResponse.getContentType());
     test:assertTrue(responseBody is byte[]);
     test:assertEquals(responseBody, expectedPayload);
+}
+
+@test:Config { 
+    groups: ["clientResponseBodyRetrieval"]
+}
+function testResponsePayloadRetrievalForNoContent() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("other");
+    http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
+    test:assertFalse(retrievedResponse.getContentType().trim().length() > 1);
 }
 
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {
