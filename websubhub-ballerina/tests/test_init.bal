@@ -20,6 +20,12 @@ import ballerina/log;
 
 listener http:Listener simpleSubscriberListener = new (9191);
 
+map<string|string[]> CUSTOM_HEADERS = {
+        "header1": ["value1", "value2"],
+        "header2": "value3",
+        "header3": ["value4"]
+};
+
 var simpleSubscriber = service object {
 
     resource function get .(http:Caller caller, http:Request req)
@@ -36,9 +42,47 @@ var simpleSubscriber = service object {
         }
     }
 
-    resource function post .(http:Caller caller, http:Request req)
+    isolated resource function post .(http:Caller caller, http:Request req)
             returns error? {
         check caller->respond();
+    }
+
+    resource function post addHeaders(http:Caller caller, http:Request req) returns error? {
+        http:Response response = new;    
+        foreach var [header, value] in CUSTOM_HEADERS.entries() {
+            if (value is string) {
+                response.setHeader(header, value);
+            } else {
+                foreach var val in value {
+                    response.addHeader(header, val);
+                }
+            }
+        }
+        check caller->respond(response);
+    }
+
+    isolated resource function post addPayload(http:Caller caller, http:Request req) returns error? {
+        string payload = check req.getTextPayload();
+        json|xml|string|byte[] samplePayload = "This is a test message";
+        match payload {
+            "json" => {
+                samplePayload = {
+                    "message": "This is a test message"
+                };
+            }
+            "text" => {
+                samplePayload = "This is a test message";
+            }
+            "xml" => {
+                samplePayload = xml `<content><message>This is a test message</message></content>`;
+            }
+            _ => {
+                samplePayload = "This is a test message".toBytes();
+            }
+        }
+        http:Response resp = new;
+        resp.setPayload(samplePayload);
+        var result = caller->respond(resp);
     }
 
     resource function get unsubscribe(http:Caller caller, http:Request req)

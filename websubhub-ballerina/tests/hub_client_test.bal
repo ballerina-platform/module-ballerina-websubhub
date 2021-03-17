@@ -18,14 +18,15 @@ import ballerina/io;
 import ballerina/http;
 import ballerina/test;
 
+const string CONTENT_DELIVERY_SUCCESS = "Content Delivery Success";
 int retrySuccessCount = 0;
 service /callback on new http:Listener(9094) {
-    resource function post success(http:Caller caller, http:Request req) {
+    isolated resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
         var result = caller->respond("Content Delivery Success");
     }
 
-    resource function post deleted(http:Caller caller, http:Request req) {
+    isolated resource function post deleted(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received [SUB-TERMINATE] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
@@ -44,7 +45,7 @@ service /callback on new http:Listener(9094) {
         }
     }
 
-    resource function post retryFailed(http:Caller caller, http:Request req) {
+    isolated resource function post retryFailed(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received [RETRY_FAILED] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
@@ -73,7 +74,7 @@ function testTextContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -94,7 +95,7 @@ function testJsonContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -115,7 +116,7 @@ function testXmlContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
@@ -174,7 +175,7 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, msg.content);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
     } else {
        test:assertFail("Content Publishing Failed.");
     }
