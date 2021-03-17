@@ -51,6 +51,11 @@ service /callback on new http:Listener(9094) {
         res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
         var result = caller->respond(res);
     }
+
+    isolated resource function post noContent(http:Caller caller, http:Request req) {
+        io:println("Hub Content Distribution message received [NO_RESPONSE] : ", req.getTextPayload());
+        var result = caller->respond();
+    }
 }
 
 isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscription {
@@ -134,6 +139,25 @@ function testByteArrayContentDelivery() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution(msg);   
     if (publishResponse is ContentDistributionSuccess) {
         test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
+    } else {
+       test:assertFail("Content Publishing Failed.");
+    }    
+}
+
+@test:Config {
+}
+function testContentDeliveryWithNoResponse() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/noContent");
+    
+    byte[] publishedContent = "This is sample content".toBytes();
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    HubClient hubClientEP = check new(subscriptionMsg);
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
+    if (publishResponse is ContentDistributionSuccess) {
+        test:assertEquals(publishResponse.status.code, 200);
+        test:assertEquals(publishResponse.body, ());
     } else {
        test:assertFail("Content Publishing Failed.");
     }    
