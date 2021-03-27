@@ -30,13 +30,13 @@ listener http:Listener serviceListener = new (9097, listenerConfiguration);
 
 service /callback on serviceListener {
     isolated resource function post success(http:Caller caller, http:Request req) {
-        var result = caller->respond("Content Delivery Success");
+        http:ListenerError? result = caller->respond("Content Delivery Success");
     }
 
     isolated resource function post deleted(http:Caller caller, http:Request req) {
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
-        var result = caller->respond(res);
+        http:ListenerError? result = caller->respond(res);
     }
 }
 

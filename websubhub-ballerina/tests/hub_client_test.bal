@@ -23,25 +23,25 @@ int retrySuccessCount = 0;
 service /callback on new http:Listener(9094) {
     isolated resource function post success(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
-        var result = caller->respond("Content Delivery Success");
+        http:ListenerError? result = caller->respond("Content Delivery Success");
     }
 
     isolated resource function post deleted(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received [SUB-TERMINATE] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
-        var result = caller->respond(res);
+        http:ListenerError? result = caller->respond(res);
     }
 
     resource function post retrySuccess(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received [RETRY_SUCCESS] : ", req.getTextPayload());
         retrySuccessCount += 1;
         if (retrySuccessCount == 3) {
-            var result = caller->respond("Content Delivery Success");
+            http:ListenerError?  result = caller->respond("Content Delivery Success");
         } else {
             http:Response res = new ();
             res.statusCode = http:STATUS_BAD_REQUEST;
-            var result = caller->respond(res);
+            http:ListenerError?  result = caller->respond(res);
         }
     }
 
@@ -49,12 +49,12 @@ service /callback on new http:Listener(9094) {
         io:println("Hub Content Distribution message received [RETRY_FAILED] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-        var result = caller->respond(res);
+        http:ListenerError? result = caller->respond(res);
     }
 
     isolated resource function post noContent(http:Caller caller, http:Request req) {
         io:println("Hub Content Distribution message received [NO_RESPONSE] : ", req.getTextPayload());
-        var result = caller->respond();
+        http:ListenerError? result = caller->respond();
     }
 }
 
