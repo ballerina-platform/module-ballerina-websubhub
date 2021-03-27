@@ -83,7 +83,7 @@ var simpleSubscriber = service object {
         }
         http:Response resp = new;
         resp.setPayload(samplePayload);
-        var result = caller->respond(resp);
+        http:ListenerError? result = caller->respond(resp);
     }
 
     resource function get unsubscribe(http:Caller caller, http:Request req)
@@ -96,13 +96,13 @@ var simpleSubscriber = service object {
             check caller->respond("");
         } else {
             string[] challengeArray = <string[]> payload["hub.challenge"];
-            check caller->respond(challengeArray[0]);
+            http:ListenerError? result = caller->respond(challengeArray[0]);
         }
     }
 
     resource function post unsubscribe(http:Caller caller, http:Request req)
             returns error? {
-        check caller->respond();
+        http:ListenerError? result = caller->respond();
     }
 };
 

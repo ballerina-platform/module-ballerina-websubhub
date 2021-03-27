@@ -100,11 +100,11 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
         BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(
                                                                                         hubService, message, headers);
         if (onSubscriptionResult is SubscriptionTemporaryRedirect) {
-            var result = caller->redirect(
+            http:ListenerError? result = caller->redirect(
                 response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
         } else if (onSubscriptionResult is SubscriptionPermanentRedirect) {
            SubscriptionPermanentRedirect redirMsg = <SubscriptionPermanentRedirect> onSubscriptionResult;
-           var result = caller->redirect(
+           http:ListenerError? result = caller->redirect(
                response, http:REDIRECT_PERMANENT_REDIRECT_308, redirMsg.redirectUrls);
         } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
@@ -147,14 +147,14 @@ function proceedToValidationAndVerification(http:Headers headers, Service hubSer
                             + HUB_MODE + "=denied"
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + "hub.reason" + "=" + validationResult.message();
-        var validationFailureRequest = httpClient->get(<@untainted string> queryParams);
+        http:ClientError|http:Response validationFailureRequest = httpClient->get(<@untainted string> queryParams);
     } else {
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=" + MODE_SUBSCRIBE
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + HUB_CHALLENGE + "=" + challenge
                             + "&" + HUB_LEASE_SECONDS + "=" + <string>message.hubLeaseSeconds;
-        var subscriberResponse = httpClient->get(<@untainted string> queryParams);
+        http:ClientError|http:Response subscriberResponse = httpClient->get(<@untainted string> queryParams);
         if (subscriberResponse is http:Response) {
             var respStringPayload = subscriberResponse.getTextPayload();
             if (respStringPayload is string) {
@@ -247,14 +247,14 @@ function proceedToUnsubscriptionVerification(http:Request initialRequest, http:H
                             + HUB_MODE + "=denied"
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + "hub.reason" + "=" + validationResult.message();
-        var validationFailureRequest = httpClient->get(<@untainted string> queryParams);
+        http:ClientError|http:Response validationFailureRequest = httpClient->get(<@untainted string> queryParams);
     } else {
         string challenge = uuid:createType4AsString();
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                                 + HUB_MODE + "=" + MODE_UNSUBSCRIBE
                                 + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                                 + "&" + HUB_CHALLENGE + "=" + challenge;
-        var subscriberResponse = httpClient->get(<@untainted string> queryParams);
+        http:ClientError|http:Response subscriberResponse = httpClient->get(<@untainted string> queryParams);
         if (subscriberResponse is http:Response) {
             var respStringPayload = subscriberResponse.getTextPayload();
             if (respStringPayload is string) {
@@ -367,5 +367,5 @@ isolated function generateResponsePayload(string hubMode, anydata? messageBody, 
 }
 
 isolated function respondToRequest(http:Caller caller, http:Response response) {
-    var responseError = caller->respond(response);
+    http:ListenerError? responseError = caller->respond(response);
 }
