@@ -265,17 +265,17 @@ public type Acknowledgement record {
 };
 
 # Common Responses to be used in hub-implementation
-public final TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
+public final readonly & TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
 public final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed");
-public final TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};
+public final readonly & TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};
 public final TopicDeregistrationError TOPIC_DEREGISTRATION_ERROR = error TopicDeregistrationError("Topic deregistration failed!");
-public final Acknowledgement ACKNOWLEDGEMENT = {};
+public final readonly & Acknowledgement ACKNOWLEDGEMENT = {};
 public final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError("Error in accessing content");
-public final SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
+public final readonly & SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
 public final BadSubscriptionError BAD_SUBSCRIPTION_ERROR = error BadSubscriptionError("Bad subscription request");
 public final InternalSubscriptionError INTERNAL_SUBSCRIPTION_ERROR = error InternalSubscriptionError("Internal error occurred while processing subscription request");
 public final SubscriptionDeniedError SUBSCRIPTION_DENIED_ERROR = error SubscriptionDeniedError("Subscription denied");
-public final UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {};
+public final readonly & UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {};
 public final BadUnsubscriptionError BAD_UNSUBSCRIPTION_ERROR = error BadUnsubscriptionError("Bad unsubscription request");
 public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error InternalUnsubscriptionError("Internal error occurred while processing unsubscription request");
 public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied");

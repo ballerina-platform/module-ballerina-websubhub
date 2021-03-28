@@ -57,7 +57,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
     }
 }
 
-function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
+isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               http:Headers headers, map<string> params, Service hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable, 
                                               string hubUrl, int defaultHubLeaseSeconds) {
@@ -126,7 +126,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     }
 }   
 
-function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
+isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
                                             boolean isSubscriptionValidationAvailable) {
     SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
@@ -176,7 +176,7 @@ function proceedToValidationAndVerification(http:Headers headers, Service hubSer
     }
 }
 
-function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
+isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
                                                 http:Headers headers, map<string> params, Service hubService,
                                                 boolean isUnsubscriptionAvailable, 
                                                 boolean isUnsubscriptionValidationAvailable) {
@@ -227,7 +227,7 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     }
 }
 
-function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
+isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
                                              Unsubscription message, boolean isUnsubscriptionValidationAvailable) {
 
     UnsubscriptionDeniedError? validationResult = ();

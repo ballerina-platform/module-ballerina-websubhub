@@ -41,7 +41,7 @@ public client class HubClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
-    public isolated function init(Subscription subscription, ClientConfiguration? config = ()) returns error? {
+    public isolated function init(Subscription subscription, *ClientConfiguration config) returns error? {
         self.callback = subscription.hubCallback;
         self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
