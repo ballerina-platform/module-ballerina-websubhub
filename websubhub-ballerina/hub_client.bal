@@ -17,6 +17,7 @@
 import ballerina/http;
 import ballerina/mime;
 import ballerina/crypto;
+import ballerina/lang.'string as strings;
 
 # HTTP Based client for WebSub content publishing to subscribers
 public client class HubClient {
@@ -56,7 +57,7 @@ public client class HubClient {
     #       content: "This is sample content" 
     #   }
     # );
-    #  ```
+    # ```
     #
     # + msg - content to be distributed to the topic-subscriber 
     # + return - an `error` if an error occurred or `SubscriptionDeletedError` if the subscriber responded with `HTTP 410` 
@@ -81,15 +82,31 @@ public client class HubClient {
                 }
             }
         }
+        
+        string queryString = "";
+        match contentType {
+            mime:APPLICATION_FORM_URLENCODED => {
+                map<string> messageBody = <map<string>> msg.content;
+                queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
+            }
+            _ => {
+                request.setPayload(msg.content);
+            }
+        }
 
         request.setHeader(LINK, self.linkHeaderValue);
         if (self.secret.length() > 0) {
-            var hash = check retrievePayloadSignature(self.secret, msg.content);
-            request.setHeader(X_HUB_SIGNATURE, SHA256_HMAC + "=" +hash.toBase16());
+            byte[] hash = [];
+            if (contentType == mime:APPLICATION_FORM_URLENCODED) {
+                hash = check retrievePayloadSignature(self.secret, queryString);
+            } else {
+                hash = check retrievePayloadSignature(self.secret, msg.content);
+            }
+            request.setHeader(X_HUB_SIGNATURE, string`${SHA256_HMAC}=${hash.toBase16()}`);
         }
-        request.setPayload(msg.content);
 
-        var response = httpClient->post("", request);
+        string servicePath = getServicePath(self.callback, contentType, queryString);
+        var response = httpClient->post(servicePath, request);
         if (response is http:Response) {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
@@ -120,6 +137,18 @@ public client class HubClient {
     }
 }
 
+isolated function getServicePath(string originalServiceUrl, string contentType, string queryString) returns string {
+    match contentType {
+        mime:APPLICATION_FORM_URLENCODED => {
+            string servicePath = strings:includes(originalServiceUrl, ("?")) ? "&" : "?";
+            return servicePath + queryString;
+        }
+        _ => {
+            return "";
+        }
+    }
+}
+
 isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]>|error {
     map<string|string[]> responseHeaders = {};
     foreach var headerName in subscriberResponse.getHeaderNames() {
@@ -135,17 +164,21 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
 
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>|error {
     match contentType {
-        "application/json" => {
+        mime:APPLICATION_JSON => {
             return check subscriberResponse.getJsonPayload();
         }
-        "application/xml" => {
+        mime:APPLICATION_XML => {
             return check subscriberResponse.getXmlPayload(); 
         }
-        "text/plain" => {
+        mime:TEXT_PLAIN => {
             return check subscriberResponse.getTextPayload();             
         }
-        "application/octet-stream" => {
+        mime:APPLICATION_OCTET_STREAM => {
             return check subscriberResponse.getBinaryPayload();
+        }
+        mime:APPLICATION_FORM_URLENCODED => {
+            string payload = check subscriberResponse.getTextPayload();
+            return retrieveResponseBodyForFormUrlEncodedMessage(payload);
         }
         _ => {
             return error ContentDeliveryError(string`Unrecognized content-type [${contentType}] found`);
@@ -162,7 +195,7 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
         } else if (payload is xml) {
             return mime:APPLICATION_XML;
         } else if (payload is map<string>) {
-            return mime: APPLICATION_FORM_URLENCODED;
+            return mime:APPLICATION_FORM_URLENCODED;
         } else if (payload is map<json>) {
             return mime:APPLICATION_JSON;
         } else {
