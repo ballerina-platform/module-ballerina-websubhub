@@ -226,6 +226,59 @@ function testResponsePayloadRetrievalForNoContent() returns @tainted error? {
     test:assertFalse(retrievedResponse.getContentType().trim().length() > 1);
 }
 
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testResponsePayloadGenerationWithReason() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2"
+    };
+    string generatedQuery = generateResponsePayload("denied", message, "reason1");
+    test:assertEquals("hub.mode=denied&hub.reason=reason1&query1=value1&query2=value2", generatedQuery);
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testResponsePayloadGenerationWithOutReason() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2"
+    };
+    string generatedQuery = generateResponsePayload("denied", message, ());
+    test:assertEquals(generatedQuery, "hub.mode=denied&query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testFormUrlEncodedTextPayloadRetrieval() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2"
+    };
+    string generatedQuery = retrieveTextPayloadForFormUrlEncodedMessage(message);
+    test:assertEquals(generatedQuery, "query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2",
+        "query3": "value3"
+    };
+    map<string> generatedResponseBody = retrieveResponseBodyForFormUrlEncodedMessage("query1=value1&query2=value2&query3=value3");
+    test:assertEquals(generatedResponseBody.length(), message.length());
+    foreach var 'key in message.keys() {
+        string value = generatedResponseBody.remove('key);
+    }
+    test:assertTrue(generatedResponseBody.length() == 0);
+}
+
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {
     foreach var [header, value] in CUSTOM_HEADERS.entries() {
         if (retrievedHeaders.hasKey(header)) {
