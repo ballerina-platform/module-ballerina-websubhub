@@ -62,7 +62,8 @@ public client class HubClient {
     # + msg - content to be distributed to the topic-subscriber 
     # + return - an `error` if an error occurred or `SubscriptionDeletedError` if the subscriber responded with `HTTP 410` 
     # or else `ContentDistributionSuccess` for successful content delivery
-    isolated remote function notifyContentDistribution(ContentDistributionMessage msg) returns @tainted ContentDistributionSuccess | SubscriptionDeletedError | error? {
+    isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
+                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|error? {
         http:Client httpClient = self.httpClient;
 
         http:Request request = new;
