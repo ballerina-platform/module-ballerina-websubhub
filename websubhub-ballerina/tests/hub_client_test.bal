@@ -154,7 +154,7 @@ function testUrlEncodedContentDelivery() returns @tainted error? {
 
 @test:Config {
 }
-function testContentDeliveryWithNoResponse() returns @tainted error? {
+isolated function testContentDeliveryWithNoResponse() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/noContent");
     HubClient hubClientEP = check new(subscriptionMsg);
     byte[] publishedContent = "This is sample content".toBytes();
@@ -170,7 +170,7 @@ function testContentDeliveryWithNoResponse() returns @tainted error? {
 
 @test:Config {
 }
-function testSubscriptionDeleted() returns @tainted error? {
+isolated function testSubscriptionDeleted() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
     HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
@@ -184,7 +184,7 @@ function testSubscriptionDeleted() returns @tainted error? {
 
 @test:Config {
 }
-function testContentDeliveryRetrySuccess() returns @tainted error? {
+isolated function testContentDeliveryRetrySuccess() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retrySuccess");
     ClientConfiguration config = {
 	        retryConfig: {
@@ -209,7 +209,7 @@ function testContentDeliveryRetrySuccess() returns @tainted error? {
 
 @test:Config {
 }
-function testContentDeliveryRetryFailed() returns @tainted error? {
+isolated function testContentDeliveryRetryFailed() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retryFailed");
     ClientConfiguration config = {
 	        retryConfig: {
