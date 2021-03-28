@@ -138,6 +138,60 @@ public client class HubClient {
     }
 }
 
+# Retrieve content-type for the content-distribution request.
+# 
+# + contentType - provided content type (optional)
+# + payload - content-distribution payload
+# + return - {@code string} containing the content-type for the content-distribution request
+isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
+    if (contentType is string) {
+        return contentType;
+    } else {
+        if (payload is string) {
+            return mime:TEXT_PLAIN;
+        } else if (payload is xml) {
+            return mime:APPLICATION_XML;
+        } else if (payload is map<string>) {
+            return mime:APPLICATION_FORM_URLENCODED;
+        } else if (payload is map<json>) {
+            return mime:APPLICATION_JSON;
+        } else {
+            return mime:APPLICATION_OCTET_STREAM;
+        }
+    }
+}
+
+# Retrieve signature for the content-distribution request payload.
+# 
+# + 'key - hashing key to be used (this is provided by the subscriber)
+# + payload - content-distribution request body
+# + return - {@code byte[]} containing the content signature or {@code error} if there is any error in 
+# function execution
+isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+    byte[] keyArr = 'key.toBytes();
+    if (payload is byte[]) {
+        return check crypto:hmacSha256(payload, keyArr);
+    } else if (payload is string) {
+        byte[] inputArr = (<string>payload).toBytes();
+        return check crypto:hmacSha256(inputArr, keyArr);
+    } else if (payload is xml) {
+        byte[] inputArr = (<xml>payload).toString().toBytes();
+        return check crypto:hmacSha256(inputArr, keyArr);   
+    } else if (payload is map<string>) {
+        byte[] inputArr = (<map<string>>payload).toString().toBytes();
+        return check crypto:hmacSha256(inputArr, keyArr); 
+    } else {
+        byte[] inputArr = (<json>payload).toJsonString().toBytes();
+        return check crypto:hmacSha256(inputArr, keyArr);
+    }
+}
+
+# Retrieve service path to which the content should be delivered.
+# 
+# + originalServiceUrl - subscriber callback URL
+# + contentType - content-type of the content-distribution request
+# + queryString - generated query-parameters for the request
+# + return - service-path which should be called for content-delivery
 isolated function getServicePath(string originalServiceUrl, string contentType, string queryString) returns string {
     match contentType {
         mime:APPLICATION_FORM_URLENCODED => {
@@ -150,6 +204,11 @@ isolated function getServicePath(string originalServiceUrl, string contentType, 
     }
 }
 
+# Retrieve response headers from subscriber-response.
+# 
+# + subscriberResponse - {@code http:Response} received for content-delivery
+# + return - {@code map<string|string[]>} containing header values or {@code error} if there is an error in the
+# function execution
 isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]>|error {
     map<string|string[]> responseHeaders = {};
     foreach var headerName in subscriberResponse.getHeaderNames() {
@@ -163,6 +222,11 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
     return responseHeaders;
 }
 
+# Retrieve response body from subscriber-response.
+# 
+# + subscriberResponse - {@code http:Response} received for content-delivery
+# + contentType - content-type for the received response
+# + return - response body of the {@code http:Response} or {@code error} if there is an error in the execution
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>|error {
     match contentType {
         mime:APPLICATION_JSON => {
@@ -184,42 +248,5 @@ isolated function retrieveResponseBody(http:Response subscriberResponse, string 
         _ => {
             return error ContentDeliveryError(string`Unrecognized content-type [${contentType}] found`);
         }
-    }
-}
-
-isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
-    if (contentType is string) {
-        return contentType;
-    } else {
-        if (payload is string) {
-            return mime:TEXT_PLAIN;
-        } else if (payload is xml) {
-            return mime:APPLICATION_XML;
-        } else if (payload is map<string>) {
-            return mime:APPLICATION_FORM_URLENCODED;
-        } else if (payload is map<json>) {
-            return mime:APPLICATION_JSON;
-        } else {
-            return mime:APPLICATION_OCTET_STREAM;
-        }
-    }
-}
-
-isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
-    byte[] keyArr = 'key.toBytes();
-    if (payload is byte[]) {
-        return check crypto:hmacSha256(payload, keyArr);
-    } else if (payload is string) {
-        byte[] inputArr = (<string>payload).toBytes();
-        return check crypto:hmacSha256(inputArr, keyArr);
-    } else if (payload is xml) {
-        byte[] inputArr = (<xml>payload).toString().toBytes();
-        return check crypto:hmacSha256(inputArr, keyArr);   
-    } else if (payload is map<string>) {
-        byte[] inputArr = (<map<string>>payload).toString().toBytes();
-        return check crypto:hmacSha256(inputArr, keyArr); 
-    } else {
-        byte[] inputArr = (<json>payload).toString().toBytes();
-        return check crypto:hmacSha256(inputArr, keyArr);
     }
 }
