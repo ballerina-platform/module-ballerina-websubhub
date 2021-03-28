@@ -279,6 +279,30 @@ isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns @ta
     test:assertTrue(generatedResponseBody.length() == 0);
 }
 
+@test:Config { 
+    groups: ["servicePathRetrieval"]
+}
+isolated function testServicePathRetrievalForUrlEncodedContent() returns error? {
+    string servicePath = getServicePath("https://subscriber.com/callback", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
+    test:assertEquals(servicePath, "?query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["servicePathRetrieval"]
+}
+isolated function testServicePathRetrievalForUrlEncodedContentWithCallbackParameters() returns error? {
+    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
+    test:assertEquals(servicePath, "&query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["servicePathRetrieval"]
+}
+isolated function testServicePathRetrievalForOtherContentTypes() returns error? {
+    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:TEXT_PLAIN, "query1=value1&query2=value2");
+    test:assertEquals(servicePath, "");
+}
+
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {
     foreach var [header, value] in CUSTOM_HEADERS.entries() {
         if (retrievedHeaders.hasKey(header)) {
