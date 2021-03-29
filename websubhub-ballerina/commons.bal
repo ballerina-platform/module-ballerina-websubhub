@@ -118,7 +118,7 @@ type CommonResponse record {|
 public type ContentDistributionMessage record {|
     map<string|string[]>? headers = ();
     string? contentType = ();
-    json|xml|string|byte[] content;
+    map<string>|json|xml|string|byte[] content;
 |};
 
 # Record to represent the successful WebSub content delivery

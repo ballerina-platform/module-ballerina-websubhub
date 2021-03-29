@@ -64,13 +64,19 @@ public client class HubClient {
     # or else `ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
                                 returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|error? {
-        http:Client httpClient = self.httpClient;
-
-        http:Request request = new;
-        
         string contentType = retrieveContentType(msg.contentType, msg.content);
-        check request.setContentType(contentType);
-        
+        http:Request request = new;
+        string queryString = "";
+        match contentType {
+            mime:APPLICATION_FORM_URLENCODED => {
+                map<string> messageBody = <map<string>> msg.content;
+                queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
+            }
+            _ => {
+                request.setPayload(msg.content);
+            }
+        }
+
         if (msg?.headers is map<string|string[]>) {
             var headers = <map<string|string[]>>msg?.headers;
             foreach var [header, values] in headers.entries() {
@@ -83,18 +89,7 @@ public client class HubClient {
                 }
             }
         }
-        
-        string queryString = "";
-        match contentType {
-            mime:APPLICATION_FORM_URLENCODED => {
-                map<string> messageBody = <map<string>> msg.content;
-                queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
-            }
-            _ => {
-                request.setPayload(msg.content);
-            }
-        }
-
+        check request.setContentType(contentType);
         request.setHeader(LINK, self.linkHeaderValue);
         if (self.secret.length() > 0) {
             byte[] hash = [];
@@ -107,7 +102,7 @@ public client class HubClient {
         }
 
         string servicePath = getServicePath(self.callback, contentType, queryString);
-        var response = httpClient->post(servicePath, request);
+        var response = self.httpClient->post(servicePath, request);
         if (response is http:Response) {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
