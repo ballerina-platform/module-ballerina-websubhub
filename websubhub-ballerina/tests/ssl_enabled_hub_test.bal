@@ -31,48 +31,48 @@ listener Listener hubListener = new(9096, listenerConfigs);
 
 service /websubhub on hubListener {
 
-    remote function onRegisterTopic(TopicRegistration message)
+    isolated remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationSuccess {
         log:printDebug("Received topic-registration request ", message = message);
         return TOPIC_REGISTRATION_SUCCESS;
     }
 
-    remote function onDeregisterTopic(TopicDeregistration message)
+    isolated remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess {
         log:printDebug("Received topic-deregistration request ", message = message);
         return TOPIC_DEREGISTRATION_SUCCESS;
     }
 
-    remote function onUpdateMessage(UpdateMessage message)
+    isolated remote function onUpdateMessage(UpdateMessage message)
                returns Acknowledgement|UpdateMessageError {
         log:printDebug("Received content-update request ", message = message);
         return ACKNOWLEDGEMENT;
     }
     
-    remote function onSubscription(Subscription message)
+    isolated remote function onSubscription(Subscription message)
                 returns SubscriptionAccepted {
         log:printDebug("Received subscription request ", message = message);
         return SUBSCRIPTION_ACCEPTED;
     }
 
-    remote function onSubscriptionValidation(Subscription message)
+    isolated remote function onSubscriptionValidation(Subscription message)
                 returns SubscriptionDeniedError? {
     }
 
-    remote function onSubscriptionIntentVerified(VerifiedSubscription message) {
+    isolated remote function onSubscriptionIntentVerified(VerifiedSubscription message) {
     }
 
-    remote function onUnsubscription(Unsubscription message)
+    isolated remote function onUnsubscription(Unsubscription message)
                returns UnsubscriptionAccepted {
         log:printDebug("Received unsubscription request ", message = message);
         return UNSUBSCRIPTION_ACCEPTED;
     }
 
-    remote function onUnsubscriptionValidation(Unsubscription message)
+    isolated remote function onUnsubscriptionValidation(Unsubscription message)
                 returns UnsubscriptionDeniedError? {
     }
 
-    remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription message){
+    isolated remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription message){
     }
 }
 

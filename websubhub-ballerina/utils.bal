@@ -18,6 +18,7 @@ import ballerina/lang.'string as strings;
 import ballerina/url;
 import ballerina/http;
 import ballerina/uuid;
+import ballerina/regex;
 
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
                                         http:Headers headers, map<string> params, 
@@ -56,7 +57,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
     }
 }
 
-function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
+isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                               http:Headers headers, map<string> params, Service hubService,
                                               boolean isAvailable, boolean isSubscriptionValidationAvailable, 
                                               string hubUrl, int defaultHubLeaseSeconds) {
@@ -125,7 +126,7 @@ function processSubscriptionRequestAndRespond(http:Request request, http:Caller 
     }
 }   
 
-function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
+isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
                                             boolean isSubscriptionValidationAvailable) {
     SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
@@ -175,7 +176,7 @@ function proceedToValidationAndVerification(http:Headers headers, Service hubSer
     }
 }
 
-function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
+isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
                                                 http:Headers headers, map<string> params, Service hubService,
                                                 boolean isUnsubscriptionAvailable, 
                                                 boolean isUnsubscriptionValidationAvailable) {
@@ -226,7 +227,7 @@ function processUnsubscriptionRequestAndRespond(http:Request request, http:Calle
     }
 }
 
-function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
+isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
                                              Unsubscription message, boolean isUnsubscriptionValidationAvailable) {
 
     UnsubscriptionDeniedError? validationResult = ();
@@ -351,19 +352,33 @@ isolated function updateHubResponse(http:Response response, string hubMode,
 
 isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
     string payload = "hub.mode=" + hubMode;
-    
     payload += reason is string ? "&hub.reason=" + reason : "";
-
     if (messageBody is map<string> && messageBody.length() > 0) {
-        string[] messageParams = [];
-        payload += "&";
-        foreach var ['key, value] in messageBody.entries() {
-            messageParams.push('key + "=" + value);
-        }
-        payload += strings:'join("&", ...messageParams);
+        payload += "&" + retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
     }
-
     return payload;
+}
+
+isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messageBody) returns string {
+    string payload = "";
+    string[] messageParams = [];
+    foreach var ['key, value] in messageBody.entries() {
+        messageParams.push('key + "=" + value);
+    }
+    payload += strings:'join("&", ...messageParams);
+    return payload;
+}
+
+isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) returns map<string> {
+    map<string> responsePayload = {};
+    string[] queryParams = regex:split(payload, "&");
+    foreach var query in queryParams {
+        string[] keyValueEntry = regex:split(query, "=");
+        if (keyValueEntry.length() == 2) {
+            responsePayload[keyValueEntry[0]] = keyValueEntry[1];
+        }
+    }
+    return responsePayload;
 }
 
 isolated function respondToRequest(http:Caller caller, http:Response response) {

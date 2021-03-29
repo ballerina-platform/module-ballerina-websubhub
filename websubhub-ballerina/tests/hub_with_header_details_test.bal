@@ -22,7 +22,7 @@ listener Listener hubWithHeaderDetailsListener = new(9095);
 
 var hubWithHeaderDetails = service object {
 
-    remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
+    isolated remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
                                 returns TopicRegistrationSuccess {
         log:printDebug("Executing topic registration", message = message, headers = headers.getHeaderNames());
         TopicRegistrationSuccess successResult = {
@@ -33,7 +33,7 @@ var hubWithHeaderDetails = service object {
         return successResult;
     }
 
-    remote function onDeregisterTopic(TopicDeregistration message, http:Headers headers)
+    isolated remote function onDeregisterTopic(TopicDeregistration message, http:Headers headers)
                         returns TopicDeregistrationSuccess {
         log:printDebug("Executing topic de-registration", message = message, headers = headers.getHeaderNames());
         map<string> body = { isDeregisterSuccess: "true" };
@@ -62,7 +62,6 @@ http:Client httpHeaderDetailsTestClientEp = checkpanic new("http://localhost:909
 function testRegistrationWithHeaderDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded");
-
     string expectedPayload = "hub.mode=accepted&isSuccess=true";
     http:Response response = check httpHeaderDetailsTestClientEp->post("/", request);
     test:assertEquals(response.statusCode, 200);
@@ -75,7 +74,6 @@ function testRegistrationWithHeaderDetails() returns @tainted error? {
 function testDeregistrationSuccessWithHeaderDetails() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded");
-
     string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";
     http:Response response = check httpHeaderDetailsTestClientEp->post("/", request);
     test:assertEquals(response.statusCode, 200);

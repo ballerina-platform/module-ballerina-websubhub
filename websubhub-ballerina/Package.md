@@ -1,17 +1,17 @@
 ## Package Overview
 
-This package contains an API specification to implement W3C [**WebSub Hub**](https://w3c.github.io/websub/) which facilitates 
+This package contains an API specification to implement W3C [**WebSub Hub**](https://www.w3.org/TR/websub/) which facilitates 
 a push-based content delivery / notification mechanism.
 
 This package contains following components :
 
-1. API Specification of W3C [**WebSub Hub**](https://w3c.github.io/websub/#hub) specification.
+1. API Specification of W3C [**WebSub Hub**](https://www.w3.org/TR/websub/#hub) specification.
 
 2. `HTTP` based **Hub Listener** implementation.
 
 3. ```HTTP``` based implementation of **Hub Client** which is responsible for delivering content to subscribers.
 
-4. ```HTTP``` based implementation of W3C [**WebSub Publisher**](https://w3c.github.io/websub/#publisher) specification.
+4. ```HTTP``` based implementation of W3C [**WebSub Publisher**](https://www.w3.org/TR/websub/#publisher) specification.
 
 ### Basic flow with WebSub
 
@@ -36,7 +36,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 One of the key features of this package is the ```ballerina``` specific API abstraction for **WebSub Hub** specification.
 
-According to the W3C [**WebSub**](https://w3c.github.io/websub/) specification **Hub** has following responsibilities.
+According to the W3C [**WebSub**](https://www.w3.org/TR/websub/) specification **Hub** has following responsibilities.
 
 - Register / Deregister ```topics``` advertised by the ```publishers```.
 - Subscribe / Unsubscribe ```subscribers``` to advertised ```topics```.
@@ -98,8 +98,13 @@ Since **WebSub Specification** is not thorough enough with regard to the relatio
 
 HubListener is essentially a wrapper for ```ballerina HTTP Listener```. Following is a sample of the hub-listener.
 
+* `websubhub:Listener` using `http:Listener`.
 ```ballerina
-    listener websubhub:Listener hub = new(new http:Listener());
+    listener websubhub:Listener hub = new(new http:Listener(9091));
+```
+
+* `websubhub:Listener` with port number.
+```ballerina
     listener websubhub:Listener hub = new(9090);
 ```
 
@@ -149,10 +154,11 @@ Following is a sample of **WebSub Publisher Client**.
     websubhub:PublisherClient publisherClient = new ("http://localhost:9191/websub/hub");
 
     check publisherClient->registerTopic("http://websubpubtopic.com");
-
-    // supported types would be json|xml|byte[]|map<string>|string
-    // default content type mapping would be json -> application/json, xml -> application/xml, byte[] -> application/octect-stream, 
-    // map<string> -> application/x-www-form-urlencoded, string -> text/plain
    
-    var publishResponse = publisherClient->publishUpdate("http://websubpubtopic.com",{"action": "publish", "mode": "remote-hub"});
+    var publishResponse = publisherClient->publishUpdate(
+                "http://websubpubtopic.com",
+                {
+                    "action": "publish", 
+                    "mode": "remote-hub"
+                });
 ```
