@@ -61,17 +61,16 @@ service class HttpService {
         }
     }
 
-    resource function post .(http:Caller caller, http:Request request, http:Headers headers) {
+    isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns @tainted error? {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
 
         map<string> params = {};
 
-        string contentType = checkpanic headers.getHeader(CONTENT_TYPE);
+        string contentType = check headers.getHeader(CONTENT_TYPE);
         map<string[]> queryParams = request.getQueryParams();
-        // todo: Use constants form mime/http
         match contentType {
-            "application/x-www-form-urlencoded" => {
+            mime:APPLICATION_FORM_URLENCODED => {
                 string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
                 if (publisherHeader is string) {
                     if (publisherHeader == "publish") {
@@ -92,7 +91,7 @@ service class HttpService {
                     params = reqFormParamMap is map<string> ? reqFormParamMap : {};
                 }
             }
-            "application/json"|"application/xml"|"application/octet-stream"|"text/plain" => {
+            mime:APPLICATION_JSON|mime:APPLICATION_XML|mime:APPLICATION_OCTET_STREAM|mime:TEXT_PLAIN => {
                 string[] hubMode = queryParams.get(HUB_MODE);
                 string[] hubTopic = queryParams.get(HUB_TOPIC);
                 params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
@@ -141,7 +140,6 @@ service class HttpService {
                                                        <@untainted> self.isUnsubscriptionValidationAvailable);
             }
             MODE_PUBLISH => {
-                // todo Proper error handling instead of checkpanic
                 string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
                 if (topic is ()) {
                     respondToRequest(caller, response);
@@ -152,36 +150,36 @@ service class HttpService {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: EVENT,
-                        contentType: "application/x-www-form-urlencoded",
+                        contentType: contentType,
                         content: ()
                     };
                 } else if (contentType == mime:APPLICATION_JSON) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
-                        contentType: "application/json",
-                        content: checkpanic request.getJsonPayload()
+                        contentType: contentType,
+                        content: check request.getJsonPayload()
                     };
                 } else if (contentType == mime:APPLICATION_XML) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
-                        contentType: "application/xml",
-                        content: checkpanic request.getXmlPayload()
+                        contentType: contentType,
+                        content: check request.getXmlPayload()
                     };
-                } else if (contentType == "text/plain") {
+                } else if (contentType == mime:TEXT_PLAIN) {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
-                        contentType: "text/plain",
-                        content: checkpanic request.getTextPayload()
+                        contentType: contentType,
+                        content: check request.getTextPayload()
                     };
                 } else {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
-                        contentType: "application/octet-stream",
-                        content: checkpanic request.getBinaryPayload()
+                        contentType: mime:APPLICATION_OCTET_STREAM,
+                        content: check request.getBinaryPayload()
                     };
                 }
                 processPublishRequestAndRespond(caller, response, headers, self.hubService, <@untainted> updateMsg);
