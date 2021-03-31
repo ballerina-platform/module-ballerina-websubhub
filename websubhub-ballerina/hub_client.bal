@@ -73,7 +73,11 @@ public client class HubClient {
                 queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
             }
             _ => {
-                request.setPayload(msg.content);
+                if (msg.content is mime:Entity[]) {
+                    request.setPayload(<@untainted><mime:Entity[]>msg.content);
+                } else {
+                    request.setPayload(msg.content);
+                }
             }
         }
 
@@ -138,7 +142,7 @@ public client class HubClient {
 # + contentType - provided content type (optional)
 # + payload - content-distribution payload
 # + return - {@code string} containing the content-type for the content-distribution request
-isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
+isolated function retrieveContentType(string? contentType, string|xml|json|byte[]|mime:Entity[] payload) returns string {
     if (contentType is string) {
         return contentType;
     } else {
@@ -150,6 +154,8 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
             return mime:APPLICATION_FORM_URLENCODED;
         } else if (payload is map<json>) {
             return mime:APPLICATION_JSON;
+        } else if (payload is mime:Entity[]) {
+            return mime:MULTIPART_FORM_DATA;
         } else {
             return mime:APPLICATION_OCTET_STREAM;
         }
@@ -162,7 +168,7 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
 # + payload - content-distribution request body
 # + return - {@code byte[]} containing the content signature or {@code error} if there is any error in 
 # function execution
-isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[]|mime:Entity[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
     if (payload is byte[]) {
         return check crypto:hmacSha256(payload, keyArr);
@@ -175,6 +181,15 @@ isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] p
     } else if (payload is map<string>) {
         byte[] inputArr = (<map<string>>payload).toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr); 
+    } else if (payload is mime:Entity[]) {
+        byte[] inputTotalArr = [];
+        foreach mime:Entity entity in payload {
+            byte[] inputArr = entity.toString().toBytes();
+            foreach byte ele in inputArr {
+                inputTotalArr.push(ele);
+            }
+        }
+        return check crypto:hmacSha256(inputTotalArr, keyArr);  
     } else {
         byte[] inputArr = (<json>payload).toJsonString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);

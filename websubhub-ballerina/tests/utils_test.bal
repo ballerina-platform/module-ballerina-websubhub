@@ -71,6 +71,23 @@ isolated function testContentTypeRetrievalForByteArray() returns @tainted error?
     test:assertEquals(contentType, mime:APPLICATION_OCTET_STREAM);
 }
 
+@test:Config { 
+    groups: ["contentTypeRetrieval"]
+}
+function testContentTypeRetrievalForMime() returns @tainted error? {
+    mime:Entity jsonBodyPart = new;
+    jsonBodyPart.setContentDisposition(getContentDispositionForFormData("json part"));
+    jsonBodyPart.setJson({"name": "Ballerina"});
+
+    mime:Entity textBodyPart = new;
+    textBodyPart.setContentDisposition(getContentDispositionForFormData("text part"));
+    textBodyPart.setText("Sample text");
+
+    mime:Entity[] content = [jsonBodyPart, textBodyPart];
+    string contentType = retrieveContentType((), content);
+    test:assertEquals(contentType, mime:MULTIPART_FORM_DATA);
+}
+
 const string HASH_KEY = "secret";
 
 @test:Config { 
@@ -127,6 +144,22 @@ isolated function testByteArrayContentSignature() returns @tainted error? {
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
 }
 
+@test:Config { 
+    groups: ["contentSignature"]
+}
+function testMimeContentSignature() returns @tainted error? {
+    mime:Entity jsonBodyPart = new;
+    jsonBodyPart.setContentDisposition(getContentDispositionForFormData("json part"));
+    jsonBodyPart.setJson({"name": "Ballerina"});
+
+    mime:Entity textBodyPart = new;
+    textBodyPart.setContentDisposition(getContentDispositionForFormData("text part"));
+    textBodyPart.setText("Sample text");
+
+    mime:Entity[] content = [jsonBodyPart, textBodyPart];
+    byte[] hashedContent = check retrievePayloadSignature(HASH_KEY, content);
+    test:assertEquals("fe3e32734ab4410af9e084b9153166b6ada5fba10200449d8aedac939605aec9", hashedContent.toBase16());
+}
 
 http:Client headerRetrievalTestingClient = checkpanic new ("http://localhost:9191/subscriber");
 

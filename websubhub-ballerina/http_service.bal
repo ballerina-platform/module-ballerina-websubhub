@@ -67,7 +67,7 @@ service class HttpService {
 
         map<string> params = {};
 
-        string contentType = check headers.getHeader(CONTENT_TYPE);
+        string contentType = checkpanic request.getHeader(CONTENT_TYPE);
         map<string[]> queryParams = request.getQueryParams();
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
@@ -91,7 +91,7 @@ service class HttpService {
                     params = reqFormParamMap is map<string> ? reqFormParamMap : {};
                 }
             }
-            mime:APPLICATION_JSON|mime:APPLICATION_XML|mime:APPLICATION_OCTET_STREAM|mime:TEXT_PLAIN => {
+            mime:APPLICATION_JSON|mime:APPLICATION_XML|mime:APPLICATION_OCTET_STREAM|mime:TEXT_PLAIN|mime:MULTIPART_FORM_DATA|mime:MULTIPART_MIXED|mime:MULTIPART_ALTERNATIVE => {
                 string[] hubMode = queryParams.get(HUB_MODE);
                 string[] hubTopic = queryParams.get(HUB_TOPIC);
                 params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
@@ -100,7 +100,8 @@ service class HttpService {
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
-                                        "application/json, application/xml, application/octet-stream and text/plain";
+                                        "application/json, application/xml, application/octet-stream, text/plain, " +
+                                        "multipart/form-data, multipart/mixed and multipart/alternative";
                 response.setTextPayload(errorMessage);
                 respondToRequest(caller, response);
             }
@@ -173,6 +174,13 @@ service class HttpService {
                         msgType: PUBLISH,
                         contentType: contentType,
                         content: check request.getTextPayload()
+                    };
+                } else if (contentType == mime:MULTIPART_FORM_DATA || contentType == mime:MULTIPART_MIXED || contentType == mime:MULTIPART_ALTERNATIVE) {
+                    updateMsg = {
+                        hubTopic: <string> topic,
+                        msgType: PUBLISH,
+                        contentType: contentType, 
+                        content: check request.getBodyParts()
                     };
                 } else {
                     updateMsg = {
