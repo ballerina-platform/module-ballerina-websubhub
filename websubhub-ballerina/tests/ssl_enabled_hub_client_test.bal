@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/mime;
 import ballerina/test;
 
 http:ListenerConfiguration listenerConfiguration = {
@@ -123,6 +124,31 @@ function testByteArrayContentDeliveryWithSsl() returns @tainted error? {
     } else {
        test:assertFail("Content Publishing Failed.");
     }    
+}
+
+@test:Config {
+}
+function testMimeContentDeliveryWithSsl() returns @tainted error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
+
+    mime:Entity jsonBodyPart = new;
+    jsonBodyPart.setContentDisposition(getContentDispositionForFormData("json part"));
+    jsonBodyPart.setJson({"name": "Ballerina"});
+
+    mime:Entity textBodyPart = new;
+    textBodyPart.setContentDisposition(getContentDispositionForFormData("text part"));
+    textBodyPart.setText("Sample text");
+
+    mime:Entity[] publishedContent = [jsonBodyPart, textBodyPart];
+    ContentDistributionMessage msg = {content: publishedContent};
+
+    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
+    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
+    if (publishResponse is ContentDistributionSuccess) {
+        test:assertEquals(publishResponse.status.code, 200);
+    } else {
+       test:assertFail("Content Publishing Failed.");
+    } 
 }
 
 @test:Config {
