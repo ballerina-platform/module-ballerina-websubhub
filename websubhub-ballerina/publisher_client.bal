@@ -31,7 +31,7 @@ public client class PublisherClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
-    public function init(string url, ClientConfiguration? config = ()) returns error? {
+    public isolated function init(string url, *ClientConfiguration config) returns error? {
         self.url = url;
         self.httpClient = check new (self.url, <http:ClientConfiguration?>config);
     }
@@ -44,7 +44,7 @@ public client class PublisherClient {
     #
     # + topic - The topic to register
     # + return - An `error` if an error occurred registering the topic or else `()`
-    remote function registerTopic(string topic) returns @tainted TopicRegistrationSuccess|TopicRegistrationError {
+    isolated remote function registerTopic(string topic) returns @tainted TopicRegistrationSuccess|TopicRegistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
         var registrationResponse = httpClient->post("", request);
@@ -75,11 +75,11 @@ public client class PublisherClient {
     # Deregisters a topic in a Ballerina WebSub Hub.
     # ```ballerina
     # error? deregisterTopic = websubHubClientEP->deregisterTopic("http://websubpubtopic.com");
-    #  ```
+    # ```
     #
     # + topic - The topic to deregister
     # + return -  An `error`if an error occurred un registering the topic or else `()`
-    remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
+    isolated remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
         var deregistrationResponse = httpClient->post("", request);
@@ -112,13 +112,13 @@ public client class PublisherClient {
     # ```ballerina
     # error? publishUpdate = websubHubClientEP->publishUpdate("http://websubpubtopic.com",{"action": "publish",
     # "mode": "remote-hub"});
-    #  ```
+    # ```
     #
     # + topic - The topic for which the update occurred
     # + payload - The update payload
     # + contentType - The type of the update content to set as the `ContentType` header
     # + return -  An `error`if an error occurred with the update or else `()`
-    remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
+    isolated remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
                                   string? contentType = ()) returns @tainted Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
@@ -174,11 +174,11 @@ public client class PublisherClient {
     # happen as such.
     # ```ballerina
     #  error? notifyUpdate = websubHubClientEP->notifyUpdate("http://websubpubtopic.com");
-    #   ```
+    # ```
     #
     # + topic - The topic for which the update occurred
     # + return -  An `error`if an error occurred with the notification or else `()`
-    remote function notifyUpdate(string topic) returns @tainted Acknowledgement|UpdateMessageError {
+    isolated remote function notifyUpdate(string topic) returns @tainted Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
         string reqPayload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;

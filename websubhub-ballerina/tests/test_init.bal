@@ -28,13 +28,12 @@ map<string|string[]> CUSTOM_HEADERS = {
 
 var simpleSubscriber = service object {
 
-    resource function get .(http:Caller caller, http:Request req)
+    isolated resource function get .(http:Caller caller, http:Request req)
             returns error? {
         map<string[]> payload = req.getQueryParams();
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
             log:printDebug("Subscriber Validation failed ", retrievedPayload = payload);
-            isValidationFailed = true;
             check caller->respond("");
         } else {
             string[] challengeArray = <string[]> payload["hub.challenge"];
@@ -83,26 +82,25 @@ var simpleSubscriber = service object {
         }
         http:Response resp = new;
         resp.setPayload(samplePayload);
-        var result = caller->respond(resp);
+        http:ListenerError? result = caller->respond(resp);
     }
 
-    resource function get unsubscribe(http:Caller caller, http:Request req)
+    isolated resource function get unsubscribe(http:Caller caller, http:Request req)
             returns error? {
         map<string[]> payload = req.getQueryParams();
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
             log:printDebug("Unsubscription Validation failed ", retrievedPayload = payload);
-            isValidationFailed = true;
             check caller->respond("");
         } else {
             string[] challengeArray = <string[]> payload["hub.challenge"];
-            check caller->respond(challengeArray[0]);
+            http:ListenerError? result = caller->respond(challengeArray[0]);
         }
     }
 
-    resource function post unsubscribe(http:Caller caller, http:Request req)
+    isolated resource function post unsubscribe(http:Caller caller, http:Request req)
             returns error? {
-        check caller->respond();
+        http:ListenerError? result = caller->respond();
     }
 };
 

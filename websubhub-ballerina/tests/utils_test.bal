@@ -21,7 +21,7 @@ import ballerina/http;
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-function testContentTypeRetrievalForString() returns @tainted error? {
+isolated function testContentTypeRetrievalForString() returns @tainted error? {
     string contentType = retrieveContentType((), "This is sample content delivery");
     test:assertEquals(contentType, mime:TEXT_PLAIN);
 }
@@ -29,7 +29,7 @@ function testContentTypeRetrievalForString() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-function testContentTypeRetrievalForXml() returns @tainted error? {
+isolated function testContentTypeRetrievalForXml() returns @tainted error? {
     xml content = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
@@ -41,7 +41,7 @@ function testContentTypeRetrievalForXml() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-function testContentTypeRetrievalForJson() returns @tainted error? {
+isolated function testContentTypeRetrievalForJson() returns @tainted error? {
     json content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -53,7 +53,7 @@ function testContentTypeRetrievalForJson() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-function testContentTypeRetrievalForFormUrlEncoded() returns @tainted error? {
+isolated function testContentTypeRetrievalForFormUrlEncoded() returns @tainted error? {
     map<string> content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -65,7 +65,7 @@ function testContentTypeRetrievalForFormUrlEncoded() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-function testContentTypeRetrievalForByteArray() returns @tainted error? {
+isolated function testContentTypeRetrievalForByteArray() returns @tainted error? {
     byte[] content = "This is sample content delivery".toBytes();
     string contentType = retrieveContentType((), content);
     test:assertEquals(contentType, mime:APPLICATION_OCTET_STREAM);
@@ -76,7 +76,7 @@ const string HASH_KEY = "secret";
 @test:Config { 
     groups: ["contentSignature"]
 }
-function testStringContentSignature() returns @tainted error? {
+isolated function testStringContentSignature() returns @tainted error? {
     string content = "This is sample content delivery";
     byte[] hashedContent = check retrievePayloadSignature(HASH_KEY, content);
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
@@ -85,7 +85,7 @@ function testStringContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-function testXmlContentSignature() returns @tainted error? {
+isolated function testXmlContentSignature() returns @tainted error? {
     xml content = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
@@ -97,19 +97,19 @@ function testXmlContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-function testJsonContentSignature() returns @tainted error? {
+isolated function testJsonContentSignature() returns @tainted error? {
     json content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
     };
     byte[] hashedContent = check retrievePayloadSignature(HASH_KEY, content);
-    test:assertEquals("a67cf8d3245fb03dd7914097bb731cc7532ff7c8bb738c2a587506b0bc4c0dda", hashedContent.toBase16());
+    test:assertEquals("3253fa36df638332580b551edad634e81990736179263a8d8966bd5c04a12198", hashedContent.toBase16());
 }
 
 @test:Config { 
     groups: ["contentSignature"]
 }
-function testFormUrlEncodedContentSignature() returns @tainted error? {
+isolated function testFormUrlEncodedContentSignature() returns @tainted error? {
     map<string> content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -121,7 +121,7 @@ function testFormUrlEncodedContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-function testByteArrayContentSignature() returns @tainted error? {
+isolated function testByteArrayContentSignature() returns @tainted error? {
     byte[] content = "This is sample content delivery".toBytes();
     byte[] hashedContent = check retrievePayloadSignature(HASH_KEY, content);
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
@@ -224,6 +224,83 @@ function testResponsePayloadRetrievalForNoContent() returns @tainted error? {
     request.setTextPayload("other");
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
     test:assertFalse(retrievedResponse.getContentType().trim().length() > 1);
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testResponsePayloadGenerationWithReason() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2"
+    };
+    string generatedQuery = generateResponsePayload("denied", message, "reason1");
+    test:assertEquals("hub.mode=denied&hub.reason=reason1&query1=value1&query2=value2", generatedQuery);
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testResponsePayloadGenerationWithOutReason() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2"
+    };
+    string generatedQuery = generateResponsePayload("denied", message, ());
+    test:assertEquals(generatedQuery, "hub.mode=denied&query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testFormUrlEncodedTextPayloadRetrieval() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2"
+    };
+    string generatedQuery = retrieveTextPayloadForFormUrlEncodedMessage(message);
+    test:assertEquals(generatedQuery, "query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["formUrlEncodedContent"]
+}
+isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns @tainted error? {
+    map<string> message = {
+        "query1": "value1",
+        "query2": "value2",
+        "query3": "value3"
+    };
+    map<string> generatedResponseBody = retrieveResponseBodyForFormUrlEncodedMessage("query1=value1&query2=value2&query3=value3");
+    test:assertEquals(generatedResponseBody.length(), message.length());
+    foreach var 'key in message.keys() {
+        string value = generatedResponseBody.remove('key);
+    }
+    test:assertTrue(generatedResponseBody.length() == 0);
+}
+
+@test:Config { 
+    groups: ["servicePathRetrieval"]
+}
+isolated function testServicePathRetrievalForUrlEncodedContent() returns error? {
+    string servicePath = getServicePath("https://subscriber.com/callback", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
+    test:assertEquals(servicePath, "?query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["servicePathRetrieval"]
+}
+isolated function testServicePathRetrievalForUrlEncodedContentWithCallbackParameters() returns error? {
+    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
+    test:assertEquals(servicePath, "&query1=value1&query2=value2");
+}
+
+@test:Config { 
+    groups: ["servicePathRetrieval"]
+}
+isolated function testServicePathRetrievalForOtherContentTypes() returns error? {
+    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:TEXT_PLAIN, "query1=value1&query2=value2");
+    test:assertEquals(servicePath, "");
 }
 
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {

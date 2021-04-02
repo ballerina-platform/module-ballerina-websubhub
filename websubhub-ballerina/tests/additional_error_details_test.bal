@@ -23,24 +23,24 @@ listener Listener hubListenerToAdditionalErrorDetails = new(9093);
 
 var hubServiceToTestAdditionalErrorDetails = service object {
 
-    remote function onRegisterTopic(TopicRegistration message)
+    isolated remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationError {
         return error TopicRegistrationError("Topic registration failed!",
                         body = { "hub.additional.details": "Feature is not supported in the hub"});
     }
 
-    remote function onDeregisterTopic(TopicDeregistration message)
+    isolated remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationError {
         return error TopicDeregistrationError("Topic deregistration failed!");
     }
 
-    remote function onUpdateMessage(UpdateMessage msg)
+    isolated remote function onUpdateMessage(UpdateMessage msg)
                returns UpdateMessageError {
         return error UpdateMessageError("Error in accessing content", 
                      body = { "hub.additiona.details": "Content update failed!"});
     }
     
-    remote function onSubscription(Subscription msg)
+    isolated remote function onSubscription(Subscription msg)
                 returns SubscriptionAccepted|BadSubscriptionError|InternalSubscriptionError {
         SubscriptionAccepted successResult = {
                 body: <map<string>>{
@@ -54,19 +54,18 @@ var hubServiceToTestAdditionalErrorDetails = service object {
         }
     }
 
-    remote function onSubscriptionValidation(Subscription msg)
+    isolated remote function onSubscriptionValidation(Subscription msg)
                 returns SubscriptionDeniedError? {
         if (msg.hubTopic != "test") {
             return error SubscriptionDeniedError("Denied subscription for topic 'test1'");
         }
     }
 
-    remote function onSubscriptionIntentVerified(VerifiedSubscription msg) {
+    isolated remote function onSubscriptionIntentVerified(VerifiedSubscription msg) {
         log:printDebug("Subscription Intent verified invoked!");
-        isIntentVerified = true;
     }
 
-    remote function onUnsubscription(Unsubscription msg)
+    isolated remote function onUnsubscription(Unsubscription msg)
                returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
         if (msg.hubTopic == "test") {
             UnsubscriptionAccepted successResult = {
@@ -80,7 +79,7 @@ var hubServiceToTestAdditionalErrorDetails = service object {
         }
     }
 
-    remote function onUnsubscriptionValidation(Unsubscription msg)
+    isolated remote function onUnsubscriptionValidation(Unsubscription msg)
                 returns UnsubscriptionDeniedError? {
         if (msg.hubTopic != "test") {
             return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
@@ -88,7 +87,7 @@ var hubServiceToTestAdditionalErrorDetails = service object {
         return ();
     }
 
-    remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg){
+    isolated remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg){
         log:printDebug("Unsubscription Intent verified invoked!");
     }
 };
