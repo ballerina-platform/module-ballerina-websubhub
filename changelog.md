@@ -9,6 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Subscription Lease seconds expired event.
 
 ## [0.2.0-alpha7 - 2021-04-02
-
 ### Fixed
 - [Fix issue in form-url-encoded content-delivery in websubhub-client.](https://github.com/ballerina-platform/module-ballerina-websubhub/pull/75)
