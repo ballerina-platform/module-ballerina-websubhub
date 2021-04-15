@@ -18,6 +18,7 @@ import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.websubhub.Constants;
 import io.ballerina.stdlib.websubhub.WebSubHubDiagnosticCodes;
 import io.ballerina.stdlib.websubhub.task.visitor.ListenerInitiationExpressionVisitor;
 
@@ -46,11 +47,66 @@ public class ServiceDeclarationValidator {
     private static final List<String> methodsWithOptionalReturnTypes;
 
     static {
-        allowedMethods = Collections.emptyList();
-        requiredMethods = Collections.emptyList();
-        allowedParameterTypes = Collections.emptyMap();
-        allowedReturnTypes = Collections.emptyMap();
-        methodsWithOptionalReturnTypes = Collections.emptyList();
+        allowedMethods = List.of(
+                Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE,
+                Constants.ON_SUBSCRIPTION, Constants.ON_SUBSCRIPTION_VALIDATION,
+                Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION, Constants.ON_UNSUBSCRIPTION,
+                Constants.ON_UNSUBSCRIPTION_VALIDATION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
+        );
+        requiredMethods = List.of(
+                Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE,
+                Constants.ON_SUBSCRIPTION, Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION,
+                Constants.ON_UNSUBSCRIPTION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
+        );
+        allowedParameterTypes = Map.of(
+                Constants.ON_REGISTER_TOPIC,
+                List.of(Constants.TOPIC_REGISTRATION, Constants.BASE_REQUEST),
+                Constants.ON_DEREGISTER_TOPIC,
+                List.of(Constants.TOPIC_DEREGISTRATION, Constants.BASE_REQUEST),
+                Constants.ON_UPDATE_MESSAGE,
+                List.of(Constants.UPDATE_MESSAGE, Constants.BASE_REQUEST),
+                Constants.ON_SUBSCRIPTION,
+                List.of(Constants.SUBSCRIPTION, Constants.BASE_REQUEST),
+                Constants.ON_SUBSCRIPTION_VALIDATION,
+                Collections.singletonList(Constants.SUBSCRIPTION),
+                Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION,
+                Collections.singletonList(Constants.VERIFIED_SUBSCRIPTION),
+                Constants.ON_UNSUBSCRIPTION,
+                List.of(Constants.UNSUBSCRIPTION, Constants.BASE_REQUEST),
+                Constants.ON_UNSUBSCRIPTION_VALIDATION,
+                Collections.singletonList(Constants.UNSUBSCRIPTION),
+                Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION,
+                Collections.singletonList(Constants.VERIFIED_UNSUBSCRIPTION)
+        );
+        allowedReturnTypes = Map.of(
+                Constants.ON_REGISTER_TOPIC,
+                List.of(Constants.TOPIC_REGISTRATION_SUCCESS, Constants.TOPIC_REGISTRATION_ERROR),
+                Constants.ON_DEREGISTER_TOPIC,
+                List.of(Constants.TOPIC_DEREGISTRATION_SUCCESS, Constants.TOPIC_DEREGISTRATION_ERROR),
+                Constants.ON_UPDATE_MESSAGE,
+                List.of(Constants.ACKNOWLEDGEMENT, Constants.UPDATE_MESSAGE_ERROR),
+                Constants.ON_SUBSCRIPTION,
+                List.of(
+                        Constants.SUBSCRIPTION_ACCEPTED, Constants.SUBSCRIPTION_PERMANENT_REDIRECT,
+                        Constants.SUBSCRIPTION_TEMP_REDIRECT, Constants.BAD_SUBSCRIPTION_ERROR,
+                        Constants.SUBSCRIPTION_INTERNAL_ERROR
+                ),
+                Constants.ON_SUBSCRIPTION_VALIDATION,
+                Collections.singletonList(Constants.SUBSCRIPTION_DENIED_ERROR),
+                Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION, Collections.emptyList(),
+                Constants.ON_UNSUBSCRIPTION,
+                List.of(
+                        Constants.UNSUBSCRIPTION_ACCEPTED, Constants.BAD_UNSUBSCRIPTION,
+                        Constants.UNSUBSCRIPTION_INTERNAL_ERROR
+                ),
+                Constants.ON_UNSUBSCRIPTION_VALIDATION,
+                Collections.singletonList(Constants.UNSUBSCRIPTION_DENIED_ERROR),
+                Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION, Collections.emptyList()
+        );
+        methodsWithOptionalReturnTypes = List.of(
+                Constants.ON_SUBSCRIPTION_VALIDATION, Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION,
+                Constants.ON_UNSUBSCRIPTION_VALIDATION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
+        );
     }
 
     public static ServiceDeclarationValidator getInstance() {
