@@ -48,7 +48,7 @@ public class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnalysisConte
             serviceNode.syntaxTree().rootNode().accept(visitor);
             ServiceDeclarationSymbol serviceDeclarationSymbol = (ServiceDeclarationSymbol) serviceDeclarationOpt.get();
             if (isWebSubHubService(serviceDeclarationSymbol)) {
-                this.validator.validate(context, serviceNode, visitor, serviceDeclarationSymbol);
+                this.validator.validate(context, serviceNode, visitor);
             }
         }
     }

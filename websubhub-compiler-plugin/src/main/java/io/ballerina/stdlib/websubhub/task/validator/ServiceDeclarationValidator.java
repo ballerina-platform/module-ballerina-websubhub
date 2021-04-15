@@ -6,7 +6,6 @@ import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
-import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
@@ -59,8 +58,7 @@ public class ServiceDeclarationValidator {
     }
 
     public void validate(SyntaxNodeAnalysisContext context, ServiceDeclarationNode serviceNode,
-                         ListenerInitiationExpressionVisitor visitor,
-                         ServiceDeclarationSymbol serviceDeclarationSymbol) {
+                         ListenerInitiationExpressionVisitor visitor) {
         validateListenerArguments(context, visitor);
         List<FunctionDefinitionNode> availableFunctionDeclarations = serviceNode.members().stream()
                 .filter(member -> member.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION)
