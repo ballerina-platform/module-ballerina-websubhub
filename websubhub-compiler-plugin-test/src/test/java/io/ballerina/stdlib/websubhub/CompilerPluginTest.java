@@ -25,11 +25,15 @@ import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
+import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticInfo;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 
 /**
  * This class includes tests for Ballerina WebSub compiler plugin.
@@ -46,7 +50,39 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("sample_1");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        diagnosticResult.diagnostics().forEach(System.out::println);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testCompilerPluginForRemoteMethodValidation() {
+        Package currentPackage = loadPackage("sample_2");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_102");
+        String expectedMessage = "websubhub:Service should only implement remote methods";
+        Assert.assertEquals(diagnostic.message(), expectedMessage);
+    }
+
+    @Test
+    public void testCompilerPluginForRequiredMethodValidation() {
+        Package currentPackage = loadPackage("sample_3");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_103");
+        String requiredMethods = String.format("%s,%s,%s,%s,%s,%s,%s",
+                "onRegisterTopic", "onDeregisterTopic", "onUpdateMessage", "onSubscription",
+                "onSubscriptionIntentVerified", "onUnsubscription", "onUnsubscriptionIntentVerified");
+        String expectedMessage = MessageFormat.format("websubhub:Service should implement {0} methods",
+                requiredMethods);
+        Assert.assertEquals(diagnostic.message(), expectedMessage);
     }
 
     private Package loadPackage(String path) {

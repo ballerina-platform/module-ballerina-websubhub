@@ -1,6 +1,6 @@
 [package]
 org = "websubhub_test"
-name = "sample_2"
+name = "sample_3"
 version = "0.1.0"
 
 [build-options]
