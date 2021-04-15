@@ -18,15 +18,14 @@
 
 package io.ballerina.stdlib.websubhub;
 
-import io.ballerina.projects.plugins.CompilerPlugin;
-import io.ballerina.projects.plugins.CompilerPluginContext;
-
 /**
- * {@code WebSubHubCompilerPlugin} handles compile-time code analysis for WebSubHub based Services.
+ * {@code Constants} contains the public constants to be used.
  */
-public class WebSubHubCompilerPlugin extends CompilerPlugin {
-    @Override
-    public void init(CompilerPluginContext context) {
-        context.addCodeAnalyzer(new WebSubHubCodeAnalyzer());
-    }
+public interface Constants {
+    String PACKAGE_ORG = "ballerina";
+    String PACKAGE_NAME = "websubhub";
+
+    String LISTENER_IDENTIFIER = "Listener";
+
+    String OPTIONAL = "?";
 }
