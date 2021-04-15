@@ -31,7 +31,7 @@ public enum WebSubHubDiagnosticCodes {
             DiagnosticSeverity.WARNING),
     WEBSUBHUB_102("WEBSUBHUB_102", "websubhub:Service should only implement remote methods",
                DiagnosticSeverity.ERROR),
-    WEBSUBHUB_103("WEBSUBHUB_103", "websubhub:Service should implement onEventNotification method",
+    WEBSUBHUB_103("WEBSUBHUB_103", "websubhub:Service should implement {0} methods",
             DiagnosticSeverity.ERROR),
     WEBSUBHUB_104("WEBSUBHUB_104", "{0} method is not allowed in websubhub:Service declaration",
             DiagnosticSeverity.ERROR),

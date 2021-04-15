@@ -39,12 +39,14 @@ import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.updateContext;
 public class ServiceDeclarationValidator {
     private static final ServiceDeclarationValidator INSTANCE = new ServiceDeclarationValidator();
     private static final List<String> allowedMethods;
+    private static final List<String> requiredMethods;
     private static final Map<String, List<String>> allowedParameterTypes;
     private static final Map<String, List<String>> allowedReturnTypes;
     private static final List<String> methodsWithOptionalReturnTypes;
 
     static {
         allowedMethods = Collections.emptyList();
+        requiredMethods = Collections.emptyList();
         allowedParameterTypes = Collections.emptyMap();
         allowedReturnTypes = Collections.emptyMap();
         methodsWithOptionalReturnTypes = Collections.emptyList();
@@ -61,8 +63,7 @@ public class ServiceDeclarationValidator {
         List<FunctionDefinitionNode> availableFunctionDeclarations = serviceNode.members().stream()
                 .filter(member -> member.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION)
                 .map(member -> (FunctionDefinitionNode) member).collect(Collectors.toList());
-//        validateRequiredMethodsImplemented(
-//                context, availableFunctionDeclarations, serviceNode.location());
+        validateRequiredMethodsImplemented(context, availableFunctionDeclarations, serviceNode.location());
         availableFunctionDeclarations.forEach(fd -> {
             context.semanticModel().symbol(fd).ifPresent(fs -> {
                 NodeLocation location = fd.location();
@@ -110,16 +111,18 @@ public class ServiceDeclarationValidator {
         }
     }
 
-//    private void validateRequiredMethodsImplemented(SyntaxNodeAnalysisContext context,
-//                                                    List<FunctionDefinitionNode> availableFunctionDeclarations,
-//                                                    NodeLocation location) {
-//        boolean isRequiredMethodNotAvailable = availableFunctionDeclarations.stream()
-//                .noneMatch(fd -> Constants.ON_EVENT_NOTIFICATION.equalsIgnoreCase(fd.functionName().toString()));
-//        if (isRequiredMethodNotAvailable) {
-//            WebSubDiagnosticCodes errorCode = WebSubDiagnosticCodes.WEBSUB_103;
-//            updateContext(context, errorCode, location);
-//        }
-//    }
+    private void validateRequiredMethodsImplemented(SyntaxNodeAnalysisContext context,
+                                                    List<FunctionDefinitionNode> availableFunctionDeclarations,
+                                                    NodeLocation location) {
+        List<String> availableMethods = availableFunctionDeclarations.stream()
+                .map(fd -> fd.functionName().toString()).collect(Collectors.toList());
+        boolean requiredMethodsImplemented = availableMethods.containsAll(requiredMethods);
+        if (!requiredMethodsImplemented) {
+            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_103;
+            String requiredMethodsMsg = String.join(",", requiredMethods);
+            updateContext(context, errorCode, location, requiredMethodsMsg);
+        }
+    }
 
     private void validateRemoteQualifier(SyntaxNodeAnalysisContext context, FunctionSymbol functionSymbol,
                                          NodeLocation location) {
