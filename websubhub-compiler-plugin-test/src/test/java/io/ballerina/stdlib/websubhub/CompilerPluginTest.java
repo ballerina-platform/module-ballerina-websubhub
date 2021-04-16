@@ -181,6 +181,44 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
 
+    @Test
+    public void testCompilerPluginForListenerImplicitInit() {
+        Package currentPackage = loadPackage("sample_10");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_101");
+        String expectedMsg = "websubhub:Listener should only take " +
+                "either http:Listener or websubhub:ListenerConfiguration";
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
+    @Test
+    public void testCompilerPluginForListenerExplicitInit() {
+        Package currentPackage = loadPackage("sample_11");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_101");
+        String expectedMsg = "websubhub:Listener should only take " +
+                "either http:Listener or websubhub:ListenerConfiguration";
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
+    @Test
+    public void testValidServiceDeclarationWithAliases() {
+        Package currentPackage = loadPackage("sample_12");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
