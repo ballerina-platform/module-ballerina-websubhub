@@ -22,16 +22,15 @@ import io.ballerina.stdlib.websubhub.Constants;
 import io.ballerina.stdlib.websubhub.WebSubHubDiagnosticCodes;
 import io.ballerina.stdlib.websubhub.task.visitor.ListenerInitiationExpressionVisitor;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getInvalidParamTypeDescriptions;
-import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getInvalidReturnTypeDescription;
+import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getParamTypeDescription;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getQualifiedType;
+import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getReturnTypeDescription;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.updateContext;
 
 /**
@@ -203,10 +202,6 @@ public class ServiceDeclarationValidator {
         String functionName = functionDefinition.functionName().toString();
         if (allowedMethods.contains(functionName)) {
             List<String> allowedParameters = allowedParameterTypes.get(functionName);
-            List<List<String>> allowedParams = allowedParameters.stream()
-                    .map(param -> Arrays.stream(param.trim().split("\\|"))
-                            .map(String::trim).collect(Collectors.toList())
-                    ).collect(Collectors.toList());
             Optional<List<ParameterSymbol>> paramOpt = typeSymbol.params();
             if (paramOpt.isPresent()) {
                 List<ParameterSymbol> params = paramOpt.get();
@@ -217,12 +212,14 @@ public class ServiceDeclarationValidator {
                                 String.join(",", allowedParameters));
                     }
                 } else {
-                    Optional<String> errorMsg = params.stream()
-                            .filter(p -> isParamNotAllowed(allowedParams, p.typeDescriptor()))
-                            .map(e -> getInvalidParamTypeDescriptions(e.typeDescriptor()))
-                            .reduce(String::join);
-                    if (errorMsg.isPresent()) {
-                        String message = errorMsg.get();
+                    List<String> availableParamNames = params.stream()
+                            .map(e -> getParamTypeDescription(e.typeDescriptor()))
+                            .collect(Collectors.toList());
+                    if (allowedParameters.containsAll(availableParamNames)) {
+                        validateParamOrder(context, functionDefinition, functionName, allowedParameters,
+                                availableParamNames);
+                    } else {
+                        String message = String.join(",", availableParamNames);
                         WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_105;
                         updateContext(context, errorCode, functionDefinition.location(), message, functionName);
                     }
@@ -237,28 +234,20 @@ public class ServiceDeclarationValidator {
         }
     }
 
-    private boolean isParamNotAllowed(List<List<String>> allowedParams, TypeSymbol paramTypeDescriptor) {
-        TypeDescKind typeKind = paramTypeDescriptor.typeKind();
-        if (TypeDescKind.UNION.equals(typeKind)) {
-            return ((UnionTypeSymbol) paramTypeDescriptor)
-                    .memberTypeDescriptors().stream()
-                    .map(e -> isParamNotAllowed(allowedParams, e))
-                    .reduce(false, (a , b) -> a || b);
-        } else if (TypeDescKind.TYPE_REFERENCE.equals(typeKind)) {
-            String moduleName = paramTypeDescriptor.getModule().flatMap(ModuleSymbol::getName).orElse("");
-            String paramType = paramTypeDescriptor.getName().orElse("");
-            String qualifiedParamType = getQualifiedType(paramType, moduleName);
-            return allowedParams.stream().noneMatch(p -> p.contains(qualifiedParamType));
-        } else if (TypeDescKind.ERROR.equals(typeKind)) {
-            String signature = paramTypeDescriptor.signature();
-            Optional<ModuleID> moduleIdOpt = paramTypeDescriptor.getModule().map(ModuleSymbol::id);
-            String moduleId = moduleIdOpt.map(ModuleID::toString).orElse("");
-            String paramType = signature.replace(moduleId, "").replace(":", "");
-            String moduleName = moduleIdOpt.map(ModuleID::modulePrefix).orElse("");
-            String qualifiedParamType = getQualifiedType(paramType, moduleName);
-            return allowedParams.stream().noneMatch(p -> p.contains(qualifiedParamType));
-        } else {
-            return true;
+    private void validateParamOrder(SyntaxNodeAnalysisContext context, FunctionDefinitionNode functionDefinition,
+                                    String functionName, List<String> allowedParameters,
+                                    List<String> availableParamNames) {
+        if (allowedParameters.size() >= availableParamNames.size()) {
+            for (int idx = 0; idx < availableParamNames.size(); idx++) {
+                String availableParam = availableParamNames.get(idx);
+                String allowedParam = allowedParameters.get(idx);
+                if (!allowedParam.equals(availableParam)) {
+                    WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
+                    updateContext(context, errorCode, functionDefinition.location(), functionName,
+                            String.join(",", allowedParameters));
+                    return;
+                }
+            }
         }
     }
 
@@ -281,7 +270,7 @@ public class ServiceDeclarationValidator {
                 boolean invalidReturnTypePresent = isReturnTypeNotAllowed(
                         predefinedReturnTypes, returnTypeDescription, nilableReturnTypeAllowed);
                 if (invalidReturnTypePresent) {
-                    String returnTypeName = getInvalidReturnTypeDescription(returnTypeDescription);
+                    String returnTypeName = getReturnTypeDescription(returnTypeDescription);
                     WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_107;
                     updateContext(context, errorCode, functionDefinition.location(), returnTypeName, functionName);
                 }

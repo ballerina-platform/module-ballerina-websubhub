@@ -219,6 +219,21 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
     }
 
+    @Test
+    public void testCompilerPluginForParamOrder() {
+        Package currentPackage = loadPackage("sample_13");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_109");
+        String expectedMsg = MessageFormat.format("{0} method params should follow {1} order",
+                "onUnsubscription", "websubhub:Unsubscription,http:Request");
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);

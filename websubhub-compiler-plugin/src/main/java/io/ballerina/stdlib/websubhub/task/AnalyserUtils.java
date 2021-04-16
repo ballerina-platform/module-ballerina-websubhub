@@ -73,7 +73,7 @@ public final class AnalyserUtils {
                 && Constants.PACKAGE_ORG.equals(moduleSymbol.id().orgName());
     }
 
-    public static String getInvalidParamTypeDescriptions(TypeSymbol paramType) {
+    public static String getParamTypeDescription(TypeSymbol paramType) {
         TypeDescKind paramKind = paramType.typeKind();
         if (TypeDescKind.TYPE_REFERENCE.equals(paramKind)) {
             String moduleName = paramType.getModule().flatMap(ModuleSymbol::getName).orElse("");
@@ -82,7 +82,7 @@ public final class AnalyserUtils {
         } else if (TypeDescKind.UNION.equals(paramKind)) {
             return ((UnionTypeSymbol) paramType)
                     .memberTypeDescriptors().stream()
-                    .map(AnalyserUtils::getInvalidParamTypeDescriptions)
+                    .map(AnalyserUtils::getParamTypeDescription)
                     .filter(e -> !e.isEmpty() && !e.isBlank())
                     .reduce((a, b) -> String.join("|", a, b)).orElse("");
         } else if (TypeDescKind.ERROR.equals(paramKind)) {
@@ -97,7 +97,7 @@ public final class AnalyserUtils {
         }
     }
 
-    public static String getInvalidReturnTypeDescription(TypeSymbol paramType) {
+    public static String getReturnTypeDescription(TypeSymbol paramType) {
         TypeDescKind typeKind = paramType.typeKind();
         if (TypeDescKind.TYPE_REFERENCE.equals(typeKind)) {
             String moduleName = paramType.getModule().flatMap(ModuleSymbol::getName).orElse("");
@@ -108,7 +108,7 @@ public final class AnalyserUtils {
             boolean optionalSymbolAvailable = availableTypes.stream()
                     .anyMatch(t -> TypeDescKind.NIL.equals(t.typeKind()));
             List<String> typeDescriptions = availableTypes.stream()
-                    .map(AnalyserUtils::getInvalidReturnTypeDescription)
+                    .map(AnalyserUtils::getReturnTypeDescription)
                     .filter(e -> !e.isEmpty() && !e.isBlank())
                     .collect(Collectors.toList());
             String concatenatedReturnTypes = String.join("|", typeDescriptions);
