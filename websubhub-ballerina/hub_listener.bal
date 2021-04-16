@@ -44,17 +44,26 @@ public class Listener {
 
     # Attaches the provided Service to the Listener.
     #
-    # + s - The `websubhub:Service` object to attach
+    # + service - The `websubhub:Service` object to attach
     # + name - The path of the Service to be hosted
     # + return - An `error`, if an error occurred during the service attaching process
-    public isolated function attach(Service s, string[]|string? name = ()) returns error? {
+    public isolated function attach(Service 'service, string[]|string? name = ()) returns error? {
         if (self.listenerConfig.secureSocket is ()) {
             log:printWarn("HTTPS is recommended but using HTTP");
         }
 
         string hubUrl = self.retrieveHubUrl(name);
-        // todo implement to retrieve hub-lease-seconds via annotation configuration
-        self.httpService = new(s, hubUrl, self.defaultHubLeaseSeconds);
+        ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
+        if (configuration is ServiceConfiguration) {
+            int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
+            if (configuration?.httpClientConfig is ClientConfiguration) {
+                self.httpService = new('service, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.httpClientConfig));
+            } else {
+                self.httpService = new('service, hubUrl, leaseSeconds);
+            }
+        } else {
+            self.httpService = new('service, hubUrl, self.defaultHubLeaseSeconds);
+        }
         checkpanic self.httpListener.attach(<HttpService> self.httpService, name);
     }
 
@@ -103,4 +112,13 @@ public class Listener {
     public isolated function immediateStop() returns error? {
         return self.httpListener.immediateStop();
     }
+}
+
+# Retrieves the `websubhub:ServiceConfiguration` annotation values
+# 
+# + serviceType - current service type
+# + return - {@code websubhub:ServiceConfiguration} if present or `nil` if absent
+isolated function retrieveServiceAnnotations(Service serviceType) returns ServiceConfiguration? {
+    typedesc<any> serviceTypedesc = typeof serviceType;
+    return serviceTypedesc.@ServiceConfig;
 }

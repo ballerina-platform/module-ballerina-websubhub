@@ -58,9 +58,9 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
 }
 
 isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
-                                              http:Headers headers, map<string> params, Service hubService,
-                                              boolean isAvailable, boolean isSubscriptionValidationAvailable, 
-                                              string hubUrl, int defaultHubLeaseSeconds) {
+                                                       http:Headers headers, map<string> params, Service hubService,
+                                                       boolean isAvailable, boolean isSubscriptionValidationAvailable, 
+                                                       string hubUrl, int defaultHubLeaseSeconds, http:ClientConfiguration config) {
 
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
@@ -110,7 +110,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
         } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            proceedToValidationAndVerification(headers, hubService, message, isSubscriptionValidationAvailable);
+            proceedToValidationAndVerification(headers, hubService, message, isSubscriptionValidationAvailable, config);
         } else if (onSubscriptionResult is BadSubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onSubscriptionResult.detail();
@@ -127,7 +127,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
 }   
 
 isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
-                                            boolean isSubscriptionValidationAvailable) {
+                                                     boolean isSubscriptionValidationAvailable, http:ClientConfiguration config) {
     SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message, headers);
@@ -140,7 +140,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
         }
     }
 
-    http:Client httpClient = checkpanic new(<string> message.hubCallback);
+    http:Client httpClient = checkpanic new(<string> message.hubCallback, config);
     string challenge = uuid:createType4AsString();
 
     if (validationResult is SubscriptionDeniedError) {
@@ -177,9 +177,9 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
 }
 
 isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
-                                                http:Headers headers, map<string> params, Service hubService,
-                                                boolean isUnsubscriptionAvailable, 
-                                                boolean isUnsubscriptionValidationAvailable) {
+                                                         http:Headers headers, map<string> params, Service hubService,
+                                                         boolean isUnsubscriptionAvailable, boolean isUnsubscriptionValidationAvailable, 
+                                                         http:ClientConfiguration config) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
         return;
@@ -211,7 +211,7 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
             proceedToUnsubscriptionVerification(
-                request, headers, hubService, message, isUnsubscriptionValidationAvailable);
+                request, headers, hubService, message, isUnsubscriptionValidationAvailable, config);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onUnsubscriptionResult.detail();
@@ -228,7 +228,8 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
 }
 
 isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
-                                             Unsubscription message, boolean isUnsubscriptionValidationAvailable) {
+                                                      Unsubscription message, boolean isUnsubscriptionValidationAvailable, 
+                                                      http:ClientConfiguration config) {
 
     UnsubscriptionDeniedError? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
@@ -242,7 +243,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
         }
     }
 
-    http:Client httpClient = checkpanic new(<string> message.hubCallback);
+    http:Client httpClient = checkpanic new(<string> message.hubCallback, config);
     if (validationResult is UnsubscriptionDeniedError) {
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=denied"
