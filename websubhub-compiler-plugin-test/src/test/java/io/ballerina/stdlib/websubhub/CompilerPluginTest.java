@@ -85,6 +85,50 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnostic.message(), expectedMessage);
     }
 
+    @Test
+    public void testCompilerPluginForNotAllowedMethods() {
+        Package currentPackage = loadPackage("sample_4");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_104");
+        String expectedMessage = "onNewAction method is not allowed in websubhub:Service declaration";
+        Assert.assertEquals(diagnostic.message(), expectedMessage);
+    }
+
+    @Test
+    public void testCompilerPluginForInvalidParameterTypesWithUnions() {
+        Package currentPackage = loadPackage("sample_5");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_105");
+        String expectedMsg = MessageFormat.format("{0} type parameters not allowed for {1} method",
+                "websubhub:TopicRegistration|sample_5:MetaDetails", "onRegisterTopic");
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
+    @Test
+    public void testCompilerPluginForInvalidParameterTypes() {
+        Package currentPackage = loadPackage("sample_6");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_105");
+        String expectedMsg = MessageFormat.format("{0} type parameters not allowed for {1} method",
+                "sample_6:SimpleObj", "onDeregisterTopic");
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);

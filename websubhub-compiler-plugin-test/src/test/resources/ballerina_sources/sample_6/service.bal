@@ -1,25 +1,27 @@
 import ballerina/websubhub;
+import ballerina/http;
 import ballerina/io;
 
 listener websubhub:Listener functionWithArgumentsListener = new(9090);
+
+public type SimpleObj record {|
+    string timestamp;
+    string 'key;
+|};
 
 service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
         if (message.topic == "test") {
-            websubhub:TopicRegistrationSuccess successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
-            return successResult;
+            return websubhub:TOPIC_REGISTRATION_SUCCESS;
         } else {
-            return error websubhub:TopicRegistrationError("Registration Failed!");
+            return websubhub:TOPIC_REGISTRATION_ERROR;
         }
     }
 
-    isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message)
+    isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Request baseRequest, 
+                                               SimpleObj metaData)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
 
         map<string> body = { isDeregisterSuccess: "true" };
@@ -30,6 +32,18 @@ service /websubhub on functionWithArgumentsListener {
             return deregisterResult;
        } else {
             return error websubhub:TopicDeregistrationError("Topic Deregistration Failed!");
+        }
+    }
+
+    isolated remote function onUpdateMessage(websubhub:UpdateMessage msg)
+               returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
+        websubhub:Acknowledgement ack = {};
+        if (msg.hubTopic == "test") {
+            return ack;
+        } else if (!(msg.content is ())) {
+            return ack;
+        } else {
+            return error websubhub:UpdateMessageError("Error in accessing content");
         }
     }
     

@@ -3,19 +3,23 @@ import ballerina/io;
 
 listener websubhub:Listener functionWithArgumentsListener = new(9090);
 
+public type MetaDetails record {|
+    string timestamp;
+    string 'key;
+|};
+
 service /websubhub on functionWithArgumentsListener {
 
-    isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
+    isolated remote function onRegisterTopic(websubhub:TopicRegistration|MetaDetails message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
-        if (message.topic == "test") {
-            websubhub:TopicRegistrationSuccess successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
-            return successResult;
+        if (message is websubhub:TopicRegistration) {
+            if (message.topic == "test") {
+                return websubhub:TOPIC_REGISTRATION_SUCCESS;
+            } else {
+                return websubhub:TOPIC_REGISTRATION_ERROR;
+            }
         } else {
-            return error websubhub:TopicRegistrationError("Registration Failed!");
+            return websubhub:TOPIC_REGISTRATION_SUCCESS;
         }
     }
 
@@ -30,6 +34,18 @@ service /websubhub on functionWithArgumentsListener {
             return deregisterResult;
        } else {
             return error websubhub:TopicDeregistrationError("Topic Deregistration Failed!");
+        }
+    }
+
+    isolated remote function onUpdateMessage(websubhub:UpdateMessage msg)
+               returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
+        websubhub:Acknowledgement ack = {};
+        if (msg.hubTopic == "test") {
+            return ack;
+        } else if (!(msg.content is ())) {
+            return ack;
+        } else {
+            return error websubhub:UpdateMessageError("Error in accessing content");
         }
     }
     

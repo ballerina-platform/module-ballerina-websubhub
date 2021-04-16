@@ -32,6 +32,18 @@ service /websubhub on functionWithArgumentsListener {
             return error websubhub:TopicDeregistrationError("Topic Deregistration Failed!");
         }
     }
+
+    isolated remote function onUpdateMessage(websubhub:UpdateMessage msg)
+               returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
+        websubhub:Acknowledgement ack = {};
+        if (msg.hubTopic == "test") {
+            return ack;
+        } else if (!(msg.content is ())) {
+            return ack;
+        } else {
+            return error websubhub:UpdateMessageError("Error in accessing content");
+        }
+    }
     
     isolated remote function onSubscription(websubhub:Subscription msg)
                 returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|websubhub:SubscriptionTemporaryRedirect
@@ -86,5 +98,9 @@ service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg){
         io:println("Unsubscription Intent verified invoked!");
+    }
+
+    isolated remote function onNewAction() returns websubhub:Acknowledgement {
+        return {};
     }
 }
