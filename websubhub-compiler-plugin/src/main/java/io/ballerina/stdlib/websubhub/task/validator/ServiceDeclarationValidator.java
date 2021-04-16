@@ -214,7 +214,7 @@ public class ServiceDeclarationValidator {
                     if (!allowedParameters.isEmpty()) {
                         WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_106;
                         updateContext(context, errorCode, functionDefinition.location(), functionName,
-                                String.join("", allowedParameters));
+                                String.join(",", allowedParameters));
                     }
                 } else {
                     Optional<String> errorMsg = params.stream()
@@ -231,7 +231,7 @@ public class ServiceDeclarationValidator {
                 if (!allowedParameters.isEmpty()) {
                     WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_106;
                     updateContext(context, errorCode, functionDefinition.location(), functionName,
-                            String.join("", allowedParameters));
+                            String.join(",", allowedParameters));
                 }
             }
         }

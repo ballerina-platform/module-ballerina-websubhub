@@ -129,6 +129,58 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
 
+    @Test
+    public void testCompilerPluginForNoParameterAvailable() {
+        Package currentPackage = loadPackage("sample_7");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_106");
+        String expectedMsg = MessageFormat.format("{0} method should have parameters of following {1} types",
+                "onUpdateMessage", "websubhub:UpdateMessage,http:Request");
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
+    @Test
+    public void testCompilerPluginForInvalidReturnTypes() {
+        Package currentPackage = loadPackage("sample_8");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_107");
+        String typeDesc = String.format("%s|%s|%s|%s|%s|%s",
+                "websubhub:SubscriptionAccepted", "websubhub:SubscriptionPermanentRedirect",
+                "websubhub:SubscriptionTemporaryRedirect", "websubhub:BadSubscriptionError",
+                "websubhub:InternalSubscriptionError", "sample_8:NewResponse");
+        String expectedMsg = MessageFormat.format("{0} type is not allowed to be returned from {1} method",
+                typeDesc, "onSubscription");
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
+    @Test
+    public void testCompilerPluginForNoReturnType() {
+        Package currentPackage = loadPackage("sample_9");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
+        Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_108");
+        String typeDesc = String.format("%s|%s|%s",
+                "websubhub:UnsubscriptionAccepted", "websubhub:BadUnsubscriptionError",
+                "websubhub:InternalUnsubscriptionError");
+        String expectedMsg = MessageFormat.format("{0} method should return {1} types",
+                "onUnsubscription", typeDesc);
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
