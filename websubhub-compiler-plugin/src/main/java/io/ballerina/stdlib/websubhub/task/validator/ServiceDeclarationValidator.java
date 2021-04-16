@@ -53,9 +53,7 @@ public class ServiceDeclarationValidator {
                 Constants.ON_UNSUBSCRIPTION_VALIDATION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
         );
         requiredMethods = List.of(
-                Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE,
-                Constants.ON_SUBSCRIPTION, Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION,
-                Constants.ON_UNSUBSCRIPTION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
+                Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE
         );
         allowedParameterTypes = Map.of(
                 Constants.ON_REGISTER_TOPIC,
@@ -173,8 +171,11 @@ public class ServiceDeclarationValidator {
                 .map(fd -> fd.functionName().toString()).collect(Collectors.toList());
         boolean requiredMethodsImplemented = availableMethods.containsAll(requiredMethods);
         if (!requiredMethodsImplemented) {
+            List<String> unavailableRequiredMethods = requiredMethods.stream()
+                    .filter(e -> !availableMethods.contains(e))
+                    .collect(Collectors.toList());
             WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_103;
-            String requiredMethodsMsg = String.join(",", requiredMethods);
+            String requiredMethodsMsg = String.join(",", unavailableRequiredMethods);
             updateContext(context, errorCode, location, requiredMethodsMsg);
         }
     }
@@ -219,7 +220,10 @@ public class ServiceDeclarationValidator {
                         validateParamOrder(context, functionDefinition, functionName, allowedParameters,
                                 availableParamNames);
                     } else {
-                        String message = String.join(",", availableParamNames);
+                        List<String> notAllowedParams = availableParamNames.stream()
+                                .filter(e -> !allowedParameters.contains(e))
+                                .collect(Collectors.toList());
+                        String message = String.join(",", notAllowedParams);
                         WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_105;
                         updateContext(context, errorCode, functionDefinition.location(), message, functionName);
                     }

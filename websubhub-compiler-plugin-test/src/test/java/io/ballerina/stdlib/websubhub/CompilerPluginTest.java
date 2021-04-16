@@ -77,11 +77,8 @@ public class CompilerPluginTest {
         DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
         Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
         Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_103");
-        String requiredMethods = String.format("%s,%s,%s,%s,%s,%s,%s",
-                "onRegisterTopic", "onDeregisterTopic", "onUpdateMessage", "onSubscription",
-                "onSubscriptionIntentVerified", "onUnsubscription", "onUnsubscriptionIntentVerified");
         String expectedMessage = MessageFormat.format("websubhub:Service should implement {0} methods",
-                requiredMethods);
+                "onUpdateMessage");
         Assert.assertEquals(diagnostic.message(), expectedMessage);
     }
 
