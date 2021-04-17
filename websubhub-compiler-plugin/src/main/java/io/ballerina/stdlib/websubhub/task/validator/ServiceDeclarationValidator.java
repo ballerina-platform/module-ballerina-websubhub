@@ -53,7 +53,8 @@ public class ServiceDeclarationValidator {
                 Constants.ON_UNSUBSCRIPTION_VALIDATION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
         );
         requiredMethods = List.of(
-                Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE
+                Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE,
+                Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION, Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION
         );
         allowedParameterTypes = Map.of(
                 Constants.ON_REGISTER_TOPIC,
