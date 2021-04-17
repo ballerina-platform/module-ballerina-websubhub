@@ -1,0 +1,7 @@
+[package]
+org = "websubhub_test"
+name = "sample_11"
+version = "0.1.0"
+
+[build-options]
+observabilityIncluded = true
