@@ -18,10 +18,10 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="BallerinaGraphqlCompilerPluginTests">
+<suite name="BallerinaWebSubHubCompilerPluginTests">
     <test name="UnitTests">
         <classes>
-            <class name="io.ballerina.stdlib.websubhub.WebSubHubCompilerPlugin"/>
+            <class name="io.ballerina.stdlib.websubhub.CompilerPluginTest"/>
         </classes>
     </test>
 </suite>
