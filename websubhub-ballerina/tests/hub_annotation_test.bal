@@ -59,8 +59,8 @@ service /subscriber on new http:Listener(9098, subConfigs) {
                 path: "tests/resources/ballerinaTruststore.pkcs12",
                 password: "ballerina"
             }
+        }
     }
-}
 }
 service /websubhub on new Listener(9099) {
 
