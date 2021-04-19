@@ -69,7 +69,6 @@ service /websubhub on new Listener(9099) {
     }
 
     isolated remote function onDeregisterTopic(TopicDeregistration message) returns TopicDeregistrationSuccess {
-
         return TOPIC_DEREGISTRATION_SUCCESS;
     }
 
