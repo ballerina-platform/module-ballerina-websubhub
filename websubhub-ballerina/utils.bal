@@ -60,7 +60,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
 isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                                        http:Headers headers, map<string> params, Service hubService,
                                                        boolean isAvailable, boolean isSubscriptionValidationAvailable, 
-                                                       string hubUrl, int defaultHubLeaseSeconds, http:ClientConfiguration config) {
+                                                       string hubUrl, int defaultHubLeaseSeconds, ClientConfiguration config) {
 
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
@@ -127,7 +127,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
 }   
 
 isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
-                                                     boolean isSubscriptionValidationAvailable, http:ClientConfiguration config) {
+                                                     boolean isSubscriptionValidationAvailable, ClientConfiguration config) {
     SubscriptionDeniedError? validationResult = ();
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message, headers);
@@ -140,7 +140,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
         }
     }
 
-    http:Client httpClient = checkpanic new(<string> message.hubCallback, config);
+    http:Client httpClient = checkpanic new(<string> message.hubCallback, retrieveHttpClientConfig(config));
     string challenge = uuid:createType4AsString();
 
     if (validationResult is SubscriptionDeniedError) {
@@ -179,7 +179,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
 isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
                                                          http:Headers headers, map<string> params, Service hubService,
                                                          boolean isUnsubscriptionAvailable, boolean isUnsubscriptionValidationAvailable, 
-                                                         http:ClientConfiguration config) {
+                                                         ClientConfiguration config) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is ()) {
         return;
@@ -229,7 +229,7 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
 
 isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
                                                       Unsubscription message, boolean isUnsubscriptionValidationAvailable, 
-                                                      http:ClientConfiguration config) {
+                                                      ClientConfiguration config) {
 
     UnsubscriptionDeniedError? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
@@ -243,7 +243,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
         }
     }
 
-    http:Client httpClient = checkpanic new(<string> message.hubCallback, config);
+    http:Client httpClient = checkpanic new(<string> message.hubCallback, retrieveHttpClientConfig(config));
     if (validationResult is UnsubscriptionDeniedError) {
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=denied"

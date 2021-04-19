@@ -56,8 +56,8 @@ public class Listener {
         ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
         if (configuration is ServiceConfiguration) {
             int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
-            if (configuration?.httpClientConfig is ClientConfiguration) {
-                self.httpService = new('service, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.httpClientConfig));
+            if (configuration?.webHookConfig is ClientConfiguration) {
+                self.httpService = new('service, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.webHookConfig));
             } else {
                 self.httpService = new('service, hubUrl, leaseSeconds);
             }

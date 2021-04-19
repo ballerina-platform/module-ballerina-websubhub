@@ -53,7 +53,7 @@ service /subscriber on new http:Listener(9098, subConfigs) {
 }
 
 @ServiceConfig {
-    httpClientConfig: {
+    webHookConfig: {
         secureSocket: {
             cert: {
                 path: "tests/resources/ballerinaTruststore.pkcs12",

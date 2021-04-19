@@ -47,7 +47,7 @@ public client class HubClient {
         self.topic = subscription.hubTopic;
         self.linkHeaderValue = generateLinkUrl(self.hub,  self.topic);
         self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
-        self.httpClient = check new(subscription.hubCallback, <http:ClientConfiguration?>config);
+        self.httpClient = check new(subscription.hubCallback, retrieveHttpClientConfig(config));
     }
 
     # Distributes the published content to subscribers.
