@@ -65,6 +65,30 @@ const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 # `SHA256 HMAC` algorithm name, this is prepended to the generated signature value.
 const string SHA256_HMAC = "sha256";
 
+# Represents HTTP/1.1 protocol
+const string HTTP_1_1 = "1.1";
+
+# Represents HTTP/2.0 protocol
+const string HTTP_2_0 = "2.0";
+
+# Options to compress using gzip or deflate.
+#
+# `AUTO`: When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the
+#         outbound request/response accept-encoding/content-encoding option
+# `ALWAYS`: Always set accept-encoding/content-encoding in outbound request/response
+# `NEVER`: Never set accept-encoding/content-encoding header in outbound request/response
+public type Compression COMPRESSION_AUTO|COMPRESSION_ALWAYS|COMPRESSION_NEVER;
+
+# When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the
+# outbound request/response accept-encoding/content-encoding option.
+public const COMPRESSION_AUTO = "AUTO";
+
+# Always set accept-encoding/content-encoding in outbound request/response.
+public const COMPRESSION_ALWAYS = "ALWAYS";
+
+# Never set accept-encoding/content-encoding header in outbound request/response.
+public const COMPRESSION_NEVER = "NEVER";
+
 # Response Status object, used to communicate status of the executed actions.
 # 
 # + code - status code value
@@ -281,8 +305,26 @@ public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error I
 public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied");
 
 # Record to represent client configuration for HubClient / PublisherClient
+# 
+# + httpVersion - The HTTP version understood by the client
+# + http1Settings - Configurations related to HTTP/1.x protocol
+# + http2Settings - Configurations related to HTTP/2 protocol
+# + timeout - The maximum time to wait (in seconds) for a response before closing the connection
+# + poolConfig - Configurations associated with request pooling
+# + retryConfig - Configurations associated with retrying
+# + responseLimits - Configurations associated with inbound response size limits
+# + secureSocket - SSL/TLS related options
+# + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
 public type ClientConfiguration record {|
-    *http:ClientConfiguration;
+    string httpVersion = HTTP_1_1;
+    http:ClientHttp1Settings http1Settings = {};
+    http:ClientHttp2Settings http2Settings = {};
+    decimal timeout = 60;
+    http:PoolConfiguration poolConfig?;
+    http:RetryConfig retryConfig?;
+    http:ResponseLimitConfigs responseLimits = {};
+    http:ClientSecureSocket secureSocket?;
+    http:CircuitBreakerConfig circuitBreaker?;
 |};
 
 # Provides a set of configurations for configure the underlying HTTP listener of the WebSubHub listener.
@@ -310,5 +352,23 @@ isolated function isSuccessStatusCode(int statusCode) returns boolean {
 # + topic - Name of the `topic`
 # + return - a `string` containing the value for `HTTP Link Header`
 isolated function generateLinkUrl(string hubUrl, string topic) returns string {
-    return hubUrl + "; rel=\"hub\", " + topic + "; rel=\"self\"";
+    return string`${hubUrl}; rel=\"hub\", ${topic}; rel=\"self\"`;
+}
+
+# Converts {@code websubhub:ClientConfiguration} to {@code http:ClientConfiguration}
+# 
+# + config - provided {@code websubhub:ClientConfiguration}
+# + return - a {@code http:ClientConfiguration} from the provided {@code websubhub:ClientConfiguration}
+isolated function retrieveHttpClientConfig(ClientConfiguration config) returns http:ClientConfiguration {
+    return {
+        httpVersion: config.httpVersion,
+        http1Settings: config.http1Settings,
+        http2Settings: config.http2Settings,
+        timeout: config.timeout,
+        poolConfig: config?.poolConfig,
+        retryConfig: config?.retryConfig,
+        responseLimits: config.responseLimits,
+        secureSocket: config?.secureSocket,
+        circuitBreaker: config?.circuitBreaker
+    };
 }

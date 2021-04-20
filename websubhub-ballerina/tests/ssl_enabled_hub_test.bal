@@ -87,7 +87,7 @@ ClientConfiguration httpsConfig = {
 
 PublisherClient sslEnabledPublisher = checkpanic new ("https://localhost:9096/websubhub", httpsConfig);
 
-http:Client sslEnabledClient = checkpanic new("https://localhost:9096/websubhub", <http:ClientConfiguration>httpsConfig);
+http:Client sslEnabledClient = checkpanic new("https://localhost:9096/websubhub", retrieveHttpClientConfig(httpsConfig));
 
 @test:Config{}
 public function testPublisherRegisterSuccessWithSsl() {

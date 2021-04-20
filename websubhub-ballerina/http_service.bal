@@ -20,6 +20,7 @@ import ballerina/jballerina.java;
 
 service class HttpService {
     private Service hubService;
+    private ClientConfiguration clientConfig;
     private string hub;
     private int defaultHubLeaseSeconds;
     private boolean isSubscriptionAvailable = false;
@@ -34,8 +35,9 @@ service class HttpService {
     # + hubService   - {@code websubhub:Service} provided service
     # + hubUrl       - {@code string} current Hub URL
     # + leaseSeconds - {@code int} default value for subscription lease-seconds 
-    public isolated function init(Service hubService, string hubUrl, int leaseSeconds) {
+    public isolated function init(Service hubService, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.hubService = hubService;
+        self.clientConfig = clientConfig;
         self.hub = hubUrl;
         self.defaultHubLeaseSeconds = leaseSeconds;
         string[] methodNames = getServiceMethodNames(hubService);
@@ -131,13 +133,15 @@ service class HttpService {
                                                      <@untainted> self.isSubscriptionAvailable,
                                                      <@untainted> self.isSubscriptionValidationAvailable, 
                                                      <@untainted> self.hub, 
-                                                     <@untainted> self.defaultHubLeaseSeconds);
+                                                     <@untainted> self.defaultHubLeaseSeconds, 
+                                                     self.clientConfig);
             }
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
                                                        headers, <@untainted> params, self.hubService, 
                                                        self.isUnsubscriptionAvailable,
-                                                       <@untainted> self.isUnsubscriptionValidationAvailable);
+                                                       <@untainted> self.isUnsubscriptionValidationAvailable, 
+                                                       self.clientConfig);
             }
             MODE_PUBLISH => {
                 string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
