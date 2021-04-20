@@ -314,15 +314,17 @@ public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error Unsub
 # + retryConfig - Configurations associated with retrying
 # + responseLimits - Configurations associated with inbound response size limits
 # + secureSocket - SSL/TLS related options
+# + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
 public type ClientConfiguration record {|
     string httpVersion = HTTP_1_1;
     http:ClientHttp1Settings http1Settings = {};
     http:ClientHttp2Settings http2Settings = {};
     decimal timeout = 60;
-    http:PoolConfiguration? poolConfig = ();
-    http:RetryConfig? retryConfig = ();
+    http:PoolConfiguration poolConfig?;
+    http:RetryConfig retryConfig?;
     http:ResponseLimitConfigs responseLimits = {};
-    http:ClientSecureSocket? secureSocket = ();
+    http:ClientSecureSocket secureSocket?;
+    http:CircuitBreakerConfig circuitBreaker?;
 |};
 
 # Provides a set of configurations for configure the underlying HTTP listener of the WebSubHub listener.
@@ -363,9 +365,10 @@ isolated function retrieveHttpClientConfig(ClientConfiguration config) returns h
         http1Settings: config.http1Settings,
         http2Settings: config.http2Settings,
         timeout: config.timeout,
-        poolConfig: config.poolConfig,
-        retryConfig: config.retryConfig,
+        poolConfig: config?.poolConfig,
+        retryConfig: config?.retryConfig,
         responseLimits: config.responseLimits,
-        secureSocket: config.secureSocket
+        secureSocket: config?.secureSocket,
+        circuitBreaker: config?.circuitBreaker
     };
 }
