@@ -64,6 +64,11 @@ public final class AnalyserUtils {
             return moduleOpt.isPresent() && isWebSubHub(moduleOpt.get());
         }
 
+        if (listenerType.typeKind() == TypeDescKind.OBJECT) {
+            Optional<ModuleSymbol> moduleOpt = listenerType.getModule();
+            return moduleOpt.isPresent() && isWebSubHub(moduleOpt.get());
+        }
+
         return false;
     }
 

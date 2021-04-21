@@ -18,9 +18,6 @@
 
 package io.ballerina.stdlib.websubhub.task.visitor;
 
-import io.ballerina.compiler.api.ModuleID;
-import io.ballerina.compiler.api.symbols.ModuleSymbol;
-import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -38,6 +35,8 @@ import io.ballerina.stdlib.websubhub.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.isWebSubHubListener;
 
 /**
  * {@code ListenerInitiationExpressionVisitor} find the available listener declarations in the current document.
@@ -62,13 +61,8 @@ public class ListenerInitiationExpressionVisitor extends NodeVisitor {
                 Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentType);
                 if (parentSymbolOpt.isPresent() && parentSymbolOpt.get() instanceof TypeReferenceTypeSymbol) {
                     TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) parentSymbolOpt.get()).typeDescriptor();
-                    if (typeSymbol.typeKind() == TypeDescKind.OBJECT) {
-                        ObjectTypeSymbol objectSymbol = (ObjectTypeSymbol) typeSymbol;
-                        Optional<ModuleID> moduleId = objectSymbol.getModule().map(ModuleSymbol::id);
-                        String identifier = objectSymbol.getName().orElse("");
-                        if (moduleId.isPresent() && isWebSubHubListener(moduleId.get(), identifier)) {
-                            implicitNewExpressionNodes.add(node);
-                        }
+                    if (isWebSubHubListener(typeSymbol)) {
+                        implicitNewExpressionNodes.add(node);
                     }
                 }
             }
@@ -87,21 +81,13 @@ public class ListenerInitiationExpressionVisitor extends NodeVisitor {
                 if (refSymbolOpt.isPresent()) {
                     TypeReferenceTypeSymbol refSymbol = (TypeReferenceTypeSymbol) refSymbolOpt.get();
                     TypeSymbol typeDescriptor = refSymbol.typeDescriptor();
-                    Optional<ModuleID> moduleId = typeDescriptor.getModule().map(ModuleSymbol::id);
                     String identifier = typeDescriptor.getName().orElse("");
-                    if (moduleId.isPresent() && isWebSubHubListener(moduleId.get(), identifier)) {
+                    if (Constants.LISTENER_IDENTIFIER.equals(identifier) && isWebSubHubListener(typeDescriptor)) {
                         explicitNewExpressionNodes.add(node);
                     }
                 }
             }
         }
-    }
-
-    private boolean isWebSubHubListener(ModuleID moduleID, String identifier) {
-        String orgName = moduleID.orgName();
-        String packagePrefix = moduleID.modulePrefix();
-        return Constants.PACKAGE_ORG.equals(orgName) && Constants.PACKAGE_NAME.equals(packagePrefix)
-                && Constants.LISTENER_IDENTIFIER.equals(identifier);
     }
 
     public List<ImplicitNewExpressionNode> getImplicitNewExpressionNodes() {
