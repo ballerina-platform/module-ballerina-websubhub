@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multipart content delivery using websubhub-client.
 - Subscription Lease seconds expired event.
 
-## [0.2.0-alpha8] - 2021-04-21
+## [0.2.0-alpha8] - 2021-04-22
 ### Added
 - [Add compiler plugin to validate websubhub:Service](https://github.com/ballerina-platform/ballerina-standard-library/issues/1099)
 - [Implement websubhub:ServiceConfig annotation for websubhub:Service](https://github.com/ballerina-platform/ballerina-standard-library/issues/1253)
