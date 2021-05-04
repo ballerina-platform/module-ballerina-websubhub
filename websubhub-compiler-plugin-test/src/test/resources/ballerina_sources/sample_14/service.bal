@@ -10,6 +10,7 @@ listener foo:Listener securedHub = new(9090,
         }
     }
 );
+
 service /websubhub on securedHub {
 
     isolated remote function onRegisterTopic(foo:TopicRegistration message)
