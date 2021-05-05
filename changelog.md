@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Fix the listener initialization with inline configs compiler plugin error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1304)
+- [Include Auth Configuration to WebSubHub PublisherClient configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/1324)
 
 ## [0.2.0-alpha8] - 2021-04-22
 ### Added
