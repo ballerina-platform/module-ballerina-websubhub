@@ -311,6 +311,7 @@ public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error Unsub
 # + http2Settings - Configurations related to HTTP/2 protocol
 # + timeout - The maximum time to wait (in seconds) for a response before closing the connection
 # + poolConfig - Configurations associated with request pooling
+# + auth - Configurations related to client authentication
 # + retryConfig - Configurations associated with retrying
 # + responseLimits - Configurations associated with inbound response size limits
 # + secureSocket - SSL/TLS related options
@@ -321,6 +322,7 @@ public type ClientConfiguration record {|
     http:ClientHttp2Settings http2Settings = {};
     decimal timeout = 60;
     http:PoolConfiguration poolConfig?;
+    http:ClientAuthConfig auth?;
     http:RetryConfig retryConfig?;
     http:ResponseLimitConfigs responseLimits = {};
     http:ClientSecureSocket secureSocket?;
@@ -366,6 +368,7 @@ isolated function retrieveHttpClientConfig(ClientConfiguration config) returns h
         http2Settings: config.http2Settings,
         timeout: config.timeout,
         poolConfig: config?.poolConfig,
+        auth: config?.auth,
         retryConfig: config?.retryConfig,
         responseLimits: config.responseLimits,
         secureSocket: config?.secureSocket,
