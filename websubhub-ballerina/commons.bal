@@ -321,6 +321,7 @@ public type ClientConfiguration record {|
     http:ClientHttp2Settings http2Settings = {};
     decimal timeout = 60;
     http:PoolConfiguration poolConfig?;
+    http:ClientAuthConfig auth?;
     http:RetryConfig retryConfig?;
     http:ResponseLimitConfigs responseLimits = {};
     http:ClientSecureSocket secureSocket?;
