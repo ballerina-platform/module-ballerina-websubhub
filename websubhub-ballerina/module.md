@@ -25,13 +25,6 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 5. The hub delivers the identified content to the subscribers of the topic.
 
-#### Implementing In-Memory Hub Service
-
-* WebSub Hub acts as a Mediator between `publisher` and `subscriber`. 
-```ballerina
-
-```
-
 #### Using Hub Client
 
 * **WebSub HubClient** can be used to distribute the published content among `subscriber base`. Current implementation is based on
