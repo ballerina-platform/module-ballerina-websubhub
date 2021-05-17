@@ -22,17 +22,16 @@ const string HUB_MODE = "hub.mode";
 # which the request is initiated.
 const string HUB_TOPIC = "hub.topic";
 
-# Parameter `hub.callback` represents the callback URL for subscriber to receive distributed contents
+# Parameter `hub.callback` represents the callback URL for subscriber to receive distributed contents.
 const string HUB_CALLBACK = "hub.callback";
 
-# Parameter `hub.lease_seconds` represents the lease time in seconds until which the subscription is valid
+# Parameter `hub.lease_seconds` represents the lease time in seconds until which the subscription is valid.
 const string HUB_LEASE_SECONDS = "hub.lease_seconds";
 
-# Parameter `hub.secret` represents the secret-key which `hub` should use to sign the content
-# in content distribution
+# Parameter `hub.secret` represents the secret-key which `hub` should use to sign the content in content distribution.
 const string HUB_SECRET = "hub.secret";
 
-# Parameter `hub.challenge` represents a hub-generated, random string that MUST be echoed by the subscriber to verify the subscription
+# Parameter `hub.challenge` represents a hub-generated, random string that MUST be echoed by the subscriber to verify the subscription.
 const string HUB_CHALLENGE = "hub.challenge";
 
 # `hub.mode` value indicating "publish" mode, used by a publisher to notify an update to a topic.
@@ -65,10 +64,10 @@ const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 # `SHA256 HMAC` algorithm name, this is prepended to the generated signature value.
 const string SHA256_HMAC = "sha256";
 
-# Represents HTTP/1.1 protocol
+# Represents HTTP/1.1 protocol.
 const string HTTP_1_1 = "1.1";
 
-# Represents HTTP/2.0 protocol
+# Represents HTTP/2.0 protocol.
 const string HTTP_2_0 = "2.0";
 
 # Options to compress using gzip or deflate.
@@ -96,21 +95,21 @@ type Status distinct object {
     public int code;
 };
 
-# Response status OK
+# Response status OK.
 # + code - Status code for action
 public readonly class StatusOK {
     *Status;
     public http:STATUS_OK code = http:STATUS_OK;
 }
 
-# Response status Temporary Redirect
+# Response status Temporary Redirect.
 # + code - Status code for action
 public readonly class StatusTemporaryRedirect {
     *Status;
     public http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
 }
 
-# Response status Permanent Redirect
+# Response status Permanent Redirect.
 # + code - Status code for action
 public readonly class StatusPermanentRedirect {
     *Status;
@@ -145,32 +144,30 @@ public type ContentDistributionMessage record {|
     map<string>|json|xml|string|byte[] content;
 |};
 
-# Record to represent the successful WebSub content delivery
+# Record to represent the successful WebSub content delivery.
 # 
 # + status - Status of the request processing , this is `200 OK` by default since
-# this is a success reponse
+#            this is a success reponse
 public type ContentDistributionSuccess record {|
     *CommonResponse;
     readonly StatusOK status = STATUS_OK_OBJ;
 |};
 
-# Record to represent Topic-Registration request body
+# Record to represent Topic-Registration request body.
 # 
 # + topic - `Topic` which should be registered in the `hub`
 public type TopicRegistration record {|
     string topic;
 |};
 
-# Record to represent Topic-Deregistration request body
+# Record to represent Topic-Deregistration request body.
 # 
 # + topic - `Topic` which should be unregistered from the `hub`
 public type TopicDeregistration record {|
     string topic;
 |};
 
-// todo Any other params set in the payload(subscribers)
-//todo: update this accordingly [ayesh]
-# Record to represent subscription request body
+# Record to represent subscription request body.
 # 
 # + hub - URL of the `hub` where subscriber has subscribed
 # + hubMode - Current `hub` action
@@ -187,15 +184,15 @@ public type Subscription record {
     string? hubSecret = ();
 };
 
-# Record to represent completed subscription
+# Record to represent completed subscription.
 # 
-# + verificationSuccess - true / false based on subscription is successfully completed or not
+# + verificationSuccess - Flag to notify whether a subscription verification successfull
 public type VerifiedSubscription record {
     *Subscription;
     boolean verificationSuccess;
 };
 
-# Record to represent the unsubscription request body
+# Record to represent the unsubscription request body.
 # 
 # + hubMode - Current `hub` action
 # + hubCallback - Callback URL for subscriber to received distributed content
@@ -208,25 +205,24 @@ public type Unsubscription record {
     string? hubSecret = ();
 };
 
-# Record to represent completed unsubscription
+# Record to represent completed unsubscription.
 # 
-# + verificationSuccess - true / false based on unsubscription is successfully completed or not
+# + verificationSuccess - Flag to notify whether a unsubscription verification successfull
 public type VerifiedUnsubscription record {
     *Unsubscription;
     boolean verificationSuccess;
 };
 
-//todo: update this accordingly [ayesh]
-# Enum to differenciate the type of content-update message
+# Enum to differenciate the type of content-update message.
 # 
-# + EVENT - 
-# + PUBLISH -
+# + EVENT - Content update in the `topic`
+# + PUBLISH - Content distribution to the `topic`
 public enum MessageType {
     EVENT,
     PUBLISH
 }
 
-# Record to represent content-update message
+# Record to represent content-update message.
 # 
 # + msgType - Type of the content update message
 # + hubTopic - Topic to which the content should be updated
@@ -239,22 +235,22 @@ public type UpdateMessage record {
     string|byte[]|json|xml|map<string>? content;
 };
 
-# Record to represent Topic Registration success
+# Record to represent Topic Registration success.
 public type TopicRegistrationSuccess record {
     *CommonResponse;
 };
 
-# Record to represent Topic Deregistration Success
+# Record to represent Topic Deregistration Success.
 public type TopicDeregistrationSuccess record {
     *CommonResponse;
 };
 
-# Record to represent accepted subscription by the `hub`
+# Record to represent accepted subscription by the `hub`.
 public type SubscriptionAccepted record {
     *CommonResponse;
 };
 
-# Common Record to represent subscription redirects
+# Common Record to represent subscription redirects.
 # 
 # + redirectUrls - URLs to which subscription has redirected
 type SubscriptionRedirect record {
@@ -262,7 +258,7 @@ type SubscriptionRedirect record {
     string[] redirectUrls;
 };
 
-# Record to represent permanent subscription redirects
+# Record to represent permanent subscription redirects.
 # 
 # + code - Status code for action
 public type SubscriptionPermanentRedirect record {
@@ -270,7 +266,7 @@ public type SubscriptionPermanentRedirect record {
     readonly http:STATUS_PERMANENT_REDIRECT code = http:STATUS_PERMANENT_REDIRECT;
 };
 
-# Record to represent temporary subscription redirects
+# Record to represent temporary subscription redirects.
 # 
 # + code - Status code of the action
 public type SubscriptionTemporaryRedirect record {
@@ -278,17 +274,17 @@ public type SubscriptionTemporaryRedirect record {
     readonly http:STATUS_TEMPORARY_REDIRECT code = http:STATUS_TEMPORARY_REDIRECT;
 };
 
-# Record to represent unsubscription acceptance
+# Record to represent unsubscription acceptance.
 public type UnsubscriptionAccepted record {
     *CommonResponse;
 };
 
-# Record to represent acknowledgement of content updated by the publisher
+# Record to represent acknowledgement of content updated by the publisher.
 public type Acknowledgement record {
     *CommonResponse;
 };
 
-# Common Responses to be used in hub-implementation
+# Common Responses to be used in hub-implementation.
 public final readonly & TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
 public final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed");
 public final readonly & TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};

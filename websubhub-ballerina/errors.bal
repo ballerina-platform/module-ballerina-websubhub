@@ -14,39 +14,39 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents a websubhub distinct error
+# Represents a websubhub distinct error.
 public type Error distinct error<CommonResponse>;
 
-# Error Type representing the errors in topic registration action
+# Error Type representing the errors in topic registration action.
 public type TopicRegistrationError distinct Error;
 
-# Error Type representing the errors in topic unregistration action
+# Error Type representing the errors in topic unregistration action.
 public type TopicDeregistrationError distinct Error;
 
-# Error Type representing the errors in subscription request
+# Error Type representing the errors in subscription request.
 public type BadSubscriptionError distinct Error;
 
-# Error Type representing the internal errors in subscription action
+# Error Type representing the internal errors in subscription action.
 public type InternalSubscriptionError distinct Error;
 
-# Error Type representing the validation errors in subscription request body
+# Error Type representing the validation errors in subscription request body.
 public type SubscriptionDeniedError distinct Error;
 
-# Error Type representing the errors in unsubscription request
+# Error Type representing the errors in unsubscription request.
 public type BadUnsubscriptionError distinct Error;
 
-# Error Type representing the internal errors in unsubscription action
+# Error Type representing the internal errors in unsubscription action.
 public type InternalUnsubscriptionError distinct Error;
 
-# Error Type representing the validation errors in unsubscription request body
+# Error Type representing the validation errors in unsubscription request body.
 public type UnsubscriptionDeniedError distinct Error;
 
-# Error Type representing the errors in content update request
+# Error Type representing the errors in content update request.
 public type UpdateMessageError distinct Error;
 
 # Error Type representing the subscriber ending the subscription 
-# by sending `HTTP 410` for content delivery response
+# by sending `HTTP 410` for content delivery response.
 public type SubscriptionDeletedError distinct Error;
 
-# Error Type representing the internal errors in content distribution
+# Error Type representing the internal errors in content distribution.
 public type ContentDeliveryError distinct Error;

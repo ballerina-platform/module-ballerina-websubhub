@@ -30,11 +30,15 @@ service class HttpService {
     private boolean isRegisterAvailable = false;
     private boolean isDeregisterAvailable = false;
 
-    # Invoked during the initialization of a `websubhub:HttpService`
+    # Initializes `websubhub:HttpService` endpoint.
+    # ```ballerina
+    # websubhub:HttpService httpServiceEp = check new ('service, "https://sample.hub.com", 3600);
+    # ```
     #
-    # + hubService   - {@code websubhub:Service} provided service
-    # + hubUrl       - {@code string} current Hub URL
-    # + leaseSeconds - {@code int} default value for subscription lease-seconds 
+    # + hubService   - Current `websubhub:Service` instance
+    # + hubUrl       - Hub URL
+    # + leaseSeconds - Subscription expiration time for `hub`
+    # + clientConfig - `websubhub:ClientConfiguration` to be used in HTTP Client used for subscription / unsubscription intent verification
     public isolated function init(Service hubService, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.hubService = hubService;
         self.clientConfig = clientConfig;
@@ -63,6 +67,12 @@ service class HttpService {
         }
     }
 
+    # Receives HTTP POST requests.
+    # 
+    # + caller - The `http:Caller` reference for the current request
+    # + request - Received `http:Request` instance
+    # + headers - HTTP Headers found in original HTTP Request
+    # + return - `error` if there is any exception in request processing or else `()`
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns @tainted error? {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
@@ -198,6 +208,10 @@ service class HttpService {
     }
 }
 
+# Retrives names of implemented methods in `websubhub:Service` instance.
+# 
+# + subscriberService - Current `websubhub:Service` instance
+# + return - All the methods implemented in `websubhub:Service` as a `string[]`
 isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

@@ -16,7 +16,7 @@
 
 # Configuration for a WebSub Hub service.
 #
-# + leaseSeconds - The period for which the subscription is expected to be active in the Hub
+# + leaseSeconds - The period for which the subscription is expected to be active in the `hub`
 # + webHookConfig - HTTP client configurations for subscription / unsubscription intent verification
 public type ServiceConfiguration record {|
     int leaseSeconds?;

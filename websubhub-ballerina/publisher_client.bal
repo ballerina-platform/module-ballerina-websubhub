@@ -36,8 +36,7 @@ public client class PublisherClient {
         self.httpClient = check new (self.url, retrieveHttpClientConfig(config));
     }
 
-    # Registers a topic in a Ballerina WebSub Hub against which subscribers can subscribe and the publisher will
-    # publish updates.
+    # Registers a topic in a Ballerina WebSub Hub against which subscribers can subscribe and the publisher will publish updates.
     # ```ballerina
     # error? registerTopic = websubHubClientEP->registerTopic("http://websubpubtopic.com");
     # ```
@@ -170,8 +169,7 @@ public client class PublisherClient {
         }
     }
 
-    # Notifies a remote WebSub Hub from which an update is available to fetch for hubs that require publishing to
-    # happen as such.
+    # Notifies a remote WebSub Hub from which an update is available to fetch for hubs that require publishing to happen as such.
     # ```ballerina
     #  error? notifyUpdate = websubHubClientEP->notifyUpdate("http://websubpubtopic.com");
     # ```
@@ -212,7 +210,7 @@ public client class PublisherClient {
     }
 }
 
-# Builds the topic registration change request to register or deregister a topic at the hub.
+# Builds the topic registration change request to register or deregister a topic at the `hub`.
 #
 # + mode - Whether the request is for registration or deregistration
 # + topic - The topic to register/deregister
@@ -224,6 +222,10 @@ isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @u
     return request;
 }
 
+# Retrieves form-data content from a `string` payload
+# 
+# + payload - Available payload
+# + return - A `map<string>` containing form-data values
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
 
@@ -250,6 +252,10 @@ isolated function getFormData(string payload) returns map<string> {
     return parameters;
 }
 
+# Retrieves header values for content-distribution response
+# 
+# + response - Original `http:Response` object
+# + return - Available response headers as `map<string|string[]>`
 isolated function getHeaders(http:Response response) returns @tainted map<string|string[]> {
     string[] headerNames = response.getHeaderNames();
 
