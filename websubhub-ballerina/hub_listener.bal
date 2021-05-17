@@ -69,7 +69,7 @@ public class Listener {
         } else {
             self.httpService = new('service, hubUrl, self.defaultHubLeaseSeconds);
         }
-        checkpanic self.httpListener.attach(<HttpService> self.httpService, name);
+        check self.httpListener.attach(<HttpService> self.httpService, name);
     }
 
     # Retrieves URL on which `hub` is published.
@@ -104,7 +104,7 @@ public class Listener {
     # + s - The `websubhub:Service` object to be detached
     # + return - An `error`, if an error occurred during the service detaching process or else `()`
     public isolated function detach(Service s) returns error? {
-        checkpanic self.httpListener.detach(<HttpService> self.httpService);
+        check self.httpListener.detach(<HttpService> self.httpService);
     }
 
     # Starts the registered service programmatically..
@@ -114,7 +114,7 @@ public class Listener {
     # 
     # + return - An `error`, if an error occurred during the listener starting process or else `()`
     public isolated function 'start() returns error? {
-        checkpanic self.httpListener.'start();
+        check self.httpListener.'start();
     }
 
     # Gracefully stops the hub listener. Already accepted requests will be served before the connection closure.

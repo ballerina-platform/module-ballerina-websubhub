@@ -45,16 +45,16 @@ var hubWithHeaderDetails = service object {
 };
 
 @test:BeforeGroups { value:["http-header-details"] }
-function beforeHttpHeaderDetailsTest() {
-    checkpanic hubWithHeaderDetailsListener.attach(hubWithHeaderDetails, "websubhub");
+function beforeHttpHeaderDetailsTest() returns @tainted error? {
+    check hubWithHeaderDetailsListener.attach(hubWithHeaderDetails, "websubhub");
 }
 
 @test:AfterGroups { value:["http-header-details"] }
-function afterHttpHeaderDetailsTest() {
-    checkpanic hubWithHeaderDetailsListener.gracefulStop();
+function afterHttpHeaderDetailsTest() returns @tainted error? {
+    check hubWithHeaderDetailsListener.gracefulStop();
 }
 
-http:Client httpHeaderDetailsTestClientEp = checkpanic new("http://localhost:9095/websubhub");
+http:Client httpHeaderDetailsTestClientEp = check new("http://localhost:9095/websubhub");
 
 @test:Config {
     groups: ["http-header-details"]

@@ -18,7 +18,7 @@ import ballerina/io;
 import ballerina/http;
 import ballerina/test;
 
-http:Client httpClient = checkpanic new("http://localhost:9090/websubhub");
+http:Client httpClient = check new("http://localhost:9090/websubhub");
 
 listener Listener functionWithArgumentsListener = new(9090);
 

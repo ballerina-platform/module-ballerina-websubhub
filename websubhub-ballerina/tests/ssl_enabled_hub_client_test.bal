@@ -53,76 +53,53 @@ ClientConfiguration hubClientSslConfig = {
 }
 function testTextContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
-    var publishResponse = hubClientEP->notifyContentDistribution(msg);
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
 }
 function testJsonContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-    
     json publishedContent = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
     };
     ContentDistributionMessage msg = {content: publishedContent};
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
-    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
 }
 function testXmlContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-    
     xml publishedContent = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
     </content>`;
     ContentDistributionMessage msg = {content: publishedContent};
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
-    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
 }
 function testByteArrayContentDeliveryWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
-    
     byte[] publishedContent = "This is sample content".toBytes();
     ContentDistributionMessage msg = {content: publishedContent};
-
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
-    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }    
+    HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);    
+    test:assertEquals(publishResponse.status.code, 200);  
 }
 
 @test:Config {
@@ -134,8 +111,8 @@ function testSubscriptionDeletedWithSsl() returns @tainted error? {
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
-        test:assertEquals(publishResponse.message(), expectedResponse);
+        test:assertEquals(publishResponse.message(), expectedResponse);    
     } else {
-       test:assertFail("Content Publishing Failed.");
-    }    
+        test:assertFail("Subscription deleted failed");
+    }
 }

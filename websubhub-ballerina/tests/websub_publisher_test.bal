@@ -59,7 +59,7 @@ service /websubhub on testListener {
     }
 }
 
-PublisherClient websubHubClientEP = checkpanic new ("http://localhost:9092/websubhub");
+PublisherClient websubHubClientEP = check new ("http://localhost:9092/websubhub");
 
 @test:Config{}
 public function testPublisherRegisterSuccess() {

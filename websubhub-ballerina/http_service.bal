@@ -210,7 +210,7 @@ service class HttpService {
 
 # Retrives names of implemented methods in `websubhub:Service` instance.
 # 
-# + subscriberService - Current `websubhub:Service` instance
+# + hubService - Current `websubhub:Service` instance
 # + return - All the methods implemented in `websubhub:Service` as a `string[]`
 isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"

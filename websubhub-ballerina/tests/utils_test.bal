@@ -128,7 +128,7 @@ isolated function testByteArrayContentSignature() returns @tainted error? {
 }
 
 
-http:Client headerRetrievalTestingClient = checkpanic new ("http://localhost:9191/subscriber");
+http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/subscriber");
 
 @test:Config { 
     groups: ["clientResponseHeaderRetrieval"]
@@ -273,7 +273,7 @@ isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns @ta
     };
     map<string> generatedResponseBody = retrieveResponseBodyForFormUrlEncodedMessage("query1=value1&query2=value2&query3=value3");
     test:assertEquals(generatedResponseBody.length(), message.length());
-    foreach var 'key in message.keys() {
+    foreach string 'key in message.keys() {
         string value = generatedResponseBody.remove('key);
     }
     test:assertTrue(generatedResponseBody.length() == 0);
@@ -318,7 +318,7 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
                 if (value is string) {
                     return false;
                 } else {
-                    foreach var item in value {
+                    foreach string item in value {
                         if (retrievedValue.indexOf(item) is ()) {
                             return false;
                         }
@@ -331,4 +331,3 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
     }
     return true;
 }
-

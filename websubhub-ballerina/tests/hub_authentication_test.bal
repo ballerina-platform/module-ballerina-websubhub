@@ -112,7 +112,7 @@ function doAuth(http:Request req) returns string? {
     return;
 }
 
-PublisherClient authEnabledPublisherClient = checkpanic new("https://localhost:9100/websubhub",
+PublisherClient authEnabledPublisherClient = check new("https://localhost:9100/websubhub",
     auth = {
         username: "ballerina",
         issuer: "wso2",
@@ -132,7 +132,7 @@ PublisherClient authEnabledPublisherClient = checkpanic new("https://localhost:9
     }
 );
 
-http:Client authEnabledClient = checkpanic new("https://localhost:9100/websubhub", {
+http:Client authEnabledClient = check new("https://localhost:9100/websubhub", {
     auth: {
         username: "ballerina",
         issuer: "wso2",
@@ -210,7 +210,6 @@ function testSubscriptionWithAuthentication() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
-
     http:Response response = check authEnabledClient->post("/", request);
     test:assertEquals(response.statusCode, 202);
 }
@@ -222,7 +221,6 @@ function testUnsubscriptionWithAuthentication() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
-
     http:Response response = check authEnabledClient->post("/", request);
     test:assertEquals(response.statusCode, 202);
 }
