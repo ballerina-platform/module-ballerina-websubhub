@@ -28,13 +28,12 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
         TopicRegistration msg = {
             topic: topic
         };
-
-        TopicRegistrationSuccess|TopicRegistrationError result = callRegisterMethod(hubService, msg, headers);
-        if (result is TopicRegistrationError) {
-            var errorDetails = result.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        } else {
+        TopicRegistrationSuccess|TopicRegistrationError|error result = callRegisterMethod(hubService, msg, headers);
+        if (result is TopicRegistrationSuccess) {
             updateSuccessResponse(response, result["body"], result["headers"]);
+        } else {
+            var errorDetails = result is TopicRegistrationError ? result.detail(): TOPIC_REGISTRATION_ERROR.detail();
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
         }
     }
 }
@@ -47,12 +46,12 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
         TopicDeregistration msg = {
             topic: topic
         };
-        TopicDeregistrationSuccess|TopicDeregistrationError result = callDeregisterMethod(hubService, msg, headers);
-        if (result is TopicDeregistrationError) {
-            var errorDetails = result.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        } else {
+        TopicDeregistrationSuccess|TopicDeregistrationError|error result = callDeregisterMethod(hubService, msg, headers);
+        if (result is TopicDeregistrationSuccess) {
             updateSuccessResponse(response, result["body"], result["headers"]);
+        } else {
+            var errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
+            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
         }
     }
 }
@@ -98,7 +97,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
         respondToRequest(caller, response);
     } else {
         SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
-        BadSubscriptionError|InternalSubscriptionError onSubscriptionResult = callOnSubscriptionMethod(
+        BadSubscriptionError|InternalSubscriptionError|error onSubscriptionResult = callOnSubscriptionMethod(
                                                                                         hubService, message, headers);
         if (onSubscriptionResult is SubscriptionTemporaryRedirect) {
             http:ListenerError? result = caller->redirect(
@@ -118,8 +117,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
             respondToRequest(caller, response);
         } else {
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            onSubscriptionResult = <InternalSubscriptionError>onSubscriptionResult;
-            var errorDetails = onSubscriptionResult.detail();
+            var errorDetails = onSubscriptionResult is InternalSubscriptionError ? onSubscriptionResult.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
             updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onSubscriptionResult.message());
             respondToRequest(caller, response);
         }
@@ -128,7 +126,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
 
 isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
                                                      boolean isSubscriptionValidationAvailable, ClientConfiguration config) {
-    SubscriptionDeniedError? validationResult = ();
+    SubscriptionDeniedError|error? validationResult = ();
     if (isSubscriptionValidationAvailable) {
         validationResult = callOnSubscriptionValidationMethod(hubService, message, headers);
     } else {
@@ -143,7 +141,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
     http:Client httpClient = checkpanic new(<string> message.hubCallback, retrieveHttpClientConfig(config));
     string challenge = uuid:createType4AsString();
 
-    if (validationResult is SubscriptionDeniedError) {
+    if (validationResult is SubscriptionDeniedError || validationResult is error) {
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=denied"
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
@@ -169,7 +167,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
                         hubLeaseSeconds: message.hubLeaseSeconds,
                         hubSecret: message.hubSecret
                     };
-                    callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
+                    error? errorResponse = callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
                 }
             }
         }
@@ -205,7 +203,7 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
         respondToRequest(caller, response);
     } else {
         UnsubscriptionAccepted|BadUnsubscriptionError
-            |InternalUnsubscriptionError onUnsubscriptionResult = callOnUnsubscriptionMethod(
+            |InternalUnsubscriptionError|error onUnsubscriptionResult = callOnUnsubscriptionMethod(
                                                                             hubService, message, headers);
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
@@ -219,8 +217,7 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
             respondToRequest(caller, response);
         } else {
             response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            onUnsubscriptionResult = <InternalUnsubscriptionError>onUnsubscriptionResult;
-            var errorDetails = onUnsubscriptionResult.detail();
+            var errorDetails = onUnsubscriptionResult is InternalUnsubscriptionError ? onUnsubscriptionResult.detail(): INTERNAL_UNSUBSCRIPTION_ERROR.detail();
             updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onUnsubscriptionResult.message());
             respondToRequest(caller, response);
         } 
@@ -231,7 +228,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
                                                       Unsubscription message, boolean isUnsubscriptionValidationAvailable, 
                                                       ClientConfiguration config) {
 
-    UnsubscriptionDeniedError? validationResult = ();
+    UnsubscriptionDeniedError|error? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
         validationResult = callOnUnsubscriptionValidationMethod(hubService, message, headers);
     } else {
@@ -244,7 +241,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
     }
 
     http:Client httpClient = checkpanic new(<string> message.hubCallback, retrieveHttpClientConfig(config));
-    if (validationResult is UnsubscriptionDeniedError) {
+    if (validationResult is UnsubscriptionDeniedError|| validationResult is error) {
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=denied"
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
@@ -268,7 +265,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
                         hubTopic: message.hubTopic,
                         hubSecret: message.hubSecret
                     };
-                    callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
+                    error? errorResponse = callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
                 }
             }
         }
@@ -279,14 +276,17 @@ isolated function processPublishRequestAndRespond(http:Caller caller, http:Respo
                                          http:Headers headers, Service hubService, 
                                          UpdateMessage updateMsg) {
     
-    Acknowledgement|UpdateMessageError updateResult = callOnUpdateMethod(hubService, updateMsg, headers);
+    Acknowledgement|UpdateMessageError|error updateResult = callOnUpdateMethod(hubService, updateMsg, headers);
 
     response.statusCode = http:STATUS_OK;
     if (updateResult is Acknowledgement) {
         response.setTextPayload("hub.mode=accepted");
         response.setHeader("Content-type","application/x-www-form-urlencoded");
-    } else {
+    } else if (updateResult is UpdateMessageError) {
         var errorDetails = updateResult.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
+    } else {
+        var errorDetails = UPDATE_MESSAGE_ERROR.detail();
         updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
     }
     respondToRequest(caller, response);
