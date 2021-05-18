@@ -14,9 +14,6 @@
  * limitations under the License.
  *
  */
-
-import org.apache.tools.ant.taskdefs.condition.Os
-
 buildscript {
     repositories {
         maven {
@@ -61,7 +58,7 @@ def stripBallerinaExtensionVersion(String extVersion) {
 
 apply plugin: 'io.ballerina.plugin'
 
-ballerina{
+ballerina {
     module = packageName
     langVersion = ballerinaLangVersion
 }
