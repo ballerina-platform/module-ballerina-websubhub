@@ -59,11 +59,12 @@ def stripBallerinaExtensionVersion(String extVersion) {
 apply plugin: 'io.ballerina.plugin'
 
 ballerina {
+    packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
 }
 
-task updateTomlVersions {
+task updateTomlFiles {
     doLast {
         def stdlibDependentHttpVersion = stripBallerinaExtensionVersion(project.stdlibHttpVersion)
         def stdlibDependentMimeVersion = stripBallerinaExtensionVersion(project.stdlibMimeVersion)
@@ -91,7 +92,7 @@ task updateTomlVersions {
     }
 }
 
-task revertTomlFile {
+task revertTomlFiles {
     doLast {
         ballerinaConfigFile.text = originalConfig
         ballerinaDependencyFile.text = originalDependencies
@@ -117,7 +118,7 @@ publishing {
     }
 }
 
-updateTomlVersions.dependsOn copyStdlibs
+updateTomlFiles.dependsOn copyStdlibs
 
 build.dependsOn ":${packageName}-native:build"
 build.dependsOn ":${packageName}-compiler-plugin:build"
