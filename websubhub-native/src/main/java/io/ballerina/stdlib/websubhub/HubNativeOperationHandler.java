@@ -83,10 +83,10 @@ public class HubNativeOperationHandler {
                                     "onSubscriptionValidation");
     }
 
-    public static void callOnSubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
+    public static Object callOnSubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
                                                               BMap<BString, Object> message, BObject bHttpHeaders) {
         Object[] args = new Object[]{message, true, bHttpHeaders, true};
-        invokeRemoteFunction(env, bHubService, args, "callOnSubscriptionIntentVerifiedMethod", 
+        return invokeRemoteFunction(env, bHubService, args, "callOnSubscriptionIntentVerifiedMethod", 
                             "onSubscriptionIntentVerified");
     }
 
@@ -103,10 +103,10 @@ public class HubNativeOperationHandler {
                                     "onUnsubscriptionValidation");
     }
 
-    public static void callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
+    public static Object callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject bHubService, 
                                                                 BMap<BString, Object> message, BObject bHttpHeaders) {
         Object[] args = new Object[]{message, true, bHttpHeaders, true};
-        invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionIntentVerifiedMethod", 
+        return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionIntentVerifiedMethod", 
                             "onUnsubscriptionIntentVerified");
     }
 

@@ -243,6 +243,23 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
     }
 
+    @Test
+    public void testWithReturnTypesWithErrorsWithModuleAliases() {
+        Package currentPackage = loadPackage("sample_15");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testWithReturnTypesWithErrors() {
+        Package currentPackage = loadPackage("sample_16");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        diagnosticResult.diagnostics().forEach(System.out::println);
+//        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
