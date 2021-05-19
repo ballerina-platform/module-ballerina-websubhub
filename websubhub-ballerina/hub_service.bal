@@ -19,29 +19,29 @@ public type Service service object {
    //todo Remove methods and write compiler plugin for service
 
 //   remote function onRegisterTopic(TopicRegistration msg)
-//               returns TopicRegistrationSuccess|TopicRegistrationError;
+//               returns TopicRegistrationSuccess|TopicRegistrationError|error;
 
 //   remote function onDeregisterTopic(TopicDeregistration msg)
-//               returns TopicDeregistrationSuccess|TopicDeregistrationError;
+//               returns TopicDeregistrationSuccess|TopicDeregistrationError|error;
 
    // remote function onUpdateMessage(UpdateMessage msg)
-   //             returns Acknowledgement|UpdateMessageError;
+   //             returns Acknowledgement|UpdateMessageError|error;
 
 //   remote function onSubscription(Subscription msg)
 //              returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
-//                        BadSubscriptionError|InternalSubscriptionError;
+//                        BadSubscriptionError|InternalSubscriptionError|error;
 
 //   remote function onSubscriptionValidation(Subscription msg)
-//              returns SubscriptionDeniedError?;
+//              returns SubscriptionDeniedError|error?;
 
-   // remote function onSubscriptionIntentVerified(VerifiedSubscription msg);
+   // remote function onSubscriptionIntentVerified(VerifiedSubscription msg) returns error?;
 
 //   remote function onUnsubscription(Unsubscription msg)
-//               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError;
+//               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError|error;
 
 //   remote function onUnsubscriptionValidation(Unsubscription msg)
-//              returns UnsubscriptionDeniedError?;
+//              returns UnsubscriptionDeniedError|error?;
 
-   // remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg);
+   // remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg) returns error?;
 
 };

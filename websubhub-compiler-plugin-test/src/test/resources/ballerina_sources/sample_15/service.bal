@@ -18,12 +18,19 @@ import ballerina/websubhub as foo;
 import ballerina/http;
 import ballerina/io;
 
-listener http:Listener httpListener = new http:Listener(10012);
+listener foo:Listener securedHub = new(9090,
+    secureSocket = {
+        key: {
+            certFile: "../resources/public.crt",
+            keyFile: "../resources/private.key"
+        }
+    }
+);
 
-service /websubhub on new foo:Listener(httpListener) {
+service /websubhub on securedHub {
 
     isolated remote function onRegisterTopic(foo:TopicRegistration message)
-                                returns foo:TopicRegistrationSuccess|foo:TopicRegistrationError {
+                                returns foo:TopicRegistrationSuccess|foo:TopicRegistrationError|error {
         if (message.topic == "test") {
             return foo:TOPIC_REGISTRATION_SUCCESS;
         } else {
@@ -32,7 +39,7 @@ service /websubhub on new foo:Listener(httpListener) {
     }
 
     isolated remote function onDeregisterTopic(foo:TopicDeregistration message, http:Request baseRequest)
-                        returns foo:TopicDeregistrationSuccess|foo:TopicDeregistrationError {
+                        returns foo:TopicDeregistrationSuccess|foo:TopicDeregistrationError|error {
 
         map<string> body = { isDeregisterSuccess: "true" };
         foo:TopicDeregistrationSuccess deregisterResult = {
@@ -46,13 +53,13 @@ service /websubhub on new foo:Listener(httpListener) {
     }
 
     isolated remote function onUpdateMessage(foo:UpdateMessage message)
-               returns foo:Acknowledgement|foo:UpdateMessageError {
+               returns foo:Acknowledgement|foo:UpdateMessageError|error {
         return foo:ACKNOWLEDGEMENT;
     }
     
     isolated remote function onSubscription(foo:Subscription msg)
                 returns foo:SubscriptionAccepted|foo:SubscriptionPermanentRedirect|foo:SubscriptionTemporaryRedirect
-                |foo:BadSubscriptionError|foo:InternalSubscriptionError {
+                |foo:BadSubscriptionError|foo:InternalSubscriptionError|error {
         foo:SubscriptionAccepted successResult = {
                 body: <map<string>>{
                        isSuccess: "true"
@@ -68,19 +75,19 @@ service /websubhub on new foo:Listener(httpListener) {
     }
 
     isolated remote function onSubscriptionValidation(foo:Subscription msg)
-                returns foo:SubscriptionDeniedError? {
+                returns foo:SubscriptionDeniedError|error? {
         if (msg.hubTopic == "test1") {
             return error foo:SubscriptionDeniedError("Denied subscription for topic 'test1'");
         }
         return ();
     }
 
-    isolated remote function onSubscriptionIntentVerified(foo:VerifiedSubscription msg) {
+    isolated remote function onSubscriptionIntentVerified(foo:VerifiedSubscription msg) returns error? {
         io:println("Subscription Intent verified invoked!");
     }
 
     isolated remote function onUnsubscription(foo:Unsubscription msg)
-               returns foo:UnsubscriptionAccepted|foo:BadUnsubscriptionError|foo:InternalUnsubscriptionError {
+               returns foo:UnsubscriptionAccepted|foo:BadUnsubscriptionError|foo:InternalUnsubscriptionError|error {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             foo:UnsubscriptionAccepted successResult = {
                 body: <map<string>>{
@@ -94,14 +101,14 @@ service /websubhub on new foo:Listener(httpListener) {
     }
 
     isolated remote function onUnsubscriptionValidation(foo:Unsubscription msg)
-                returns foo:UnsubscriptionDeniedError? {
+                returns foo:UnsubscriptionDeniedError|error? {
         if (msg.hubTopic == "test1") {
             return error foo:UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
         }
         return ();
     }
 
-    isolated remote function onUnsubscriptionIntentVerified(foo:VerifiedUnsubscription msg){
+    isolated remote function onUnsubscriptionIntentVerified(foo:VerifiedUnsubscription msg) returns error? {
         io:println("Unsubscription Intent verified invoked!");
     }
 }
