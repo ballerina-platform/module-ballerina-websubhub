@@ -102,7 +102,7 @@ public client class HubClient {
         }
 
         string servicePath = getServicePath(self.callback, contentType, queryString);
-        var response = self.httpClient->post(servicePath, request);
+        var response = self.httpClient->post(servicePath, request, targetType = http:Response);
         if (response is http:Response) {
             var status = response.statusCode;
             if (isSuccessStatusCode(status)) {
