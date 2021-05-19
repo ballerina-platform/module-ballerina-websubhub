@@ -31,6 +31,7 @@ public client class PublisherClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
+    # + return - The `websubhub:PublisherClient` or an `error` if the initialization failed
     public isolated function init(string url, *ClientConfiguration config) returns error? {
         self.url = url;
         self.httpClient = check new (self.url, retrieveHttpClientConfig(config));

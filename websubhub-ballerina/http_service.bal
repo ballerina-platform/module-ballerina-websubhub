@@ -39,6 +39,7 @@ service class HttpService {
     # + hubUrl       - Hub URL
     # + leaseSeconds - Subscription expiration time for the `hub`
     # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
+    # + return - The `websubhub:HttpService` or an `error` if the initialization failed
     public isolated function init(Service hubService, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.hubService = hubService;
         self.clientConfig = clientConfig;

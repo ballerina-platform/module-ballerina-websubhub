@@ -41,6 +41,7 @@ public client class HubClient {
     #
     # + subscription - Original subscription details for the `subscriber`
     # + config - The `websubhub:ClientConfiguration` for the underlying client
+    # + return - The `websubhub:HubClient` or an `error` if the initialization failed
     public isolated function init(Subscription subscription, *ClientConfiguration config) returns error? {
         self.callback = subscription.hubCallback;
         self.hub = subscription.hub;
