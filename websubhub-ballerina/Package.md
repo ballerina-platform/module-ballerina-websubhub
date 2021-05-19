@@ -1,12 +1,12 @@
 ## Package Overview
 
-The WebSubHub package is one of the standard library packages of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
+The `websubhub` package is one of the standard library packages of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
 
 This package provides the capability to easily implement a WebSub compliant **Hub Service** and **Publisher Client**.
 
 ## Report Issues
 
-To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina Standard Library [parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
+To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina Standard Library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
 
 ## Useful Links
 
