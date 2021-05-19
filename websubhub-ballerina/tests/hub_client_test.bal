@@ -75,13 +75,9 @@ HubClient contentDeliveryClient = check new(subscriptionMsg);
 }
 function testTextContentDelivery() returns @tainted error? {
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
-    var publishResponse = contentDeliveryClient->notifyContentDistribution(msg);
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
@@ -92,13 +88,9 @@ function testJsonContentDelivery() returns @tainted error? {
         contentMsg: "Enjoy free offers this season"
     };
     ContentDistributionMessage msg = {content: publishedContent};
-    var publishResponse = contentDeliveryClient->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
@@ -109,13 +101,9 @@ function testXmlContentDelivery() returns @tainted error? {
         <contentMsg>Enjoy free offers this season</contentMsg>
     </content>`;
     ContentDistributionMessage msg = {content: publishedContent};
-    var publishResponse = contentDeliveryClient->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
@@ -123,13 +111,9 @@ function testXmlContentDelivery() returns @tainted error? {
 function testByteArrayContentDelivery() returns @tainted error? {
     byte[] publishedContent = "This is sample content".toBytes();
     ContentDistributionMessage msg = {content: publishedContent};
-    var publishResponse = contentDeliveryClient->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }    
+    ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);   
 }
 
 @test:Config {
@@ -143,13 +127,9 @@ function testUrlEncodedContentDelivery() returns @tainted error? {
         contentType: "application/x-www-form-urlencoded",
         content: publishedContent
     };
-    var publishResponse = contentDeliveryClient->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {
@@ -159,13 +139,9 @@ isolated function testContentDeliveryWithNoResponse() returns @tainted error? {
     HubClient hubClientEP = check new(subscriptionMsg);
     byte[] publishedContent = "This is sample content".toBytes();
     ContentDistributionMessage msg = {content: publishedContent};
-    var publishResponse = hubClientEP->notifyContentDistribution(msg);   
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, ());
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }    
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);   
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, ());   
 }
 
 @test:Config {
@@ -174,11 +150,11 @@ isolated function testSubscriptionDeleted() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
     HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
-    var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
+    string  expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
         test:assertEquals(publishResponse.message(), expectedResponse);
     } else {
-       test:assertFail("Content Publishing Failed.");
+       test:assertFail("Subscription deleted verification failed.");
     }    
 }
 
@@ -198,13 +174,9 @@ isolated function testContentDeliveryRetrySuccess() returns @tainted error? {
     };
     HubClient hubClientEP = check new(subscriptionMsg, config);
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
-    var publishResponse = hubClientEP->notifyContentDistribution(msg);
-    if (publishResponse is ContentDistributionSuccess) {
-        test:assertEquals(publishResponse.status.code, 200);
-        test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
-    } else {
-       test:assertFail("Content Publishing Failed.");
-    }
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
 @test:Config {

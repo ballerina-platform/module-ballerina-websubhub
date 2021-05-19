@@ -256,8 +256,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("sample_16");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        diagnosticResult.diagnostics().forEach(System.out::println);
-//        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
     }
 
     private Package loadPackage(String path) {

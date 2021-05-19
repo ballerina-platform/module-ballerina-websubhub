@@ -93,16 +93,16 @@ var hubServiceToTestAdditionalErrorDetails = service object {
 };
 
 @test:BeforeGroups { value:["additional-error-details"] }
-function beforeAdditionalErrorDetailsTest() {
-    checkpanic hubListenerToAdditionalErrorDetails.attach(hubServiceToTestAdditionalErrorDetails, "websubhub");
+function beforeAdditionalErrorDetailsTest() returns @tainted error? {
+    check hubListenerToAdditionalErrorDetails.attach(hubServiceToTestAdditionalErrorDetails, "websubhub");
 }
 
 @test:AfterGroups { value:["additional-error-details"] }
-function afterAdditionalErrorDetailsTest() {
-    checkpanic hubListenerToAdditionalErrorDetails.gracefulStop();
+function afterAdditionalErrorDetailsTest() returns @tainted error? {
+    check hubListenerToAdditionalErrorDetails.gracefulStop();
 }
 
-http:Client errorDetailsTestClientEp = checkpanic new("http://localhost:9093/websubhub");
+http:Client errorDetailsTestClientEp = check new("http://localhost:9093/websubhub");
 
 @test:Config {
     groups: ["additional-error-details"]
@@ -145,7 +145,7 @@ function testUpdateMessageErrorDetails() returns @tainted error? {
     http:Response response = check errorDetailsTestClientEp->post("/", request);
     test:assertEquals(response.statusCode, 200);
     string payload = check response.getTextPayload();
-    var responseBody = decodeResponseBody(payload);
+    map<string> responseBody = decodeResponseBody(payload);
     test:assertEquals(responseBody["hub.mode"], "denied");
     test:assertEquals(responseBody["hub.reason"], "Error in accessing content"); 
 }
@@ -154,8 +154,8 @@ isolated function decodeResponseBody(string payload) returns map<string> {
     map<string> body = {};
     if (payload.length() > 0) {
         string[] splittedPayload = regex:split(payload, "&");
-        foreach var bodyPart in splittedPayload {
-            var responseComponent =  regex:split(bodyPart, "=");
+        foreach string bodyPart in splittedPayload {
+            string[] responseComponent =  regex:split(bodyPart, "=");
             if (responseComponent.length() == 2) {
                 body[responseComponent[0]] = responseComponent[1];
             }

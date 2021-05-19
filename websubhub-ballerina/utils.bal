@@ -20,9 +20,16 @@ import ballerina/http;
 import ballerina/uuid;
 import ballerina/regex;
 
+# Processes the `topic` registration request.
+# 
+# + caller - The `http:Caller` reference of the current request
+# + response - The `http:Response`, which should be returned 
+# + headers - The `http:Headers` received from the original `http:Request`
+# + params - Query parameters retrieved from the `http:Request`
+# + hubService - Current `websubhub:Service`
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
-                                        http:Headers headers, map<string> params, 
-                                        Service hubService) {
+                                         http:Headers headers, map<string> params, 
+                                         Service hubService) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicRegistration msg = {
@@ -38,6 +45,13 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
     }
 }
 
+# Processes the `topic` deregistration request.
+# 
+# + caller - The `http:Caller` reference of the current request
+# + response - The `http:Response`, which should be returned 
+# + headers - The `http:Headers` received from the original `http:Request`
+# + params - Query parameters retrieved from the `http:Request`
+# + hubService - Current `websubhub:Service`
 isolated function processDeregisterRequest(http:Caller caller, http:Response response,
                                            http:Headers headers, map<string> params, 
                                            Service hubService) {
@@ -56,6 +70,19 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
     }
 }
 
+# Processes the subscription request.
+# 
+# + request - Received `http:Request` instance
+# + caller - The `http:Caller` reference of the current request
+# + response - The `http:Response`, which should be returned 
+# + headers - The `http:Headers` received from the original `http:Request`
+# + params - Query parameters retrieved from the `http:Request`
+# + hubService - Current `websubhub:Service`
+# + isAvailable - Flag to notify whether an `onSubscription` is implemented in the `websubhub:Service`
+# + isSubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
+# + hubUrl - Public URL in which the `hub` is running
+# + defaultHubLeaseSeconds - The default subscription active timeout for the `hub`
+# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
                                                        http:Headers headers, map<string> params, Service hubService,
                                                        boolean isAvailable, boolean isSubscriptionValidationAvailable, 
@@ -124,6 +151,13 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
     }
 }   
 
+# Processes the subscription validation request.
+# 
+# + headers - The `http:Headers` received from the original `http:Request`
+# + hubService - Current `websubhub:Service`
+# + message - Subscriber details for the subscription request
+# + isSubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
+# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
                                                      boolean isSubscriptionValidationAvailable, ClientConfiguration config) {
     SubscriptionDeniedError|error? validationResult = ();
@@ -174,6 +208,17 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
     }
 }
 
+# Processes the unsubscription request.
+# 
+# + request - Received `http:Request` instance
+# + caller - The `http:Caller` reference of the current request
+# + response - The `http:Response`, which should be returned 
+# + headers - The `http:Headers` received from the original `http:Request`
+# + params - Query parameters retrieved from the `http:Request`
+# + hubService - Current `websubhub:Service`
+# + isUnsubscriptionAvailable - Flag to notify whether an `onUnsubscription` is implemented in the `websubhub:Service`
+# + isUnsubscriptionValidationAvailable - Flag to notify whether an `onUnsubscriptionValidation` is implemented in the `websubhub:Service`
+# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
                                                          http:Headers headers, map<string> params, Service hubService,
                                                          boolean isUnsubscriptionAvailable, boolean isUnsubscriptionValidationAvailable, 
@@ -224,6 +269,14 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
     }
 }
 
+# Processes the unsubscription validation request.
+#
+# + initialRequest - Original `http:Request` instance
+# + headers - The `http:Headers` received from the original `http:Request`
+# + hubService - Current `websubhub:Service`
+# + message - Subscriber details for the unsubscription request
+# + isUnsubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
+# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
                                                       Unsubscription message, boolean isUnsubscriptionValidationAvailable, 
                                                       ClientConfiguration config) {
@@ -272,9 +325,16 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
     }
 }
 
+# Processes the publish-content request.
+# 
+# + caller - The `http:Caller` reference for the current request
+# + response - The `http:Response`, which should be returned 
+# + headers - The `http:Headers` received from the original `http:Request`
+# + hubService - Current `websubhub:Service`
+# + updateMsg - Content update message
 isolated function processPublishRequestAndRespond(http:Caller caller, http:Response response,
-                                         http:Headers headers, Service hubService, 
-                                         UpdateMessage updateMsg) {
+                                                  http:Headers headers, Service hubService, 
+                                                  UpdateMessage updateMsg) {
     
     Acknowledgement|UpdateMessageError|error updateResult = callOnUpdateMethod(hubService, updateMsg, headers);
 
@@ -292,6 +352,12 @@ isolated function processPublishRequestAndRespond(http:Caller caller, http:Respo
     respondToRequest(caller, response);
 }
 
+# Retrieves an URL-encoded parameter.
+# 
+# + params - Available query parameters
+# + 'key - Required parameter name/key
+# + response - The `http:Response`, which should be returned 
+# + return - Requested parameter value if present or else `()`
 isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, 
                                                         http:Response response) returns string? {
     string|error? requestedValue = ();
@@ -307,6 +373,11 @@ isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, stri
     }
 }
 
+# Updates the error response for a bad request.
+# 
+# + response - The `http:Response`, which should be returned 
+# + paramName - Errorneous parameter name
+# + topicParameter - Received value or `error`
 isolated function updateBadRequestErrorResponse(http:Response response, string paramName, 
                                                 string|error? topicParameter) {
     string errorMessage = "";
@@ -319,16 +390,34 @@ isolated function updateBadRequestErrorResponse(http:Response response, string p
     response.setTextPayload(errorMessage);
 }
 
+# Updates the generic error response.
+# 
+# + response - The `http:Response`, which should be returned 
+# + messageBody - Optional response payload
+# + headers - Optional additional response headers
+# + reason - Optional reason for rejecting the request
 isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
-                                        map<string|string[]>? headers, string reason) {
+                                      map<string|string[]>? headers, string reason) {
     updateHubResponse(response, "denied", messageBody, headers, reason);
 }
 
+# Updates the generic success response.
+# 
+# + response - The `http:Response`, which should be returned 
+# + messageBody - Optional response payload
+# + headers - Optional additional response headers
 isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
     updateHubResponse(response, "accepted", messageBody, headers);
 }
 
+# Updates the `hub` response.
+# 
+# + response - The `http:Response`, which should be returned 
+# + hubMode - Current Hub mode
+# + messageBody - Optional response payload
+# + headers - Optional additional response headers
+# + reason - Optional reason for rejecting the request
 isolated function updateHubResponse(http:Response response, string hubMode, 
                                     anydata? messageBody, map<string|string[]>? headers, 
                                     string? reason = ()) {
@@ -351,6 +440,12 @@ isolated function updateHubResponse(http:Response response, string hubMode,
     }
 }
 
+# Generates the payload to be added to the `hub` Response.
+# 
+# + hubMode - Current Hub mode
+# + messageBody - Optional response payload
+# + reason - Optional reason for rejecting the request
+# + return - Response payload as a `string`
 isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
     string payload = "hub.mode=" + hubMode;
     payload += reason is string ? "&hub.reason=" + reason : "";
@@ -360,6 +455,10 @@ isolated function generateResponsePayload(string hubMode, anydata? messageBody, 
     return payload;
 }
 
+# Generates the form-URL-encoded response payload.
+#
+# + messageBody - Provided response payload
+# + return - The formed URL-encoded response body
 isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messageBody) returns string {
     string payload = "";
     string[] messageParams = [];
@@ -370,6 +469,10 @@ isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messag
     return payload;
 }
 
+# Converts a text payload to `map<string>`.
+# 
+# + payload - Received text payload
+# + return - Response payload as `map<string>`
 isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) returns map<string> {
     map<string> responsePayload = {};
     string[] queryParams = regex:split(payload, "&");
@@ -382,6 +485,10 @@ isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) r
     return responsePayload;
 }
 
+# Responds to the received `http:Request`.
+# 
+# + caller - The `http:Caller` reference of the current request
+# + response - Updated `http:Response`
 isolated function respondToRequest(http:Caller caller, http:Response response) {
     http:ListenerError? responseError = caller->respond(response);
 }

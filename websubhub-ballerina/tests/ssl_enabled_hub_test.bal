@@ -85,9 +85,9 @@ ClientConfiguration httpsConfig = {
     }
 };
 
-PublisherClient sslEnabledPublisher = checkpanic new ("https://localhost:9096/websubhub", httpsConfig);
+PublisherClient sslEnabledPublisher = check new ("https://localhost:9096/websubhub", httpsConfig);
 
-http:Client sslEnabledClient = checkpanic new("https://localhost:9096/websubhub", retrieveHttpClientConfig(httpsConfig));
+http:Client sslEnabledClient = check new("https://localhost:9096/websubhub", retrieveHttpClientConfig(httpsConfig));
 
 @test:Config{}
 public function testPublisherRegisterSuccessWithSsl() {
@@ -137,7 +137,6 @@ function testSubscriptionWithSsl() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
-
     http:Response response = check sslEnabledClient->post("/", request);
     test:assertEquals(response.statusCode, 202);
 }
@@ -147,7 +146,6 @@ function testUnsubscriptionWithSsl() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
-
     http:Response response = check sslEnabledClient->post("/", request);
     test:assertEquals(response.statusCode, 202);
 }

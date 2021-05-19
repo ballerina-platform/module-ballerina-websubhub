@@ -101,7 +101,7 @@ service /websubhub on new websubhub:Listener(httpListener) {
         return ();
     }
 
-    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg) return error? {
+    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg) returns error? {
         io:println("Unsubscription Intent verified invoked!");
     }
 }

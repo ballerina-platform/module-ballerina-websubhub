@@ -30,11 +30,16 @@ service class HttpService {
     private boolean isRegisterAvailable = false;
     private boolean isDeregisterAvailable = false;
 
-    # Invoked during the initialization of a `websubhub:HttpService`
+    # Initializes the `websubhub:HttpService` endpoint.
+    # ```ballerina
+    # websubhub:HttpService httpServiceEp = check new ('service, "https://sample.hub.com", 3600);
+    # ```
     #
-    # + hubService   - {@code websubhub:Service} provided service
-    # + hubUrl       - {@code string} current Hub URL
-    # + leaseSeconds - {@code int} default value for subscription lease-seconds 
+    # + hubService   - Current `websubhub:Service` instance
+    # + hubUrl       - Hub URL
+    # + leaseSeconds - Subscription expiration time for the `hub`
+    # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
+    # + return - The `websubhub:HttpService` or an `error` if the initialization failed
     public isolated function init(Service hubService, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.hubService = hubService;
         self.clientConfig = clientConfig;
@@ -42,27 +47,35 @@ service class HttpService {
         self.defaultHubLeaseSeconds = leaseSeconds;
         string[] methodNames = getServiceMethodNames(hubService);
         foreach var methodName in methodNames {
-            if (methodName == "onSubscription") {
-                self.isSubscriptionAvailable = true;
-            }
-            if (methodName == "onSubscriptionValidation") {
-                self.isSubscriptionValidationAvailable = true;
-            }
-            if (methodName == "onUnsubscription") {
-                self.isUnsubscriptionAvailable = true;
-            }
-            if (methodName == "onUnsubscriptionValidation") {
-                self.isUnsubscriptionValidationAvailable = true;
-            }
-            if (methodName == "onRegisterTopic") {
-                self.isRegisterAvailable = true;
-            }
-            if (methodName == "onDeregisterTopic") {
-                self.isDeregisterAvailable = true;
+            match methodName {
+                "onSubscription" => {
+                    self.isSubscriptionAvailable = true;  
+                }
+                "onSubscriptionValidation" => {
+                    self.isSubscriptionValidationAvailable = true;
+                }
+                "onUnsubscription" => {
+                    self.isUnsubscriptionAvailable = true;
+                }
+                "onUnsubscriptionValidation" => {
+                    self.isUnsubscriptionValidationAvailable = true;
+                }
+                "onRegisterTopic" => {
+                    self.isRegisterAvailable = true;
+                }
+                "onDeregisterTopic" => {
+                    self.isDeregisterAvailable = true;
+                }
             }
         }
     }
 
+    # Receives HTTP POST requests.
+    # 
+    # + caller - The `http:Caller` reference of the current request
+    # + request - Received `http:Request` instance
+    # + headers - HTTP headers found in the original HTTP request
+    # + return - An `error` if there is any exception in the request processing or else `()`
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns @tainted error? {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
@@ -74,13 +87,13 @@ service class HttpService {
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
                 string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
-                if (publisherHeader is string) {
-                    if (publisherHeader == "publish") {
+                if publisherHeader is string {
+                    if publisherHeader == "publish" {
                         string[] hubMode = queryParams.get(HUB_MODE);
                         string[] hubTopic = queryParams.get(HUB_TOPIC);
                         params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
                         params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
-                    } else if (publisherHeader == "event") {
+                    } else if publisherHeader == "event" {
                         var reqFormParamMap = request.getFormParams();
                         params = reqFormParamMap is map<string> ? reqFormParamMap : {};
                     } else {
@@ -111,7 +124,7 @@ service class HttpService {
         string mode = params[HUB_MODE] ?: "";
         match mode {
             MODE_REGISTER => {
-                if (self.isRegisterAvailable) {
+                if self.isRegisterAvailable {
                     processRegisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
@@ -119,7 +132,7 @@ service class HttpService {
                 respondToRequest(caller, response);
             }
             MODE_DEREGISTER => {
-                if (self.isDeregisterAvailable) {
+                if self.isDeregisterAvailable {
                     processDeregisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
@@ -145,33 +158,33 @@ service class HttpService {
             }
             MODE_PUBLISH => {
                 string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
-                if (topic is ()) {
+                if topic is () {
                     respondToRequest(caller, response);
                     return;
                 }
                 UpdateMessage updateMsg;
-                if (contentType == mime:APPLICATION_FORM_URLENCODED) {
+                if contentType == mime:APPLICATION_FORM_URLENCODED {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: EVENT,
                         contentType: contentType,
                         content: ()
                     };
-                } else if (contentType == mime:APPLICATION_JSON) {
+                } else if contentType == mime:APPLICATION_JSON {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: contentType,
                         content: check request.getJsonPayload()
                     };
-                } else if (contentType == mime:APPLICATION_XML) {
+                } else if contentType == mime:APPLICATION_XML {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: contentType,
                         content: check request.getXmlPayload()
                     };
-                } else if (contentType == mime:TEXT_PLAIN) {
+                } else if contentType == mime:TEXT_PLAIN {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
@@ -198,6 +211,10 @@ service class HttpService {
     }
 }
 
+# Retrives the names of the implemented methods in the `websubhub:Service` instance.
+# 
+# + hubService - Current `websubhub:Service` instance
+# + return - All the methods implemented in the `websubhub:Service` as a `string[]`
 isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

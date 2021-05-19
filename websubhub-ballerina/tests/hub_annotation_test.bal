@@ -106,9 +106,9 @@ service /websubhub on new Listener(9099) {
     }
 }
 
-PublisherClient annotationTestPublisher = checkpanic new ("http://localhost:9099/websubhub");
+PublisherClient annotationTestPublisher = check new ("http://localhost:9099/websubhub");
 
-http:Client annotationTestClient = checkpanic new("http://localhost:9099/websubhub");
+http:Client annotationTestClient = check new("http://localhost:9099/websubhub");
 
 @test:Config {}
 function testSubscriptionWithAnnotationConfig() returns @tainted error? {
