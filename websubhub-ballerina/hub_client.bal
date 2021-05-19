@@ -39,7 +39,7 @@ public client class HubClient {
     # });
     # ```
     #
-    # + subscription - Original subscription details for `subscriber`
+    # + subscription - Original subscription details for the `subscriber`
     # + config - The `websubhub:ClientConfiguration` for the underlying client
     public isolated function init(Subscription subscription, *ClientConfiguration config) returns error? {
         self.callback = subscription.hubCallback;
@@ -50,7 +50,7 @@ public client class HubClient {
         self.httpClient = check new(subscription.hubCallback, retrieveHttpClientConfig(config));
     }
 
-    # Distributes the published content to subscribers.
+    # Distributes the published content to the subscribers.
     # ```ballerina
     # ContentDistributionSuccess|SubscriptionDeletedError|error? publishUpdate = websubHubClientEP->notifyContentDistribution(
     #   { 
@@ -59,9 +59,9 @@ public client class HubClient {
     # );
     # ```
     #
-    # + msg - Content to be distributed to the topic-subscriber 
-    # + return - An `error` if an exception occurred or `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410` 
-    #            or else `websubhub:ContentDistributionSuccess` for successful content delivery
+    # + msg - Content to be distributed to the topic subscriber 
+    # + return - An `error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
+    #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
                                 returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|error {
         string contentType = retrieveContentType(msg.contentType, msg.content);
@@ -133,11 +133,11 @@ public client class HubClient {
     }
 }
 
-# Retrieve content-type for the content-distribution request.
+# Retrieve the content type for the content distribution request.
 # 
 # + contentType - Provided content type (optional)
 # + payload - Content-distribution payload
-# + return - Content-type for the content-distribution request
+# + return - Content type of the content-distribution request
 isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
     if (contentType is string) {
         return contentType;
@@ -160,7 +160,7 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
 # 
 # + 'key - hashing key to be used (this is provided by the subscriber)
 # + payload - content-distribution request body
-# + return - `byte[]` containing the content signature or `error` if there is any exception in 
+# + return - `byte[]` containing the content signature or an `error` if there is any exception in the 
 #            function execution
 isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
@@ -181,12 +181,12 @@ isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] p
     }
 }
 
-# Retrieve service path to which the content should be delivered.
+# Retrieve the service path to which the content should be delivered.
 # 
 # + originalServiceUrl - Subscriber callback URL
-# + contentType - Content-type of the content-distribution request
-# + queryString - Generated query-parameters for the request
-# + return - Service-path which should be called for content-delivery
+# + contentType - Content type of the content-distribution request
+# + queryString - Generated query parameters for the request
+# + return - Service path, which should be called for content delivery
 isolated function getServicePath(string originalServiceUrl, string contentType, string queryString) returns string {
     match contentType {
         mime:APPLICATION_FORM_URLENCODED => {
@@ -199,10 +199,10 @@ isolated function getServicePath(string originalServiceUrl, string contentType, 
     }
 }
 
-# Retrieve response headers from subscriber-response.
+# Retrieve the response headers from the subscriber response.
 # 
-# + subscriberResponse - The `http:Response` received for content-delivery
-# + return - `map<string|string[]>` containing header values or `error` if there is any exception in the
+# + subscriberResponse - The `http:Response` received for content delivery
+# + return - A `map<string|string[]>` containing header values or an `error` if there is any exception in the
 #            function execution
 isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]>|error {
     map<string|string[]> responseHeaders = {};
@@ -219,9 +219,9 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
 
 # Retrieve response body from subscriber-response.
 # 
-# + subscriberResponse - The `http:Response` received for content-delivery
-# + contentType - Content-type for the received response
-# + return - Response body of the `http:Response` or `error` if there is any exception in the execution
+# + subscriberResponse - The `http:Response` received for content delivery
+# + contentType - Content type for the received response
+# + return - Response body of the `http:Response` or an `error` if there is any exception in the execution
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>|error {
     match contentType {
         mime:APPLICATION_JSON => {

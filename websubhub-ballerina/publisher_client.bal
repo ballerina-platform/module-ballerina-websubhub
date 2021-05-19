@@ -36,7 +36,7 @@ public client class PublisherClient {
         self.httpClient = check new (self.url, retrieveHttpClientConfig(config));
     }
 
-    # Registers a topic in a Ballerina WebSub Hub against which subscribers can subscribe and the publisher will publish updates.
+    # Registers a topic in a Ballerina WebSub Hub to which the subscribers can subscribe and the publisher will publish updates.
     # ```ballerina
     # error? registerTopic = websubHubClientEP->registerTopic("http://websubpubtopic.com");
     # ```
@@ -166,7 +166,7 @@ public client class PublisherClient {
         }
     }
 
-    # Notifies a remote WebSub Hub from which an update is available to fetch for hubs that require publishing to happen as such.
+    # Notifies a remote WebSubHub from which an update is available to fetch for hubs that require publishing.
     # ```ballerina
     #  error? notifyUpdate = websubHubClientEP->notifyUpdate("http://websubpubtopic.com");
     # ```
@@ -247,7 +247,7 @@ isolated function getFormData(string payload) returns map<string> {
     return parameters;
 }
 
-# Retrieves header values for content-distribution response
+# Retrieves header values for the content-distribution response
 # 
 # + response - Original `http:Response` object
 # + return - Available response headers as `map<string|string[]>`

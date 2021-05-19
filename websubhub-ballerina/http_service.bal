@@ -30,15 +30,15 @@ service class HttpService {
     private boolean isRegisterAvailable = false;
     private boolean isDeregisterAvailable = false;
 
-    # Initializes `websubhub:HttpService` endpoint.
+    # Initializes the `websubhub:HttpService` endpoint.
     # ```ballerina
     # websubhub:HttpService httpServiceEp = check new ('service, "https://sample.hub.com", 3600);
     # ```
     #
     # + hubService   - Current `websubhub:Service` instance
     # + hubUrl       - Hub URL
-    # + leaseSeconds - Subscription expiration time for `hub`
-    # + clientConfig - `websubhub:ClientConfiguration` to be used in HTTP Client used for subscription / unsubscription intent verification
+    # + leaseSeconds - Subscription expiration time for the `hub`
+    # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
     public isolated function init(Service hubService, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.hubService = hubService;
         self.clientConfig = clientConfig;
@@ -71,10 +71,10 @@ service class HttpService {
 
     # Receives HTTP POST requests.
     # 
-    # + caller - The `http:Caller` reference for the current request
+    # + caller - The `http:Caller` reference of the current request
     # + request - Received `http:Request` instance
-    # + headers - HTTP Headers found in original HTTP Request
-    # + return - `error` if there is any exception in request processing or else `()`
+    # + headers - HTTP headers found in the original HTTP request
+    # + return - An `error` if there is any exception in the request processing or else `()`
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns @tainted error? {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
@@ -210,10 +210,10 @@ service class HttpService {
     }
 }
 
-# Retrives names of implemented methods in `websubhub:Service` instance.
+# Retrives the names of the implemented methods in the `websubhub:Service` instance.
 # 
 # + hubService - Current `websubhub:Service` instance
-# + return - All the methods implemented in `websubhub:Service` as a `string[]`
+# + return - All the methods implemented in the `websubhub:Service` as a `string[]`
 isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
     'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
 } external;

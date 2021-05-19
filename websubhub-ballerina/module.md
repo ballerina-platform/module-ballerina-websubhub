@@ -1,8 +1,8 @@
 ## Overview
 
-This module provides an implementation for WebSub Hub Service and WebSub Publisher Client.
+This module provides an implementation for the WebSub Hub service and WebSub Publisher client.
 
-[**WebSub**](https://www.w3.org/TR/websub/) is a common mechanism for communication between publishers of any kind of Web content and their subscribers, based on HTTP webhooks. Subscription requests are relayed through hubs, which validate and verify the request. Hubs then distribute new and updated content to subscribers when it becomes available. WebSub was previously known as PubSubHubbub.
+[**WebSub**](https://www.w3.org/TR/websub/) is a common mechanism for communication between publishers of any kind of web content and their subscribers based on HTTP webhooks. Subscription requests are relayed through hubs, which validate and verify the requests. Hubs then distribute new and updated content to subscribers when it becomes available. WebSub was previously known as PubSubHubbub.
 
 [**WebSub Hub**](https://www.w3.org/TR/websub/#hub) is an implementation that handles subscription requests and distributes the content to subscribers when the corresponding topic URL has been updated.
 
@@ -10,25 +10,25 @@ This module provides an implementation for WebSub Hub Service and WebSub Publish
 
 ### Basic flow with WebSub
 
-1. The subscriber discovers from the publisher, the topic it needs to subscribe to and the hub(s) that deliver notifications on updates of the topic.
+1. The subscriber discovers (from the publisher) the topic it needs to subscribe to and the hub(s) that deliver notifications on the updates of the topic.
 
 2. The subscriber sends a subscription request to one or more discovered hub(s) specifying the discovered topic along 
  with other subscription parameters such as:
-    - The callback URL to which content is expected to be delivered.
+    - The callback URL to which the content is expected to be delivered.
     - (Optional) The lease period (in seconds) the subscriber wants the subscription to stay active.
     - (Optional) A secret to use for [authenticated content distribution](https://www.w3.org/TR/websub/#signing-content).
   
 3. The hub sends an intent verification request to the specified callback URL. If the response indicates
 verification (by echoing a challenge specified in the request) by the subscriber, the subscription is added for the topic at the hub.
 
-4. The publisher notifies the hub of updates to the topic and the content to deliver is identified.
+4. The publisher notifies the hub of the updates to the topic and the content to deliver is identified.
 
 5. The hub delivers the identified content to the subscribers of the topic.
 
 #### Using Hub Client
 
-* **WebSub HubClient** can be used to distribute the published content among `subscriber base`. Current implementation is based on
-`ballerina HTTP Client`.
+* **WebSub HubClient** can be used to distribute the published content among the `subscriber base`. The current implementation is based on
+a `ballerina HTTP Client`.
 
 ```ballerina
     client class HubClient {
@@ -37,7 +37,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
     }
 ```
 
-* Following is a sample of **WebSub HubClient**.
+* The following is a sample **WebSub HubClient**.
 
 ```ballerina
     type HubService service object {
@@ -62,10 +62,10 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 #### Using Publisher Client
 
-* PublisherClient APIs are defined by the Ballerina standard library team and it has nothing to do with websub specification. As mentioned earlier, Even though the
-websub specification extensively discusses the relationship between the subscriber and hub, it does not really discuss much about the relationship between the publisher and hub.
+* The `PublisherClient` APIs are defined by Ballerina and it has no connection with the WebSub specification. As mentioned earlier, even though the
+WebSub specification extensively discusses the relationship between the subscriber and hub, it does not discuss much the relationship between the publisher and hub.
 
-* Following is a sample of **WebSub Publisher Client**.
+* The following is a sample **WebSub Publisher Client**.
 
 ```ballerina
     websubhub:PublisherClient publisherClient = new ("http://localhost:9191/websub/hub");
