@@ -47,7 +47,7 @@ public client class PublisherClient {
     isolated remote function registerTopic(string topic) returns @tainted TopicRegistrationSuccess|TopicRegistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
-        var registrationResponse = httpClient->post("", request);
+        http:Response|error registrationResponse = httpClient->post("", request);
         if (registrationResponse is http:Response) {
             var result = registrationResponse.getTextPayload();
             string payload = result is string ? result : "";
@@ -82,7 +82,7 @@ public client class PublisherClient {
     isolated remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
-        var deregistrationResponse = httpClient->post("", request);
+        http:Response|error deregistrationResponse = httpClient->post("", request);
         if (deregistrationResponse is http:Response) {
             var result = deregistrationResponse.getTextPayload();
             string payload = result is string ? result : "";
@@ -123,7 +123,6 @@ public client class PublisherClient {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
         string queryParams = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
-
         if (payload is map<string>) {
             string reqPayload = "";
             foreach var ['key, value] in payload.entries() {
@@ -137,15 +136,13 @@ public client class PublisherClient {
         } else {
             request.setPayload(payload);
         }
-
         if (contentType is string) {
             var setContent = request.setContentType(contentType);
             if (setContent is error) {
                 return error UpdateMessageError("Invalid content type is set, found " + contentType);
              }
         }
-
-        var response = httpClient->post(<@untainted string> ("?" + queryParams), request);
+        http:Response|error response = httpClient->post(<@untainted string> ("?" + queryParams), request);
         if (response is http:Response) {
             var result = response.getTextPayload();
             string responsePayload = result is string ? result : "";
@@ -183,10 +180,8 @@ public client class PublisherClient {
         http:Request request = new;
         string reqPayload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
         request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
-
         request.setHeader(BALLERINA_PUBLISH_HEADER, "event");
-
-        var response = httpClient->post("/", request);
+        http:Response|error response = httpClient->post("/", request);
         if (response is http:Response) {
             var result = response.getTextPayload();
             string payload = result is string ? result : "";
