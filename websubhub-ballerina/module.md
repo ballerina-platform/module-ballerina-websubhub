@@ -79,3 +79,41 @@ WebSub specification extensively discusses the relationship between the subscrib
                     "mode": "remote-hub"
                 });
 ```
+
+# Returning Errors from Remote Methods
+
+* Remote functions in `websubhub:Service` can return `error` type.
+```ballerina
+service /websubhub on new websubhub:Listener(9090) {
+
+    isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
+                                returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
+        boolean validationSuccessfull = check validateRegistration(message);
+        if (validationSuccessfull) {
+            websubhub:TOPIC_REGISTRATION_SUCCESS;
+        } else {
+            return websubhub:TOPIC_REGISTRATION_ERROR;
+        }
+    }
+
+    // implement other remote methods
+}
+
+function validateRegistration(websubhub:TopicRegistration message) returns boolean|error {
+   // implement validation
+}
+```
+
+* For each remote method `error` return has a different meaning. Following table depicts the meaning inferred from `error` returned from all available remote methods.
+
+| Method        | Interpreted meaning for Error Return |
+| ----------- | ---------------- |
+| onRegisterTopic | Topic registration failure |
+| onDeregisterTopic | Topic de-registration failure |
+| onUpdateMessage | Update message error |
+| onSubscription | Subscription internal server error |
+| onSubscriptionValidation | Subscription validation failure |
+| onSubscriptionIntentVerified | Subscription intent verification failure |
+| onUnsubscription | Unsubscription internal server error |
+| onUnsubscriptionValidation | Unsubscription validation failure |
+| onUnsubscriptionIntentVerified | Unsubscription intent verification failure |
