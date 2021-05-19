@@ -46,23 +46,25 @@ service class HttpService {
         self.defaultHubLeaseSeconds = leaseSeconds;
         string[] methodNames = getServiceMethodNames(hubService);
         foreach var methodName in methodNames {
-            if (methodName == "onSubscription") {
-                self.isSubscriptionAvailable = true;
-            }
-            if (methodName == "onSubscriptionValidation") {
-                self.isSubscriptionValidationAvailable = true;
-            }
-            if (methodName == "onUnsubscription") {
-                self.isUnsubscriptionAvailable = true;
-            }
-            if (methodName == "onUnsubscriptionValidation") {
-                self.isUnsubscriptionValidationAvailable = true;
-            }
-            if (methodName == "onRegisterTopic") {
-                self.isRegisterAvailable = true;
-            }
-            if (methodName == "onDeregisterTopic") {
-                self.isDeregisterAvailable = true;
+            match methodName {
+                "onSubscription" => {
+                    self.isSubscriptionAvailable = true;  
+                }
+                "onSubscriptionValidation" => {
+                    self.isSubscriptionValidationAvailable = true;
+                }
+                "onUnsubscription" => {
+                    self.isUnsubscriptionAvailable = true;
+                }
+                "onUnsubscriptionValidation" => {
+                    self.isUnsubscriptionValidationAvailable = true;
+                }
+                "onRegisterTopic" => {
+                    self.isRegisterAvailable = true;
+                }
+                "onDeregisterTopic" => {
+                    self.isDeregisterAvailable = true;
+                }
             }
         }
     }
