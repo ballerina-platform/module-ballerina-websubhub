@@ -47,7 +47,7 @@ public client class PublisherClient {
     isolated remote function registerTopic(string topic) returns @tainted TopicRegistrationSuccess|TopicRegistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
-        http:Response|error registrationResponse = httpClient->post("", request, targetType = http:Response);
+        http:Response|error registrationResponse = httpClient->post("", request);
         if (registrationResponse is http:Response) {
             var result = registrationResponse.getTextPayload();
             string payload = result is string ? result : "";
@@ -82,7 +82,7 @@ public client class PublisherClient {
     isolated remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
-        http:Response|error deregistrationResponse = httpClient->post("", request, targetType = http:Response);
+        http:Response|error deregistrationResponse = httpClient->post("", request);
         if (deregistrationResponse is http:Response) {
             var result = deregistrationResponse.getTextPayload();
             string payload = result is string ? result : "";
@@ -142,7 +142,7 @@ public client class PublisherClient {
                 return error UpdateMessageError("Invalid content type is set, found " + contentType);
              }
         }
-        http:Response|error response = httpClient->post(<@untainted string> ("?" + queryParams), request, targetType = http:Response);
+        http:Response|error response = httpClient->post(<@untainted string> ("?" + queryParams), request);
         if (response is http:Response) {
             var result = response.getTextPayload();
             string responsePayload = result is string ? result : "";
@@ -181,7 +181,7 @@ public client class PublisherClient {
         string reqPayload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
         request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
         request.setHeader(BALLERINA_PUBLISH_HEADER, "event");
-        http:Response|error response = httpClient->post("/", request, targetType = http:Response);
+        http:Response|error response = httpClient->post("/", request);
         if (response is http:Response) {
             var result = response.getTextPayload();
             string payload = result is string ? result : "";
