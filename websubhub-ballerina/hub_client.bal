@@ -78,10 +78,10 @@ public client class HubClient {
             }
         }
 
-        if (msg?.headers is map<string|string[]>) {
+        if msg?.headers is map<string|string[]> {
             var headers = <map<string|string[]>>msg?.headers;
             foreach var [header, values] in headers.entries() {
-                if (values is string) {
+                if values is string {
                     request.addHeader(header, values);
                 } else {
                     foreach var value in <string[]>values {
@@ -92,9 +92,9 @@ public client class HubClient {
         }
         check request.setContentType(contentType);
         request.setHeader(LINK, self.linkHeaderValue);
-        if (self.secret.length() > 0) {
+        if self.secret.length() > 0 {
             byte[] hash = [];
-            if (contentType == mime:APPLICATION_FORM_URLENCODED) {
+            if contentType == mime:APPLICATION_FORM_URLENCODED {
                 hash = check retrievePayloadSignature(self.secret, queryString);
             } else {
                 hash = check retrievePayloadSignature(self.secret, msg.content);
@@ -104,12 +104,12 @@ public client class HubClient {
 
         string servicePath = getServicePath(self.callback, contentType, queryString);
         http:Response|error response = self.httpClient->post(servicePath, request);
-        if (response is http:Response) {
+        if response is http:Response {
             var status = response.statusCode;
-            if (isSuccessStatusCode(status)) {
+            if isSuccessStatusCode(status) {
                 string & readonly responseContentType = response.getContentType();
                 map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
-                if (responseContentType.trim().length() > 1) {
+                if responseContentType.trim().length() > 1 {
                     return {
                         headers: responseHeaders,
                         mediaType: responseContentType,
@@ -120,7 +120,7 @@ public client class HubClient {
                         headers: responseHeaders
                     };
                 }
-            } else if (status == http:STATUS_GONE) {
+            } else if status == http:STATUS_GONE {
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
                 return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
             } else {
@@ -140,16 +140,16 @@ public client class HubClient {
 # + payload - Content-distribution payload
 # + return - Content type of the content-distribution request
 isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
-    if (contentType is string) {
+    if contentType is string {
         return contentType;
     } else {
-        if (payload is string) {
+        if payload is string {
             return mime:TEXT_PLAIN;
-        } else if (payload is xml) {
+        } else if payload is xml {
             return mime:APPLICATION_XML;
-        } else if (payload is map<string>) {
+        } else if payload is map<string> {
             return mime:APPLICATION_FORM_URLENCODED;
-        } else if (payload is map<json>) {
+        } else if payload is map<json> {
             return mime:APPLICATION_JSON;
         } else {
             return mime:APPLICATION_OCTET_STREAM;
@@ -165,15 +165,15 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
 #            function execution
 isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
-    if (payload is byte[]) {
+    if payload is byte[] {
         return check crypto:hmacSha256(payload, keyArr);
-    } else if (payload is string) {
+    } else if payload is string {
         byte[] inputArr = (<string>payload).toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);
-    } else if (payload is xml) {
+    } else if payload is xml {
         byte[] inputArr = (<xml>payload).toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);   
-    } else if (payload is map<string>) {
+    } else if payload is map<string> {
         byte[] inputArr = (<map<string>>payload).toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr); 
     } else {
@@ -209,7 +209,7 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
     map<string|string[]> responseHeaders = {};
     foreach var headerName in subscriberResponse.getHeaderNames() {
         string[] retrievedValue = check subscriberResponse.getHeaders(headerName);
-        if (retrievedValue.length() == 1) {
+        if retrievedValue.length() == 1 {
             responseHeaders[headerName] = retrievedValue[0];
         } else {
             responseHeaders[headerName] = retrievedValue;

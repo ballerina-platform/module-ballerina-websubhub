@@ -34,7 +34,7 @@ public class Listener {
     # + config - Custom `websubhub:ListenerConfiguration` to be provided to the underlying HTTP listener
     # + return - The `websubhub:Listener` or an `error` if the initialization failed
     public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns error? {
-        if (listenTo is int) {
+        if listenTo is int {
             self.httpListener = check new(listenTo, config);
         } else {
             self.httpListener = listenTo;
@@ -54,15 +54,15 @@ public class Listener {
     # + name - The path of the service to be hosted
     # + return - An `error` if an error occurred during the service attaching process or else `()`
     public isolated function attach(Service 'service, string[]|string? name = ()) returns error? {
-        if (self.listenerConfig.secureSocket is ()) {
+        if self.listenerConfig.secureSocket is () {
             log:printWarn("HTTPS is recommended but using HTTP");
         }
 
         string hubUrl = self.retrieveHubUrl(name);
         ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
-        if (configuration is ServiceConfiguration) {
+        if configuration is ServiceConfiguration {
             int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
-            if (configuration?.webHookConfig is ClientConfiguration) {
+            if configuration?.webHookConfig is ClientConfiguration {
                 self.httpService = new('service, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.webHookConfig));
             } else {
                 self.httpService = new('service, hubUrl, leaseSeconds);
@@ -86,9 +86,9 @@ public class Listener {
         
         string concatenatedServicePath = "";
         
-        if (servicePath is string) {
+        if servicePath is string {
             concatenatedServicePath += "/" + <string>servicePath;
-        } else if (servicePath is string[]) {
+        } else if servicePath is string[] {
             foreach var pathSegment in <string[]>servicePath {
                 concatenatedServicePath += "/" + pathSegment;
             }

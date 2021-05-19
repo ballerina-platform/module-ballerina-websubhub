@@ -87,13 +87,13 @@ service class HttpService {
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
                 string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
-                if (publisherHeader is string) {
-                    if (publisherHeader == "publish") {
+                if publisherHeader is string {
+                    if publisherHeader == "publish" {
                         string[] hubMode = queryParams.get(HUB_MODE);
                         string[] hubTopic = queryParams.get(HUB_TOPIC);
                         params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
                         params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
-                    } else if (publisherHeader == "event") {
+                    } else if publisherHeader == "event" {
                         var reqFormParamMap = request.getFormParams();
                         params = reqFormParamMap is map<string> ? reqFormParamMap : {};
                     } else {
@@ -124,7 +124,7 @@ service class HttpService {
         string mode = params[HUB_MODE] ?: "";
         match mode {
             MODE_REGISTER => {
-                if (self.isRegisterAvailable) {
+                if self.isRegisterAvailable {
                     processRegisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
@@ -132,7 +132,7 @@ service class HttpService {
                 respondToRequest(caller, response);
             }
             MODE_DEREGISTER => {
-                if (self.isDeregisterAvailable) {
+                if self.isDeregisterAvailable {
                     processDeregisterRequest(caller, response, headers, <@untainted> params, self.hubService);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
@@ -158,33 +158,33 @@ service class HttpService {
             }
             MODE_PUBLISH => {
                 string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
-                if (topic is ()) {
+                if topic is () {
                     respondToRequest(caller, response);
                     return;
                 }
                 UpdateMessage updateMsg;
-                if (contentType == mime:APPLICATION_FORM_URLENCODED) {
+                if contentType == mime:APPLICATION_FORM_URLENCODED {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: EVENT,
                         contentType: contentType,
                         content: ()
                     };
-                } else if (contentType == mime:APPLICATION_JSON) {
+                } else if contentType == mime:APPLICATION_JSON {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: contentType,
                         content: check request.getJsonPayload()
                     };
-                } else if (contentType == mime:APPLICATION_XML) {
+                } else if contentType == mime:APPLICATION_XML {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,
                         contentType: contentType,
                         content: check request.getXmlPayload()
                     };
-                } else if (contentType == mime:TEXT_PLAIN) {
+                } else if contentType == mime:TEXT_PLAIN {
                     updateMsg = {
                         hubTopic: <string> topic,
                         msgType: PUBLISH,

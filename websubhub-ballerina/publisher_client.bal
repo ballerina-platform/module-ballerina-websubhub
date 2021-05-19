@@ -48,15 +48,15 @@ public client class PublisherClient {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
         http:Response|error registrationResponse = httpClient->post("", request);
-        if (registrationResponse is http:Response) {
+        if registrationResponse is http:Response {
             var result = registrationResponse.getTextPayload();
             string payload = result is string ? result : "";
-            if (registrationResponse.statusCode != http:STATUS_OK) {
+            if registrationResponse.statusCode != http:STATUS_OK {
                 return error TopicRegistrationError("Error occurred during topic registration, Status code : "
                                +  registrationResponse.statusCode.toString() + ", payload: " + payload);
             } else {
                 map<string>? params = getFormData(payload);
-                if (params[HUB_MODE] == "accepted") {
+                if params[HUB_MODE] == "accepted" {
                     TopicRegistrationSuccess successResult = {
                         headers: getHeaders(registrationResponse),
                         body: params
@@ -83,15 +83,15 @@ public client class PublisherClient {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
         http:Response|error deregistrationResponse = httpClient->post("", request);
-        if (deregistrationResponse is http:Response) {
+        if deregistrationResponse is http:Response {
             var result = deregistrationResponse.getTextPayload();
             string payload = result is string ? result : "";
-            if (deregistrationResponse.statusCode != http:STATUS_OK) {
+            if deregistrationResponse.statusCode != http:STATUS_OK {
                 return error TopicDeregistrationError("Error occurred during topic registration, Status code : "
                         +  deregistrationResponse.statusCode.toString() + ", payload: " + payload);
             } else {
                 map<string>? params = getFormData(payload);
-                if (params[HUB_MODE] == "accepted") {
+                if params[HUB_MODE] == "accepted" {
                     TopicDeregistrationSuccess successResult = {
                         headers: getHeaders(deregistrationResponse),
                         body: params
@@ -123,12 +123,12 @@ public client class PublisherClient {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
         string queryParams = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
-        if (payload is map<string>) {
+        if payload is map<string> {
             string reqPayload = "";
             foreach var ['key, value] in payload.entries() {
                 reqPayload = reqPayload + 'key + "=" + value + "&";
             }
-            if (reqPayload != "") {
+            if reqPayload != "" {
                 reqPayload = reqPayload.substring(0, reqPayload.length() - 2);
             }
             request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
@@ -136,22 +136,22 @@ public client class PublisherClient {
         } else {
             request.setPayload(payload);
         }
-        if (contentType is string) {
+        if contentType is string {
             var setContent = request.setContentType(contentType);
-            if (setContent is error) {
+            if setContent is error {
                 return error UpdateMessageError("Invalid content type is set, found " + contentType);
              }
         }
         http:Response|error response = httpClient->post(<@untainted string> ("?" + queryParams), request);
-        if (response is http:Response) {
+        if response is http:Response {
             var result = response.getTextPayload();
             string responsePayload = result is string ? result : "";
-            if (response.statusCode != http:STATUS_OK) {
+            if response.statusCode != http:STATUS_OK {
                 return error UpdateMessageError("Error occurred during event publish update, Status code : "
                 +  response.statusCode.toString() + ", payload: " + responsePayload);
             } else {
                 map<string>? params = getFormData(responsePayload);
-                if (params[HUB_MODE] == "accepted") {
+                if params[HUB_MODE] == "accepted" {
                     Acknowledgement successResult = {
                         headers: getHeaders(response),
                         body: params
@@ -181,15 +181,15 @@ public client class PublisherClient {
         request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
         request.setHeader(BALLERINA_PUBLISH_HEADER, "event");
         http:Response|error response = httpClient->post("/", request);
-        if (response is http:Response) {
+        if response is http:Response {
             var result = response.getTextPayload();
             string payload = result is string ? result : "";
-            if (response.statusCode != http:STATUS_OK) {
+            if response.statusCode != http:STATUS_OK {
                 return error UpdateMessageError("Error occurred during notify update, Status code : "
                 +  response.statusCode.toString() + ", payload: " + payload);
             } else {
                 map<string>? params = getFormData(payload);
-                if (params[HUB_MODE] == "accepted") {
+                if params[HUB_MODE] == "accepted" {
                     Acknowledgement successResult = {
                         headers: getHeaders(response),
                         body: params
@@ -225,7 +225,7 @@ isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @u
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
 
-    if (payload == "") {
+    if payload == "" {
         return parameters;
     }
 
@@ -233,13 +233,13 @@ isolated function getFormData(string payload) returns map<string> {
     int entryIndex = 0;
     while (entryIndex < entries.length()) {
         int? index = entries[entryIndex].indexOf("=");
-        if (index is int && index != -1) {
+        if index is int && index != -1 {
             string name = entries[entryIndex].substring(0, index);
             name = name.trim();
             int size = entries[entryIndex].length();
             string value = entries[entryIndex].substring(index + 1, size);
             value = value.trim();
-            if (value != "") {
+            if value != "" {
                 parameters[name] = value;
             }
         }
@@ -258,7 +258,7 @@ isolated function getHeaders(http:Response response) returns @tainted map<string
     map<string|string[]> headers = {};
     foreach var header in headerNames {
         var responseHeaders = response.getHeaders(header);
-        if (responseHeaders is string[]) {
+        if responseHeaders is string[] {
             headers[header] = responseHeaders.length() == 1 ? responseHeaders[0] : responseHeaders;
         }
         // Not possible to throw header not found
