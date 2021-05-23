@@ -23,43 +23,43 @@ isolated function attachService(Service serviceObj, RequestHandler handlerObj) =
 
 isolated function callRegisterMethod(RequestHandler handlerObj, TopicRegistration msg, http:Headers headers)
 returns TopicRegistrationSuccess|TopicRegistrationError|error = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callDeregisterMethod(RequestHandler handlerObj, TopicDeregistration msg, http:Headers headers)
 returns TopicDeregistrationSuccess|TopicDeregistrationError|error = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnUpdateMethod(RequestHandler handlerObj, UpdateMessage msg, http:Headers headers)
 returns Acknowledgement|UpdateMessageError|error = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnSubscriptionMethod(RequestHandler handlerObj, Subscription msg, http:Headers headers) returns SubscriptionAccepted|
     SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError|InternalSubscriptionError|error = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnSubscriptionValidationMethod(RequestHandler handlerObj, Subscription msg, http:Headers headers)
 returns SubscriptionDeniedError|error? = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnSubscriptionIntentVerifiedMethod(RequestHandler handlerObj, VerifiedSubscription msg, http:Headers headers) returns error? = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnUnsubscriptionMethod(RequestHandler handlerObj, Unsubscription msg, http:Headers headers)
 returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError|error = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnUnsubscriptionValidationMethod(RequestHandler handlerObj, Unsubscription msg, http:Headers headers)
 returns UnsubscriptionDeniedError|error? = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
 
 isolated function callOnUnsubscriptionIntentVerifiedMethod(RequestHandler handlerObj, VerifiedUnsubscription msg, http:Headers headers) returns error? = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
+    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
 } external;
