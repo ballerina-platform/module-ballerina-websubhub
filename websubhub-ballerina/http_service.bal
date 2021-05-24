@@ -16,7 +16,6 @@
 
 import ballerina/http;
 import ballerina/mime;
-import ballerina/jballerina.java;
 
 isolated service class HttpService {
     private final RequestHandler handler;
@@ -40,12 +39,12 @@ isolated service class HttpService {
     # + leaseSeconds - Subscription expiration time for the `hub`
     # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
     # + return - The `websubhub:HttpService` or an `error` if the initialization failed
-    isolated function init(RequestHandler handler, string hubUrl, int leaseSeconds, 
-                                  string[] methodNames, *ClientConfiguration clientConfig) {
+    isolated function init(RequestHandler handler, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.handler = handler;
         self.clientConfig = clientConfig.cloneReadOnly();
         self.hub = hubUrl;
         self.defaultHubLeaseSeconds = leaseSeconds;
+        string[] methodNames = handler.getServiceMethodNames();
         self.isSubscriptionAvailable = isMethodAvailable("onSubscription", methodNames);
         self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
         self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
@@ -195,7 +194,7 @@ isolated service class HttpService {
     }
 }
 
-# Retrieved whether particular remote method is available.
+# Retrieves whether the particular remote method is available in service-object.
 # 
 # + methodName - Name of the required method
 # + methods - All available methods
@@ -203,11 +202,3 @@ isolated service class HttpService {
 isolated function isMethodAvailable(string methodName, string[] methods) returns boolean {
     return methods.indexOf(methodName) is int;
 }
-
-# Retrives the names of the implemented methods in the `websubhub:Service` instance.
-# 
-# + hubService - Current `websubhub:Service` instance
-# + return - All the methods implemented in the `websubhub:Service` as a `string[]`
-isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.RequestHandler"
-} external;

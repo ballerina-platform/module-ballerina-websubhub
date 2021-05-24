@@ -20,10 +20,6 @@ import ballerina/http;
 import ballerina/uuid;
 import ballerina/regex;
 
-# Wrapper class used to execute sevice methods.
-isolated class RequestHandler {
-}
-
 # Processes the `topic` registration request.
 # 
 # + caller - The `http:Caller` reference of the current request
@@ -39,7 +35,7 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
         TopicRegistration msg = {
             topic: topic
         };
-        TopicRegistrationSuccess|TopicRegistrationError|error result = callRegisterMethod(handlerObj, msg, headers);
+        TopicRegistrationSuccess|TopicRegistrationError|error result = handlerObj.callRegisterMethod(msg, headers);
         if (result is TopicRegistrationSuccess) {
             updateSuccessResponse(response, result["body"], result["headers"]);
         } else {
@@ -64,7 +60,7 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
         TopicDeregistration msg = {
             topic: topic
         };
-        TopicDeregistrationSuccess|TopicDeregistrationError|error result = callDeregisterMethod(handlerObj, msg, headers);
+        TopicDeregistrationSuccess|TopicDeregistrationError|error result = handlerObj.callDeregisterMethod(msg, headers);
         if (result is TopicDeregistrationSuccess) {
             updateSuccessResponse(response, result["body"], result["headers"]);
         } else {
@@ -128,8 +124,8 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
         respondToRequest(caller, response);
     } else {
         SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
-        BadSubscriptionError|InternalSubscriptionError|error onSubscriptionResult = callOnSubscriptionMethod(
-                                                                                        handlerObj, message, headers);
+        BadSubscriptionError|InternalSubscriptionError|error onSubscriptionResult = handlerObj.callOnSubscriptionMethod(
+                                                                                        message, headers);
         if (onSubscriptionResult is SubscriptionTemporaryRedirect) {
             http:ListenerError? result = caller->redirect(
                 response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
@@ -166,7 +162,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Reque
                                                      boolean isSubscriptionValidationAvailable, ClientConfiguration config) {
     SubscriptionDeniedError|error? validationResult = ();
     if (isSubscriptionValidationAvailable) {
-        validationResult = callOnSubscriptionValidationMethod(handlerObj, message, headers);
+        validationResult = handlerObj.callOnSubscriptionValidationMethod(message, headers);
     } else {
         if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
@@ -205,7 +201,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Reque
                         hubLeaseSeconds: message.hubLeaseSeconds,
                         hubSecret: message.hubSecret
                     };
-                    error? errorResponse = callOnSubscriptionIntentVerifiedMethod(handlerObj, verifiedMessage, headers);
+                    error? errorResponse = handlerObj.callOnSubscriptionIntentVerifiedMethod(verifiedMessage, headers);
                 }
             }
         }
@@ -252,8 +248,8 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
         respondToRequest(caller, response);
     } else {
         UnsubscriptionAccepted|BadUnsubscriptionError
-            |InternalUnsubscriptionError|error onUnsubscriptionResult = callOnUnsubscriptionMethod(
-                                                                            handlerObj, message, headers);
+            |InternalUnsubscriptionError|error onUnsubscriptionResult = handlerObj.callOnUnsubscriptionMethod(
+                                                                            message, headers);
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
@@ -287,7 +283,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
 
     UnsubscriptionDeniedError|error? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
-        validationResult = callOnUnsubscriptionValidationMethod(handlerObj, message, headers);
+        validationResult = handlerObj.callOnUnsubscriptionValidationMethod(message, headers);
     } else {
         if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error UnsubscriptionDeniedError("Invalid hub.callback param in the request.");
@@ -322,7 +318,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
                         hubTopic: message.hubTopic,
                         hubSecret: message.hubSecret
                     };
-                    error? errorResponse = callOnUnsubscriptionIntentVerifiedMethod(handlerObj, verifiedMessage, headers);
+                    error? errorResponse = handlerObj.callOnUnsubscriptionIntentVerifiedMethod(verifiedMessage, headers);
                 }
             }
         }
@@ -340,7 +336,7 @@ isolated function processPublishRequestAndRespond(http:Caller caller, http:Respo
                                                   http:Headers headers, RequestHandler handlerObj, 
                                                   UpdateMessage updateMsg) {
     
-    Acknowledgement|UpdateMessageError|error updateResult = callOnUpdateMethod(handlerObj, updateMsg, headers);
+    Acknowledgement|UpdateMessageError|error updateResult = handlerObj.callOnUpdateMethod(updateMsg, headers);
 
     response.statusCode = http:STATUS_OK;
     if (updateResult is Acknowledgement) {
