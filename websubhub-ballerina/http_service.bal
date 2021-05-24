@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/mime;
 
 isolated service class HttpService {
-    private final RequestHandler handler;
+    private final HttpToWebsubhubAdaptor adaptor;
     private final readonly & ClientConfiguration clientConfig;
     private final string hub;
     private final int defaultHubLeaseSeconds;
@@ -31,20 +31,21 @@ isolated service class HttpService {
 
     # Initializes the `websubhub:HttpService` endpoint.
     # ```ballerina
-    # websubhub:HttpService httpServiceEp = check new (handler, "https://sample.hub.com", 3600);
+    # websubhub:HttpService httpServiceEp = check new (adaptor, "https://sample.hub.com", 3600);
     # ```
     #
-    # + handler - The `websubhub:RequestHandler` instance which used as a wrapper to execute service methods
+    # + adaptor - The `websubhub:HttpToWebsubhubAdaptor` instance which used as a wrapper to execute service methods
     # + hubUrl       - Hub URL
     # + leaseSeconds - Subscription expiration time for the `hub`
     # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
     # + return - The `websubhub:HttpService` or an `error` if the initialization failed
-    isolated function init(RequestHandler handler, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
-        self.handler = handler;
+    isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
+                           *ClientConfiguration clientConfig) {
+        self.adaptor = adaptor;
         self.clientConfig = clientConfig.cloneReadOnly();
         self.hub = hubUrl;
         self.defaultHubLeaseSeconds = leaseSeconds;
-        string[] methodNames = handler.getServiceMethodNames();
+        string[] methodNames = adaptor.getServiceMethodNames();
         self.isSubscriptionAvailable = isMethodAvailable("onSubscription", methodNames);
         self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
         self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
@@ -108,7 +109,7 @@ isolated service class HttpService {
         match mode {
             MODE_REGISTER => {
                 if self.isRegisterAvailable {
-                    processRegisterRequest(caller, response, headers, <@untainted> params, self.handler);
+                    processRegisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -116,7 +117,7 @@ isolated service class HttpService {
             }
             MODE_DEREGISTER => {
                 if self.isDeregisterAvailable {
-                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.handler);
+                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -125,7 +126,7 @@ isolated service class HttpService {
             MODE_SUBSCRIBE => {
                 processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
                                                      headers, <@untainted> params, 
-                                                     <@untainted> self.handler, 
+                                                     <@untainted> self.adaptor,
                                                      <@untainted> self.isSubscriptionAvailable,
                                                      <@untainted> self.isSubscriptionValidationAvailable, 
                                                      <@untainted> self.hub, 
@@ -134,7 +135,7 @@ isolated service class HttpService {
             }
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
-                                                       headers, <@untainted> params, self.handler, 
+                                                       headers, <@untainted> params, self.adaptor,
                                                        self.isUnsubscriptionAvailable,
                                                        <@untainted> self.isUnsubscriptionValidationAvailable, 
                                                        self.clientConfig);
@@ -182,7 +183,7 @@ isolated service class HttpService {
                         content: check request.getBinaryPayload()
                     };
                 }
-                processPublishRequestAndRespond(caller, response, headers, self.handler, <@untainted> updateMsg);
+                processPublishRequestAndRespond(caller, response, headers, self.adaptor, <@untainted> updateMsg);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;

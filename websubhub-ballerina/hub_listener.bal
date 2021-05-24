@@ -60,16 +60,16 @@ public class Listener {
 
         string hubUrl = self.retrieveHubUrl(name);
         ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
-        RequestHandler handler = check new ('service);
+        HttpToWebsubhubAdaptor adaptor = check new ('service);
         if configuration is ServiceConfiguration {
             int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
             if configuration?.webHookConfig is ClientConfiguration {
-                self.httpService = new(handler, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.webHookConfig));
+                self.httpService = new(adaptor, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.webHookConfig));
             } else {
-                self.httpService = new(handler, hubUrl, leaseSeconds);
+                self.httpService = new(adaptor, hubUrl, leaseSeconds);
             }
         } else {
-            self.httpService = new(handler, hubUrl, self.defaultHubLeaseSeconds);
+            self.httpService = new(adaptor, hubUrl, self.defaultHubLeaseSeconds);
         }
         check self.httpListener.attach(<HttpService> self.httpService, name);
     }
