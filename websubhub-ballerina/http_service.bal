@@ -16,58 +16,42 @@
 
 import ballerina/http;
 import ballerina/mime;
-import ballerina/jballerina.java;
 
-service class HttpService {
-    private Service hubService;
-    private ClientConfiguration clientConfig;
-    private string hub;
-    private int defaultHubLeaseSeconds;
-    private boolean isSubscriptionAvailable = false;
-    private boolean isSubscriptionValidationAvailable = false;
-    private boolean isUnsubscriptionAvailable = false;
-    private boolean isUnsubscriptionValidationAvailable = false;
-    private boolean isRegisterAvailable = false;
-    private boolean isDeregisterAvailable = false;
+isolated service class HttpService {
+    private final HttpToWebsubhubAdaptor adaptor;
+    private final readonly & ClientConfiguration clientConfig;
+    private final string hub;
+    private final int defaultHubLeaseSeconds;
+    private final boolean isSubscriptionAvailable;
+    private final boolean isSubscriptionValidationAvailable;
+    private final boolean isUnsubscriptionAvailable;
+    private final boolean isUnsubscriptionValidationAvailable;
+    private final boolean isRegisterAvailable;
+    private final boolean isDeregisterAvailable;
 
     # Initializes the `websubhub:HttpService` endpoint.
     # ```ballerina
-    # websubhub:HttpService httpServiceEp = check new ('service, "https://sample.hub.com", 3600);
+    # websubhub:HttpService httpServiceEp = check new (adaptor, "https://sample.hub.com", 3600);
     # ```
     #
-    # + hubService   - Current `websubhub:Service` instance
+    # + adaptor - The `websubhub:HttpToWebsubhubAdaptor` instance which used as a wrapper to execute service methods
     # + hubUrl       - Hub URL
     # + leaseSeconds - Subscription expiration time for the `hub`
     # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
     # + return - The `websubhub:HttpService` or an `error` if the initialization failed
-    public isolated function init(Service hubService, string hubUrl, int leaseSeconds, *ClientConfiguration clientConfig) {
-        self.hubService = hubService;
-        self.clientConfig = clientConfig;
+    isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
+                           *ClientConfiguration clientConfig) {
+        self.adaptor = adaptor;
+        self.clientConfig = clientConfig.cloneReadOnly();
         self.hub = hubUrl;
         self.defaultHubLeaseSeconds = leaseSeconds;
-        string[] methodNames = getServiceMethodNames(hubService);
-        foreach var methodName in methodNames {
-            match methodName {
-                "onSubscription" => {
-                    self.isSubscriptionAvailable = true;  
-                }
-                "onSubscriptionValidation" => {
-                    self.isSubscriptionValidationAvailable = true;
-                }
-                "onUnsubscription" => {
-                    self.isUnsubscriptionAvailable = true;
-                }
-                "onUnsubscriptionValidation" => {
-                    self.isUnsubscriptionValidationAvailable = true;
-                }
-                "onRegisterTopic" => {
-                    self.isRegisterAvailable = true;
-                }
-                "onDeregisterTopic" => {
-                    self.isDeregisterAvailable = true;
-                }
-            }
-        }
+        string[] methodNames = adaptor.getServiceMethodNames();
+        self.isSubscriptionAvailable = isMethodAvailable("onSubscription", methodNames);
+        self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
+        self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
+        self.isUnsubscriptionValidationAvailable = isMethodAvailable("onUnsubscriptionValidation", methodNames);
+        self.isRegisterAvailable = isMethodAvailable("onRegisterTopic", methodNames);
+        self.isDeregisterAvailable = isMethodAvailable("onDeregisterTopic", methodNames);
     }
 
     # Receives HTTP POST requests.
@@ -125,7 +109,7 @@ service class HttpService {
         match mode {
             MODE_REGISTER => {
                 if self.isRegisterAvailable {
-                    processRegisterRequest(caller, response, headers, <@untainted> params, self.hubService);
+                    processRegisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -133,7 +117,7 @@ service class HttpService {
             }
             MODE_DEREGISTER => {
                 if self.isDeregisterAvailable {
-                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.hubService);
+                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -142,7 +126,7 @@ service class HttpService {
             MODE_SUBSCRIBE => {
                 processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
                                                      headers, <@untainted> params, 
-                                                     <@untainted> self.hubService, 
+                                                     <@untainted> self.adaptor,
                                                      <@untainted> self.isSubscriptionAvailable,
                                                      <@untainted> self.isSubscriptionValidationAvailable, 
                                                      <@untainted> self.hub, 
@@ -151,7 +135,7 @@ service class HttpService {
             }
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
-                                                       headers, <@untainted> params, self.hubService, 
+                                                       headers, <@untainted> params, self.adaptor,
                                                        self.isUnsubscriptionAvailable,
                                                        <@untainted> self.isUnsubscriptionValidationAvailable, 
                                                        self.clientConfig);
@@ -199,7 +183,7 @@ service class HttpService {
                         content: check request.getBinaryPayload()
                     };
                 }
-                processPublishRequestAndRespond(caller, response, headers, self.hubService, <@untainted> updateMsg);
+                processPublishRequestAndRespond(caller, response, headers, self.adaptor, <@untainted> updateMsg);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
@@ -211,10 +195,11 @@ service class HttpService {
     }
 }
 
-# Retrives the names of the implemented methods in the `websubhub:Service` instance.
+# Retrieves whether the particular remote method is available in service-object.
 # 
-# + hubService - Current `websubhub:Service` instance
-# + return - All the methods implemented in the `websubhub:Service` as a `string[]`
-isolated function getServiceMethodNames(Service hubService) returns string[] = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.HubNativeOperationHandler"
-} external;
+# + methodName - Name of the required method
+# + methods - All available methods
+# + return - `true` if method available or else `false`
+isolated function isMethodAvailable(string methodName, string[] methods) returns boolean {
+    return methods.indexOf(methodName) is int;
+}

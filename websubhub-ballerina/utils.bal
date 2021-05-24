@@ -26,16 +26,16 @@ import ballerina/regex;
 # + response - The `http:Response`, which should be returned 
 # + headers - The `http:Headers` received from the original `http:Request`
 # + params - Query parameters retrieved from the `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
 isolated function processRegisterRequest(http:Caller caller, http:Response response,
                                          http:Headers headers, map<string> params, 
-                                         Service hubService) {
+                                         HttpToWebsubhubAdaptor adaptor) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicRegistration msg = {
             topic: topic
         };
-        TopicRegistrationSuccess|TopicRegistrationError|error result = callRegisterMethod(hubService, msg, headers);
+        TopicRegistrationSuccess|TopicRegistrationError|error result = adaptor.callRegisterMethod(msg, headers);
         if (result is TopicRegistrationSuccess) {
             updateSuccessResponse(response, result["body"], result["headers"]);
         } else {
@@ -51,16 +51,16 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
 # + response - The `http:Response`, which should be returned 
 # + headers - The `http:Headers` received from the original `http:Request`
 # + params - Query parameters retrieved from the `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
 isolated function processDeregisterRequest(http:Caller caller, http:Response response,
                                            http:Headers headers, map<string> params, 
-                                           Service hubService) {
+                                           HttpToWebsubhubAdaptor adaptor) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicDeregistration msg = {
             topic: topic
         };
-        TopicDeregistrationSuccess|TopicDeregistrationError|error result = callDeregisterMethod(hubService, msg, headers);
+        TopicDeregistrationSuccess|TopicDeregistrationError|error result = adaptor.callDeregisterMethod(msg, headers);
         if (result is TopicDeregistrationSuccess) {
             updateSuccessResponse(response, result["body"], result["headers"]);
         } else {
@@ -77,14 +77,14 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
 # + response - The `http:Response`, which should be returned 
 # + headers - The `http:Headers` received from the original `http:Request`
 # + params - Query parameters retrieved from the `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
 # + isAvailable - Flag to notify whether an `onSubscription` is implemented in the `websubhub:Service`
 # + isSubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
 # + hubUrl - Public URL in which the `hub` is running
 # + defaultHubLeaseSeconds - The default subscription active timeout for the `hub`
 # + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
-                                                       http:Headers headers, map<string> params, Service hubService,
+                                                       http:Headers headers, map<string> params, HttpToWebsubhubAdaptor adaptor,
                                                        boolean isAvailable, boolean isSubscriptionValidationAvailable, 
                                                        string hubUrl, int defaultHubLeaseSeconds, ClientConfiguration config) {
 
@@ -124,8 +124,8 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
         respondToRequest(caller, response);
     } else {
         SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
-        BadSubscriptionError|InternalSubscriptionError|error onSubscriptionResult = callOnSubscriptionMethod(
-                                                                                        hubService, message, headers);
+        BadSubscriptionError|InternalSubscriptionError|error onSubscriptionResult = adaptor.callOnSubscriptionMethod(
+                                                                                        message, headers);
         if (onSubscriptionResult is SubscriptionTemporaryRedirect) {
             http:ListenerError? result = caller->redirect(
                 response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
@@ -136,7 +136,7 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
         } else if (onSubscriptionResult is SubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            proceedToValidationAndVerification(headers, hubService, message, isSubscriptionValidationAvailable, config);
+            proceedToValidationAndVerification(headers, adaptor, message, isSubscriptionValidationAvailable, config);
         } else if (onSubscriptionResult is BadSubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onSubscriptionResult.detail();
@@ -154,15 +154,15 @@ isolated function processSubscriptionRequestAndRespond(http:Request request, htt
 # Processes the subscription validation request.
 # 
 # + headers - The `http:Headers` received from the original `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
 # + message - Subscriber details for the subscription request
 # + isSubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
 # + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-isolated function proceedToValidationAndVerification(http:Headers headers, Service hubService, Subscription message,
+isolated function proceedToValidationAndVerification(http:Headers headers, HttpToWebsubhubAdaptor adaptor, Subscription message,
                                                      boolean isSubscriptionValidationAvailable, ClientConfiguration config) {
     SubscriptionDeniedError|error? validationResult = ();
     if (isSubscriptionValidationAvailable) {
-        validationResult = callOnSubscriptionValidationMethod(hubService, message, headers);
+        validationResult = adaptor.callOnSubscriptionValidationMethod(message, headers);
     } else {
         if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
@@ -201,7 +201,7 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
                         hubLeaseSeconds: message.hubLeaseSeconds,
                         hubSecret: message.hubSecret
                     };
-                    error? errorResponse = callOnSubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
+                    error? errorResponse = adaptor.callOnSubscriptionIntentVerifiedMethod(verifiedMessage, headers);
                 }
             }
         }
@@ -215,12 +215,12 @@ isolated function proceedToValidationAndVerification(http:Headers headers, Servi
 # + response - The `http:Response`, which should be returned 
 # + headers - The `http:Headers` received from the original `http:Request`
 # + params - Query parameters retrieved from the `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
 # + isUnsubscriptionAvailable - Flag to notify whether an `onUnsubscription` is implemented in the `websubhub:Service`
 # + isUnsubscriptionValidationAvailable - Flag to notify whether an `onUnsubscriptionValidation` is implemented in the `websubhub:Service`
 # + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
-                                                         http:Headers headers, map<string> params, Service hubService,
+                                                         http:Headers headers, map<string> params, HttpToWebsubhubAdaptor adaptor,
                                                          boolean isUnsubscriptionAvailable, boolean isUnsubscriptionValidationAvailable, 
                                                          ClientConfiguration config) {
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
@@ -248,13 +248,13 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
         respondToRequest(caller, response);
     } else {
         UnsubscriptionAccepted|BadUnsubscriptionError
-            |InternalUnsubscriptionError|error onUnsubscriptionResult = callOnUnsubscriptionMethod(
-                                                                            hubService, message, headers);
+            |InternalUnsubscriptionError|error onUnsubscriptionResult = adaptor.callOnUnsubscriptionMethod(
+                                                                            message, headers);
         if (onUnsubscriptionResult is UnsubscriptionAccepted) {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
             proceedToUnsubscriptionVerification(
-                request, headers, hubService, message, isUnsubscriptionValidationAvailable, config);
+                request, headers, adaptor, message, isUnsubscriptionValidationAvailable, config);
         } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
             response.statusCode = http:STATUS_BAD_REQUEST;
             var errorDetails = onUnsubscriptionResult.detail();
@@ -273,17 +273,17 @@ isolated function processUnsubscriptionRequestAndRespond(http:Request request, h
 #
 # + initialRequest - Original `http:Request` instance
 # + headers - The `http:Headers` received from the original `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor`
 # + message - Subscriber details for the unsubscription request
 # + isUnsubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
 # + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, Service hubService, 
+isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, HttpToWebsubhubAdaptor adaptor,
                                                       Unsubscription message, boolean isUnsubscriptionValidationAvailable, 
                                                       ClientConfiguration config) {
 
     UnsubscriptionDeniedError|error? validationResult = ();
     if (isUnsubscriptionValidationAvailable) {
-        validationResult = callOnUnsubscriptionValidationMethod(hubService, message, headers);
+        validationResult = adaptor.callOnUnsubscriptionValidationMethod(message, headers);
     } else {
         if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
             validationResult = error UnsubscriptionDeniedError("Invalid hub.callback param in the request.");
@@ -318,7 +318,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
                         hubTopic: message.hubTopic,
                         hubSecret: message.hubSecret
                     };
-                    error? errorResponse = callOnUnsubscriptionIntentVerifiedMethod(hubService, verifiedMessage, headers);
+                    error? errorResponse = adaptor.callOnUnsubscriptionIntentVerifiedMethod(verifiedMessage, headers);
                 }
             }
         }
@@ -330,13 +330,13 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
 # + caller - The `http:Caller` reference for the current request
 # + response - The `http:Response`, which should be returned 
 # + headers - The `http:Headers` received from the original `http:Request`
-# + hubService - Current `websubhub:Service`
+# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor`
 # + updateMsg - Content update message
 isolated function processPublishRequestAndRespond(http:Caller caller, http:Response response,
-                                                  http:Headers headers, Service hubService, 
+                                                  http:Headers headers, HttpToWebsubhubAdaptor adaptor,
                                                   UpdateMessage updateMsg) {
     
-    Acknowledgement|UpdateMessageError|error updateResult = callOnUpdateMethod(hubService, updateMsg, headers);
+    Acknowledgement|UpdateMessageError|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
 
     response.statusCode = http:STATUS_OK;
     if (updateResult is Acknowledgement) {

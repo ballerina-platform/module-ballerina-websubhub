@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0-beta.1] - 2021-05-06
 
+### Changed
+- [Make HTTP Service Class Isolated in WebSubHub](https://github.com/ballerina-platform/ballerina-standard-library/issues/1390)
+
 ### Fixed
 - [Fix the listener initialization with inline configs compiler plugin error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1304)
 - [Include Auth Configuration to WebSubHub PublisherClient configuration](https://github.com/ballerina-platform/ballerina-standard-library/issues/1324)
