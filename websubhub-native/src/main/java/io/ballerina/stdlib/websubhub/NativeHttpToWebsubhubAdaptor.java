@@ -40,7 +40,7 @@ import static io.ballerina.runtime.api.utils.StringUtils.fromString;
 /**
  * {@code RequestHandler} is a wrapper object used for service method execution.
  */
-public class RequestHandler {
+public class NativeHttpToWebsubhubAdaptor {
     private static final String SERVICE_OBJECT = "WEBSUBHUB_SERVICE_OBJECT";
 
     public static void externInit(BObject handlerObj, BObject serviceObj) {
