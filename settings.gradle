@@ -17,7 +17,7 @@ include ':websubhub-native'
 include ':websubhub-ballerina'
 include ':websubhub-compiler-plugin'
 include ':websubhub-compiler-plugin-test'
-include ':websubhub-examples'
+// include ':websubhub-examples'
 
 gradleEnterprise {
     buildScan {
