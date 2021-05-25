@@ -1,0 +1,7 @@
+[package]
+org = "ayeshalm"
+name = "kafka_hub_service"
+version = "0.1.0"
+
+[build-options]
+observabilityIncluded = true
