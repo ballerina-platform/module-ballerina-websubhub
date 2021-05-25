@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0-beta.1] - 2021-05-06
 
+### Added
+- [Include Kafka based WebSubHub Sample](https://github.com/ballerina-platform/ballerina-standard-library/issues/992)
+
 ### Changed
 - [Make HTTP Service Class Isolated in WebSubHub](https://github.com/ballerina-platform/ballerina-standard-library/issues/1390)
 
