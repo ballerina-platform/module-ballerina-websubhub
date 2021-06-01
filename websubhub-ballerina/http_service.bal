@@ -142,27 +142,36 @@ isolated service class HttpService {
             }
             MODE_PUBLISH => {
                 string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-                string ballerinaPublishEvent = check request.getHeader(BALLERINA_PUBLISH_HEADER);
+                string|http:HeaderNotFoundError ballerinaPublishEvent = request.getHeader(BALLERINA_PUBLISH_HEADER);
                 if topic is () {
                     respondToRequest(caller, response);
                     return;
                 }
                 UpdateMessage updateMsg;
                 if contentType == mime:APPLICATION_FORM_URLENCODED {
-                    if (ballerinaPublishEvent == "publish") {
+                    if (ballerinaPublishEvent is string) {
+                        if (ballerinaPublishEvent == "publish") {
+                            updateMsg = {
+                                hubTopic: <string> topic,
+                                msgType: PUBLISH,
+                                contentType: contentType,
+                                content: check request.getFormParams()
+                            };
+                        } else {
+                            updateMsg = {
+                                hubTopic: <string> topic,
+                                msgType: EVENT,
+                                contentType: contentType,
+                                content: ()
+                            };
+                        }
+                    } else {
                         updateMsg = {
                             hubTopic: <string> topic,
                             msgType: PUBLISH,
                             contentType: contentType,
-                            content: check request.getFormParams()
-                        };
-                    } else {
-                        updateMsg = {
-                            hubTopic: <string> topic,
-                            msgType: EVENT,
-                            contentType: contentType,
-                            content: ()
-                        };
+                            content: check request.getTextPayload()
+                        };  
                     }
                 } else if contentType == mime:APPLICATION_JSON {
                     updateMsg = {
