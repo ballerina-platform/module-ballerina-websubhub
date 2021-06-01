@@ -105,28 +105,27 @@ public client class HubClient {
         string servicePath = getServicePath(self.callback, contentType, queryString);
         http:Response|error response = self.httpClient->post(servicePath, request);
         if response is http:Response {
-            var status = response.statusCode;
-            if isSuccessStatusCode(status) {
-                string & readonly responseContentType = response.getContentType();
-                map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
-                if responseContentType.trim().length() > 1 {
-                    return {
-                        headers: responseHeaders,
-                        mediaType: responseContentType,
-                        body: check retrieveResponseBody(response, responseContentType)
-                    };
-                } else {
-                    return {
-                        headers: responseHeaders
-                    };
-                }
-            } else if status == http:STATUS_GONE {
+            string & readonly responseContentType = response.getContentType();
+            map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
+            if responseContentType.trim().length() > 1 {
+                return {
+                    headers: responseHeaders,
+                    mediaType: responseContentType,
+                    body: check retrieveResponseBody(response, responseContentType)
+                };
+            } else {
+                return {
+                    headers: responseHeaders
+                };
+            }
+        } else if (response is http:ClientRequestError) {
+            int status = response.detail().statusCode;
+            if status == http:STATUS_GONE {
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
                 return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
             } else {
-                var result = response.getTextPayload();
-                string textPayload = result is string ? result : "";
-                return error ContentDeliveryError("Error occurred distributing updated content: " + textPayload);
+                string result = <string> response.detail().body;
+                return error ContentDeliveryError("Error occurred distributing updated content: " + result);
             }
         } else {
             return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");

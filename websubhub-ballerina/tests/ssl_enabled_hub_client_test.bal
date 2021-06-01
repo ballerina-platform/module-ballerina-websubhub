@@ -107,7 +107,7 @@ function testByteArrayContentDeliveryWithSsl() returns @tainted error? {
 function testSubscriptionDeletedWithSsl() returns @tainted error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/deleted");
 
-    HubClient hubClientEP = checkpanic new(subscriptionMsg, hubClientSslConfig);
+    HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     var expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
