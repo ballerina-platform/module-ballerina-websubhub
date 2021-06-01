@@ -123,12 +123,17 @@ service /websubhub on functionWithArgumentsListener {
 
 @test:Config {
 }
-function testFailurePost() returns @tainted error? {
+function testFailurePost() {
     http:Request request = new;
     request.setTextPayload("hub.mode=register123&hub.topic=test", "application/x-www-form-urlencoded");
-    http:Response response = check httpClient->post("/", request);
-    test:assertEquals(response.statusCode, 400);
-    test:assertEquals(response.getTextPayload(), "The request does not include valid `hub.mode` form param.");
+    http:Response|error response = httpClient->post("/", request);
+    if (response is http:ClientRequestError) {
+        test:assertEquals(response.detail().statusCode, 400, msg = "Found unexpected output");
+        string payload = <string> response.detail().body;
+        test:assertEquals(payload, "The request does not include valid `hub.mode` form param.");
+    } else {
+        test:assertFail("Found unexpected output");
+    }
 }
 
 @test:Config {
@@ -177,12 +182,16 @@ function testDeregistrationFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testSubscriptionFailure() returns @tainted error? {
+function testSubscriptionFailure() {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
-    http:Response response = check httpClient->post("/", request);
-    test:assertEquals(response.statusCode, 400);
+    http:Response|error response = httpClient->post("/", request);
+    if (response is http:ClientRequestError) {
+        test:assertEquals(response.detail().statusCode, 400, msg = "Found unexpected output");
+    } else {
+        test:assertFail("Found unexpected output");
+    }
 }
 
 @test:Config {
@@ -218,13 +227,16 @@ function testSubscriptionWithAdditionalParams() returns @tainted error? {
 
 @test:Config {
 }
-function testUnsubscriptionFailure() returns @tainted error? {
+function testUnsubscriptionFailure() {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
-
-    http:Response response = check httpClient->post("/", request);
-    test:assertEquals(response.statusCode, 400);
+    http:Response|error response = httpClient->post("/", request);
+    if (response is http:ClientRequestError) {
+        test:assertEquals(response.detail().statusCode, 400);
+    } else {
+        test:assertFail("Found unexpected output");
+    }
 }
 
 @test:Config {
