@@ -71,17 +71,12 @@ service /websubhub on hubWithErrorReturnTypesListener {
 
 @test:Config {
 }
-function testFailurePostWithErrorReturnTypes() {
+function testFailurePostWithErrorReturnTypes() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register123&hub.topic=test", "application/x-www-form-urlencoded");
-    http:Response|error response = hubWithErrorReturnTypesClient->post("/", request);
-    if (response is http:ClientRequestError) {
-        test:assertEquals(response.detail().statusCode, 400, msg = "Found unexpected output");
-        string payload = <string> response.detail().body;
-        test:assertEquals(payload, "The request does not include valid `hub.mode` form param.");
-    } else {
-        test:assertFail("Found unexpected output");
-    }
+    http:Response response = check hubWithErrorReturnTypesClient->post("/", request);
+    test:assertEquals(response.statusCode, 400);
+    test:assertEquals(response.getTextPayload(), "The request does not include valid `hub.mode` form param.");
 }
 
 @test:Config {
@@ -108,16 +103,12 @@ function testDeregistrationFailureWithErrorReturnTypes() returns @tainted error?
 
 @test:Config {
 }
-function testSubscriptionFailureWithErrorReturnTypes() {
+function testSubscriptionFailureWithErrorReturnTypes() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
-    http:Response|error response = hubWithErrorReturnTypesClient->post("/", request);
-    if (response is http:RemoteServerError) {
-        test:assertEquals(response.detail().statusCode, 500);
-    } else {
-        test:assertFail("Found unexpected output");
-    }
+    http:Response response = check hubWithErrorReturnTypesClient->post("/", request);
+    test:assertEquals(response.statusCode, 500);
 }
 
 @test:Config {
@@ -126,12 +117,8 @@ function testUnsubscriptionFailureWithErrorReturnTypes() returns @tainted error?
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
-    http:Response|error response = hubWithErrorReturnTypesClient->post("/", request);
-    if (response is http:RemoteServerError) {
-        test:assertEquals(response.detail().statusCode, 500);
-    } else {
-        test:assertFail("Found unexpected output");
-    }
+    http:Response response = check hubWithErrorReturnTypesClient->post("/", request);
+    test:assertEquals(response.statusCode, 500);
 }
 
 @test:Config {
