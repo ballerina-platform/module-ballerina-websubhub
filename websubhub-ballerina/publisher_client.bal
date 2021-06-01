@@ -51,24 +51,25 @@ public client class PublisherClient {
         if registrationResponse is http:Response {
             var result = registrationResponse.getTextPayload();
             string payload = result is string ? result : "";
-            if registrationResponse.statusCode != http:STATUS_OK {
-                return error TopicRegistrationError("Error occurred during topic registration, Status code : "
-                               +  registrationResponse.statusCode.toString() + ", payload: " + payload);
+            map<string>? params = getFormData(payload);
+            if params[HUB_MODE] == "accepted" {
+                TopicRegistrationSuccess successResult = {
+                    headers: getHeaders(registrationResponse),
+                    body: params
+                };
+                return successResult;
             } else {
-                map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == "accepted" {
-                    TopicRegistrationSuccess successResult = {
-                        headers: getHeaders(registrationResponse),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params["hub.reason"];
-                    return error TopicRegistrationError(failureReason is () ? "" : <string> failureReason);
-                }
+                string? failureReason = params["hub.reason"];
+                return error TopicRegistrationError(failureReason is () ? "" : <string> failureReason);
             }
         } else {
-            return error TopicRegistrationError("Error sending topic registration request: " + (<error>registrationResponse).message());
+            string message = "";
+            if (registrationResponse is http:ApplicationResponseError) {
+                message = <string>registrationResponse.detail().body;
+            } else {
+                message = registrationResponse.message();
+            }
+            return error TopicRegistrationError("Error sending topic registration request: " + message);
         }
     }
 
@@ -86,25 +87,26 @@ public client class PublisherClient {
         if deregistrationResponse is http:Response {
             var result = deregistrationResponse.getTextPayload();
             string payload = result is string ? result : "";
-            if deregistrationResponse.statusCode != http:STATUS_OK {
-                return error TopicDeregistrationError("Error occurred during topic registration, Status code : "
-                        +  deregistrationResponse.statusCode.toString() + ", payload: " + payload);
+            map<string>? params = getFormData(payload);
+            if params[HUB_MODE] == "accepted" {
+                TopicDeregistrationSuccess successResult = {
+                    headers: getHeaders(deregistrationResponse),
+                    body: params
+                };
+                return successResult;
             } else {
-                map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == "accepted" {
-                    TopicDeregistrationSuccess successResult = {
-                        headers: getHeaders(deregistrationResponse),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params["hub.reason"];
-                    return error TopicDeregistrationError(failureReason is () ? "" : <string> failureReason);
-                }
+                string? failureReason = params["hub.reason"];
+                return error TopicDeregistrationError(failureReason is () ? "" : <string> failureReason);
             }
         } else {
+            string message = "";
+            if (deregistrationResponse is http:ApplicationResponseError) {
+                message = <string>deregistrationResponse.detail().body;
+            } else {
+                message = deregistrationResponse.message();
+            }
             return error TopicDeregistrationError("Error sending topic deregistration request: "
-                                    + (<error>deregistrationResponse).message());
+                                    + message);
         }
     }
 
@@ -146,24 +148,24 @@ public client class PublisherClient {
         if response is http:Response {
             var result = response.getTextPayload();
             string responsePayload = result is string ? result : "";
-            if response.statusCode != http:STATUS_OK {
-                return error UpdateMessageError("Error occurred during event publish update, Status code : "
-                +  response.statusCode.toString() + ", payload: " + responsePayload);
+            map<string>? params = getFormData(responsePayload);
+            if params[HUB_MODE] == "accepted" {
+                Acknowledgement successResult = {
+                    headers: getHeaders(response),
+                    body: params
+                };
+                return successResult;
             } else {
-                map<string>? params = getFormData(responsePayload);
-                if params[HUB_MODE] == "accepted" {
-                    Acknowledgement successResult = {
-                        headers: getHeaders(response),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params["hub.reason"];
-                    return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
-                }
+                string? failureReason = params["hub.reason"];
+                return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
             }
         } else {
-            return error UpdateMessageError("Publish failed for topic [" + topic + "]");
+            if (response is http:ApplicationResponseError) {
+                return error UpdateMessageError("Error occurred during event publish update, Status code : "
+                +  response.detail().statusCode.toString() + ", payload: " + <string>response.detail().body);
+            } else {
+                return error UpdateMessageError("Publish failed for topic [" + topic + "]");
+            }
         }
     }
 
@@ -184,24 +186,24 @@ public client class PublisherClient {
         if response is http:Response {
             var result = response.getTextPayload();
             string payload = result is string ? result : "";
-            if response.statusCode != http:STATUS_OK {
-                return error UpdateMessageError("Error occurred during notify update, Status code : "
-                +  response.statusCode.toString() + ", payload: " + payload);
+            map<string>? params = getFormData(payload);
+            if params[HUB_MODE] == "accepted" {
+                Acknowledgement successResult = {
+                    headers: getHeaders(response),
+                    body: params
+                };
+                return successResult;
             } else {
-                map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == "accepted" {
-                    Acknowledgement successResult = {
-                        headers: getHeaders(response),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params["hub.reason"];
-                    return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
-                }
+                string? failureReason = params["hub.reason"];
+                return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
             }
         } else {
-            return error UpdateMessageError("Update availability notification failed for topic [" + topic + "]");
+            if (response is http:ApplicationResponseError) {
+                return error UpdateMessageError("Error occurred during notify update, Status code : "
+                +  response.detail().statusCode.toString() + ", payload: " + <string>response.detail().body);
+            } else {
+                return error UpdateMessageError("Update availability notification failed for topic [" + topic + "]");
+            }
         }
     }
 }
