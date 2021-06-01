@@ -103,7 +103,6 @@ public client class HubClient {
             request.setHeader(X_HUB_SIGNATURE, string`${SHA256_HMAC}=${hash.toBase16()}`);
         }
 
-        // string servicePath = getServicePath(self.callback, contentType, queryString);
         http:Response|error response = self.httpClient->post("/", request);
         if response is http:Response {
             int status = response.statusCode;
