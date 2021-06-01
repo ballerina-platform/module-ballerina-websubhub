@@ -18,7 +18,6 @@ import ballerina/http;
 import ballerina/mime;
 import ballerina/crypto;
 import ballerina/lang.'string as strings;
-import ballerina/io;
 
 # HTTP Based client for WebSub content publishing to subscribers
 public client class HubClient {
@@ -71,9 +70,7 @@ public client class HubClient {
         string queryString = "";
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
-                io:println("Received URL Encoded content - before", msg);
                 map<string> messageBody = <map<string>> msg.content;
-                io:println("Received URL Encoded content - after", msg);
                 queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
                 request.setTextPayload(queryString, mime:APPLICATION_FORM_URLENCODED);
             }
@@ -110,9 +107,7 @@ public client class HubClient {
         http:Response|error response = self.httpClient->post("/", request);
         if response is http:Response {
             int status = response.statusCode;
-            io:println("Response status-code ", status);
             if isSuccessStatusCode(status) {
-                io:println("Received a successfull response ");
                 string & readonly responseContentType = response.getContentType();
                 map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
                 if responseContentType.trim().length() > 1 {
@@ -127,17 +122,14 @@ public client class HubClient {
                     };
                 }
             } else if status == http:STATUS_GONE {
-                io:println("Received HTTP GONE response");
                 // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
                 return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
             } else {
-                io:println("Received a another HTTP error");
                 var result = response.getTextPayload();
                 string textPayload = result is string ? result : "";
                 return error ContentDeliveryError("Error occurred distributing updated content: " + textPayload);
             }
         } else {
-            io:println("Execution error occurred while distributing content ", response.message());
             return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");
         }
     }
