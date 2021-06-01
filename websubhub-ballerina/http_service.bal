@@ -141,19 +141,38 @@ isolated service class HttpService {
                                                        self.clientConfig);
             }
             MODE_PUBLISH => {
-                string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response); 
+                string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
+                string|http:HeaderNotFoundError ballerinaPublishEvent = request.getHeader(BALLERINA_PUBLISH_HEADER);
                 if topic is () {
                     respondToRequest(caller, response);
                     return;
                 }
                 UpdateMessage updateMsg;
                 if contentType == mime:APPLICATION_FORM_URLENCODED {
-                    updateMsg = {
-                        hubTopic: <string> topic,
-                        msgType: EVENT,
-                        contentType: contentType,
-                        content: ()
-                    };
+                    if (ballerinaPublishEvent is string) {
+                        if (ballerinaPublishEvent == "publish") {
+                            updateMsg = {
+                                hubTopic: <string> topic,
+                                msgType: PUBLISH,
+                                contentType: contentType,
+                                content: check request.getFormParams()
+                            };
+                        } else {
+                            updateMsg = {
+                                hubTopic: <string> topic,
+                                msgType: EVENT,
+                                contentType: contentType,
+                                content: ()
+                            };
+                        }
+                    } else {
+                        updateMsg = {
+                            hubTopic: <string> topic,
+                            msgType: PUBLISH,
+                            contentType: contentType,
+                            content: check request.getTextPayload()
+                        };  
+                    }
                 } else if contentType == mime:APPLICATION_JSON {
                     updateMsg = {
                         hubTopic: <string> topic,

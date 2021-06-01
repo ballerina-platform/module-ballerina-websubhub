@@ -72,6 +72,7 @@ public client class HubClient {
             mime:APPLICATION_FORM_URLENCODED => {
                 map<string> messageBody = <map<string>> msg.content;
                 queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
+                request.setTextPayload(queryString, mime:APPLICATION_FORM_URLENCODED);
             }
             _ => {
                 request.setPayload(msg.content);
@@ -102,10 +103,9 @@ public client class HubClient {
             request.setHeader(X_HUB_SIGNATURE, string`${SHA256_HMAC}=${hash.toBase16()}`);
         }
 
-        string servicePath = getServicePath(self.callback, contentType, queryString);
-        http:Response|error response = self.httpClient->post(servicePath, request);
+        http:Response|error response = self.httpClient->post("/", request);
         if response is http:Response {
-            var status = response.statusCode;
+            int status = response.statusCode;
             if isSuccessStatusCode(status) {
                 string & readonly responseContentType = response.getContentType();
                 map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
@@ -113,7 +113,7 @@ public client class HubClient {
                     return {
                         headers: responseHeaders,
                         mediaType: responseContentType,
-                        body: check retrieveResponseBody(response, responseContentType)
+                        body: retrieveResponseBody(response, responseContentType)
                     };
                 } else {
                     return {
@@ -223,26 +223,40 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
 # + subscriberResponse - The `http:Response` received for content delivery
 # + contentType - Content type for the received response
 # + return - Response body of the `http:Response` or an `error` if there is any exception in the execution
-isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>|error {
+isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>? {
+    string|byte[]|json|xml|map<string>? responseBody = ();
     match contentType {
         mime:APPLICATION_JSON => {
-            return check subscriberResponse.getJsonPayload();
+            var content = subscriberResponse.getJsonPayload();
+            if (content is json) {
+                responseBody = content;
+            }
         }
         mime:APPLICATION_XML => {
-            return check subscriberResponse.getXmlPayload(); 
+            var content = subscriberResponse.getXmlPayload();
+            if (content is xml) {
+                responseBody = content;
+            }
         }
-        mime:TEXT_PLAIN => {
-            return check subscriberResponse.getTextPayload();             
+        mime:TEXT_PLAIN => {   
+            var content = subscriberResponse.getTextPayload();
+            if (content is string) {
+                responseBody = content;
+            }         
         }
         mime:APPLICATION_OCTET_STREAM => {
-            return check subscriberResponse.getBinaryPayload();
+            var content = subscriberResponse.getBinaryPayload();
+            if (content is byte[]) {
+                responseBody = content;
+            }  
         }
         mime:APPLICATION_FORM_URLENCODED => {
-            string payload = check subscriberResponse.getTextPayload();
-            return retrieveResponseBodyForFormUrlEncodedMessage(payload);
+            var content = subscriberResponse.getTextPayload();
+            if (content is string) {
+                responseBody = retrieveResponseBodyForFormUrlEncodedMessage(content);
+            } 
         }
-        _ => {
-            return error ContentDeliveryError(string`Unrecognized content-type [${contentType}] found`);
-        }
+        _ => {}
     }
+    return responseBody;
 }

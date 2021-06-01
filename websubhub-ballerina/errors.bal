@@ -17,6 +17,9 @@
 # Represents a websubhub distinct error.
 public type Error distinct error<CommonResponse>;
 
+# Represents a websubhub service execution error.
+public type ServiceExecutionError distinct Error;
+
 # Error type representing the errors in the topic registration action.
 public type TopicRegistrationError distinct Error;
 
