@@ -19,6 +19,6 @@ public function main() returns error? {
         }
     );
     json params = { event: "event"};
-    websubhub:Acknowledgement|websubhub:UpdateMessageError response = websubHubClientEP->publishUpdate("test", params);
+    var response = websubHubClientEP->publishUpdate("test", params);
     io:println("Receieved content-publish result : ", response);
 }

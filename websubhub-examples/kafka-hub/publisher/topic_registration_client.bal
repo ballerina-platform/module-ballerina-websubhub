@@ -18,6 +18,6 @@ public function main() returns error? {
             }
         }
     );
-    websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError registrationResponse = websubHubClientEP->registerTopic("test");
+    var registrationResponse = websubHubClientEP->registerTopic("test");
     io:println("Receieved topic registration result : ", registrationResponse);
 }
