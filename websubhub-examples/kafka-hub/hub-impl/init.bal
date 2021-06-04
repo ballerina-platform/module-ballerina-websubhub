@@ -36,6 +36,6 @@ function replaySubscriptions() returns error? {
         lock {
             subscribers[groupName] = shouldRunNotification;
         }
-        var result = start notifySubscriber(hubClientEp, consumerEp, shouldRunNotification);
+        var result = start notifySubscriber(hubClientEp, consumerEp, groupName);
     }
 }

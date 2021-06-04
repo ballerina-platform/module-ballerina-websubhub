@@ -164,7 +164,7 @@ websubhub:Service hubService = service object {
         lock {
             subscribers[groupName] = shouldRunNotification;
         }
-        error? notificationError = notifySubscriber(hubClientEp, consumerEp, shouldRunNotification);
+        error? notificationError = notifySubscriber(hubClientEp, consumerEp, groupName);
     }
 
     # Unsubscribes a consumer from the hub.
