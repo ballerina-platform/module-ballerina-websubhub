@@ -2,3 +2,5 @@ target
 .vscode
 modules
 .keep
+*.jar
+
