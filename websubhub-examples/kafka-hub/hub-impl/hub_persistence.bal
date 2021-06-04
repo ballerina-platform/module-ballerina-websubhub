@@ -25,7 +25,10 @@ isolated function createMessageConsumer(websubhub:VerifiedSubscription message) 
 }
 
 isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
-    boolean? shouldRunNotification = subscribers[groupName];
+    boolean? shouldRunNotification;
+    lock {
+        shouldRunNotification = subscribers[groupName];
+    }
     while (shouldRunNotification is boolean && shouldRunNotification) {
         kafka:ConsumerRecord[] records = check consumerEp->poll(10);
         foreach var kafkaRecord in records {
