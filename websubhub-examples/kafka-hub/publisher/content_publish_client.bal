@@ -4,16 +4,16 @@ import ballerina/io;
 public function main() returns error? {
     websubhub:PublisherClient websubHubClientEP = check new("http://localhost:9090/hub",
         auth = {
-            username: "ballerina",
-            issuer: "wso2",
-            audience: ["ballerina", "ballerina.org", "ballerina.io"],
-            keyId: "5a0b754-895f-4279-8843-b745e11a57e9",
-            jwtId: "JlbmMiOiJBMTI4Q0JDLUhTMjU2In",
-            customClaims: { "scp": "update_content" },
-            expTime: 3600,
-            signatureConfig: {
-                config: {
-                    keyFile: "../resources/server.key"
+            tokenUrl: "https://localhost:9443/oauth2/token",
+            clientId: "8EsaVTsN64t4sMDhGvBqJoqMi8Ea",
+            clientSecret: "QC71AIfbBjhgAibpi0mpfIEK_bMa",
+            scopes: ["update_content"],
+            clientConfig: {
+                secureSocket: {
+                    cert: {
+                        path: "../resources/client-truststore.jks",
+                        password: "wso2carbon"
+                    }
                 }
             }
         }
