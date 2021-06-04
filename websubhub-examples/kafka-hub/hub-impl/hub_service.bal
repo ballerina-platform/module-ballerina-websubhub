@@ -116,7 +116,7 @@ websubhub:Service hubService = service object {
         return websubhub:SUBSCRIPTION_ACCEPTED;
     }
 
-    # Validates a incomming subscription request.
+    # Validates whether `topic` to which the subscriber wants to subscribe is available and whether subscriber has already subscribed.
     # 
     # + message - Details of the subscription
     # + return - `websubhub:SubscriptionDeniedError` if the subscription is denied by the hub or else `()`
