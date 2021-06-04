@@ -3,12 +3,22 @@ import ballerina/http;
 import ballerina/jwt;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: "wso2",
+    issuer: "https://localhost:9443/oauth2/token",
     audience: "ballerina",
     signatureConfig: {
-        certFile: "./resources/server.crt"
+        jwksConfig: {
+            url: "https://localhost:9443/oauth2/jwks",
+            clientConfig: {
+                secureSocket: {
+                    cert: {
+                        path: "./resources/client-truststore.jks",
+                        password: "wso2carbon"
+                    }
+                }
+            }
+        }
     },
-    scopeKey: "scp"
+    scopeKey: "scope"
 });
 
 isolated function authorize(http:Headers headers, string[] authScopes) returns error? {
@@ -18,11 +28,11 @@ isolated function authorize(http:Headers headers, string[] authScopes) returns e
         if (auth is jwt:Payload) {
             http:Forbidden? forbiddenError = handler.authorize(auth, authScopes);
             if (forbiddenError is http:Forbidden) {
-                log:printError("Authentication credentials invalid");
+                log:printError("Forbidden Error received - Authentication credentials invalid");
                 return error("Not authorized");
             }
         } else {
-            log:printError("Authentication credentials invalid");
+            log:printError("Unauthorized Error received - Authentication credentials invalid");
             return error("Not authorized");
         }
     } else {
