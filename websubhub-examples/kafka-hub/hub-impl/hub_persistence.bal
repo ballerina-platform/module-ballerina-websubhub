@@ -25,12 +25,16 @@ isolated function createMessageConsumer(websubhub:VerifiedSubscription message) 
 }
 
 isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
-    boolean? shouldRunNotification;
-    lock {
-        shouldRunNotification = subscribers[groupName];
-    }
-    while (shouldRunNotification is boolean && shouldRunNotification) {
+    while true {
         kafka:ConsumerRecord[] records = check consumerEp->poll(10);
+        boolean shouldProceed = true;
+        lock {
+            shouldProceed = registeredSubscribers.hasKey(groupName);
+        }
+        if !shouldProceed {
+            break;
+        }
+        
         foreach var kafkaRecord in records {
             byte[] content = kafkaRecord.value;
             string|error message = string:fromBytes(content);
@@ -52,6 +56,7 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
             }
         }
     }
+    _ = check consumerEp->close(5);
 }
 
 isolated function publishContent(websubhub:UpdateMessage message, string topicName) returns error? {
