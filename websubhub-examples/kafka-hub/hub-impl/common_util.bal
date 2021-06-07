@@ -1,4 +1,6 @@
 import ballerina/regex;
+import ballerina/random;
+import ballerina/lang.'string as strings;
 
 isolated function generateTopicName(string topic) returns string {
     return nomalizeString(topic);

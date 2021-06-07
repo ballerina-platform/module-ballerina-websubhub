@@ -159,7 +159,6 @@ websubhub:Service hubService = service object {
         if (persistingResult is error) {
             log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
         }
-        error? notificationError = notifySubscriber(hubClientEp, consumerEp, groupName);
     }
 
     # Unsubscribes a consumer from the hub.

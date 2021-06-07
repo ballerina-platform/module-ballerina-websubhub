@@ -3,8 +3,6 @@ import ballerina/websubhub;
 import ballerina/io;
 import ballerinax/kafka;
 import ballerina/lang.value;
-import ballerina/random;
-import ballerina/lang.'string as strings;
 
 listener websubhub:Listener hubListener = new (9090);
 
@@ -84,17 +82,28 @@ function updateSubscriptionDetails() returns error? {
         websubhub:VerifiedSubscription[]|error? subscriptionDetails = getAvailableSubscribers();
         io:println("Executing subscription-update with available subscription details ", subscriptionDetails is websubhub:VerifiedSubscription[]);
         if subscriptionDetails is websubhub:VerifiedSubscription[] {
+            string[] groupNames = subscriptionDetails.'map(
+                function (websubhub:VerifiedSubscription sub) returns string => generateGroupName(sub.hubTopic, sub.hubCallback));
             lock {
-                registeredSubscribers.removeAll();
+                string[] unsubscribedSubscribers = registeredSubscribers.keys().filter(function (string 'key) returns boolean => groupNames.indexOf('key) is ());
+                foreach var sub in unsubscribedSubscribers {
+                    _ = registeredSubscribers.removeIfHasKey(sub);
+                }
             }
             foreach var subscriber in subscriptionDetails {
                 string groupName = generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
+                boolean isSubAvailable = false;
                 lock {
-                    registeredSubscribers[groupName] = subscriber.cloneReadOnly();
+                    isSubAvailable = registeredSubscribers.hasKey(groupName);
+                    if !isSubAvailable {
+                        registeredSubscribers[groupName] = subscriber.cloneReadOnly();
+                    }
                 }
-                kafka:Consumer consumerEp = check createMessageConsumer(subscriber);
-                websubhub:HubClient hubClientEp = check new (subscriber);
-                _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+                if !isSubAvailable {
+                    kafka:Consumer consumerEp = check createMessageConsumer(subscriber);
+                    websubhub:HubClient hubClientEp = check new (subscriber);
+                    _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+                }
             }
         }
     }
