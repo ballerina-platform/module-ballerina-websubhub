@@ -1,1 +1,4 @@
-securityOn = false
+# Flag to check whether to enable/disable security
+securityOn = true
+# Server Id which is to be used in a server cluster
+serverId = "server-1"

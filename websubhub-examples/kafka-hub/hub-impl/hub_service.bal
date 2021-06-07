@@ -3,8 +3,8 @@ import ballerina/log;
 import ballerina/http;
 import ballerinax/kafka;
 
-isolated map<string> registeredTopics = {};
-isolated map<boolean> subscribers = {};
+isolated map<websubhub:TopicRegistration> registeredTopics = {};
+isolated map<websubhub:VerifiedSubscription> registeredSubscribers = {};
 configurable boolean securityOn = ?;
 
 websubhub:Service hubService = service object {
@@ -30,7 +30,6 @@ websubhub:Service hubService = service object {
             if (registeredTopics.hasKey(topicName)) {
                 return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
             }
-            registeredTopics[topicName] = message.topic;
         }
         error? persistingResult = persistTopicRegistrations(message);
         if (persistingResult is error) {
@@ -49,16 +48,16 @@ websubhub:Service hubService = service object {
         if (securityOn) {
             check authorize(headers, ["deregister_topic"]);
         }
-        self.deregisterTopic(message);
+        check self.deregisterTopic(message);
         return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
     }
 
-    isolated function deregisterTopic(websubhub:TopicRegistration message) {
+    isolated function deregisterTopic(websubhub:TopicRegistration message) returns websubhub:TopicDeregistrationError? {
         log:printInfo("Received topic-deregistration request ", request = message);
         string topicName = generateTopicName(message.topic);
         lock {
-            if (registeredTopics.hasKey(topicName)) {
-                string removedTopic = registeredTopics.remove(topicName);
+            if (!registeredTopics.hasKey(topicName)) {
+                return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
         }
         error? persistingResult = persistTopicDeregistration(message);
@@ -116,7 +115,7 @@ websubhub:Service hubService = service object {
         return websubhub:SUBSCRIPTION_ACCEPTED;
     }
 
-    # Validates whether `topic` to which the subscriber wants to subscribe is available and whether subscriber has already subscribed.
+    # Validates a incomming subscription request.
     # 
     # + message - Details of the subscription
     # + return - `websubhub:SubscriptionDeniedError` if the subscription is denied by the hub or else `()`
@@ -124,17 +123,17 @@ websubhub:Service hubService = service object {
                 returns websubhub:SubscriptionDeniedError? {
         log:printInfo("Received subscription-validation request ", request = message.toString());
         string topicName = generateTopicName(message.hubTopic);
-        string groupName = generateGroupName(message.hubTopic, message.hubCallback);
         boolean isTopicAvailable = false;
-        boolean isSubscriberAvailable = false;
         lock {
             isTopicAvailable = registeredTopics.hasKey(topicName);
         }
         if (!isTopicAvailable) {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
+            string groupName = generateGroupName(message.hubTopic, message.hubCallback);
+            boolean isSubscriberAvailable = false;
             lock {
-                isSubscriberAvailable = subscribers.hasKey(groupName);
+                isSubscriberAvailable = registeredSubscribers.hasKey(groupName);
             }
             if (isSubscriberAvailable) {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
@@ -159,10 +158,6 @@ websubhub:Service hubService = service object {
         error? persistingResult = persistSubscription(message);
         if (persistingResult is error) {
             log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
-        }
-        boolean shouldRunNotification = true;
-        lock {
-            subscribers[groupName] = shouldRunNotification;
         }
         error? notificationError = notifySubscriber(hubClientEp, consumerEp, groupName);
     }
@@ -199,7 +194,7 @@ websubhub:Service hubService = service object {
         } else {
             string groupName = generateGroupName(message.hubTopic, message.hubCallback);
             lock {
-                isSubscriberAvailable = subscribers.hasKey(groupName);
+                isSubscriberAvailable = registeredSubscribers.hasKey(groupName);
             }
             if (!isSubscriberAvailable) {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
@@ -214,12 +209,6 @@ websubhub:Service hubService = service object {
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
         log:printInfo("Received unsubscription-intent-verification request ", request = message.toString());
         string groupName = generateGroupName(message.hubTopic, message.hubCallback);
-        lock {
-            boolean? isOn = subscribers[groupName];
-            if (isOn is boolean) {
-                isOn = false;
-            }
-        }
         var persistingResult = persistUnsubscription(message);
         if (persistingResult is error) {
             log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
