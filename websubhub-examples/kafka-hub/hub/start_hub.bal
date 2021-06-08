@@ -52,11 +52,11 @@ isolated function syncRegsisteredTopicsCache() returns error? {
             }
         }
     }
-    _ = check conn:topicDetailsConsumer->close(5);
+    _ = check conn:registeredTopicsConsumer->close(5);
 }
 
 isolated function getAvailableTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:topicDetailsConsumer->poll(10);
+    kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(10);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
         string|error lastPersistedData = string:fromBytes(lastRecord.value);
@@ -95,11 +95,11 @@ function syncSubscribersCache() returns error? {
             }
         }
     }
-    _ = check conn:subscriberDetailsConsumer->close(5);
+    _ = check conn:subscribersConsumer->close(5);
 }
 
 isolated function getAvailableSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:subscriberDetailsConsumer->poll(10);
+    kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(10);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
         string|error lastPersistedData = string:fromBytes(lastRecord.value);

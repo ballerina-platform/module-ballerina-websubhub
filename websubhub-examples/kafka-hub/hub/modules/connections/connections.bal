@@ -33,19 +33,19 @@ kafka:ProducerConfiguration statePersistConfig = {
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
-kafka:ConsumerConfiguration subscriberDetailsConsumerConfig = {
+kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: "registered-consumers-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:REGISTERED_CONSUMERS ]
+    topics: [ config:SUBSCRIBERS_TOPIC ]
 };
-public final kafka:Consumer subscriberDetailsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscriberDetailsConsumerConfig);
+public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
-kafka:ConsumerConfiguration topicDetailsConsumerConfig = {
+kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     groupId: "registered-topics-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:REGISTERED_TOPICS ]
+    topics: [ config:REGISTERED_TOPICS_TOPIC ]
 };
-public final kafka:Consumer topicDetailsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, topicDetailsConsumerConfig);
+public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 
 public isolated function createMessageConsumer(websubhub:VerifiedSubscription message) returns kafka:Consumer|error {
     string topicName = util:sanitizeTopicName(message.hubTopic);
