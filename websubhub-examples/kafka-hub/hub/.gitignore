@@ -1,7 +1,6 @@
 target
 .vscode
 .idea
-modules
 .keep
 *.jar
 *.zip

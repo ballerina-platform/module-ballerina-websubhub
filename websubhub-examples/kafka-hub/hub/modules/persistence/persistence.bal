@@ -1,7 +1,25 @@
+// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 import ballerina/websubhub;
 import ballerina/log;
+import kafkaHub.config;
+import kafkaHub.connections as conn;
 
-isolated function persistTopicRegistrations(websubhub:TopicRegistration message) returns error? {
+public isolated function persistTopicRegistrations(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicRegistration message) returns error? {
     lock {
         websubhub:TopicRegistration[] availableTopics = [];
         foreach var topic in registeredTopics {
@@ -10,11 +28,11 @@ isolated function persistTopicRegistrations(websubhub:TopicRegistration message)
         availableTopics.push(message.cloneReadOnly());
         log:printInfo("Updated persistent data ", current = availableTopics);
         json[] jsonData = availableTopics;
-        check publishHousekeepingData(REGISTERED_TOPICS, jsonData);
+        check publishHousekeepingData(config:REGISTERED_TOPICS, jsonData);
     }
 }
 
-isolated function persistTopicDeregistration(websubhub:TopicDeregistration message) returns error? {
+public isolated function persistTopicDeregistration(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicDeregistration message) returns error? {
     lock {
         websubhub:TopicRegistration[] availableTopics = [];
         foreach var topic in registeredTopics {
@@ -26,11 +44,11 @@ isolated function persistTopicDeregistration(websubhub:TopicDeregistration messa
             select registration.cloneReadOnly();
         log:printInfo("Updated persistent data ", current = availableTopics);
         json[] jsonData = availableTopics;
-        check publishHousekeepingData(REGISTERED_TOPICS, jsonData);
+        check publishHousekeepingData(config:REGISTERED_TOPICS, jsonData);
     }
 }
 
-isolated function persistSubscription(websubhub:VerifiedSubscription message) returns error? {
+public isolated function persistSubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedSubscription message) returns error? {
     lock {
         websubhub:VerifiedSubscription[] availableSubscriptions = [];
         foreach var subscriber in registeredSubscribers {
@@ -39,11 +57,11 @@ isolated function persistSubscription(websubhub:VerifiedSubscription message) re
         availableSubscriptions.push(message.cloneReadOnly());
         log:printInfo("Updated subscriptions ", current = availableSubscriptions);
         json[] jsonData = <json[]> availableSubscriptions.toJson();
-        check publishHousekeepingData(REGISTERED_CONSUMERS, jsonData);  
+        check publishHousekeepingData(config:REGISTERED_CONSUMERS, jsonData);  
     }
 }
 
-isolated function persistUnsubscription(websubhub:VerifiedUnsubscription message) returns error? {
+public isolated function persistUnsubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedUnsubscription message) returns error? {
     lock {
         websubhub:VerifiedUnsubscription[] availableSubscriptions = [];
         foreach var subscriber in registeredSubscribers {
@@ -55,13 +73,13 @@ isolated function persistUnsubscription(websubhub:VerifiedUnsubscription message
             select subscription.cloneReadOnly();
         log:printInfo("Updated subscriptions ", current = availableSubscriptions);
         json[] jsonData = <json[]> availableSubscriptions.toJson();
-        check publishHousekeepingData(REGISTERED_CONSUMERS, jsonData);
+        check publishHousekeepingData(config:REGISTERED_CONSUMERS, jsonData);
     }
 }
 
 isolated function publishHousekeepingData(string topicName, json payload) returns error? {
     log:printInfo("Publish house-keeping data ", topic = topicName, payload = payload);
     byte[] serializedContent = payload.toJsonString().toBytes();
-    check statePersistProducer->send({ topic: topicName, value: serializedContent });
-    check statePersistProducer->'flush();
+    check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
+    check conn:statePersistProducer->'flush();
 }
