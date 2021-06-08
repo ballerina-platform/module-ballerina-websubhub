@@ -18,7 +18,7 @@ import ballerina/regex;
 import ballerina/random;
 import ballerina/lang.'string as strings;
 
-public isolated function generateTopicName(string topic) returns string {
+public isolated function sanitizeTopicName(string topic) returns string {
     return nomalizeString(topic);
 }
 
@@ -27,7 +27,7 @@ public isolated function generateGroupName(string topic, string callbackUrl) ret
     return nomalizeString(idValue);
 }
 
-public isolated function nomalizeString(string baseString) returns string {
+isolated function nomalizeString(string baseString) returns string {
     return regex:replaceAll(baseString, "[^a-zA-Z0-9]", "_");
 }
 

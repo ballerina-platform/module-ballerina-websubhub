@@ -27,8 +27,8 @@ public function main() returns error? {
     log:printInfo("Starting Hub-Service");
     
     // Initialize the Hub
-    _ = @strand { thread: "any" } start updateSubscriptionDetails();
-    _ = @strand { thread: "any" } start updateTopicDetails();
+    _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
+    _ = @strand { thread: "any" } start syncSubscribersCache();
     
     // Start the Hub
     websubhub:Listener hubListener = check new (9090);
@@ -36,18 +36,18 @@ public function main() returns error? {
     check hubListener.'start();
 }
 
-isolated function updateTopicDetails() returns error? {
+isolated function syncRegsisteredTopicsCache() returns error? {
     while true {
         websubhub:TopicRegistration[]|error? topicDetails = getAvailableTopics();
         io:println("Executing topic-update with available topic details ", topicDetails is websubhub:TopicRegistration[]);
         if topicDetails is websubhub:TopicRegistration[] {
             lock {
-                registeredTopics.removeAll();
+                registeredTopicsCache.removeAll();
             }
             foreach var topic in topicDetails.cloneReadOnly() {
-                string topicName = util:generateTopicName(topic.topic);
+                string topicName = util:sanitizeTopicName(topic.topic);
                 lock {
-                    registeredTopics[topicName] = topic.cloneReadOnly();
+                    registeredTopicsCache[topicName] = topic.cloneReadOnly();
                 }
             }
         }
@@ -76,18 +76,18 @@ isolated function getAvailableTopics() returns websubhub:TopicRegistration[]|err
     }
 }
 
-function updateSubscriptionDetails() returns error? {
+function syncSubscribersCache() returns error? {
     while true {
         websubhub:VerifiedSubscription[]|error? subscriptionDetails = getAvailableSubscribers();
         io:println("Executing subscription-update with available subscription details ", subscriptionDetails is websubhub:VerifiedSubscription[]);
         if subscriptionDetails is websubhub:VerifiedSubscription[] {
             lock {
-                registeredSubscribers.removeAll();
+                subscribersCache.removeAll();
             }
             foreach var subscriber in subscriptionDetails {
                 string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
                 lock {
-                    registeredSubscribers[groupName] = subscriber.cloneReadOnly();
+                    subscribersCache[groupName] = subscriber.cloneReadOnly();
                 }
                 kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
                 websubhub:HubClient hubClientEp = check new (subscriber);
@@ -124,7 +124,7 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
         kafka:ConsumerRecord[] records = check consumerEp->poll(10);
         boolean shouldProceed = true;
         lock {
-            shouldProceed = registeredSubscribers.hasKey(groupName);
+            shouldProceed = subscribersCache.hasKey(groupName);
         }
         if !shouldProceed {
             break;

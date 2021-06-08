@@ -24,31 +24,31 @@ kafka:ProducerConfiguration producerConfig = {
     acks: "1",
     retryCount: 3
 };
-public final kafka:Producer updateMessageProducer = check new ("localhost:9092", producerConfig);
+public final kafka:Producer updateMessageProducer = check new (config:KAFKA_BOOTSTRAP_NODE, producerConfig);
 
 kafka:ProducerConfiguration statePersistConfig = {
-    clientId: "housekeeping-service",
+    clientId: "state-persist",
     acks: "1",
     retryCount: 3
 };
-public final kafka:Producer statePersistProducer = check new ("localhost:9092", statePersistConfig);
+public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 kafka:ConsumerConfiguration subscriberDetailsConsumerConfig = {
     groupId: "registered-consumers-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
     topics: [ config:REGISTERED_CONSUMERS ]
 };
-public final kafka:Consumer subscriberDetailsConsumer = check new ("localhost:9092", subscriberDetailsConsumerConfig);
+public final kafka:Consumer subscriberDetailsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscriberDetailsConsumerConfig);
 
 kafka:ConsumerConfiguration topicDetailsConsumerConfig = {
     groupId: "registered-topics-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
     topics: [ config:REGISTERED_TOPICS ]
 };
-public final kafka:Consumer topicDetailsConsumer = check new ("localhost:9092", topicDetailsConsumerConfig);
+public final kafka:Consumer topicDetailsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, topicDetailsConsumerConfig);
 
 public isolated function createMessageConsumer(websubhub:VerifiedSubscription message) returns kafka:Consumer|error {
-    string topicName = util:generateTopicName(message.hubTopic);
+    string topicName = util:sanitizeTopicName(message.hubTopic);
     string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
@@ -56,5 +56,5 @@ public isolated function createMessageConsumer(websubhub:VerifiedSubscription me
         topics: [topicName],
         autoCommit: false
     };
-    return check new ("localhost:9092", consumerConfiguration);  
+    return check new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
 }

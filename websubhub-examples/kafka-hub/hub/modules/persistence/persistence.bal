@@ -20,61 +20,53 @@ import kafkaHub.config;
 import kafkaHub.connections as conn;
 
 public isolated function persistTopicRegistrations(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicRegistration message) returns error? {
-    lock {
-        websubhub:TopicRegistration[] availableTopics = [];
-        foreach var topic in registeredTopics {
-            availableTopics.push(topic);
-        }
-        availableTopics.push(message.cloneReadOnly());
-        log:printInfo("Updated persistent data ", current = availableTopics);
-        json[] jsonData = availableTopics;
-        check publishHousekeepingData(config:REGISTERED_TOPICS, jsonData);
+    websubhub:TopicRegistration[] availableTopics = [];
+    foreach var topic in registeredTopics {
+        availableTopics.push(topic);
     }
+    availableTopics.push(message.cloneReadOnly());
+    log:printInfo("Updated persistent data ", current = availableTopics);
+    json[] jsonData = availableTopics;
+    check publishHousekeepingData(config:REGISTERED_TOPICS, jsonData);
 }
 
 public isolated function persistTopicDeregistration(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicDeregistration message) returns error? {
-    lock {
-        websubhub:TopicRegistration[] availableTopics = [];
-        foreach var topic in registeredTopics {
-            availableTopics.push(topic);
-        }
-        availableTopics = 
-            from var registration in availableTopics
-            where registration.topic != message.topic
-            select registration.cloneReadOnly();
-        log:printInfo("Updated persistent data ", current = availableTopics);
-        json[] jsonData = availableTopics;
-        check publishHousekeepingData(config:REGISTERED_TOPICS, jsonData);
+    websubhub:TopicRegistration[] availableTopics = [];
+    foreach var topic in registeredTopics {
+        availableTopics.push(topic);
     }
+    availableTopics = 
+        from var registration in availableTopics
+        where registration.topic != message.topic
+        select registration.cloneReadOnly();
+    log:printInfo("Updated persistent data ", current = availableTopics);
+    json[] jsonData = availableTopics;
+    check publishHousekeepingData(config:REGISTERED_TOPICS, jsonData);
 }
 
 public isolated function persistSubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedSubscription message) returns error? {
-    lock {
-        websubhub:VerifiedSubscription[] availableSubscriptions = [];
-        foreach var subscriber in registeredSubscribers {
-            availableSubscriptions.push(subscriber);
-        }
-        availableSubscriptions.push(message.cloneReadOnly());
-        log:printInfo("Updated subscriptions ", current = availableSubscriptions);
-        json[] jsonData = <json[]> availableSubscriptions.toJson();
-        check publishHousekeepingData(config:REGISTERED_CONSUMERS, jsonData);  
+    websubhub:VerifiedSubscription[] availableSubscriptions = [];
+    foreach var subscriber in registeredSubscribers {
+        availableSubscriptions.push(subscriber);
     }
+    availableSubscriptions.push(message.cloneReadOnly());
+    log:printInfo("Updated subscriptions ", current = availableSubscriptions);
+    json[] jsonData = <json[]> availableSubscriptions.toJson();
+    check publishHousekeepingData(config:REGISTERED_CONSUMERS, jsonData); 
 }
 
-public isolated function persistUnsubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedUnsubscription message) returns error? {
-    lock {
-        websubhub:VerifiedUnsubscription[] availableSubscriptions = [];
-        foreach var subscriber in registeredSubscribers {
-            availableSubscriptions.push(subscriber);
-        }
-        availableSubscriptions = 
-            from var subscription in availableSubscriptions
-            where subscription.hubTopic != message.hubTopic && subscription.hubCallback != message.hubCallback
-            select subscription.cloneReadOnly();
-        log:printInfo("Updated subscriptions ", current = availableSubscriptions);
-        json[] jsonData = <json[]> availableSubscriptions.toJson();
-        check publishHousekeepingData(config:REGISTERED_CONSUMERS, jsonData);
+public isolated function persistUnsubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedUnsubscription message) returns error? {
+    websubhub:VerifiedUnsubscription[] availableSubscriptions = [];
+    foreach var subscriber in subscribersCache {
+        availableSubscriptions.push(subscriber);
     }
+    availableSubscriptions = 
+        from var subscription in availableSubscriptions
+        where subscription.hubTopic != message.hubTopic && subscription.hubCallback != message.hubCallback
+        select subscription.cloneReadOnly();
+    log:printInfo("Updated subscriptions ", current = availableSubscriptions);
+    json[] jsonData = <json[]> availableSubscriptions.toJson();
+    check publishHousekeepingData(config:REGISTERED_CONSUMERS, jsonData);
 }
 
 isolated function publishHousekeepingData(string topicName, json payload) returns error? {

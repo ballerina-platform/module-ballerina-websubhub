@@ -22,6 +22,9 @@ public configurable boolean SECURITY_ON = true;
 # Server Id which is to be used in a server cluster
 public configurable string SERVER_ID = "server-1";
 
+# IP and Port of the Kafka bootstrap node
+public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
+
 public configurable string REGISTERED_TOPICS = "registered-topics";
 public configurable string REGISTERED_CONSUMERS = "registered-consumers";
 public final string CONSTRUCTED_SERVER_ID = string`${SERVER_ID}-${util:generateRandomString()}`;
