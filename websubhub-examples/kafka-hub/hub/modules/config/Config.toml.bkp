@@ -1,0 +1,7 @@
+# Flag to check whether to enable/disable security
+SECURITY_ON = true
+# Server Id which is to be used in a server cluster
+SERVER_ID = "server-1"
+
+REGISTERED_TOPICS = "registered-topics"
+REGISTERED_CONSUMERS = "registered-consumers"
