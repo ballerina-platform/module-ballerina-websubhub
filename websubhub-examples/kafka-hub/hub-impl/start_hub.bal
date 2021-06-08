@@ -3,10 +3,6 @@ import ballerina/websubhub;
 import ballerina/io;
 import ballerinax/kafka;
 import ballerina/lang.value;
-import ballerina/random;
-import ballerina/lang.'string as strings;
-
-listener websubhub:Listener hubListener = new (9090);
 
 public function main() returns error? {
     log:printInfo("Starting Hub-Service");
@@ -16,28 +12,10 @@ public function main() returns error? {
     _ = @strand { thread: "any" } start updateTopicDetails();
     
     // Start the Hub
+    websubhub:Listener hubListener = check new (9090);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
 }
-
-configurable string serverId = ?;
-const string REGISTERED_TOPICS = "registered-topics";
-const string REGISTERED_CONSUMERS = "registered-consumers";
-string constructedServerId = string`${serverId}-${generateRandomString()}`;
-
-kafka:ConsumerConfiguration topicDetailsConsumerConfig = {
-    groupId: "registered-topics-group-" + constructedServerId,
-    offsetReset: "earliest",
-    topics: [ REGISTERED_TOPICS ]
-};
-final kafka:Consumer topicDetailsConsumer = check new ("localhost:9092", topicDetailsConsumerConfig);
-
-kafka:ConsumerConfiguration subscriberDetailsConsumerConfig = {
-    groupId: "registered-consumers-group-" + constructedServerId,
-    offsetReset: "earliest",
-    topics: [ REGISTERED_CONSUMERS ]
-};
-final kafka:Consumer subscriberDetailsConsumer = check new ("localhost:9092", subscriberDetailsConsumerConfig);
 
 isolated function updateTopicDetails() returns error? {
     while true {

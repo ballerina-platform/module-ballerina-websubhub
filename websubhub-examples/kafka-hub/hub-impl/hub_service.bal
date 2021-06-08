@@ -2,10 +2,11 @@ import ballerina/websubhub;
 import ballerina/log;
 import ballerina/http;
 import ballerinax/kafka;
+import ballerina/mime;
+import ballerina/lang.value;
 
 isolated map<websubhub:TopicRegistration> registeredTopics = {};
 isolated map<websubhub:VerifiedSubscription> registeredSubscribers = {};
-configurable boolean securityOn = ?;
 
 websubhub:Service hubService = service object {
     # Registers a `topic` in the hub.
@@ -16,7 +17,7 @@ websubhub:Service hubService = service object {
     #            if topic registration failed or `error` if there is any unexpected error
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message, http:Headers headers)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
-        if (securityOn) {
+        if SECURITY_ON {
             check authorize(headers, ["register_topic"]);
         }
         check self.registerTopic(message);
@@ -27,12 +28,12 @@ websubhub:Service hubService = service object {
         log:printInfo("Received topic-registration request ", request = message);
         string topicName = generateTopicName(message.topic);
         lock {
-            if (registeredTopics.hasKey(topicName)) {
+            if registeredTopics.hasKey(topicName) {
                 return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
             }
         }
         error? persistingResult = persistTopicRegistrations(message);
-        if (persistingResult is error) {
+        if persistingResult is error {
             log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
         }
     }
@@ -45,7 +46,7 @@ websubhub:Service hubService = service object {
     #            if topic deregistration failed or `error` if there is any unexpected error
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
-        if (securityOn) {
+        if SECURITY_ON {
             check authorize(headers, ["deregister_topic"]);
         }
         check self.deregisterTopic(message);
@@ -56,12 +57,12 @@ websubhub:Service hubService = service object {
         log:printInfo("Received topic-deregistration request ", request = message);
         string topicName = generateTopicName(message.topic);
         lock {
-            if (!registeredTopics.hasKey(topicName)) {
+            if !registeredTopics.hasKey(topicName) {
                 return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
         }
         error? persistingResult = persistTopicDeregistration(message);
-        if (persistingResult is error) {
+        if persistingResult is error {
             log:printError("Error occurred while persisting the topic-deregistration ", err = persistingResult.message());
         }
     }
@@ -74,7 +75,7 @@ websubhub:Service hubService = service object {
     #            if publish content failed or `error` if there is any unexpected error
     isolated remote function onUpdateMessage(websubhub:UpdateMessage message, http:Headers headers)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {  
-        if (securityOn) {
+        if SECURITY_ON {
             check authorize(headers, ["update_content"]);
         }
         check self.updateMessage(message);
@@ -88,17 +89,25 @@ websubhub:Service hubService = service object {
         lock {
             isTopicAvailable = registeredTopics.hasKey(topicName);
         }
-        if (isTopicAvailable) {
-            error? errorResponse = publishContent(msg, topicName);
-            if (errorResponse is websubhub:UpdateMessageError) {
+        if isTopicAvailable {
+            error? errorResponse = self.publishContent(msg, topicName);
+            if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
-            } else if (errorResponse is error) {
+            } else if errorResponse is error {
                 log:printError("Error occurred while publishing the content ", errorMessage = errorResponse.message());
                 return error websubhub:UpdateMessageError(errorResponse.message());
             }
         } else {
             return error websubhub:UpdateMessageError("Topic [" + msg.hubTopic + "] is not registered with the Hub");
         }
+    }
+
+    isolated function publishContent(websubhub:UpdateMessage message, string topicName) returns error? {
+        log:printInfo("Distributing content to ", Topic = topicName);
+        json payload = <json>message.content;
+        byte[] content = payload.toJsonString().toBytes();
+        check updateMessageProducer->send({ topic: topicName, value: content });
+        check updateMessageProducer->'flush();
     }
     
     # Subscribes a consumer to the hub.
@@ -109,7 +118,7 @@ websubhub:Service hubService = service object {
     #            if subscription is denied from the hub or `error` if there is any unexpected error
     isolated remote function onSubscription(websubhub:Subscription message, http:Headers headers)
                 returns websubhub:SubscriptionAccepted|websubhub:BadSubscriptionError|error {
-        if (securityOn) {
+        if SECURITY_ON {
             check authorize(headers, ["subscribe"]);
         }
         return websubhub:SUBSCRIPTION_ACCEPTED;
@@ -127,7 +136,7 @@ websubhub:Service hubService = service object {
         lock {
             isTopicAvailable = registeredTopics.hasKey(topicName);
         }
-        if (!isTopicAvailable) {
+        if !isTopicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string groupName = generateGroupName(message.hubTopic, message.hubCallback);
@@ -135,7 +144,7 @@ websubhub:Service hubService = service object {
             lock {
                 isSubscriberAvailable = registeredSubscribers.hasKey(groupName);
             }
-            if (isSubscriberAvailable) {
+            if isSubscriberAvailable {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
             }
         }
@@ -156,7 +165,7 @@ websubhub:Service hubService = service object {
         kafka:Consumer consumerEp = check createMessageConsumer(message);
         websubhub:HubClient hubClientEp = check new (message);
         error? persistingResult = persistSubscription(message);
-        if (persistingResult is error) {
+        if persistingResult is error {
             log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
         }
         error? notificationError = notifySubscriber(hubClientEp, consumerEp, groupName);
@@ -170,7 +179,7 @@ websubhub:Service hubService = service object {
     #            if unsubscription is denied from the hub or `error` if there is any unexpected error
     isolated remote function onUnsubscription(websubhub:Unsubscription message, http:Headers headers)
                returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|error {
-        if (securityOn) {
+        if SECURITY_ON {
             check authorize(headers, ["subscribe"]);
         }
         return websubhub:UNSUBSCRIPTION_ACCEPTED;
@@ -189,14 +198,14 @@ websubhub:Service hubService = service object {
         lock {
             isTopicAvailable = registeredTopics.hasKey(topicName);
         }
-        if (!isTopicAvailable) {
+        if !isTopicAvailable {
             return error websubhub:UnsubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string groupName = generateGroupName(message.hubTopic, message.hubCallback);
             lock {
                 isSubscriberAvailable = registeredSubscribers.hasKey(groupName);
             }
-            if (!isSubscriberAvailable) {
+            if !isSubscriberAvailable {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
                                 + message.hubTopic + "] and Callback [" + message.hubCallback + "]");
             }
@@ -215,3 +224,38 @@ websubhub:Service hubService = service object {
         }  
     }
 };
+
+isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
+    while true {
+        kafka:ConsumerRecord[] records = check consumerEp->poll(10);
+        boolean shouldProceed = true;
+        lock {
+            shouldProceed = registeredSubscribers.hasKey(groupName);
+        }
+        if !shouldProceed {
+            break;
+        }
+        
+        foreach var kafkaRecord in records {
+            byte[] content = kafkaRecord.value;
+            string|error message = string:fromBytes(content);
+            if (message is string) {
+                log:printInfo("Received message : ", message = message);
+                json payload =  check value:fromJsonString(message);
+                websubhub:ContentDistributionMessage distributionMsg = {
+                    content: payload,
+                    contentType: mime:APPLICATION_JSON
+                };
+                var publishResponse = clientEp->notifyContentDistribution(distributionMsg);
+                if (publishResponse is error) {
+                    log:printError("Error occurred while sending notification to subscriber ", err = publishResponse.message());
+                } else {
+                    _ = check consumerEp->commit();
+                }
+            } else {
+                log:printError("Error occurred while retrieving message data", err = message.message());
+            }
+        }
+    }
+    _ = check consumerEp->close(5);
+}

@@ -1,13 +1,5 @@
 import ballerina/websubhub;
 import ballerina/log;
-import ballerinax/kafka;
-
-kafka:ProducerConfiguration houseKeepingProducerConfig = {
-    clientId: "housekeeping-service",
-    acks: "1",
-    retryCount: 3
-};
-final kafka:Producer houseKeepingService = check new ("localhost:9092", houseKeepingProducerConfig);
 
 isolated function persistTopicRegistrations(websubhub:TopicRegistration message) returns error? {
     lock {
@@ -70,6 +62,6 @@ isolated function persistUnsubscription(websubhub:VerifiedUnsubscription message
 isolated function publishHousekeepingData(string topicName, json payload) returns error? {
     log:printInfo("Publish house-keeping data ", topic = topicName, payload = payload);
     byte[] serializedContent = payload.toJsonString().toBytes();
-    check houseKeepingService->send({ topic: topicName, value: serializedContent });
-    check houseKeepingService->'flush();
+    check statePersistProducer->send({ topic: topicName, value: serializedContent });
+    check statePersistProducer->'flush();
 }
