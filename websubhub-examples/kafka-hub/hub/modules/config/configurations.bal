@@ -26,9 +26,9 @@ public configurable string SERVER_ID = "server-1";
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
 # Kafka topic which stores websub registered topics for this server
-public configurable string REGISTERED_TOPICS_TOPIC = "registered-topics" + SERVER_ID;
+public configurable string REGISTERED_TOPICS_TOPIC = "registered-topics";
 
 # Kafka topic which is stores websub subscribers for this server
-public configurable string SUBSCRIBERS_TOPIC = "subscribers" + SERVER_ID;
+public configurable string SUBSCRIBERS_TOPIC = "subscribers";
 
 public final string CONSTRUCTED_SERVER_ID = string`${SERVER_ID}-${util:generateRandomString()}`;
