@@ -19,7 +19,7 @@ import ballerina/log;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
 
-public isolated function persistTopicRegistrations(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicRegistration message) returns error? {
+public isolated function addRegsiteredTopic(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicRegistration message) returns error? {
     websubhub:TopicRegistration[] availableTopics = [];
     foreach var topic in registeredTopics {
         availableTopics.push(topic);
@@ -30,7 +30,7 @@ public isolated function persistTopicRegistrations(map<websubhub:TopicRegistrati
     check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
-public isolated function persistTopicDeregistration(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicDeregistration message) returns error? {
+public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicDeregistration message) returns error? {
     websubhub:TopicRegistration[] availableTopics = [];
     foreach var topic in registeredTopics {
         availableTopics.push(topic);
@@ -44,7 +44,7 @@ public isolated function persistTopicDeregistration(map<websubhub:TopicRegistrat
     check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
-public isolated function persistSubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedSubscription message) returns error? {
+public isolated function addSubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedSubscription message) returns error? {
     websubhub:VerifiedSubscription[] availableSubscriptions = [];
     foreach var subscriber in registeredSubscribers {
         availableSubscriptions.push(subscriber);
@@ -55,7 +55,7 @@ public isolated function persistSubscription(map<websubhub:VerifiedSubscription>
     check publishHousekeepingData(config:SUBSCRIBERS_TOPIC, jsonData); 
 }
 
-public isolated function persistUnsubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedUnsubscription message) returns error? {
+public isolated function removeSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedUnsubscription message) returns error? {
     websubhub:VerifiedUnsubscription[] availableSubscriptions = [];
     foreach var subscriber in subscribersCache {
         availableSubscriptions.push(subscriber);

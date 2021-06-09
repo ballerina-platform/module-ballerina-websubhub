@@ -19,7 +19,7 @@ import ballerina/log;
 import ballerina/http;
 import ballerinax/kafka;
 import kafkaHub.security;
-import kafkaHub.persistence as ps;
+import kafkaHub.persistence as persist;
 import kafkaHub.config;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
@@ -51,7 +51,7 @@ websubhub:Service hubService = service object {
             if registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
             }
-            error? persistingResult = ps:persistTopicRegistrations(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:addRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
             }
@@ -80,7 +80,7 @@ websubhub:Service hubService = service object {
             if !registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
-            error? persistingResult = ps:persistTopicDeregistration(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:removeRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-deregistration ", err = persistingResult.message());
             }
@@ -105,11 +105,11 @@ websubhub:Service hubService = service object {
     isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
         log:printInfo("Received content-update request ", request = msg.toString());
         string topicName = util:sanitizeTopicName(msg.hubTopic);
-        boolean isTopicAvailable = false;
+        boolean topicAvailable = false;
         lock {
-            isTopicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if isTopicAvailable {
+        if topicAvailable {
             error? errorResponse = self.publishContent(msg, topicName);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
@@ -152,19 +152,19 @@ websubhub:Service hubService = service object {
                 returns websubhub:SubscriptionDeniedError? {
         log:printInfo("Received subscription-validation request ", request = message.toString());
         string topicName = util:sanitizeTopicName(message.hubTopic);
-        boolean isTopicAvailable = false;
+        boolean topicAvailable = false;
         lock {
-            isTopicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if !isTopicAvailable {
+        if !topicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
-            boolean isSubscriberAvailable = false;
+            boolean subscriberAvailable = false;
             lock {
-                isSubscriberAvailable = subscribersCache.hasKey(groupName);
+                subscriberAvailable = subscribersCache.hasKey(groupName);
             }
-            if isSubscriberAvailable {
+            if subscriberAvailable {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
             }
         }
@@ -185,7 +185,7 @@ websubhub:Service hubService = service object {
         kafka:Consumer consumerEp = check conn:createMessageConsumer(message);
         websubhub:HubClient hubClientEp = check new (message);
         lock {
-            error? persistingResult = ps:persistSubscription(subscribersCache, message.cloneReadOnly());
+            error? persistingResult = persist:addSubscription(subscribersCache, message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
             }
@@ -214,19 +214,19 @@ websubhub:Service hubService = service object {
                 returns websubhub:UnsubscriptionDeniedError? {
         log:printInfo("Received unsubscription-validation request ", request = message.toString());
         string topicName = util:sanitizeTopicName(message.hubTopic);
-        boolean isTopicAvailable = false;
-        boolean isSubscriberAvailable = false;
+        boolean topicAvailable = false;
+        boolean subscriberAvailable = false;
         lock {
-            isTopicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if !isTopicAvailable {
+        if !topicAvailable {
             return error websubhub:UnsubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
             lock {
-                isSubscriberAvailable = subscribersCache.hasKey(groupName);
+                subscriberAvailable = subscribersCache.hasKey(groupName);
             }
-            if !isSubscriberAvailable {
+            if !subscriberAvailable {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
                                 + message.hubTopic + "] and Callback [" + message.hubCallback + "]");
             }
@@ -240,7 +240,7 @@ websubhub:Service hubService = service object {
         log:printInfo("Received unsubscription-intent-verification request ", request = message.toString());
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
-            var persistingResult = ps:persistUnsubscription(subscribersCache, message.cloneReadOnly());
+            var persistingResult = persist:removeSubscription(subscribersCache, message.cloneReadOnly());
             if (persistingResult is error) {
                 log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
             } 
