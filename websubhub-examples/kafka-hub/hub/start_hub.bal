@@ -24,6 +24,9 @@ import kafkaHub.connections as conn;
 import ballerina/mime;
 import kafkaHub.config;
 
+isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
+isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
+
 public function main() returns error? {
     log:printInfo("Starting Hub-Service");
     
@@ -55,19 +58,23 @@ isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|err
         kafka:ConsumerRecord lastRecord = records.pop();
         string|error lastPersistedData = string:fromBytes(lastRecord.value);
         if lastPersistedData is string {
-            websubhub:TopicRegistration[] currentTopics = [];
-            log:printInfo("Last persisted-data set : ", message = lastPersistedData);
-            json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-            foreach var data in payload {
-                websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
-                currentTopics.push(topic);
-            }
-            return currentTopics;
+            return deSerializeTopicsMessage(lastPersistedData);
         } else {
             log:printError("Error occurred while retrieving topic-details ", err = lastPersistedData.message());
             return lastPersistedData;
         }
     }
+}
+
+isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
+    websubhub:TopicRegistration[] currentTopics = [];
+    log:printInfo("Last persisted-data set : ", message = lastPersistedData);
+    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
+    foreach var data in payload {
+        websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
+        currentTopics.push(topic);
+    }
+    return currentTopics;
 }
 
 isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
@@ -101,19 +108,23 @@ isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscripti
         kafka:ConsumerRecord lastRecord = records.pop();
         string|error lastPersistedData = string:fromBytes(lastRecord.value);
         if lastPersistedData is string {
-            websubhub:VerifiedSubscription[] currentSubscriptions = [];
-            log:printInfo("Last persisted-data set : ", message = lastPersistedData);
-            json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-            foreach var data in payload {
-                websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
-                currentSubscriptions.push(subscription);
-            }
-            return currentSubscriptions;
+            return deSerializeSubscribersMessage(lastPersistedData);
         } else {
             log:printError("Error occurred while retrieving subscriber-data ", err = lastPersistedData.message());
             return lastPersistedData;
         }
     } 
+}
+
+isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
+    websubhub:VerifiedSubscription[] currentSubscriptions = [];
+    log:printInfo("Last persisted-data set : ", message = lastPersistedData);
+    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
+    foreach var data in payload {
+        websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
+        currentSubscriptions.push(subscription);
+    }
+    return currentSubscriptions;
 }
 
 function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {

@@ -24,9 +24,6 @@ import kafkaHub.config;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
 
-isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
-isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
-
 websubhub:Service hubService = service object {
 
     # Registers a `topic` in the hub.
