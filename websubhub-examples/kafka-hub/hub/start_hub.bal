@@ -147,15 +147,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
 isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
     while true {
         kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-        boolean topicAvailable = true;
-        lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
-        }
-        boolean subscriberAvailable = true;
-        lock {
-            subscriberAvailable = subscribersCache.hasKey(groupName);
-        }
-        if !topicAvailable || !subscriberAvailable {
+        if !isValidConsumer(topicName, groupName) {
             break;
         }
         
@@ -164,6 +156,7 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
             string|error message = string:fromBytes(content);
             if (message is string) {
                 log:printInfo("Received message : ", message = message);
+                
                 json payload =  check value:fromJsonString(message);
                 websubhub:ContentDistributionMessage distributionMsg = {
                     content: payload,
@@ -181,4 +174,20 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
         }
     }
     _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
+}
+
+isolated function isValidConsumer(string topicName, string groupName) returns boolean {
+    boolean topicAvailable = true;
+    lock {
+        topicAvailable = registeredTopicsCache.hasKey(topicName);
+    }
+    boolean subscriberAvailable = true;
+    lock {
+        subscriberAvailable = subscribersCache.hasKey(groupName);
+    }
+    if !topicAvailable || !subscriberAvailable {
+        return false;
+    } else {
+        return true;
+    }
 }
