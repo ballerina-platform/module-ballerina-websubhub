@@ -35,7 +35,7 @@ public function main() returns error? {
     _ = @strand { thread: "any" } start syncSubscribersCache();
     
     // Start the Hub
-    websubhub:Listener hubListener = check new (9090);
+    websubhub:Listener hubListener = check new (config:HUB_PORT);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
 }

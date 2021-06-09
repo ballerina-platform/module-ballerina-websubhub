@@ -37,4 +37,7 @@ public configurable decimal POLLING_INTERVAL = 10;
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
+# The port that is used to start the hub
+public configurable int HUB_PORT = 9090;
+
 public final string CONSTRUCTED_SERVER_ID = string`${SERVER_ID}-${util:generateRandomString()}`;
