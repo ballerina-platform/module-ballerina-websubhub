@@ -19,7 +19,7 @@ import ballerina/log;
 import ballerina/http;
 import ballerinax/kafka;
 import kafkaHub.security;
-import kafkaHub.persistence as ps;
+import kafkaHub.persistence as persist;
 import kafkaHub.config;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
@@ -51,7 +51,7 @@ websubhub:Service hubService = service object {
             if registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
             }
-            error? persistingResult = ps:persistTopicRegistrations(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:addRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
             }
@@ -80,7 +80,7 @@ websubhub:Service hubService = service object {
             if !registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
-            error? persistingResult = ps:persistTopicDeregistration(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:removeRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-deregistration ", err = persistingResult.message());
             }
@@ -185,7 +185,7 @@ websubhub:Service hubService = service object {
         kafka:Consumer consumerEp = check conn:createMessageConsumer(message);
         websubhub:HubClient hubClientEp = check new (message);
         lock {
-            error? persistingResult = ps:persistSubscription(subscribersCache, message.cloneReadOnly());
+            error? persistingResult = persist:addSubscription(subscribersCache, message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
             }
@@ -240,7 +240,7 @@ websubhub:Service hubService = service object {
         log:printInfo("Received unsubscription-intent-verification request ", request = message.toString());
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
-            var persistingResult = ps:persistUnsubscription(subscribersCache, message.cloneReadOnly());
+            var persistingResult = persist:removeSubscription(subscribersCache, message.cloneReadOnly());
             if (persistingResult is error) {
                 log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
             } 

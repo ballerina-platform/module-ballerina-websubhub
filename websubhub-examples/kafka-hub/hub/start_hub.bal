@@ -38,24 +38,17 @@ public function main() returns error? {
 
 isolated function syncRegsisteredTopicsCache() returns error? {
     while true {
-        websubhub:TopicRegistration[]|error? topicDetails = getAvailableTopics();
-        io:println("Executing topic-update with available topic details ", topicDetails is websubhub:TopicRegistration[]);
-        if topicDetails is websubhub:TopicRegistration[] {
-            lock {
-                registeredTopicsCache.removeAll();
-            }
-            foreach var topic in topicDetails.cloneReadOnly() {
-                string topicName = util:sanitizeTopicName(topic.topic);
-                lock {
-                    registeredTopicsCache[topicName] = topic.cloneReadOnly();
-                }
-            }
+        websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
+        io:println("Executing topic-update with available topic details ", persistedTopics is websubhub:TopicRegistration[]);
+       
+        if persistedTopics is websubhub:TopicRegistration[] {
+            refreshTopicCache(persistedTopics);
         }
     }
     _ = check conn:registeredTopicsConsumer->close(5);
 }
 
-isolated function getAvailableTopics() returns websubhub:TopicRegistration[]|error? {
+isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
     kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(10);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
@@ -76,38 +69,32 @@ isolated function getAvailableTopics() returns websubhub:TopicRegistration[]|err
     }
 }
 
+isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
+    lock {
+        registeredTopicsCache.removeAll();
+    }
+    foreach var topic in persistedTopics.cloneReadOnly() {
+        string topicName = util:sanitizeTopicName(topic.topic);
+        lock {
+            registeredTopicsCache[topicName] = topic.cloneReadOnly();
+        }
+    }
+}
+
 function syncSubscribersCache() returns error? {
     while true {
-        websubhub:VerifiedSubscription[]|error? subscriptionDetails = getAvailableSubscribers();
-        io:println("Executing subscription-update with available subscription details ", subscriptionDetails is websubhub:VerifiedSubscription[]);
-        if subscriptionDetails is websubhub:VerifiedSubscription[] {
-            string[] groupNames = subscriptionDetails.'map(
-                function (websubhub:VerifiedSubscription sub) returns string => util:generateGroupName(sub.hubTopic, sub.hubCallback));
-            lock {
-                string[] unsubscribedSubscribers = subscribersCache.keys().filter(function (string 'key) returns boolean => groupNames.indexOf('key) is ());
-                foreach var sub in unsubscribedSubscribers {
-                    _ = subscribersCache.removeIfHasKey(sub);
-                }
-            }
-            foreach var subscriber in subscriptionDetails {
-                string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
-                boolean subscriberNotAvailable = true;
-                lock {
-                    subscriberNotAvailable = subscribersCache.hasKey(groupName);
-                    subscribersCache[groupName] = subscriber.cloneReadOnly();
-                }
-                if (subscriberNotAvailable) {
-                    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
-                    websubhub:HubClient hubClientEp = check new (subscriber);
-                    _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
-                }
-            }
+        websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
+        io:println("Executing subscription-update with available subscription details ", persistedSubscribers is websubhub:VerifiedSubscription[]);
+        
+        if persistedSubscribers is websubhub:VerifiedSubscription[] {
+            refreshSubscribersCache(persistedSubscribers);
+            check startMissingSubscribers(persistedSubscribers);
         }
     }
     _ = check conn:subscribersConsumer->close(5);
 }
 
-isolated function getAvailableSubscribers() returns websubhub:VerifiedSubscription[]|error? {
+isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
     kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(10);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
@@ -126,6 +113,33 @@ isolated function getAvailableSubscribers() returns websubhub:VerifiedSubscripti
             return lastPersistedData;
         }
     } 
+}
+
+function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
+    string[] groupNames = persistedSubscribers.'map(
+        function (websubhub:VerifiedSubscription sub) returns string => util:generateGroupName(sub.hubTopic, sub.hubCallback));
+    lock {
+        string[] unsubscribedSubscribers = subscribersCache.keys().filter(function (string 'key) returns boolean => groupNames.indexOf('key) is ());
+        foreach var sub in unsubscribedSubscribers {
+            _ = subscribersCache.removeIfHasKey(sub);
+        }
+    }
+}
+
+function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
+    foreach var subscriber in persistedSubscribers {
+        string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
+        boolean subscriberNotAvailable = true;
+        lock {
+            subscriberNotAvailable = !subscribersCache.hasKey(groupName);
+            subscribersCache[groupName] = subscriber.cloneReadOnly();
+        }
+        if (subscriberNotAvailable) {
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
+            websubhub:HubClient hubClientEp = check new (subscriber);
+            _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+        }
+    }
 }
 
 isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
