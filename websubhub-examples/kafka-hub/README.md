@@ -120,9 +120,9 @@ bal run content_publish_client.jar
 # Scaling the Hub
 The scaling of the hub can be done vertically or horizontally. As the hub itself does not maintain any state, those can be scaled up and down as needed. The entire cluster of hubs can be considered as one unit as in you can publish to a particular hub and consume the update message from another hub.
 
-However, for subscriptions and unsubscriptions it is required to use sticky load balancing. Sticky load balancing could be done using something unique to the subscribers such as unique path segment, token, etc. A design choice made to make the internal network less chatty and optimize hub resource usage. 
-
 This is possible because all the state is maintained using Kafka. Kafka itself can be horizontally scaled seamlessly which is one of the key advantages of using Kafka.
+
+However, for subscriptions and unsubscriptions it is required to use sticky load balancing. Sticky load balancing could be done using something unique to the subscribers such as unique path segment, token, etc. A design choice made to make the internal network less chatty and optimize hub resource usage. 
 
 Lastly, IdP (in this case WSO2 Identity Server) can be scaled based on load as well. But compared to the hub and the Kafka broker, the IdP gets a very low number of requests. Therefore may not need to be scaled as much as the other two.
 
