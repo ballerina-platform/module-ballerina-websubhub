@@ -47,10 +47,13 @@ Before starting the hub, both the WSO2 Identity Server and the Kafka message bro
 * Download **Apache Kafka** from [here](https://kafka.apache.org/downloads).
 * Extract the `zip` file and go into `kafka_2.13-2.7.X` directory.
 
-* Run the following command to start the `kafka broker`.
+* Run the following commands to start the `kafka broker`.
+```
+./bin/zookeeper-server-start.sh config/zookeeper.properties
+```
 
-```sh
-    ./bin/kafka-server-start.sh config/server.properties
+```
+./bin/kafka-server-start.sh config/server.properties
 ```
 
 * For more information on **Apache Kafka** go through [following guides](https://kafka.apache.org/quickstart).
