@@ -1,6 +1,6 @@
 [package]
-org = "ayeshalm"
-name = "kafka_hub_service"
+org = "example"
+name = "kafkaHub"
 version = "0.1.0"
 
 [build-options]
