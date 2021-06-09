@@ -22,6 +22,7 @@ import ballerina/lang.value;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
 import ballerina/mime;
+import kafkaHub.config;
 
 public function main() returns error? {
     log:printInfo("Starting Hub-Service");
@@ -45,11 +46,11 @@ isolated function syncRegsisteredTopicsCache() returns error? {
             refreshTopicCache(persistedTopics);
         }
     }
-    _ = check conn:registeredTopicsConsumer->close(5);
+    _ = check conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
 }
 
 isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(10);
+    kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
         string|error lastPersistedData = string:fromBytes(lastRecord.value);
@@ -91,11 +92,11 @@ function syncSubscribersCache() returns error? {
             check startMissingSubscribers(persistedSubscribers);
         }
     }
-    _ = check conn:subscribersConsumer->close(5);
+    _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
 }
 
 isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(10);
+    kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
         string|error lastPersistedData = string:fromBytes(lastRecord.value);
@@ -144,7 +145,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
 
 isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
     while true {
-        kafka:ConsumerRecord[] records = check consumerEp->poll(10);
+        kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
         boolean shouldProceed = true;
         lock {
             shouldProceed = subscribersCache.hasKey(groupName);
@@ -174,5 +175,5 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
             }
         }
     }
-    _ = check consumerEp->close(5);
+    _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
 }

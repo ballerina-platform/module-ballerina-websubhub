@@ -19,36 +19,36 @@ import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.util;
 
+// Producer which publishes the content-updates to Kafka 
 kafka:ProducerConfiguration producerConfig = {
     clientId: "update-message",
     acks: "1",
     retryCount: 3
 };
-// Producer which publishes the content-updates to Kafka 
 public final kafka:Producer updateMessageProducer = check new (config:KAFKA_BOOTSTRAP_NODE, producerConfig);
 
+// Producer which persist the current in-memory state of the Hub 
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "state-persist",
     acks: "1",
     retryCount: 3
 };
-// Producer which persist the current in-memory state of the Hub 
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
+// Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: "registered-consumers-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
     topics: [ config:SUBSCRIBERS_TOPIC ]
 };
-// Consumer which reads the persisted subscriber details
 public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
+// Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     groupId: "registered-topics-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
     topics: [ config:REGISTERED_TOPICS_TOPIC ]
 };
-// Consumer which reads the persisted subscriber details
 public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 
 # Creates a `kafka:Consumer` for a subscriber.

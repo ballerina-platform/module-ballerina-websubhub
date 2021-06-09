@@ -105,11 +105,11 @@ websubhub:Service hubService = service object {
     isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
         log:printInfo("Received content-update request ", request = msg.toString());
         string topicName = util:sanitizeTopicName(msg.hubTopic);
-        boolean isTopicAvailable = false;
+        boolean topicAvailable = false;
         lock {
-            isTopicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if isTopicAvailable {
+        if topicAvailable {
             error? errorResponse = self.publishContent(msg, topicName);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
@@ -152,19 +152,19 @@ websubhub:Service hubService = service object {
                 returns websubhub:SubscriptionDeniedError? {
         log:printInfo("Received subscription-validation request ", request = message.toString());
         string topicName = util:sanitizeTopicName(message.hubTopic);
-        boolean isTopicAvailable = false;
+        boolean topicAvailable = false;
         lock {
-            isTopicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if !isTopicAvailable {
+        if !topicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
-            boolean isSubscriberAvailable = false;
+            boolean subscriberAvailable = false;
             lock {
-                isSubscriberAvailable = subscribersCache.hasKey(groupName);
+                subscriberAvailable = subscribersCache.hasKey(groupName);
             }
-            if isSubscriberAvailable {
+            if subscriberAvailable {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
             }
         }
@@ -214,19 +214,19 @@ websubhub:Service hubService = service object {
                 returns websubhub:UnsubscriptionDeniedError? {
         log:printInfo("Received unsubscription-validation request ", request = message.toString());
         string topicName = util:sanitizeTopicName(message.hubTopic);
-        boolean isTopicAvailable = false;
-        boolean isSubscriberAvailable = false;
+        boolean topicAvailable = false;
+        boolean subscriberAvailable = false;
         lock {
-            isTopicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if !isTopicAvailable {
+        if !topicAvailable {
             return error websubhub:UnsubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
             lock {
-                isSubscriberAvailable = subscribersCache.hasKey(groupName);
+                subscriberAvailable = subscribersCache.hasKey(groupName);
             }
-            if !isSubscriberAvailable {
+            if !subscriberAvailable {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
                                 + message.hubTopic + "] and Callback [" + message.hubCallback + "]");
             }
