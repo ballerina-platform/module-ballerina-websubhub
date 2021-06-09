@@ -41,7 +41,7 @@ isolated function syncRegsisteredTopicsCache() returns error? {
     while true {
         websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
         io:println("Executing topic-update with available topic details ", persistedTopics is websubhub:TopicRegistration[]);
-       
+
         if persistedTopics is websubhub:TopicRegistration[] {
             refreshTopicCache(persistedTopics);
         }
@@ -86,7 +86,7 @@ function syncSubscribersCache() returns error? {
     while true {
         websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
         io:println("Executing subscription-update with available subscription details ", persistedSubscribers is websubhub:VerifiedSubscription[]);
-        
+
         if persistedSubscribers is websubhub:VerifiedSubscription[] {
             refreshSubscribersCache(persistedSubscribers);
             check startMissingSubscribers(persistedSubscribers);
@@ -129,6 +129,7 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
+        string topicName = util:sanitizeTopicName(subscriber.hubTopic);
         string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
         boolean subscriberNotAvailable = true;
         lock {
@@ -138,19 +139,23 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
         if (subscriberNotAvailable) {
             kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
             websubhub:HubClient hubClientEp = check new (subscriber);
-            _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+            _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
         }
     }
 }
 
-isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
+isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
     while true {
         kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-        boolean shouldProceed = true;
+        boolean topicAvailable = true;
         lock {
-            shouldProceed = subscribersCache.hasKey(groupName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if !shouldProceed {
+        boolean subscriberAvailable = true;
+        lock {
+            subscriberAvailable = subscribersCache.hasKey(groupName);
+        }
+        if !topicAvailable || !subscriberAvailable {
             break;
         }
         
