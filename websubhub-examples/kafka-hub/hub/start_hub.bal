@@ -136,7 +136,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscriberNotAvailable = !subscribersCache.hasKey(groupName);
             subscribersCache[groupName] = subscriber.cloneReadOnly();
         }
-        if (subscriberNotAvailable) {
+        if subscriberNotAvailable {
             kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
             websubhub:HubClient hubClientEp = check new (subscriber);
             _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
@@ -156,7 +156,7 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
             string|error message = string:fromBytes(content);
             if (message is string) {
                 log:printInfo("Received message : ", message = message);
-                
+
                 json payload =  check value:fromJsonString(message);
                 websubhub:ContentDistributionMessage distributionMsg = {
                     content: payload,
