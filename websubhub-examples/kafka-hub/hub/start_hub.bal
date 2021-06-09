@@ -81,17 +81,26 @@ function syncSubscribersCache() returns error? {
         websubhub:VerifiedSubscription[]|error? subscriptionDetails = getAvailableSubscribers();
         io:println("Executing subscription-update with available subscription details ", subscriptionDetails is websubhub:VerifiedSubscription[]);
         if subscriptionDetails is websubhub:VerifiedSubscription[] {
+            string[] groupNames = subscriptionDetails.'map(
+                function (websubhub:VerifiedSubscription sub) returns string => util:generateGroupName(sub.hubTopic, sub.hubCallback));
             lock {
-                subscribersCache.removeAll();
+                string[] unsubscribedSubscribers = subscribersCache.keys().filter(function (string 'key) returns boolean => groupNames.indexOf('key) is ());
+                foreach var sub in unsubscribedSubscribers {
+                    _ = subscribersCache.removeIfHasKey(sub);
+                }
             }
             foreach var subscriber in subscriptionDetails {
                 string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
+                boolean subscriberNotAvailable = true;
                 lock {
+                    subscriberNotAvailable = subscribersCache.hasKey(groupName);
                     subscribersCache[groupName] = subscriber.cloneReadOnly();
                 }
-                kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
-                websubhub:HubClient hubClientEp = check new (subscriber);
-                _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+                if (subscriberNotAvailable) {
+                    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
+                    websubhub:HubClient hubClientEp = check new (subscriber);
+                    _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+                }
             }
         }
     }
