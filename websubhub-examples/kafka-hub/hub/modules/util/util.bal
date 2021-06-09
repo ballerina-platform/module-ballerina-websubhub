@@ -18,19 +18,35 @@ import ballerina/regex;
 import ballerina/random;
 import ballerina/lang.'string as strings;
 
+# Sanitizes the name of the `topic` by replacing special characters with `_`.
+# 
+# + topic - Name of the `topic`
+# + return - Sanitized topic name
 public isolated function sanitizeTopicName(string topic) returns string {
     return nomalizeString(topic);
 }
 
+# Generates a group-name for a subscriber.
+# 
+# + topic - The `topic` which subscriber needs to subscribe
+# + callbackUrl - Subscriber callback URL
+# + return - Generated group-name for subscriber
 public isolated function generateGroupName(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl;
     return nomalizeString(idValue);
 }
 
+# Normalizes a `string` by replacing special characters with `_`.
+# 
+# + baseString - `string` to be normalized
+# + return - Normalized `string`
 isolated function nomalizeString(string baseString) returns string {
     return regex:replaceAll(baseString, "[^a-zA-Z0-9]", "_");
 }
 
+# Generates a random `string` of 10 characters
+# 
+# + return - The generated `string`
 public isolated function generateRandomString() returns string {
     int[] codePoints = [];
     int leftLimit = 48; // numeral '0'

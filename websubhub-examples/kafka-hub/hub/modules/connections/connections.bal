@@ -24,6 +24,7 @@ kafka:ProducerConfiguration producerConfig = {
     acks: "1",
     retryCount: 3
 };
+// Producer which publishes the content-updates to Kafka 
 public final kafka:Producer updateMessageProducer = check new (config:KAFKA_BOOTSTRAP_NODE, producerConfig);
 
 kafka:ProducerConfiguration statePersistConfig = {
@@ -31,6 +32,7 @@ kafka:ProducerConfiguration statePersistConfig = {
     acks: "1",
     retryCount: 3
 };
+// Producer which persist the current in-memory state of the Hub 
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
@@ -38,6 +40,7 @@ kafka:ConsumerConfiguration subscribersConsumerConfig = {
     offsetReset: "earliest",
     topics: [ config:SUBSCRIBERS_TOPIC ]
 };
+// Consumer which reads the persisted subscriber details
 public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
@@ -45,8 +48,13 @@ kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     offsetReset: "earliest",
     topics: [ config:REGISTERED_TOPICS_TOPIC ]
 };
+// Consumer which reads the persisted subscriber details
 public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 
+# Creates a `kafka:Consumer` for a subscriber.
+# 
+# + message - The subscription details
+# + return - `kafka:Consumer` if succcessful or else `error`
 public isolated function createMessageConsumer(websubhub:VerifiedSubscription message) returns kafka:Consumer|error {
     string topicName = util:sanitizeTopicName(message.hubTopic);
     string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
