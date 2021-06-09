@@ -37,6 +37,11 @@ final http:ListenerJwtAuthHandler handler = new({
     scopeKey: "scope"
 });
 
+# Checks for authorization for the current request.
+# 
+# + headers - `http:Headers` for the current request
+# + authScopes - Requested auth-scopes to access the current resource
+# + return - `error` if there is any authorization error or else `()`
 public isolated function authorize(http:Headers headers, string[] authScopes) returns error? {
     string|http:HeaderNotFoundError authHeader = headers.getHeader(http:AUTH_HEADER);
     if (authHeader is string) {
