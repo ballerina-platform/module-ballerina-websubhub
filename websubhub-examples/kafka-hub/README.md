@@ -1,5 +1,5 @@
 # Overview 
-The purpose of this example is to demonstrate how to write a production ready hub with minimum code. Therefore, aspects such as configurability are left unaddressed for the sake of brevity. This example should be a good starting point to get started with your hub implementations.
+The purpose of this example is to demonstrate how to write a production ready hub with minimum code. This example should be a good starting point to get started with your hub implementations.
 
 This is a websub hub implementation done using the APIs provided by the websubhub package. These APIs can be used to implement a vast array of different websub hubs such as in-memory, file based, database based, message broker based, etc. 
 
@@ -62,7 +62,7 @@ We have already published pre-configured WSO2 IS to the docker hub. Therefore to
 docker container run -d --name wso2-is-instance -p 9443:9443  ayeshalmeida/wso2-is:latest
 ```
 
-If you are interested in what we have configured in WSO2 IS, check the Appendix section. 
+If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
 
 **Note:** If you want to try out the hub without security, set the value of securityOn configurable to false. 
 
@@ -119,6 +119,8 @@ bal run content_publish_client.jar
 
 # Scaling the Hub
 The scaling of the hub can be done vertically or horizontally. As the hub itself does not maintain any state, those can be scaled up and down as needed. The entire cluster of hubs can be considered as one unit as in you can publish to a particular hub and consume the update message from another hub.
+
+However, for subscriptions and unsubscriptions it is required to use sticky load balancing. Sticky load balancing could be done using something unique to the subscribers such as unique path segment, token, etc. A design choice made to make the internal network less chatty and optimize hub resource usage. 
 
 This is possible because all the state is maintained using Kafka. Kafka itself can be horizontally scaled seamlessly which is one of the key advantages of using Kafka.
 
