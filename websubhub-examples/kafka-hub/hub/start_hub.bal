@@ -90,6 +90,7 @@ function syncSubscribersCache() returns error? {
                 }
             }
             foreach var subscriber in subscriptionDetails {
+                string topicName = util:sanitizeTopicName(subscriber.hubTopic);
                 string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
                 boolean subscriberNotAvailable = true;
                 lock {
@@ -99,7 +100,7 @@ function syncSubscribersCache() returns error? {
                 if (subscriberNotAvailable) {
                     kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
                     websubhub:HubClient hubClientEp = check new (subscriber);
-                    _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, groupName);
+                    _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
                 }
             }
         }
@@ -128,14 +129,18 @@ isolated function getAvailableSubscribers() returns websubhub:VerifiedSubscripti
     } 
 }
 
-isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string groupName) returns error? {
+isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
     while true {
         kafka:ConsumerRecord[] records = check consumerEp->poll(10);
-        boolean shouldProceed = true;
+        boolean topicAvailable = true;
+        boolean subscriberAvailable = true;
         lock {
-            shouldProceed = subscribersCache.hasKey(groupName);
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if !shouldProceed {
+        lock {
+            subscriberAvailable = subscribersCache.hasKey(groupName);
+        }
+        if !topicAvailable || !subscriberAvailable) {
             break;
         }
         
