@@ -16,7 +16,6 @@
 
 import ballerina/log;
 import ballerina/websubhub;
-import ballerina/io;
 import ballerinax/kafka;
 import ballerina/lang.value;
 import kafkaHub.util;
