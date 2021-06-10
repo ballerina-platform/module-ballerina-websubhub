@@ -29,7 +29,7 @@ public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 public configurable string REGISTERED_TOPICS_TOPIC = "registered-topics";
 
 # Kafka topic which is stores websub subscribers for this server
-public configurable string SUBSCRIBERS_TOPIC = "subscribers" + SERVER_ID;
+public configurable string SUBSCRIBERS_TOPIC = "subscribers-" + SERVER_ID;
 
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;

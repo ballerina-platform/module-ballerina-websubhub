@@ -22,6 +22,7 @@ import kafkaHub.util;
 import kafkaHub.connections as conn;
 import ballerina/mime;
 import kafkaHub.config;
+// import ballerina/lang.runtime;
 
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
@@ -140,7 +141,15 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
         }
         if subscriberNotAvailable {
             kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
-            websubhub:HubClient hubClientEp = check new (subscriber);
+            websubhub:HubClient hubClientEp = check new (subscriber, {
+                retryConfig: {
+                    interval: 3,
+                    count: 3,
+                    backOffFactor: 2.0,
+                    maxWaitInterval: 20
+                },
+                timeout: 10
+            });
             _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
         }
     }
@@ -149,7 +158,9 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
 isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
     while true {
         kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+        
         if !isValidConsumer(topicName, groupName) {
+            _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
             break;
         }
         
@@ -165,6 +176,10 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
                 var publishResponse = clientEp->notifyContentDistribution(distributionMsg);
                 if (publishResponse is error) {
                     log:printError("Error occurred while sending notification to subscriber ", err = publishResponse.message());
+                    lock {
+                        _ = subscribersCache.remove(groupName);
+                    }
+                    break;
                 } else {
                     _ = check consumerEp->commit();
                 }
@@ -173,7 +188,6 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
             }
         }
     }
-    _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
 }
 
 isolated function isValidConsumer(string topicName, string groupName) returns boolean {

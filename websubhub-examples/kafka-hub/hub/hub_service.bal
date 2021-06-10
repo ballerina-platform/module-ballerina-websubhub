@@ -17,7 +17,6 @@
 import ballerina/websubhub;
 import ballerina/log;
 import ballerina/http;
-import ballerinax/kafka;
 import kafkaHub.security;
 import kafkaHub.persistence as persist;
 import kafkaHub.config;
@@ -81,47 +80,6 @@ websubhub:Service hubService = service object {
             }
         }
     }
-
-    # Publishes content to the hub.
-    # 
-    # + message - Details of the published content
-    # + headers - `http:Headers` of the original `http:Request`
-    # + return - `websubhub:Acknowledgement` if publish content is successful, `websubhub:UpdateMessageError`
-    #            if publish content failed or `error` if there is any unexpected error
-    isolated remote function onUpdateMessage(websubhub:UpdateMessage message, http:Headers headers)
-               returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {  
-        if config:SECURITY_ON {
-            check security:authorize(headers, ["update_content"]);
-        }
-        check self.updateMessage(message);
-        return websubhub:ACKNOWLEDGEMENT;
-    }
-
-    isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
-        string topicName = util:sanitizeTopicName(msg.hubTopic);
-        boolean topicAvailable = false;
-        lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
-        }
-        if topicAvailable {
-            error? errorResponse = self.publishContent(msg, topicName);
-            if errorResponse is websubhub:UpdateMessageError {
-                return errorResponse;
-            } else if errorResponse is error {
-                log:printError("Error occurred while publishing the content ", errorMessage = errorResponse.message());
-                return error websubhub:UpdateMessageError(errorResponse.message());
-            }
-        } else {
-            return error websubhub:UpdateMessageError("Topic [" + msg.hubTopic + "] is not registered with the Hub");
-        }
-    }
-
-    isolated function publishContent(websubhub:UpdateMessage message, string topicName) returns error? {
-        json payload = <json>message.content;
-        byte[] content = payload.toJsonString().toBytes();
-        check conn:updateMessageProducer->send({ topic: topicName, value: content });
-        check conn:updateMessageProducer->'flush();
-    }
     
     # Subscribes a consumer to the hub.
     # 
@@ -167,14 +125,7 @@ websubhub:Service hubService = service object {
     # + message - Details of the subscription
     # + return - `error` if there is any unexpected error or else `()`
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
-        check self.subscribe(message);
-    }
-
-    isolated function subscribe(websubhub:VerifiedSubscription message) returns error? {
-        log:printInfo("Received subscription request ", request = message);
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
-        kafka:Consumer consumerEp = check conn:createMessageConsumer(message);
-        websubhub:HubClient hubClientEp = check new (message);
         lock {
             error? persistingResult = persist:addSubscription(subscribersCache, message.cloneReadOnly());
             if persistingResult is error {
@@ -234,6 +185,47 @@ websubhub:Service hubService = service object {
                 log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
             } 
         } 
+    }
+
+    # Publishes content to the hub.
+    # 
+    # + message - Details of the published content
+    # + headers - `http:Headers` of the original `http:Request`
+    # + return - `websubhub:Acknowledgement` if publish content is successful, `websubhub:UpdateMessageError`
+    #            if publish content failed or `error` if there is any unexpected error
+    isolated remote function onUpdateMessage(websubhub:UpdateMessage message, http:Headers headers)
+               returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {  
+        if config:SECURITY_ON {
+            check security:authorize(headers, ["update_content"]);
+        }
+        check self.updateMessage(message);
+        return websubhub:ACKNOWLEDGEMENT;
+    }
+
+    isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
+        string topicName = util:sanitizeTopicName(msg.hubTopic);
+        boolean topicAvailable = false;
+        lock {
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
+        }
+        if topicAvailable {
+            error? errorResponse = self.publishContent(msg, topicName);
+            if errorResponse is websubhub:UpdateMessageError {
+                return errorResponse;
+            } else if errorResponse is error {
+                log:printError("Error occurred while publishing the content ", errorMessage = errorResponse.message());
+                return error websubhub:UpdateMessageError(errorResponse.message());
+            }
+        } else {
+            return error websubhub:UpdateMessageError("Topic [" + msg.hubTopic + "] is not registered with the Hub");
+        }
+    }
+
+    isolated function publishContent(websubhub:UpdateMessage message, string topicName) returns error? {
+        json payload = <json>message.content;
+        byte[] content = payload.toJsonString().toBytes();
+        check conn:updateMessageProducer->send({ topic: topicName, value: content });
+        check conn:updateMessageProducer->'flush();
     }
 };
 
