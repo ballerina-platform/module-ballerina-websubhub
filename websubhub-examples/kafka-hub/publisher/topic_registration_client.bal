@@ -27,14 +27,14 @@ public function main() returns error? {
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../resources/client-truststore.jks",
+                        path: "../_resources/client-truststore.jks",
                         password: "wso2carbon"
                     }
                 }
             }
         },
         secureSocket = {
-            cert: "../resources/server.crt"
+            cert: "../_resources/server.crt"
         }
     );
     var registrationResponse = websubHubClientEP->registerTopic("test");

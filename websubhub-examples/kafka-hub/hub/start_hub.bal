@@ -36,8 +36,8 @@ public function main() returns error? {
     websubhub:Listener hubListener = check new (config:HUB_PORT, 
         secureSocket = {
             key: {
-                certFile: "../resources/server.crt",
-                keyFile: "../resources/server.key"
+                certFile: "../_resources/server.crt",
+                keyFile: "../_resources/server.key"
             }
         }
     );

@@ -21,8 +21,8 @@ listener websub:Listener securedSubscriber = new(9091,
     host = "localhost",
     secureSocket = {
         key: {
-            certFile: "../resources/server.crt",
-            keyFile: "../resources/server.key"
+            certFile: "../_resources/server.crt",
+            keyFile: "../_resources/server.key"
         }
     }
 );
@@ -39,14 +39,14 @@ listener websub:Listener securedSubscriber = new(9091,
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../resources/client-truststore.jks",
+                        path: "../_resources/client-truststore.jks",
                         password: "wso2carbon"
                     }
                 }
             }
         },
         secureSocket : {
-            cert: "../resources/server.crt"
+            cert: "../_resources/server.crt"
         }
     }
 } 
