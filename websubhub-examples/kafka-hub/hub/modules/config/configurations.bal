@@ -17,7 +17,7 @@
 import kafkaHub.util;
 
 # Flag to check whether to enable/disable security
-public configurable boolean SECURITY_ON = false;
+public configurable boolean SECURITY_ON = true;
 
 # Server Id which is to be used in a server cluster
 public configurable string SERVER_ID = "server-1";
