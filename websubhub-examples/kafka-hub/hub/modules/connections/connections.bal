@@ -60,7 +60,6 @@ public isolated function createMessageConsumer(websubhub:VerifiedSubscription me
     string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
-        offsetReset: "latest",
         topics: [topicName],
         autoCommit: false
     };

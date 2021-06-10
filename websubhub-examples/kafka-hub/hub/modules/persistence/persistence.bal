@@ -41,9 +41,9 @@ public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> 
     check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
-public isolated function addSubscription(map<websubhub:VerifiedSubscription> registeredSubscribers, websubhub:VerifiedSubscription message) returns error? {
+public isolated function addSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedSubscription message) returns error? {
     websubhub:VerifiedSubscription[] availableSubscriptions = [];
-    foreach var subscriber in registeredSubscribers {
+    foreach var subscriber in subscribersCache {
         availableSubscriptions.push(subscriber);
     }
     availableSubscriptions.push(message.cloneReadOnly());

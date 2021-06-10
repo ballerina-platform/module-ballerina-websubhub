@@ -51,14 +51,9 @@ listener websub:Listener securedSubscriber = new(9091,
 } 
 service /subscriber on securedSubscriber {
     remote function onSubscriptionValidationDenied(websub:SubscriptionDeniedError msg) returns websub:Acknowledgement? {
-        log:printInfo("onSubscriptionValidationDenied invoked");
+        log:printInfo("onSubscriptionValidationDenied invoked", 'error = msg);
         return websub:ACKNOWLEDGEMENT;
     }
-
-    remote function onSubscriptionVerification(websub:SubscriptionVerification msg) returns websub:SubscriptionVerificationSuccess {
-        log:printInfo("onSubscriptionVerification invoked");
-        return websub:SUBSCRIPTION_VERIFICATION_SUCCESS;
-      }
 
     remote function onEventNotification(websub:ContentDistributionMessage event) returns websub:Acknowledgement{
         log:printInfo("onEventNotification invoked ", contentDistributionMessage = event);
