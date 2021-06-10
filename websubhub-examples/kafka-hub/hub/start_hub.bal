@@ -44,7 +44,7 @@ public function main() returns error? {
     check hubListener.'start();
 }
 
-isolated function syncRegsisteredTopicsCache() returns error? {
+function syncRegsisteredTopicsCache() returns error? {
     while true {
         websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
         if persistedTopics is websubhub:TopicRegistration[] {
@@ -54,7 +54,7 @@ isolated function syncRegsisteredTopicsCache() returns error? {
     _ = check conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
 }
 
-isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
+function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
     kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
@@ -68,7 +68,7 @@ isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|err
     }
 }
 
-isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
+function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
     websubhub:TopicRegistration[] currentTopics = [];
     json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
     foreach var data in payload {
@@ -78,7 +78,7 @@ isolated function deSerializeTopicsMessage(string lastPersistedData) returns web
     return currentTopics;
 }
 
-isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
+function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
     lock {
         registeredTopicsCache.removeAll();
     }
@@ -101,7 +101,7 @@ function syncSubscribersCache() returns error? {
     _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
 }
 
-isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
+function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
     kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         kafka:ConsumerRecord lastRecord = records.pop();
@@ -115,7 +115,7 @@ isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscripti
     } 
 }
 
-isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
+function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
     websubhub:VerifiedSubscription[] currentSubscriptions = [];
     json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
     foreach var data in payload {
