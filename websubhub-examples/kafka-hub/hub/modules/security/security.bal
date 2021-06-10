@@ -27,7 +27,7 @@ final http:ListenerJwtAuthHandler handler = new({
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../../_resources/client-truststore.jks",
+                        path: "../_resources/client-truststore.jks",
                         password: "wso2carbon"
                     }
                 }
