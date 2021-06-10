@@ -27,9 +27,7 @@ import kafkaHub.config;
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
-public function main() returns error? {
-    log:printInfo("Starting Hub-Service");
-    
+public function main() returns error? {    
     // Initialize the Hub
     _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
     _ = @strand { thread: "any" } start syncSubscribersCache();
@@ -43,8 +41,6 @@ public function main() returns error? {
 isolated function syncRegsisteredTopicsCache() returns error? {
     while true {
         websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
-        io:println("Executing topic-update with available topic details ", persistedTopics is websubhub:TopicRegistration[]);
-
         if persistedTopics is websubhub:TopicRegistration[] {
             refreshTopicCache(persistedTopics);
         }
@@ -68,7 +64,6 @@ isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|err
 
 isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
     websubhub:TopicRegistration[] currentTopics = [];
-    log:printInfo("Last persisted-data set : ", message = lastPersistedData);
     json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
     foreach var data in payload {
         websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
@@ -92,8 +87,6 @@ isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopic
 function syncSubscribersCache() returns error? {
     while true {
         websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
-        io:println("Executing subscription-update with available subscription details ", persistedSubscribers is websubhub:VerifiedSubscription[]);
-
         if persistedSubscribers is websubhub:VerifiedSubscription[] {
             refreshSubscribersCache(persistedSubscribers);
             check startMissingSubscribers(persistedSubscribers);
@@ -118,7 +111,6 @@ isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscripti
 
 isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
     websubhub:VerifiedSubscription[] currentSubscriptions = [];
-    log:printInfo("Last persisted-data set : ", message = lastPersistedData);
     json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
     foreach var data in payload {
         websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
@@ -166,8 +158,6 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
             byte[] content = kafkaRecord.value;
             string|error message = string:fromBytes(content);
             if (message is string) {
-                log:printInfo("Received message : ", message = message);
-
                 json payload =  check value:fromJsonString(message);
                 websubhub:ContentDistributionMessage distributionMsg = {
                     content: payload,

@@ -25,7 +25,6 @@ public isolated function addRegsiteredTopic(map<websubhub:TopicRegistration> reg
         availableTopics.push(topic);
     }
     availableTopics.push(message.cloneReadOnly());
-    log:printInfo("Updated persistent data ", current = availableTopics);
     json[] jsonData = availableTopics;
     check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
@@ -39,7 +38,6 @@ public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> 
         from var registration in availableTopics
         where registration.topic != message.topic
         select registration.cloneReadOnly();
-    log:printInfo("Updated persistent data ", current = availableTopics);
     json[] jsonData = availableTopics;
     check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
@@ -50,7 +48,6 @@ public isolated function addSubscription(map<websubhub:VerifiedSubscription> reg
         availableSubscriptions.push(subscriber);
     }
     availableSubscriptions.push(message.cloneReadOnly());
-    log:printInfo("Updated subscriptions ", current = availableSubscriptions);
     json[] jsonData = <json[]> availableSubscriptions.toJson();
     check publishHousekeepingData(config:SUBSCRIBERS_TOPIC, jsonData); 
 }
@@ -64,13 +61,11 @@ public isolated function removeSubscription(map<websubhub:VerifiedSubscription> 
         from var subscription in availableSubscriptions
         where subscription.hubTopic != message.hubTopic && subscription.hubCallback != message.hubCallback
         select subscription.cloneReadOnly();
-    log:printInfo("Updated subscriptions ", current = availableSubscriptions);
     json[] jsonData = <json[]> availableSubscriptions.toJson();
     check publishHousekeepingData(config:SUBSCRIBERS_TOPIC, jsonData);
 }
 
 isolated function publishHousekeepingData(string topicName, json payload) returns error? {
-    log:printInfo("Publish house-keeping data ", topic = topicName, payload = payload);
     byte[] serializedContent = payload.toJsonString().toBytes();
     check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
     check conn:statePersistProducer->'flush();

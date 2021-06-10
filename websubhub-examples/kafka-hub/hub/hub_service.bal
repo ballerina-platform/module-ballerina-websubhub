@@ -42,7 +42,6 @@ websubhub:Service hubService = service object {
     }
 
     isolated function registerTopic(websubhub:TopicRegistration message) returns websubhub:TopicRegistrationError? {
-        log:printInfo("Received topic-registration request ", request = message);
         string topicName = util:sanitizeTopicName(message.topic);
         lock {
             if registeredTopicsCache.hasKey(topicName) {
@@ -71,7 +70,6 @@ websubhub:Service hubService = service object {
     }
 
     isolated function deregisterTopic(websubhub:TopicRegistration message) returns websubhub:TopicDeregistrationError? {
-        log:printInfo("Received topic-deregistration request ", request = message);
         string topicName = util:sanitizeTopicName(message.topic);
         lock {
             if !registeredTopicsCache.hasKey(topicName) {
@@ -100,7 +98,6 @@ websubhub:Service hubService = service object {
     }
 
     isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
-        log:printInfo("Received content-update request ", request = msg.toString());
         string topicName = util:sanitizeTopicName(msg.hubTopic);
         boolean topicAvailable = false;
         lock {
@@ -120,7 +117,6 @@ websubhub:Service hubService = service object {
     }
 
     isolated function publishContent(websubhub:UpdateMessage message, string topicName) returns error? {
-        log:printInfo("Distributing content to ", Topic = topicName);
         json payload = <json>message.content;
         byte[] content = payload.toJsonString().toBytes();
         check conn:updateMessageProducer->send({ topic: topicName, value: content });
@@ -147,7 +143,6 @@ websubhub:Service hubService = service object {
     # + return - `websubhub:SubscriptionDeniedError` if the subscription is denied by the hub or else `()`
     isolated remote function onSubscriptionValidation(websubhub:Subscription message)
                 returns websubhub:SubscriptionDeniedError? {
-        log:printInfo("Received subscription-validation request ", request = message.toString());
         string topicName = util:sanitizeTopicName(message.hubTopic);
         boolean topicAvailable = false;
         lock {
@@ -172,7 +167,6 @@ websubhub:Service hubService = service object {
     # + message - Details of the subscription
     # + return - `error` if there is any unexpected error or else `()`
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
-        log:printInfo("Received subscription-intent-verification request ", request = message.toString());
         check self.subscribe(message);
     }
 
@@ -209,7 +203,6 @@ websubhub:Service hubService = service object {
     # + return - `websubhub:UnsubscriptionDeniedError` if the unsubscription is denied by the hub or else `()`
     isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription message)
                 returns websubhub:UnsubscriptionDeniedError? {
-        log:printInfo("Received unsubscription-validation request ", request = message.toString());
         string topicName = util:sanitizeTopicName(message.hubTopic);
         boolean topicAvailable = false;
         boolean subscriberAvailable = false;
@@ -234,7 +227,6 @@ websubhub:Service hubService = service object {
     # 
     # + message - Details of the unsubscription
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
-        log:printInfo("Received unsubscription-intent-verification request ", request = message.toString());
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
             var persistingResult = persist:removeSubscription(subscribersCache, message.cloneReadOnly());
