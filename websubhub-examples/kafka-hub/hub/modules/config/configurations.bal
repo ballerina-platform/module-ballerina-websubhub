@@ -40,4 +40,13 @@ public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 # The port that is used to start the hub
 public configurable int HUB_PORT = 9090;
 
+# The period between retry requests
+public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;
+
+# The maximum retry count
+public configurable int MESSAGE_DELIVERY_COUNT = 3;
+
+# The message delivery timeout
+public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
+
 public final string CONSTRUCTED_SERVER_ID = string`${SERVER_ID}-${util:generateRandomString()}`;

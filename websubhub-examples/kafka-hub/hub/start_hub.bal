@@ -149,12 +149,12 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
-                    interval: 3,
-                    count: 3,
+                    interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
+                    count: config:MESSAGE_DELIVERY_COUNT,
                     backOffFactor: 2.0,
                     maxWaitInterval: 20
                 },
-                timeout: 10
+                timeout: config:MESSAGE_DELIVERY_TIMEOUT
             });
             _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
         }

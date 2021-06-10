@@ -29,7 +29,8 @@ websubhub:Service hubService = @websubhub:ServiceConfig {
             cert: "../_resources/server.crt"
         }
     }
-} service object {
+}
+service object {
 
     # Registers a `topic` in the hub.
     # 
@@ -87,7 +88,7 @@ websubhub:Service hubService = @websubhub:ServiceConfig {
         }
     }
     
-    # Subscribes a consumer to the hub.
+    # Subscribes a `subscriber` to the hub.
     # 
     # + message - Details of the subscription
     # + headers - `http:Headers` of the original `http:Request`
@@ -140,7 +141,7 @@ websubhub:Service hubService = @websubhub:ServiceConfig {
         }
     }
 
-    # Unsubscribes a consumer from the hub.
+    # Unsubscribes a `subscriber` from the hub.
     # 
     # + message - Details of the unsubscription
     # + headers - `http:Headers` of the original `http:Request`
