@@ -50,7 +50,7 @@ listener websub:Listener securedSubscriber = new(9091,
         }
     }
 } 
-service /subscriber on securedSubscriber {
+service on securedSubscriber {
     remote function onSubscriptionValidationDenied(websub:SubscriptionDeniedError msg) returns websub:Acknowledgement? {
         log:printInfo("onSubscriptionValidationDenied invoked", 'error = msg);
         return websub:ACKNOWLEDGEMENT;
