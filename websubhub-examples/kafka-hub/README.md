@@ -1,3 +1,5 @@
+# A Websub Hub Based on Kafka 
+
 # Overview 
 The purpose of this example is to demonstrate how to write a production ready hub with minimum code. This example should be a good starting point to get started with your hub implementations.
 
@@ -9,12 +11,14 @@ In addition to the hub implementation, this example also demonstrates the publis
 
 However, regardless of the APIs used to publish messages to the hub, websubhub APIs can be used to implement websub hubs which are fully compliant with the websub specification.
 
+This implementation is also validated against the [websub.rocks](https://websub.rocks/) test suite. 
+
 # Goals and Technical Requirements
 Following are some of the goals and technical requirements which we considered when writing the example hub, in addition to being websub spec compliant which is guaranteed by the APIs.
 
 - Ability to persist the state so that hub can be recovered even after a restart 
 - Resume message delivery in case subscribers become unavailable and available again after some period of time
-- Gracefully handle transient failures between the channel between the hub and the subscriber 
+- Gracefully handle transient message delivery failures between the the hub and the subscriber 
 - Ability to authenticate and authorize hub operations such as publishing to hub, subscribing, unsubscribing, etc
 - Ability to scale seamlessly based on number of the subscribers
 
