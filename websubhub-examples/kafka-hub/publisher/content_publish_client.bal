@@ -32,6 +32,9 @@ public function main() returns error? {
                     }
                 }
             }
+        },
+        secureSocket = {
+            cert: "../resources/server.crt"
         }
     );
     json params = { event: "event"};
