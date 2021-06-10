@@ -66,7 +66,7 @@ Before starting the hub, both the WSO2 Identity Server and the Kafka message bro
 We have already published pre-configured WSO2 IS to the docker hub. Therefore to start the IdP use the below command.
 
 ```
-docker container run -d --name wso2-is-instance -p 9443:9443  ayeshalmeida/wso2-is:latest
+docker container run -d --name wso2-is-instance -p 9443:9443  ayeshalmeida/wso2-is:5.11.0.update
 ```
 
 If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
