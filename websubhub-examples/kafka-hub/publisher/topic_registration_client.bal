@@ -18,7 +18,7 @@ import ballerina/websubhub;
 import ballerina/io;
 
 public function main() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new("http://localhost:9090/hub",
+    websubhub:PublisherClient websubHubClientEP = check new("https://localhost:9090/hub",
         auth = {
             tokenUrl: "https://localhost:9443/oauth2/token",
             clientId: "8EsaVTsN64t4sMDhGvBqJoqMi8Ea",
@@ -27,11 +27,14 @@ public function main() returns error? {
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../resources/client-truststore.jks",
+                        path: "../_resources/client-truststore.jks",
                         password: "wso2carbon"
                     }
                 }
             }
+        },
+        secureSocket = {
+            cert: "../_resources/server.crt"
         }
     );
     var registrationResponse = websubHubClientEP->registerTopic("test");

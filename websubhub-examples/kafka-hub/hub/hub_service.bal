@@ -23,7 +23,13 @@ import kafkaHub.config;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
 
-websubhub:Service hubService = service object {
+websubhub:Service hubService = @websubhub:ServiceConfig { 
+    webHookConfig: {
+        secureSocket: {
+            cert: "../_resources/server.crt"
+        }
+    }
+} service object {
 
     # Registers a `topic` in the hub.
     # 

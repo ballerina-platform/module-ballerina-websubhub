@@ -32,7 +32,14 @@ public function main() returns error? {
     _ = @strand { thread: "any" } start syncSubscribersCache();
     
     // Start the Hub
-    websubhub:Listener hubListener = check new (config:HUB_PORT);
+    websubhub:Listener hubListener = check new (config:HUB_PORT, 
+        secureSocket = {
+            key: {
+                certFile: "../_resources/server.crt",
+                keyFile: "../_resources/server.key"
+            }
+        }
+    );
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
 }
