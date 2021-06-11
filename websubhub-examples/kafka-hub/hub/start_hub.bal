@@ -154,7 +154,10 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     backOffFactor: 2.0,
                     maxWaitInterval: 20
                 },
-                timeout: config:MESSAGE_DELIVERY_TIMEOUT
+                timeout: config:MESSAGE_DELIVERY_TIMEOUT,
+                secureSocket: {
+                    cert: "../_resources/server.crt"
+                }
             });
             _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
         }
