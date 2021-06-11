@@ -1,15 +1,37 @@
+/*
+ * Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.ballerina.stdlib.websubhub;
 
+import java.util.List;
+
+/**
+ * {@code Constants} contains the public constants to be used.
+ */
 public interface Constants {
     String PACKAGE_ORG = "ballerina";
     String PACKAGE_NAME = "websubhub";
 
-    String TOPIC_REGISTRATION_ERROR = "TopicRegistrationError";
-    String TOPIC_DEREGISTRATION_ERROR = "TopicDeregistrationError";
-    String UPDATE_MESSAGE_ERROR = "UpdateMessageError";
-    String BAD_SUBSCRIPTION_ERROR = "BadSubscriptionError";
-    String SUBSCRIPTION_INTERNAL_ERROR = "InternalSubscriptionError";
-    String SUBSCRIPTION_DENIED_ERROR = "SubscriptionDeniedError";
-    String UNSUBSCRIPTION_INTERNAL_ERROR = "InternalUnsubscriptionError";
-    String UNSUBSCRIPTION_DENIED_ERROR = "UnsubscriptionDeniedError";
+    List<String> MODULE_DEFINED_ERRORS = List.of(
+            "TopicRegistrationError", "TopicDeregistrationError", "UpdateMessageError", "BadSubscriptionError",
+            "InternalSubscriptionError", "SubscriptionDeniedError", "BadUnsubscriptionError",
+            "InternalUnsubscriptionError", "UnsubscriptionDeniedError"
+    );
+
+    String SERVICE_OBJECT = "WEBSUBHUB_SERVICE_OBJECT";
 }
