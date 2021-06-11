@@ -135,8 +135,9 @@ Lastly, IdP (in this case WSO2 Identity Server) can be scaled based on load as w
 As mentioned above this example is kept simple intentionally by dropping out certain aspects such as configurability, security between the hub and the Kafka broker, Observability, etc. You can easily incorporate these into the hub implementation. For instance, you can publish data to the ELK to generate different kinds of reports. The Ballerina Kafka client supports observability out of the box, so enabling observability could give you real time insight into the running cluster. But those deserve examples on their own. We hope to discuss those things in future articles.
 
 # Appendix 
-Configuring WSO2 Identity Server (IS)
-Following steps will describe how to configure the WSO2 Identity Server to provide JWT based authentication.
+## Configuring WSO2 Identity Server (IS)
+
+Following steps describes how to configure the WSO2 Identity Server to provide JWT based authentication.
 
 - Login to Identity Server. (URL: https://localhost:9443/carbon / Username: admin / Password: admin)
 - In the left pane select Service Providers -> Add.
