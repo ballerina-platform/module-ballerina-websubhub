@@ -138,6 +138,10 @@ public class NativeHttpToWebsubhubAdaptor {
         env.getRuntime().invokeMethodAsync(bHubService, remoteFunctionName, null, metadata, new Callback() {
             @Override
             public void notifySuccess(Object result) {
+                if (result instanceof BError) {
+                    BError err = (BError) result;
+
+                }
                 balFuture.complete(result);
             }
 
