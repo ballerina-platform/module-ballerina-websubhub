@@ -26,6 +26,7 @@ import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.MethodType;
+import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
@@ -34,6 +35,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static io.ballerina.runtime.api.utils.StringUtils.fromString;
 
@@ -42,6 +44,15 @@ import static io.ballerina.runtime.api.utils.StringUtils.fromString;
  */
 public class NativeHttpToWebsubhubAdaptor {
     private static final String SERVICE_OBJECT = "WEBSUBHUB_SERVICE_OBJECT";
+    private static final List<String> moduleDefinedErrors;
+    static {
+        moduleDefinedErrors = List.of(
+                Constants.TOPIC_REGISTRATION_ERROR, Constants.TOPIC_DEREGISTRATION_ERROR,
+                Constants.UPDATE_MESSAGE_ERROR, Constants.BAD_SUBSCRIPTION_ERROR,
+                Constants.SUBSCRIPTION_INTERNAL_ERROR, Constants.SUBSCRIPTION_DENIED_ERROR,
+                Constants.UNSUBSCRIPTION_INTERNAL_ERROR, Constants.UNSUBSCRIPTION_DENIED_ERROR
+        );
+    }
 
     public static void externInit(BObject adaptor, BObject serviceObj) {
         adaptor.addNativeData(SERVICE_OBJECT, serviceObj);
@@ -139,9 +150,12 @@ public class NativeHttpToWebsubhubAdaptor {
             @Override
             public void notifySuccess(Object result) {
                 if (result instanceof BError) {
-                    BError err = (BError) result;
-
+                    BError error = (BError) result;
+                    if (!isModuleDefinedError(error)) {
+                        error.printStackTrace();
+                    }
                 }
+
                 balFuture.complete(result);
             }
 
@@ -154,5 +168,15 @@ public class NativeHttpToWebsubhubAdaptor {
             }
         }, args);
         return null;
+    }
+
+    private static boolean isModuleDefinedError(BError error) {
+        Type errorType = error.getType();
+        String errorName = errorType.getName();
+        Module packageDetails = errorType.getPackage();
+        String orgName = packageDetails.getOrg();
+        String packageName = packageDetails.getName();
+        return moduleDefinedErrors.contains(errorName)
+                && Constants.PACKAGE_ORG.equals(orgName) && Constants.PACKAGE_NAME.equals(packageName);
     }
 }
