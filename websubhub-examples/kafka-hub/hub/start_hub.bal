@@ -129,7 +129,7 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
     string[] groupNames = persistedSubscribers.'map(
         function (websubhub:VerifiedSubscription sub) returns string => util:generateGroupName(sub.hubTopic, sub.hubCallback));
     lock {
-        string[] unsubscribedSubscribers = subscribersCache.keys().filter(function (string 'key) returns boolean => groupNames.indexOf('key) is ());
+        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => groupNames.indexOf('key) is ());
         foreach var sub in unsubscribedSubscribers {
             _ = subscribersCache.removeIfHasKey(sub);
         }
@@ -174,17 +174,11 @@ isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer 
         }
         
         foreach var kafkaRecord in records {
-            byte[] content = kafkaRecord.value;
-            string|error message = string:fromBytes(content);
-            if (message is string) {
-                json payload =  check value:fromJsonString(message);
-                websubhub:ContentDistributionMessage distributionMsg = {
-                    content: payload,
-                    contentType: mime:APPLICATION_JSON
-                };
-                var publishResponse = clientEp->notifyContentDistribution(distributionMsg);
-                if (publishResponse is error) {
-                    log:printError("Error occurred while sending notification to subscriber ", err = publishResponse.message());
+            var message = deSerializeKafkaRecord(kafkaRecord);
+            if (message is websubhub:ContentDistributionMessage) {
+                var response = clientEp->notifyContentDistribution(message);
+                if (response is error) {
+                    log:printError("Error occurred while sending notification to subscriber ", err = response.message());
                     lock {
                         _ = subscribersCache.remove(groupName);
                     }
@@ -213,4 +207,15 @@ isolated function isValidConsumer(string topicName, string groupName) returns bo
     } else {
         return true;
     }
+}
+
+isolated function deSerializeKafkaRecord(kafka:ConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
+    byte[] content = kafkaRecord.value;
+    string message = check string:fromBytes(content);
+    json payload =  check value:fromJsonString(message);
+    websubhub:ContentDistributionMessage distributionMsg = {
+        content: payload,
+        contentType: mime:APPLICATION_JSON
+    };
+    return distributionMsg;
 }

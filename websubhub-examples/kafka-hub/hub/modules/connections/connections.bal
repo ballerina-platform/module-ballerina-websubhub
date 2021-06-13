@@ -19,14 +19,6 @@ import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.util;
 
-// Producer which publishes the content-updates to Kafka 
-kafka:ProducerConfiguration producerConfig = {
-    clientId: "update-message",
-    acks: "1",
-    retryCount: 3
-};
-public final kafka:Producer updateMessageProducer = check new (config:KAFKA_BOOTSTRAP_NODE, producerConfig);
-
 // Producer which persist the current in-memory state of the Hub 
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "state-persist",
