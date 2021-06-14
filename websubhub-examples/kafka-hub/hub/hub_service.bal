@@ -21,7 +21,6 @@ import kafkaHub.security;
 import kafkaHub.persistence as persist;
 import kafkaHub.config;
 import kafkaHub.util;
-import kafkaHub.connections as conn;
 
 websubhub:Service hubService = @websubhub:ServiceConfig { 
     webHookConfig: {
@@ -216,7 +215,7 @@ service object {
             topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
         if topicAvailable {
-            error? errorResponse = self.publishContent(msg, topicName);
+            error? errorResponse = persist:addUpdateMessage(topicName, msg);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
             } else if errorResponse is error {
@@ -226,13 +225,6 @@ service object {
         } else {
             return error websubhub:UpdateMessageError("Topic [" + msg.hubTopic + "] is not registered with the Hub");
         }
-    }
-
-    isolated function publishContent(websubhub:UpdateMessage message, string topicName) returns error? {
-        json payload = <json>message.content;
-        byte[] content = payload.toJsonString().toBytes();
-        check conn:updateMessageProducer->send({ topic: topicName, value: content });
-        check conn:updateMessageProducer->'flush();
     }
 };
 

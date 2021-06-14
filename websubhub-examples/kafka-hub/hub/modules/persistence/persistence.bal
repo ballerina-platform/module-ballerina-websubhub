@@ -25,7 +25,7 @@ public isolated function addRegsiteredTopic(map<websubhub:TopicRegistration> reg
     }
     availableTopics.push(message.cloneReadOnly());
     json[] jsonData = availableTopics;
-    check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
+    check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
 public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicDeregistration message) returns error? {
@@ -38,7 +38,7 @@ public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> 
         where registration.topic != message.topic
         select registration.cloneReadOnly();
     json[] jsonData = availableTopics;
-    check publishHousekeepingData(config:REGISTERED_TOPICS_TOPIC, jsonData);
+    check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
 public isolated function addSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedSubscription message) returns error? {
@@ -48,7 +48,7 @@ public isolated function addSubscription(map<websubhub:VerifiedSubscription> sub
     }
     availableSubscriptions.push(message.cloneReadOnly());
     json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check publishHousekeepingData(config:SUBSCRIBERS_TOPIC, jsonData); 
+    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData); 
 }
 
 public isolated function removeSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedUnsubscription message) returns error? {
@@ -61,10 +61,15 @@ public isolated function removeSubscription(map<websubhub:VerifiedSubscription> 
         where subscription.hubTopic != message.hubTopic && subscription.hubCallback != message.hubCallback
         select subscription.cloneReadOnly();
     json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check publishHousekeepingData(config:SUBSCRIBERS_TOPIC, jsonData);
+    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData);
 }
 
-isolated function publishHousekeepingData(string topicName, json payload) returns error? {
+public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {
+    json payload = <json>message.content;
+    check produceKafkaMessage(topicName, payload);
+}
+
+isolated function produceKafkaMessage(string topicName, json payload) returns error? {
     byte[] serializedContent = payload.toJsonString().toBytes();
     check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
     check conn:statePersistProducer->'flush();
