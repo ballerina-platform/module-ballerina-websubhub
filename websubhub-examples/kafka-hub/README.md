@@ -87,9 +87,11 @@ bal run target/bin/kafka_hub_service.jar
 
 * Copy the `kafka_hub_service.jar` to another location.
 
-* Add another `Config.toml` which you could find in project to that location (Change `SERVER_ID` configuration in `Config.toml`).
+*  Copy the `Config.toml` which you could find in the project root directory.
 
-* Go into that location and run following command.
+* Change the `SERVER_ID` and `HUB_PORT`.
+
+* Go into that location and run the following command.
 ```
 bal run kafka_hub_service.jar
 ```
