@@ -2,15 +2,15 @@
 # Flag to check whether to enable/disable security
 SECURITY_ON = true
 
-# Server ID is is used to uniquely identify each server. 
-# Each server must have a unique ID.
+# Server ID is is used to uniquely identify each server 
+# Each server must have a unique ID
 SERVER_ID = "server-1"
 
 # IP and Port of the Kafka bootstrap node
 KAFKA_BOOTSTRAP_NODE = "localhost:9092"
 
-# Kafka topic which stores websub registered topics. 
-# All the hubs must be pointed to the same Kafka topic which stores websub registered topics.
+# Kafka topic which stores websub registered topics
+# All the hubs must be pointed to the same Kafka topic which stores websub registered topics
 REGISTERED_TOPICS_TOPIC = "registered-topics"
 
 # The interval in which Kafka consumers wait for new messages
