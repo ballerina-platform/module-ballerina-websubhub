@@ -19,13 +19,15 @@ import kafkaHub.util;
 # Flag to check whether to enable/disable security
 public configurable boolean SECURITY_ON = true;
 
-# Server Id which is to be used in a server cluster
+# Server ID is is used to uniquely identify each server 
+# Each server must have a unique ID
 public configurable string SERVER_ID = "server-1";
 
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
-# Kafka topic which stores websub registered topics for this server
+# Kafka topic which stores websub registered topics
+# All the hubs must be pointed to the same Kafka topic which stores websub registered topics
 public configurable string REGISTERED_TOPICS_TOPIC = "registered-topics";
 
 # Kafka topic which is stores websub subscribers for this server

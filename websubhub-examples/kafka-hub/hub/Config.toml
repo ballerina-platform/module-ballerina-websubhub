@@ -1,0 +1,32 @@
+[kafkaHub.config]
+# Flag to check whether to enable/disable security
+SECURITY_ON = true
+
+# Server ID is is used to uniquely identify each server 
+# Each server must have a unique ID
+SERVER_ID = "server-1"
+
+# IP and Port of the Kafka bootstrap node
+KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+
+# Kafka topic which stores websub registered topics
+# All the hubs must be pointed to the same Kafka topic which stores websub registered topics
+REGISTERED_TOPICS_TOPIC = "registered-topics"
+
+# The interval in which Kafka consumers wait for new messages
+POLLING_INTERVAL = 10.0
+
+# The period in which Kafka close method waits to complete
+GRACEFUL_CLOSE_PERIOD = 5.0
+
+# The port that is used to start the hub
+HUB_PORT = 9090
+
+# The period between retry requests
+MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
+
+# The maximum retry count
+MESSAGE_DELIVERY_COUNT = 3
+
+# The message delivery timeout
+MESSAGE_DELIVERY_TIMEOUT = 10.0

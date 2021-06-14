@@ -83,6 +83,19 @@ Then to run the project execute the below command.
 bal run target/bin/kafka_hub_service.jar
 ```
 
+### Starting Multiple Hub Instances
+
+* Copy the `kafka_hub_service.jar` to another location.
+
+* Copy the `Config.toml` which you could find in the project root directory.
+
+* Change the `SERVER_ID` and `HUB_PORT`.
+
+* Go into that location and run the following command.
+```
+bal run kafka_hub_service.jar
+```
+
 ## Registering Topics
 After all prerequisites are finished the first interaction to the hub could be made by registering a topic. We have included a sample to understand the usage of `websubhub:PublisherClient` in the `examples` directory inside the project. Execute the following command to build the `topic_registration_client.bal`.
 
