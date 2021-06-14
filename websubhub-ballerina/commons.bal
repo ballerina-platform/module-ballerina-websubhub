@@ -350,7 +350,7 @@ isolated function isSuccessStatusCode(int statusCode) returns boolean {
 # + topic - Name of the `topic`
 # + return - a `string` containing the value for `HTTP Link Header`
 isolated function generateLinkUrl(string hubUrl, string topic) returns string {
-    return string`${hubUrl}; rel=\"hub\", ${topic}; rel=\"self\"`;
+    return string `${hubUrl}; rel=\"hub\", ${topic}; rel=\"self\"`;
 }
 
 # Converts {@code websubhub:ClientConfiguration} to {@code http:ClientConfiguration}
