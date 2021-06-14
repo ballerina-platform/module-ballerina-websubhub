@@ -54,6 +54,7 @@ public class HubCallback implements Callback {
 
     @Override
     public void notifyFailure(BError bError) {
+        bError.printStackTrace();
         BString errorMessage = fromString("service method invocation failed: " + bError.getErrorMessage());
         BError invocationError = ErrorCreator.createError(module, "ServiceExecutionError",
                 errorMessage, bError, null);
@@ -62,11 +63,9 @@ public class HubCallback implements Callback {
 
     private boolean isModuleDefinedError(BError error) {
         Type errorType = error.getType();
-        String errorName = errorType.getName();
         Module packageDetails = errorType.getPackage();
         String orgName = packageDetails.getOrg();
         String packageName = packageDetails.getName();
-        return Constants.MODULE_DEFINED_ERRORS.contains(errorName)
-                && Constants.PACKAGE_ORG.equals(orgName) && Constants.PACKAGE_NAME.equals(packageName);
+        return Constants.PACKAGE_ORG.equals(orgName) && Constants.PACKAGE_NAME.equals(packageName);
     }
 }

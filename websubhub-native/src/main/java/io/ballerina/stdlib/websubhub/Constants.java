@@ -18,20 +18,12 @@
 
 package io.ballerina.stdlib.websubhub;
 
-import java.util.List;
-
 /**
  * {@code Constants} contains the public constants to be used.
  */
 public interface Constants {
     String PACKAGE_ORG = "ballerina";
     String PACKAGE_NAME = "websubhub";
-
-    List<String> MODULE_DEFINED_ERRORS = List.of(
-            "TopicRegistrationError", "TopicDeregistrationError", "UpdateMessageError", "BadSubscriptionError",
-            "InternalSubscriptionError", "SubscriptionDeniedError", "BadUnsubscriptionError",
-            "InternalUnsubscriptionError", "UnsubscriptionDeniedError"
-    );
 
     String SERVICE_OBJECT = "WEBSUBHUB_SERVICE_OBJECT";
 }
