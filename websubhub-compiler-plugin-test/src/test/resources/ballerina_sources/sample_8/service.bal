@@ -35,7 +35,7 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Request baseRequest)
+    isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
 
         map<string> body = { isDeregisterSuccess: "true" };
