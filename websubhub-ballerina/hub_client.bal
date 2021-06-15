@@ -100,7 +100,7 @@ public client class HubClient {
             } else {
                 hash = check retrievePayloadSignature(self.secret, msg.content);
             }
-            request.setHeader(X_HUB_SIGNATURE, string`${SHA256_HMAC}=${hash.toBase16()}`);
+            request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
         }
 
         http:Response|error response = self.httpClient->post("/", request);

@@ -23,48 +23,40 @@ listener Listener hubWithErrorReturnTypesListener = new(9101);
 
 service /websubhub on hubWithErrorReturnTypesListener {
 
-    isolated remote function onRegisterTopic(TopicRegistration message)
-                                returns TopicRegistrationSuccess|TopicRegistrationError|error {
-        return error Error("Registration Failed!");
+    isolated remote function onRegisterTopic(TopicRegistration message) returns error {
+        return error ("Registration Failed!");
     }
 
-    isolated remote function onDeregisterTopic(TopicDeregistration message)
-                        returns TopicDeregistrationSuccess|TopicDeregistrationError|error {
-        return error Error("Topic Deregistration Failed!");
+    isolated remote function onDeregisterTopic(TopicDeregistration message) returns error {
+        return error ("Topic Deregistration Failed!");
     }
 
-    isolated remote function onUpdateMessage(UpdateMessage msg)
-               returns Acknowledgement|UpdateMessageError|error {
-        return error UpdateMessageError("Error in accessing content");
+    isolated remote function onUpdateMessage(UpdateMessage msg) returns error {
+        return error ("Error in accessing content");
     }
     
-    isolated remote function onSubscription(Subscription msg)
-                returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect
-                |BadSubscriptionError|InternalSubscriptionError|error {
-        return error Error("Error occurred while processing subscription");
+    isolated remote function onSubscription(Subscription msg) returns error {
+        return error ("Error occurred while processing subscription");
     }
 
-    isolated remote function onSubscriptionValidation(Subscription msg)
-                returns SubscriptionDeniedError|error? {
-        return error Error("Denied subscription with Hub");
+    isolated remote function onSubscriptionValidation(Subscription msg) returns error? {
+        return error ("Denied subscription with Hub");
     }
 
     isolated remote function onSubscriptionIntentVerified(VerifiedSubscription msg) returns error? {
-        return error Error("Error occcurred while verifying subscription intent");
+        return error ("Error occcurred while verifying subscription intent");
     }
 
-    isolated remote function onUnsubscription(Unsubscription msg)
-               returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError|error {
-        return error Error("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
+    isolated remote function onUnsubscription(Unsubscription msg) returns error {
+        return error ("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
     }
 
-    isolated remote function onUnsubscriptionValidation(Unsubscription msg)
-                returns UnsubscriptionDeniedError|error? {
-        return error UnsubscriptionDeniedError("Denied subscription with Hub");
+    isolated remote function onUnsubscriptionValidation(Unsubscription msg) returns error? {
+        return error ("Denied subscription with Hub");
     }
 
     isolated remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg) returns error? {
-        return error Error("Error occcurred while verifying unsubscription intent");
+        return error ("Error occcurred while verifying unsubscription intent");
     }
 }
 

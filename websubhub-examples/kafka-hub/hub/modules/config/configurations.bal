@@ -51,4 +51,4 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 # The message delivery timeout
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
-public final string CONSTRUCTED_SERVER_ID = string`${SERVER_ID}-${util:generateRandomString()}`;
+public final string CONSTRUCTED_SERVER_ID = string `${SERVER_ID}-${util:generateRandomString()}`;
