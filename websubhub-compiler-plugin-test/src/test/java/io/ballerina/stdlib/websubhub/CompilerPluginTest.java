@@ -230,9 +230,10 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
         DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
         Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
-        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_109");
-        String expectedMsg = MessageFormat.format("{0} method params should follow {1} order",
+        Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
+        String expectedMsg = MessageFormat.format(expectedCode.getDescription(),
                 "onUnsubscription", "websubhub:Unsubscription,http:Headers");
         Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
