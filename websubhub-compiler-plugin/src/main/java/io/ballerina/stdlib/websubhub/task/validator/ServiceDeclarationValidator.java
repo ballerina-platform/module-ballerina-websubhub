@@ -5,7 +5,6 @@ import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
-import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getParamTypeDescription;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getQualifiedType;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getReturnTypeDescription;
+import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.isRemoteMethod;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.updateContext;
 
 /**
@@ -110,21 +110,42 @@ public class ServiceDeclarationValidator {
         List<FunctionDefinitionNode> availableFunctionDeclarations = serviceNode.members().stream()
                 .filter(member -> member.kind() == SyntaxKind.OBJECT_METHOD_DEFINITION)
                 .map(member -> (FunctionDefinitionNode) member).collect(Collectors.toList());
-        validateRequiredMethodsImplemented(context, availableFunctionDeclarations, serviceNode.location());
+        executeRequiredMethodValidation(context, availableFunctionDeclarations, serviceNode.location());
         availableFunctionDeclarations.forEach(fd -> {
             context.semanticModel().symbol(fd).ifPresent(fs -> {
                 NodeLocation location = fd.location();
-                validateRemoteQualifier(context, (FunctionSymbol) fs, location);
-                validateAdditionalMethodImplemented(context, fd, location);
-                validateMethodParameters(context, fd, ((FunctionSymbol) fs).typeDescriptor());
-                validateMethodReturnTypes(context, fd, ((FunctionSymbol) fs).typeDescriptor());
+                executeRemoteMethodValidation(context, (FunctionSymbol) fs, location);
+//                validateRemoteQualifier(context, (FunctionSymbol) fs, location);
+//                validateAdditionalMethodImplemented(context, fd, location);
+                executeMethodParameterValidation(context, fd, ((FunctionSymbol) fs).typeDescriptor());
+                executeMethodReturnTypeValidation(context, fd, ((FunctionSymbol) fs).typeDescriptor());
             });
         });
     }
 
-    private void validateRequiredMethodsImplemented(SyntaxNodeAnalysisContext context,
-                                                    List<FunctionDefinitionNode> availableFunctionDeclarations,
-                                                    NodeLocation location) {
+    private void executeRemoteMethodValidation(SyntaxNodeAnalysisContext context,
+                                               FunctionSymbol functionSymbol, NodeLocation location) {
+        Optional<String> functionNameOpt = functionSymbol.getName();
+        if (functionNameOpt.isPresent()) {
+            String functionName = functionNameOpt.get();
+            boolean isRemoteMethod = isRemoteMethod(functionSymbol);
+            boolean isAllowedMethod = allowedMethods.contains(functionName);
+            // if its a `remote` method it should be an allowed-method
+            if (isRemoteMethod && !isAllowedMethod) {
+                WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_104;
+                updateContext(context, errorCode, location, functionName);
+            }
+            // if its an allowed method it should be marked `remote`
+            if (!isRemoteMethod && isAllowedMethod) {
+                WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_102;
+                updateContext(context, errorCode, location, functionName);
+            }
+        }
+    }
+
+    private void executeRequiredMethodValidation(SyntaxNodeAnalysisContext context,
+                                                 List<FunctionDefinitionNode> availableFunctionDeclarations,
+                                                 NodeLocation location) {
         List<String> availableMethods = availableFunctionDeclarations.stream()
                 .map(fd -> fd.functionName().toString()).collect(Collectors.toList());
         boolean requiredMethodsImplemented = availableMethods.containsAll(requiredMethods);
@@ -138,26 +159,28 @@ public class ServiceDeclarationValidator {
         }
     }
 
-    private void validateRemoteQualifier(SyntaxNodeAnalysisContext context, FunctionSymbol functionSymbol,
-                                         NodeLocation location) {
-        boolean containsRemoteQualifier = functionSymbol.qualifiers().contains(Qualifier.REMOTE);
-        if (!containsRemoteQualifier) {
-            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_102;
-            updateContext(context, errorCode, location);
-        }
-    }
+//    private void validateRemoteQualifier(SyntaxNodeAnalysisContext context, FunctionSymbol functionSymbol,
+//                                         NodeLocation location) {
+//        boolean containsRemoteQualifier = functionSymbol.qualifiers().contains(Qualifier.REMOTE);
+//        if (!containsRemoteQualifier) {
+//            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_102;
+//            updateContext(context, errorCode, location);
+//        }
+//    }
+//
+//    private void validateAdditionalMethodImplemented(SyntaxNodeAnalysisContext context,
+//                                                     FunctionDefinitionNode functionDefinition,
+//                                                     NodeLocation location) {
+//        String functionName = functionDefinition.functionName().toString();
+//        if (!allowedMethods.contains(functionName)) {
+//            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_104;
+//            updateContext(context, errorCode, location, functionName);
+//        }
+//    }
 
-    private void validateAdditionalMethodImplemented(SyntaxNodeAnalysisContext context,
-                                                     FunctionDefinitionNode functionDefinition, NodeLocation location) {
-        String functionName = functionDefinition.functionName().toString();
-        if (!allowedMethods.contains(functionName)) {
-            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_104;
-            updateContext(context, errorCode, location, functionName);
-        }
-    }
-
-    private void validateMethodParameters(SyntaxNodeAnalysisContext context, FunctionDefinitionNode functionDefinition,
-                                          FunctionTypeSymbol typeSymbol) {
+    private void executeMethodParameterValidation(SyntaxNodeAnalysisContext context,
+                                                  FunctionDefinitionNode functionDefinition,
+                                                  FunctionTypeSymbol typeSymbol) {
         String functionName = functionDefinition.functionName().toString();
         if (allowedMethods.contains(functionName)) {
             List<String> allowedParameters = allowedParameterTypes.get(functionName);
@@ -213,8 +236,9 @@ public class ServiceDeclarationValidator {
         }
     }
 
-    private void validateMethodReturnTypes(SyntaxNodeAnalysisContext context,
-                                           FunctionDefinitionNode functionDefinition, FunctionTypeSymbol typeSymbol) {
+    private void executeMethodReturnTypeValidation(SyntaxNodeAnalysisContext context,
+                                                   FunctionDefinitionNode functionDefinition,
+                                                   FunctionTypeSymbol typeSymbol) {
         String functionName = functionDefinition.functionName().toString();
         List<String> predefinedReturnTypes = allowedReturnTypes.get(functionName);
         boolean nilableReturnTypeAllowed = methodsWithOptionalReturnTypes.contains(functionName);

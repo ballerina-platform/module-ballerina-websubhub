@@ -63,8 +63,10 @@ public class CompilerPluginTest {
         DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
         WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_102;
         Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        String expectedMsg = MessageFormat.format(
+                expectedCode.getDescription(), "onUnsubscriptionIntentVerified");
         Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
-        Assert.assertEquals(diagnostic.message(), expectedCode.getDescription());
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
 
     @Test
@@ -254,6 +256,14 @@ public class CompilerPluginTest {
     @Test
     public void testWithReturnTypesWithErrors() {
         Package currentPackage = loadPackage("sample_16");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testWithAdditionalMethods() {
+        Package currentPackage = loadPackage("sample_17");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
