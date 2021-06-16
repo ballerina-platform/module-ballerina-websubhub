@@ -275,14 +275,7 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
     }
 }
 
-# Dispatches the notifications to subscribers and retrieves the response.
-# 
-# + url - The base URL for the resource
-# + queryString - Query parameters which should be appended to the base URL
-# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-# + return - `http:Response` if receives a successful response or else `error`
 isolated function sendSubscriptionNotification(string url, string queryString, ClientConfiguration config) returns http:Response|error {
-    string resourceUrl = string `${url}${queryString}`;
-    http:Client httpClient = check  new(resourceUrl, retrieveHttpClientConfig(config));
-    return httpClient->get("");
+    http:Client httpClient = check  new(url, retrieveHttpClientConfig(config));
+    return httpClient->get(queryString);
 }
