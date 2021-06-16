@@ -115,8 +115,6 @@ public class ServiceDeclarationValidator {
             context.semanticModel().symbol(fd).ifPresent(fs -> {
                 NodeLocation location = fd.location();
                 executeRemoteMethodValidation(context, (FunctionSymbol) fs, location);
-//                validateRemoteQualifier(context, (FunctionSymbol) fs, location);
-//                validateAdditionalMethodImplemented(context, fd, location);
                 executeMethodParameterValidation(context, fd, ((FunctionSymbol) fs).typeDescriptor());
                 executeMethodReturnTypeValidation(context, fd, ((FunctionSymbol) fs).typeDescriptor());
             });
@@ -158,25 +156,6 @@ public class ServiceDeclarationValidator {
             updateContext(context, errorCode, location, requiredMethodsMsg);
         }
     }
-
-//    private void validateRemoteQualifier(SyntaxNodeAnalysisContext context, FunctionSymbol functionSymbol,
-//                                         NodeLocation location) {
-//        boolean containsRemoteQualifier = functionSymbol.qualifiers().contains(Qualifier.REMOTE);
-//        if (!containsRemoteQualifier) {
-//            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_102;
-//            updateContext(context, errorCode, location);
-//        }
-//    }
-//
-//    private void validateAdditionalMethodImplemented(SyntaxNodeAnalysisContext context,
-//                                                     FunctionDefinitionNode functionDefinition,
-//                                                     NodeLocation location) {
-//        String functionName = functionDefinition.functionName().toString();
-//        if (!allowedMethods.contains(functionName)) {
-//            WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_104;
-//            updateContext(context, errorCode, location, functionName);
-//        }
-//    }
 
     private void executeMethodParameterValidation(SyntaxNodeAnalysisContext context,
                                                   FunctionDefinitionNode functionDefinition,
