@@ -342,7 +342,7 @@ service / on new http:Listener(9102) {
     groups: ["subscriptionNotification"]
 }
 isolated function testSubscriptionNotificationSuccess() returns error? {
-    http:Response resp = check sendSubscriberNotification("http://localhost:9102/util", "?name=Ayesh", {});
+    http:Response resp = check sendSubscriptionNotification("http://localhost:9102/util", "?name=Ayesh", {});
     string responsePayload = check resp.getTextPayload();
     test:assertEquals(responsePayload, "Hello, Ayesh!");
 }
