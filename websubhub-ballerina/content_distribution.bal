@@ -25,7 +25,7 @@ isolated function processContentPublish(http:Request request, http:Headers heade
     } else {
         string contentType = request.getContentType();
         UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
-        Acknowledgement|UpdateMessageError|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
+        Acknowledgement|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
         if (updateResult is Acknowledgement) {
