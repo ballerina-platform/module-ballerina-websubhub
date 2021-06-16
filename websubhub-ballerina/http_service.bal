@@ -141,11 +141,13 @@ isolated service class HttpService {
                                                        self.clientConfig);
             }
             MODE_PUBLISH => {
-                error? result = processPublishRequestAndRespond(caller, request, headers, params, self.adaptor);
+                http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
                 if result is error {
                     response.statusCode = http:STATUS_BAD_REQUEST;
                     response.setTextPayload(result.message());
                     respondToRequest(caller, response);
+                } else {
+                    respondToRequest(caller, result);
                 }
             }
             _ => {

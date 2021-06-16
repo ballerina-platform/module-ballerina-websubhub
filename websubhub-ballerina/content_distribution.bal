@@ -17,24 +17,16 @@
 import ballerina/http;
 import ballerina/mime;
 
-# Processes the content publish request.
-# 
-# + caller - The `http:Caller` reference for the current request
-# + request - Received `http:Request` instance
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters received in the original request
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor`
-# + return - `error` if there is any error in execution or else `()`
-isolated function processPublishRequestAndRespond(http:Caller caller, http:Request request, http:Headers headers,
-                                                  map<string> params, HttpToWebsubhubAdaptor adaptor) returns error? {
-    http:Response response = new;
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
+isolated function processContentPublish(http:Request request, http:Headers headers, 
+                                        map<string> params, HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
+    string? topic = params[HUB_TOPIC];
     if topic is () {
         return error Error("Could not find the `hub.topic` parameter");
     } else {
         string contentType = request.getContentType();
         UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
         Acknowledgement|UpdateMessageError|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
+        http:Response response = new;
         response.statusCode = http:STATUS_OK;
         if (updateResult is Acknowledgement) {
             response.setTextPayload("hub.mode=accepted");
@@ -46,7 +38,7 @@ isolated function processPublishRequestAndRespond(http:Caller caller, http:Reque
             var errorDetails = UPDATE_MESSAGE_ERROR.detail();
             updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
         }
-        respondToRequest(caller, response);
+        return response;
     }
 }
 
