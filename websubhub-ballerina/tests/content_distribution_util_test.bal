@@ -95,3 +95,44 @@ isolated function testContentDistributionRetrieveForUnknownContentType() {
         test:assertEquals(retrievedPayload.message(), "Requested content type is not supported");
     }
 }
+
+@test:Config { 
+    groups: ["contentDistributionUtil"]
+}
+isolated function testCreateUpdateMessageForPublishEvent() returns error? {
+    http:Request req = new;
+    req.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+    string payload = "Hello World..!";
+    req.setTextPayload(payload);
+    UpdateMessage msg = check createUpdateMessage(mime:TEXT_PLAIN, "test", req);
+    test:assertEquals(msg.msgType, PUBLISH);
+    test:assertEquals(msg.contentType, mime:TEXT_PLAIN);
+    test:assertTrue(msg.content is string);
+}
+
+@test:Config { 
+    groups: ["contentDistributionUtil"]
+}
+isolated function testCreateUpdateMessageForNotifyEvent() returns error? {
+    http:Request req = new;
+    req.setHeader(BALLERINA_PUBLISH_HEADER, "event");
+    string payload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + "test";
+    req.setTextPayload(payload, mime:APPLICATION_FORM_URLENCODED);
+    UpdateMessage msg = check createUpdateMessage(mime:APPLICATION_FORM_URLENCODED, "test", req);
+    test:assertEquals(msg.msgType, EVENT);
+    test:assertEquals(msg.contentType, mime:APPLICATION_FORM_URLENCODED);
+    test:assertTrue(msg.content is ());
+}
+
+@test:Config { 
+    groups: ["contentDistributionUtil"]
+}
+isolated function testCreateUpdateMessageForPublishEventWithoutHeader() returns error? {
+    http:Request req = new;
+    string payload = "Hello World..!";
+    req.setTextPayload(payload);
+    UpdateMessage msg = check createUpdateMessage(mime:TEXT_PLAIN, "test", req);
+    test:assertEquals(msg.msgType, PUBLISH);
+    test:assertEquals(msg.contentType, mime:TEXT_PLAIN);
+    test:assertTrue(msg.content is string);
+}
