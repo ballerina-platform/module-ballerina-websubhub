@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Log error when return from the remote method leads to an error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1449)
 - [WebSubHub Compiler Plugin does not allow additional methods inside service declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/1417)
-- [WebSubHub Subscription/Unsubscription Verification is not WebSubRocks Compliant](https://github.com/ballerina-platform/ballerina-standard-library/issues/1479)
 - [Fix logic issue in selecting the event-type for content-publishing](https://github.com/ballerina-platform/ballerina-standard-library/issues/1460)
 - [Fix Required parameter validation for WebSubHub Service Declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/1477)
 
