@@ -141,68 +141,12 @@ isolated service class HttpService {
                                                        self.clientConfig);
             }
             MODE_PUBLISH => {
-                string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-                string|http:HeaderNotFoundError ballerinaPublishEvent = request.getHeader(BALLERINA_PUBLISH_HEADER);
-                if topic is () {
+                error? result = processPublishRequestAndRespond(caller, request, headers, params, self.adaptor);
+                if result is error {
+                    response.statusCode = http:STATUS_BAD_REQUEST;
+                    response.setTextPayload(result.message());
                     respondToRequest(caller, response);
-                    return;
                 }
-                UpdateMessage updateMsg;
-                if contentType == mime:APPLICATION_FORM_URLENCODED {
-                    if (ballerinaPublishEvent is string) {
-                        if (ballerinaPublishEvent == "publish") {
-                            updateMsg = {
-                                hubTopic: <string> topic,
-                                msgType: PUBLISH,
-                                contentType: contentType,
-                                content: check request.getFormParams()
-                            };
-                        } else {
-                            updateMsg = {
-                                hubTopic: <string> topic,
-                                msgType: EVENT,
-                                contentType: contentType,
-                                content: ()
-                            };
-                        }
-                    } else {
-                        updateMsg = {
-                            hubTopic: <string> topic,
-                            msgType: PUBLISH,
-                            contentType: contentType,
-                            content: check request.getTextPayload()
-                        };  
-                    }
-                } else if contentType == mime:APPLICATION_JSON {
-                    updateMsg = {
-                        hubTopic: <string> topic,
-                        msgType: PUBLISH,
-                        contentType: contentType,
-                        content: check request.getJsonPayload()
-                    };
-                } else if contentType == mime:APPLICATION_XML {
-                    updateMsg = {
-                        hubTopic: <string> topic,
-                        msgType: PUBLISH,
-                        contentType: contentType,
-                        content: check request.getXmlPayload()
-                    };
-                } else if contentType == mime:TEXT_PLAIN {
-                    updateMsg = {
-                        hubTopic: <string> topic,
-                        msgType: PUBLISH,
-                        contentType: contentType,
-                        content: check request.getTextPayload()
-                    };
-                } else {
-                    updateMsg = {
-                        hubTopic: <string> topic,
-                        msgType: PUBLISH,
-                        contentType: mime:APPLICATION_OCTET_STREAM,
-                        content: check request.getBinaryPayload()
-                    };
-                }
-                processPublishRequestAndRespond(caller, response, headers, self.adaptor, <@untainted> updateMsg);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;

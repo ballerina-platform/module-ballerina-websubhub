@@ -69,34 +69,6 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
     }
 }
 
-
-# Processes the publish-content request.
-# 
-# + caller - The `http:Caller` reference for the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor`
-# + updateMsg - Content update message
-isolated function processPublishRequestAndRespond(http:Caller caller, http:Response response,
-                                                  http:Headers headers, HttpToWebsubhubAdaptor adaptor,
-                                                  UpdateMessage updateMsg) {
-    
-    Acknowledgement|UpdateMessageError|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
-
-    response.statusCode = http:STATUS_OK;
-    if (updateResult is Acknowledgement) {
-        response.setTextPayload("hub.mode=accepted");
-        response.setHeader("Content-type","application/x-www-form-urlencoded");
-    } else if (updateResult is UpdateMessageError) {
-        var errorDetails = updateResult.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
-    } else {
-        var errorDetails = UPDATE_MESSAGE_ERROR.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
-    }
-    respondToRequest(caller, response);
-}
-
 # Retrieves an URL-encoded parameter.
 # 
 # + params - Available query parameters
