@@ -127,22 +127,20 @@ isolated function proceedToValidationAndVerification(http:Headers headers, HttpT
         }
     }
 
-    http:Client httpClient = checkpanic new(<string> message.hubCallback, retrieveHttpClientConfig(config));
-    string challenge = uuid:createType4AsString();
-
     if (validationResult is SubscriptionDeniedError || validationResult is error) {
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=denied"
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + "hub.reason" + "=" + validationResult.message();
-        http:Response validationFailureRequest = check sendVerificationRequest(message.hubCallback, queryParams, config);
+        http:Response validationFailureRequest = check sendSubscriberNotification(message.hubCallback, queryParams, config);
     } else {
+        string challenge = uuid:createType4AsString();
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                             + HUB_MODE + "=" + MODE_SUBSCRIBE
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + HUB_CHALLENGE + "=" + challenge
                             + "&" + HUB_LEASE_SECONDS + "=" + <string>message.hubLeaseSeconds;
-        http:Response subscriberResponse = check sendVerificationRequest(message.hubCallback, queryParams, config);
+        http:Response subscriberResponse = check sendSubscriberNotification(message.hubCallback, queryParams, config);
         var respStringPayload = subscriberResponse.getTextPayload();
         if (respStringPayload is string) {
             if (respStringPayload == challenge) {
@@ -253,14 +251,14 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
                             + HUB_MODE + "=denied"
                             + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                             + "&" + "hub.reason" + "=" + validationResult.message();
-        http:Response validationFailureRequest = check sendVerificationRequest(message.hubCallback, queryParams, config);
+        http:Response validationFailureRequest = check sendSubscriberNotification(message.hubCallback, queryParams, config);
     } else {
         string challenge = uuid:createType4AsString();
         string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
                                 + HUB_MODE + "=" + MODE_UNSUBSCRIBE
                                 + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
                                 + "&" + HUB_CHALLENGE + "=" + challenge;
-        http:Response subscriberResponse = check sendVerificationRequest(message.hubCallback, queryParams, config);
+        http:Response subscriberResponse = check sendSubscriberNotification(message.hubCallback, queryParams, config);
         var respStringPayload = subscriberResponse.getTextPayload();
         if (respStringPayload is string) {
             if (respStringPayload == challenge) {
@@ -277,13 +275,13 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
     }
 }
 
-# Dispatches the subscription/unsubscription verification related requests and retrieves the response.
+# Dispatches the notifications to subscribers and retrieves the response.
 # 
 # + url - The base URL for the resource
 # + queryString - Query parameters which should be appended to the base URL
 # + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
 # + return - `http:Response` if receives a successful response or else `error`
-isolated function sendVerificationRequest(string url, string queryString, ClientConfiguration config) returns http:Response|error {
+isolated function sendSubscriberNotification(string url, string queryString, ClientConfiguration config) returns http:Response|error {
     string resourceUrl = string `${url}${queryString}`;
     http:Client httpClient = check  new(resourceUrl, retrieveHttpClientConfig(config));
     return httpClient->get("");
