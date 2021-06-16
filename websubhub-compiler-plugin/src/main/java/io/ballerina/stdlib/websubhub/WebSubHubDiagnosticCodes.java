@@ -29,7 +29,7 @@ public enum WebSubHubDiagnosticCodes {
     WEBSUBHUB_101("WEBSUBHUB_101",
             "websubhub:Listener should only take either http:Listener or websubhub:ListenerConfiguration",
             DiagnosticSeverity.ERROR),
-    WEBSUBHUB_102("WEBSUBHUB_102", "websubhub:Service should only implement remote methods",
+    WEBSUBHUB_102("WEBSUBHUB_102", "{0} method should be declared as a remote method",
                DiagnosticSeverity.ERROR),
     WEBSUBHUB_103("WEBSUBHUB_103", "websubhub:Service should implement {0} methods",
             DiagnosticSeverity.ERROR),
