@@ -50,37 +50,22 @@ isolated function processPublishRequestAndRespond(http:Caller caller, http:Reque
     }
 }
 
-# Creates the `websubhub:UpdateMessage` from the `http:Request`.
-# 
-# + contentType - `Content-Type` header value of the received reqeust
-# + topic - WebSubHub `topic` related to the current request
-# + request - Received `http:Request` instance
-# + return - Created `websubhub:UpdateMessage` or `error` if there is any error in execution
 isolated function createUpdateMessage(string contentType, string topic, http:Request request) returns UpdateMessage|error {
     string|http:HeaderNotFoundError ballerinaPublishEvent = request.getHeader(BALLERINA_PUBLISH_HEADER);
-    if contentType == mime:APPLICATION_FORM_URLENCODED {
-        if ballerinaPublishEvent is string {
-            if ballerinaPublishEvent == "publish" {
-                return {
-                    hubTopic: <string> topic,
-                    msgType: PUBLISH,
-                    contentType: contentType,
-                    content: check retrieveRequestBody(contentType, request)
-                };
-            } else {
-                return {
-                    hubTopic: topic,
-                    msgType: EVENT,
-                    contentType: contentType,
-                    content: ()
-                };
-            }
-        } else {
+    if ballerinaPublishEvent is string {
+        if ballerinaPublishEvent == "publish" {
             return {
                 hubTopic: topic,
                 msgType: PUBLISH,
                 contentType: contentType,
-                content: check request.getTextPayload()
+                content: check retrieveRequestBody(contentType, request)
+            };
+        } else {
+            return {
+                hubTopic: topic,
+                msgType: EVENT,
+                contentType: contentType,
+                content: ()
             };
         }
     } else {
@@ -93,11 +78,6 @@ isolated function createUpdateMessage(string contentType, string topic, http:Req
     }
 }
 
-# Retrieves payload from the original `http:Request`.
-# 
-# + contentType - `Content-Type` header value of the received reqeust
-# + request - Received `http:Request` instance
-# + return - Request body of the `http:Request` as `json`, `xml`, `string`, `byte[]` or an `error` if there is any exception in the execution
 isolated function retrieveRequestBody(string contentType, http:Request request) returns json|xml|string|byte[]|error {
     match contentType {
         mime:APPLICATION_FORM_URLENCODED => {
