@@ -331,3 +331,18 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
     }
     return true;
 }
+
+service / on new http:Listener(9102) {
+    isolated resource function get util (string name) returns string {
+        return string `Hello, ${name}!`;
+    }
+}
+
+@test:Config { 
+    groups: ["subscriptionNotification"]
+}
+isolated function testSubscriptionNotificationSuccess() returns error? {
+    http:Response resp = check sendSubscriberNotification("http://localhost:9102/util", "?name=Ayesh", {});
+    string responsePayload = check resp.getTextPayload();
+    test:assertEquals(responsePayload, "Hello, Ayesh!");
+}
