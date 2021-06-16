@@ -58,9 +58,7 @@ service /websubhub on new websubhub:Listener(httpListener) {
                        isSuccess: "true"
                     }
             };
-        if (msg.hubTopic == "test") {
-            return successResult;
-        } else if (msg.hubTopic == "test1") {
+        if (msg.hubTopic == "test" || msg.hubTopic == "test1") {
             return successResult;
         } else {
             return error websubhub:BadSubscriptionError("Bad subscription");
