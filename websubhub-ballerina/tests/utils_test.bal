@@ -145,7 +145,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns @taint
         }
     }
 
-    map<string|string[]> retrievedResponseHeaders = check retrieveResponseHeaders(response);
+    map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(response);
     test:assertTrue(retrievedResponseHeaders.length() > 0);
     boolean isSuccess = check hasAllHeaders(retrievedResponseHeaders);
     test:assertTrue(isSuccess);
@@ -157,7 +157,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns @taint
 function testResponseHeaderRetrievalWithApiCall() returns @tainted error? {
     http:Request request = new;
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addHeaders", request);
-    map<string|string[]> retrievedResponseHeaders = check retrieveResponseHeaders(retrievedResponse);
+    map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(retrievedResponse);
     test:assertTrue(retrievedResponseHeaders.length() > 0);
     boolean isSuccess = check hasAllHeaders(retrievedResponseHeaders);
     test:assertTrue(isSuccess);

@@ -104,32 +104,11 @@ public client class HubClient {
         }
 
         http:Response|error response = self.httpClient->post("/", request);
-        if response is http:Response {
-            int status = response.statusCode;
-            if isSuccessStatusCode(status) {
-                string & readonly responseContentType = response.getContentType();
-                map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
-                if responseContentType.trim().length() > 1 {
-                    return {
-                        headers: responseHeaders,
-                        mediaType: responseContentType,
-                        body: retrieveResponseBody(response, responseContentType)
-                    };
-                } else {
-                    return {
-                        headers: responseHeaders
-                    };
-                }
-            } else if status == http:STATUS_GONE {
-                // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
-                return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
-            } else {
-                var result = response.getTextPayload();
-                string textPayload = result is string ? result : "";
-                return error ContentDeliveryError("Error occurred distributing updated content: " + textPayload);
-            }
+        if (response is http:Response) {
+            return processSubscriberResponse(response, self.topic);
         } else {
-            return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");
+            string errorMsg = string `Content distribution failed for topic [${self.topic}]`;
+            return error ContentDeliveryError(errorMsg);
         }
     }
 }
@@ -168,16 +147,16 @@ isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] p
     if payload is byte[] {
         return check crypto:hmacSha256(payload, keyArr);
     } else if payload is string {
-        byte[] inputArr = (<string>payload).toBytes();
+        byte[] inputArr = payload.toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);
     } else if payload is xml {
-        byte[] inputArr = (<xml>payload).toString().toBytes();
+        byte[] inputArr = payload.toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);   
     } else if payload is map<string> {
-        byte[] inputArr = (<map<string>>payload).toString().toBytes();
+        byte[] inputArr = payload.toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr); 
     } else {
-        byte[] inputArr = (<json>payload).toJsonString().toBytes();
+        byte[] inputArr = payload.toJsonString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);
     }
 }
@@ -200,19 +179,49 @@ isolated function getServicePath(string originalServiceUrl, string contentType, 
     }
 }
 
+isolated function processSubscriberResponse(http:Response response, string topic) returns ContentDistributionSuccess|SubscriptionDeletedError|ContentDeliveryError {
+    int status = response.statusCode;
+    if isSuccessStatusCode(status) {
+        string & readonly responseContentType = response.getContentType();
+        map<string|string[]> responseHeaders = retrieveResponseHeaders(response);
+        if responseContentType.trim().length() > 1 {
+            return {
+                headers: responseHeaders,
+                mediaType: responseContentType,
+                body: retrieveResponseBody(response, responseContentType)
+            };
+        } else {
+            return {
+                headers: responseHeaders
+            };
+        }
+    } else if status == http:STATUS_GONE {
+        // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
+        string errorMsg = string `Subscription to topic [${topic}] is terminated by the subscriber`;
+        return error SubscriptionDeletedError(errorMsg);
+    } else {
+        var result = response.getTextPayload();
+        string textPayload = result is string ? result : "";
+        string errorMsg = string `Error occurred distributing updated content: ${textPayload}`;
+        return error ContentDeliveryError(errorMsg);
+    }
+}
+
 # Retrieve the response headers from the subscriber response.
 # 
 # + subscriberResponse - The `http:Response` received for content delivery
 # + return - A `map<string|string[]>` containing header values or an `error` if there is any exception in the
 #            function execution
-isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]>|error {
+isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]> {
     map<string|string[]> responseHeaders = {};
     foreach var headerName in subscriberResponse.getHeaderNames() {
-        string[] retrievedValue = check subscriberResponse.getHeaders(headerName);
-        if retrievedValue.length() == 1 {
-            responseHeaders[headerName] = retrievedValue[0];
-        } else {
-            responseHeaders[headerName] = retrievedValue;
+        string[]|error retrievedValue = subscriberResponse.getHeaders(headerName);
+        if retrievedValue is string[] {
+            if retrievedValue.length() == 1 {
+                responseHeaders[headerName] = retrievedValue[0];
+            } else {
+                responseHeaders[headerName] = retrievedValue;
+            }
         }
     }
     return responseHeaders;
@@ -224,39 +233,37 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
 # + contentType - Content type for the received response
 # + return - Response body of the `http:Response` or an `error` if there is any exception in the execution
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>? {
-    string|byte[]|json|xml|map<string>? responseBody = ();
     match contentType {
         mime:APPLICATION_JSON => {
             var content = subscriberResponse.getJsonPayload();
             if (content is json) {
-                responseBody = content;
+                return content;
             }
         }
         mime:APPLICATION_XML => {
             var content = subscriberResponse.getXmlPayload();
             if (content is xml) {
-                responseBody = content;
+                return content;
             }
         }
         mime:TEXT_PLAIN => {   
             var content = subscriberResponse.getTextPayload();
             if (content is string) {
-                responseBody = content;
+                return content;
             }         
         }
         mime:APPLICATION_OCTET_STREAM => {
             var content = subscriberResponse.getBinaryPayload();
             if (content is byte[]) {
-                responseBody = content;
+                return content;
             }  
         }
         mime:APPLICATION_FORM_URLENCODED => {
             var content = subscriberResponse.getTextPayload();
             if (content is string) {
-                responseBody = retrieveResponseBodyForFormUrlEncodedMessage(content);
+                return retrieveResponseBodyForFormUrlEncodedMessage(content);
             } 
         }
         _ => {}
     }
-    return responseBody;
 }
