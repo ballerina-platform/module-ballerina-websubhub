@@ -18,7 +18,7 @@ import ballerina/http;
 import ballerina/jballerina.java;
 
 isolated class HttpToWebsubhubAdaptor {
-    isolated function init(Service 'service) returns error? {
+    isolated function init(Service 'service) {
         externInit(self, 'service);
     }
 
