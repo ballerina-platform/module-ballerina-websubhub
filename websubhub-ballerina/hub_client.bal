@@ -113,11 +113,6 @@ public client class HubClient {
     }
 }
 
-# Retrieve the content type for the content distribution request.
-# 
-# + contentType - Provided content type (optional)
-# + payload - Content-distribution payload
-# + return - Content type of the content-distribution request
 isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
     if contentType is string {
         return contentType;
@@ -136,12 +131,6 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
     }
 }
 
-# Retrieve signature for the content-distribution request payload.
-# 
-# + 'key - hashing key to be used (this is provided by the subscriber)
-# + payload - content-distribution request body
-# + return - `byte[]` containing the content signature or an `error` if there is any exception in the 
-#            function execution
 isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
     if payload is byte[] {
@@ -161,12 +150,6 @@ isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] p
     }
 }
 
-# Retrieve the service path to which the content should be delivered.
-# 
-# + originalServiceUrl - Subscriber callback URL
-# + contentType - Content type of the content-distribution request
-# + queryString - Generated query parameters for the request
-# + return - Service path, which should be called for content delivery
 isolated function getServicePath(string originalServiceUrl, string contentType, string queryString) returns string {
     match contentType {
         mime:APPLICATION_FORM_URLENCODED => {
@@ -207,11 +190,6 @@ isolated function processSubscriberResponse(http:Response response, string topic
     }
 }
 
-# Retrieve the response headers from the subscriber response.
-# 
-# + subscriberResponse - The `http:Response` received for content delivery
-# + return - A `map<string|string[]>` containing header values or an `error` if there is any exception in the
-#            function execution
 isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]> {
     map<string|string[]> responseHeaders = {};
     foreach var headerName in subscriberResponse.getHeaderNames() {
@@ -227,11 +205,6 @@ isolated function retrieveResponseHeaders(http:Response subscriberResponse) retu
     return responseHeaders;
 }
 
-# Retrieve response body from subscriber-response.
-# 
-# + subscriberResponse - The `http:Response` received for content delivery
-# + contentType - Content type for the received response
-# + return - Response body of the `http:Response` or an `error` if there is any exception in the execution
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>? {
     match contentType {
         mime:APPLICATION_JSON => {
