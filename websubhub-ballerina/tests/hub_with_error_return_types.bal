@@ -17,7 +17,7 @@
 import ballerina/http;
 import ballerina/test;
 
-http:Client hubWithErrorReturnTypesClient = checkpanic new("http://localhost:9101/websubhub");
+http:Client hubWithErrorReturnTypesClient = check new("http://localhost:9101/websubhub");
 
 listener Listener hubWithErrorReturnTypesListener = new(9101);
 

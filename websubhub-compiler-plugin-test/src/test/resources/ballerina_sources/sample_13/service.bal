@@ -31,7 +31,7 @@ service /websubhub on new foo:Listener(httpListener) {
         }
     }
 
-    isolated remote function onDeregisterTopic(foo:TopicDeregistration message, http:Request baseRequest)
+    isolated remote function onDeregisterTopic(foo:TopicDeregistration message, http:Headers headers)
                         returns foo:TopicDeregistrationSuccess|foo:TopicDeregistrationError {
 
         map<string> body = { isDeregisterSuccess: "true" };
@@ -79,7 +79,7 @@ service /websubhub on new foo:Listener(httpListener) {
         io:println("Subscription Intent verified invoked!");
     }
 
-    isolated remote function onUnsubscription(http:Request baseRequest, foo:Unsubscription msg)
+    isolated remote function onUnsubscription(http:Headers headers, foo:Unsubscription msg)
                returns foo:UnsubscriptionAccepted|foo:BadUnsubscriptionError|foo:InternalUnsubscriptionError {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             foo:UnsubscriptionAccepted successResult = {

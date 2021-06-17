@@ -44,7 +44,7 @@ public interface Constants {
     String VERIFIED_SUBSCRIPTION = "websubhub:VerifiedSubscription";
     String UNSUBSCRIPTION = "websubhub:Unsubscription";
     String VERIFIED_UNSUBSCRIPTION = "websubhub:VerifiedUnsubscription";
-    String BASE_REQUEST = "http:Request";
+    String HTTP_HEADERS = "http:Headers";
     String TOPIC_REGISTRATION_SUCCESS = "websubhub:TopicRegistrationSuccess";
     String TOPIC_REGISTRATION_ERROR = "websubhub:TopicRegistrationError";
     String TOPIC_DEREGISTRATION_SUCCESS = "websubhub:TopicDeregistrationSuccess";

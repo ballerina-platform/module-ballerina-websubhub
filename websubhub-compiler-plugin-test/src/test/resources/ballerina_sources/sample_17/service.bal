@@ -18,16 +18,12 @@ import ballerina/websubhub;
 import ballerina/http;
 import ballerina/io;
 
-listener websubhub:Listener functionWithArgumentsListener = new(9090);
+listener http:Listener httpListener = new http:Listener(10012);
 
-public type NewResponse record {|
-    websubhub:Subscription message;
-|};
-
-service /websubhub on functionWithArgumentsListener {
+service /websubhub on new websubhub:Listener(httpListener) {
 
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
-                                returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
+                                returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
         if (message.topic == "test") {
             return websubhub:TOPIC_REGISTRATION_SUCCESS;
         } else {
@@ -36,7 +32,7 @@ service /websubhub on functionWithArgumentsListener {
     }
 
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Headers headers)
-                        returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
+                        returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
 
         map<string> body = { isDeregisterSuccess: "true" };
         websubhub:TopicDeregistrationSuccess deregisterResult = {
@@ -50,21 +46,19 @@ service /websubhub on functionWithArgumentsListener {
     }
 
     isolated remote function onUpdateMessage(websubhub:UpdateMessage message)
-               returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
+               returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {
         return websubhub:ACKNOWLEDGEMENT;
     }
-    
+
     isolated remote function onSubscription(websubhub:Subscription msg)
                 returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|websubhub:SubscriptionTemporaryRedirect
-                |websubhub:BadSubscriptionError|websubhub:InternalSubscriptionError|NewResponse {
+                |websubhub:BadSubscriptionError|websubhub:InternalSubscriptionError|error {
         websubhub:SubscriptionAccepted successResult = {
                 body: <map<string>>{
                        isSuccess: "true"
                     }
             };
-        if (msg.hubTopic == "test") {
-            return successResult;
-        } else if (msg.hubTopic == "test1") {
+        if (msg.hubTopic == "test" || msg.hubTopic == "test1") {
             return successResult;
         } else {
             return error websubhub:BadSubscriptionError("Bad subscription");
@@ -72,19 +66,24 @@ service /websubhub on functionWithArgumentsListener {
     }
 
     isolated remote function onSubscriptionValidation(websubhub:Subscription msg)
-                returns websubhub:SubscriptionDeniedError? {
+                returns websubhub:SubscriptionDeniedError|error? {
         if (msg.hubTopic == "test1") {
             return error websubhub:SubscriptionDeniedError("Denied subscription for topic 'test1'");
         }
         return ();
     }
 
-    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) {
+    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) returns error? {
         io:println("Subscription Intent verified invoked!");
+        check self.subscriber(msg);
+    }
+
+    isolated function subscriber(websubhub:VerifiedSubscription msg) returns error? {
+
     }
 
     isolated remote function onUnsubscription(websubhub:Unsubscription msg)
-               returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|websubhub:InternalUnsubscriptionError {
+               returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|websubhub:InternalUnsubscriptionError|error {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             websubhub:UnsubscriptionAccepted successResult = {
                 body: <map<string>>{
@@ -98,14 +97,19 @@ service /websubhub on functionWithArgumentsListener {
     }
 
     isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
-                returns websubhub:UnsubscriptionDeniedError? {
+                returns websubhub:UnsubscriptionDeniedError|error? {
         if (msg.hubTopic == "test1") {
             return error websubhub:UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
         }
         return ();
     }
 
-    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg){
+    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg) returns error? {
         io:println("Unsubscription Intent verified invoked!");
+        check self.unsubscriber(msg);
+    }
+
+    isolated function unsubscriber(websubhub:VerifiedUnsubscription msg) returns error? {
+
     }
 }

@@ -63,8 +63,10 @@ public class CompilerPluginTest {
         DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
         WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_102;
         Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        String expectedMsg = MessageFormat.format(
+                expectedCode.getDescription(), "onUnsubscriptionIntentVerified");
         Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
-        Assert.assertEquals(diagnostic.message(), expectedCode.getDescription());
+        Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
 
     @Test
@@ -142,7 +144,7 @@ public class CompilerPluginTest {
         Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
         Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
         String expectedMsg = MessageFormat.format(expectedCode.getDescription(),
-                "onUpdateMessage", "websubhub:UpdateMessage,http:Request");
+                "onUpdateMessage", "websubhub:UpdateMessage,http:Headers");
         Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
 
@@ -228,10 +230,11 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 1);
         Diagnostic diagnostic = (Diagnostic) diagnosticResult.diagnostics().toArray()[0];
         DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
         Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
-        Assert.assertEquals(diagnosticInfo.code(), "WEBSUBHUB_109");
-        String expectedMsg = MessageFormat.format("{0} method params should follow {1} order",
-                "onUnsubscription", "websubhub:Unsubscription,http:Request");
+        Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
+        String expectedMsg = MessageFormat.format(expectedCode.getDescription(),
+                "onUnsubscription", "websubhub:Unsubscription,http:Headers");
         Assert.assertEquals(diagnostic.message(), expectedMsg);
     }
 
@@ -254,6 +257,22 @@ public class CompilerPluginTest {
     @Test
     public void testWithReturnTypesWithErrors() {
         Package currentPackage = loadPackage("sample_16");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testWithAdditionalMethods() {
+        Package currentPackage = loadPackage("sample_17");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
+    }
+
+    @Test
+    public void testWithAdditionalExternMethods() {
+        Package currentPackage = loadPackage("sample_18");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         Assert.assertEquals(diagnosticResult.diagnostics().size(), 0);
