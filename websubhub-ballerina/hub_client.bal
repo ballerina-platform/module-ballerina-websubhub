@@ -61,7 +61,7 @@ public client class HubClient {
     # ```
     #
     # + msg - Content to be distributed to the topic subscriber 
-    # + return - An `Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
+    # + return - An `websubhub:Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
     #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
                                 returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|Error {
@@ -136,9 +136,8 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
 isolated function retrievePayloadSignature(string contentType, string secret, string queryString, string|xml|json|byte[] payload) returns byte[]|error {
     if contentType == mime:APPLICATION_FORM_URLENCODED {
         return generateSignature(secret, queryString);
-    } else {
-        return generateSignature(secret, payload);
-    } 
+    }
+    return generateSignature(secret, payload);
 }
 
 isolated function generateSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {

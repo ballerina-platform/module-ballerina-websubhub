@@ -206,9 +206,8 @@ isolated function retrieveHttpClient(string url, http:ClientConfiguration config
     http:Client|error clientEp = new (url, config);
     if (clientEp is http:Client) {
         return clientEp;
-    } else {
-        return error Error("Client initialization failed", clientEp);
     }
+    return error Error("Client initialization failed", clientEp);
 }
 
 # Responds to the received `http:Request`.
