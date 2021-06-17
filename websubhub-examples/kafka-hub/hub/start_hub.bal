@@ -45,13 +45,17 @@ public function main() returns error? {
 }
 
 function syncRegsisteredTopicsCache() returns error? {
-    while true {
-        websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
-        if persistedTopics is websubhub:TopicRegistration[] {
-            refreshTopicCache(persistedTopics);
+    do {
+        while true {
+            websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
+            if persistedTopics is websubhub:TopicRegistration[] {
+                refreshTopicCache(persistedTopics);
+            }
         }
+    } on fail var e {
+        _ = check conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+        return e;
     }
-    _ = check conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
 }
 
 function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
@@ -91,14 +95,18 @@ function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
 }
 
 function syncSubscribersCache() returns error? {
-    while true {
-        websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
-        if persistedSubscribers is websubhub:VerifiedSubscription[] {
-            refreshSubscribersCache(persistedSubscribers);
-            check startMissingSubscribers(persistedSubscribers);
+    do {
+        while true {
+            websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
+            if persistedSubscribers is websubhub:VerifiedSubscription[] {
+                refreshSubscribersCache(persistedSubscribers);
+                check startMissingSubscribers(persistedSubscribers);
+            }
         }
-    }
-    _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+    } on fail var e {
+        _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+        return e;
+    }  
 }
 
 function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
@@ -158,37 +166,30 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     cert: "../_resources/server.crt"
                 }
             });
-            _ = @strand { thread: "any" } start notifySubscriber(hubClientEp, consumerEp, topicName, groupName);
+            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName);
         }
     }
 }
 
-isolated function notifySubscriber(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
-    while true {
-        kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-        
-        if !isValidConsumer(topicName, groupName) {
-            _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
-            break;
-        }
-        
-        foreach var kafkaRecord in records {
-            var message = deSerializeKafkaRecord(kafkaRecord);
-            if (message is websubhub:ContentDistributionMessage) {
-                var response = clientEp->notifyContentDistribution(message);
-                if (response is error) {
-                    log:printError("Error occurred while sending notification to subscriber ", err = response.message());
-                    lock {
-                        _ = subscribersCache.remove(groupName);
-                    }
-                    break;
-                } else {
-                    _ = check consumerEp->commit();
+isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
+    do {
+        while true {
+            kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            
+            if !isValidConsumer(topicName, groupName) {
+                fail error(string `Consumer with group name ${groupName} or topic ${topicName} is invalid`);
+            }
+            var result = notifySubscribers(records, clientEp, consumerEp);
+            if result is error {
+                lock {
+                    _ = subscribersCache.remove(groupName);
                 }
-            } else {
-                log:printError("Error occurred while retrieving message data", err = message.message());
+                log:printError("Error occurred while sending notification to subscriber ", err = result.message());
             }
         }
+    } on fail var e {
+        _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
+        return e;
     }
 }
 
@@ -201,10 +202,22 @@ isolated function isValidConsumer(string topicName, string groupName) returns bo
     lock {
         subscriberAvailable = subscribersCache.hasKey(groupName);
     }
-    if !topicAvailable || !subscriberAvailable {
-        return false;
-    } else {
-        return true;
+    return !topicAvailable || !subscriberAvailable;
+}
+
+isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
+    foreach var kafkaRecord in records {
+        var message = deSerializeKafkaRecord(kafkaRecord);
+        if (message is websubhub:ContentDistributionMessage) {
+            var response = clientEp->notifyContentDistribution(message);
+            if (response is error) {
+                return response;
+            } else {
+                _ = check consumerEp->commit();
+            }
+        } else {
+            log:printError("Error occurred while retrieving message data", err = message.message());
+        }
     }
 }
 
