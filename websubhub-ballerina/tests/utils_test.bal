@@ -346,3 +346,19 @@ isolated function testSubscriptionNotificationSuccess() returns error? {
     string responsePayload = check resp.getTextPayload();
     test:assertEquals(responsePayload, "Hello, Ayesh!");
 }
+
+@test:Config { 
+    groups: ["httpClientRetrieval"]
+}
+isolated function testRetrieveHttpClientWithConfig() returns @tainted error? {
+    http:ClientConfiguration httpsConfig = {
+        secureSocket: {
+            cert: {
+                path: "tests/resources/ballerinaTruststore.pkcs12",
+                password: "ballerina"
+            }
+        }
+    };
+    var clientEp = retrieveHttpClient("https://test.com/sample", httpsConfig);
+    test:assertTrue(clientEp is http:Client);
+}

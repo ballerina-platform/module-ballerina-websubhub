@@ -41,14 +41,14 @@ public client class HubClient {
     #
     # + subscription - Original subscription details for the `subscriber`
     # + config - The `websubhub:ClientConfiguration` for the underlying client
-    # + return - The `websubhub:HubClient` or an `error` if the initialization failed
-    public isolated function init(Subscription subscription, *ClientConfiguration config) returns error? {
+    # + return - The `websubhub:HubClient` or an `websubhub:Error` if the initialization failed
+    public isolated function init(Subscription subscription, *ClientConfiguration config) returns Error? {
         self.callback = subscription.hubCallback;
         self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
         self.linkHeaderValue = generateLinkUrl(self.hub,  self.topic);
         self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
-        self.httpClient = check new(subscription.hubCallback, retrieveHttpClientConfig(config));
+        self.httpClient = check retrieveHttpClient(subscription.hubCallback, retrieveHttpClientConfig(config));
     }
 
     # Distributes the published content to the subscribers.
