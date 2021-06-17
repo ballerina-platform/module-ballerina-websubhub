@@ -65,7 +65,7 @@ public class Listener {
 
         string hubUrl = self.retrieveHubUrl(name);
         ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
-        HttpToWebsubhubAdaptor adaptor = new ('service);
+        HttpToWebsubhubAdaptor adaptor = new('service);
         if configuration is ServiceConfiguration {
             int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
             if configuration?.webHookConfig is ClientConfiguration {
