@@ -61,10 +61,10 @@ public client class HubClient {
     # ```
     #
     # + msg - Content to be distributed to the topic subscriber 
-    # + return - An `error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
+    # + return - An `Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
     #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
-                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|error {
+                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|Error {
         string contentType = retrieveContentType(msg.contentType, msg.content);
         http:Request request = new;
         string queryString = "";
@@ -91,16 +91,18 @@ public client class HubClient {
                 }
             }
         }
-        check request.setContentType(contentType);
+        error? result = request.setContentType(contentType);
+        if (result is error) {
+            return error Error("Error occurred while setting content type", result);
+        }
         request.setHeader(LINK, self.linkHeaderValue);
         if self.secret.length() > 0 {
-            byte[] hash = [];
-            if contentType == mime:APPLICATION_FORM_URLENCODED {
-                hash = check retrievePayloadSignature(self.secret, queryString);
+            byte[]|error hash = retrievePayloadSignature(contentType, self.secret, queryString, msg.content);
+            if (hash is byte[]) {
+                request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
             } else {
-                hash = check retrievePayloadSignature(self.secret, msg.content);
+                return error Error("Error retrieving content signature", hash);
             }
-            request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
         }
 
         http:Response|error response = self.httpClient->post("/", request);
@@ -131,7 +133,15 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
     }
 }
 
-isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+isolated function retrievePayloadSignature(string contentType, string secret, string queryString, string|xml|json|byte[] payload) returns byte[]|error {
+    if contentType == mime:APPLICATION_FORM_URLENCODED {
+        return generateSignature(secret, queryString);
+    } else {
+        return generateSignature(secret, payload);
+    } 
+}
+
+isolated function generateSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
     if payload is byte[] {
         return check crypto:hmacSha256(payload, keyArr);
