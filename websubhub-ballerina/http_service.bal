@@ -109,19 +109,31 @@ isolated service class HttpService {
         match mode {
             MODE_REGISTER => {
                 if self.isRegisterAvailable {
-                    processRegisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
+                    http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
+                    if result is error {
+                        response.statusCode = http:STATUS_BAD_REQUEST;
+                        response.setTextPayload(result.message());
+                        respondToRequest(caller, response);
+                    } else {
+                        respondToRequest(caller, result);
+                    }
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
-                respondToRequest(caller, response);
             }
             MODE_DEREGISTER => {
                 if self.isDeregisterAvailable {
-                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
+                    http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
+                    if result is error {
+                        response.statusCode = http:STATUS_BAD_REQUEST;
+                        response.setTextPayload(result.message());
+                        respondToRequest(caller, response);
+                    } else {
+                        respondToRequest(caller, result);
+                    }
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
-                respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {
                 processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
