@@ -19,7 +19,7 @@ import ballerina/mime;
 import ballerina/test;
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["retrieveContent"]
 }
 isolated function testContentDistributionRetrieveText() returns error? {
     http:Request req = new;
@@ -31,7 +31,7 @@ isolated function testContentDistributionRetrieveText() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["retrieveContent"]
 }
 isolated function testContentDistributionRetrieveJson() returns error? {
     http:Request req = new;
@@ -45,7 +45,7 @@ isolated function testContentDistributionRetrieveJson() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["retrieveContent"]
 }
 isolated function testContentDistributionRetrieveXml() returns error? {
     http:Request req = new;
@@ -60,7 +60,7 @@ isolated function testContentDistributionRetrieveXml() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["retrieveContent"]
 }
 isolated function testContentDistributionRetrieveByteArr() returns error? {
     http:Request req = new;
@@ -72,7 +72,7 @@ isolated function testContentDistributionRetrieveByteArr() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["retrieveContent"]
 }
 isolated function testContentDistributionRetrieveUrlEncoded() returns error? {
     http:Request req = new;
@@ -83,7 +83,7 @@ isolated function testContentDistributionRetrieveUrlEncoded() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["retrieveContent"]
 }
 isolated function testContentDistributionRetrieveForUnknownContentType() {
     http:Request req = new;
@@ -97,7 +97,7 @@ isolated function testContentDistributionRetrieveForUnknownContentType() {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["createUpdateMsg"]
 }
 isolated function testCreateUpdateMessageForPublishEvent() returns error? {
     http:Request req = new;
@@ -111,7 +111,7 @@ isolated function testCreateUpdateMessageForPublishEvent() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["createUpdateMsg"]
 }
 isolated function testCreateUpdateMessageForNotifyEvent() returns error? {
     http:Request req = new;
@@ -125,7 +125,7 @@ isolated function testCreateUpdateMessageForNotifyEvent() returns error? {
 }
 
 @test:Config { 
-    groups: ["contentDistributionUtil"]
+    groups: ["createUpdateMsg"]
 }
 isolated function testCreateUpdateMessageForPublishEventWithoutHeader() returns error? {
     http:Request req = new;
@@ -135,4 +135,42 @@ isolated function testCreateUpdateMessageForPublishEventWithoutHeader() returns 
     test:assertEquals(msg.msgType, PUBLISH);
     test:assertEquals(msg.contentType, mime:TEXT_PLAIN);
     test:assertTrue(msg.content is string);
+}
+
+@test:Config { 
+    groups: ["processContentUpdateResult"]
+}
+isolated function testProcessResultForAck() returns error? {
+    http:Response response = processResult(ACKNOWLEDGEMENT);
+    string expectedPayload = "hub.mode=accepted";
+    string receivedContentType = response.getContentType();
+    string receivedPayload = check response.getTextPayload();
+    test:assertEquals(receivedContentType, mime:APPLICATION_FORM_URLENCODED);
+    test:assertEquals(receivedPayload, expectedPayload);    
+}
+
+@test:Config { 
+    groups: ["processContentUpdateResult"]
+}
+isolated function testProcessResultForUpdateMsgError() returns error? {
+    UpdateMessageError updateError = error UpdateMessageError("Error in accessing content");
+    http:Response response = processResult(updateError);
+    string expectedPayload = "hub.mode=denied&hub.reason=Error in accessing content";
+    string receivedContentType = response.getContentType();
+    string receivedPayload = check response.getTextPayload();
+    test:assertEquals(receivedContentType, mime:APPLICATION_FORM_URLENCODED);
+    test:assertEquals(receivedPayload, expectedPayload);    
+}
+
+@test:Config { 
+    groups: ["processContentUpdateResult"]
+}
+isolated function testProcessResultForGenericError() returns error? {
+    error genericError = error("Error in accessing content");
+    http:Response response = processResult(genericError);
+    string expectedPayload = "hub.mode=denied&hub.reason=Error in accessing content";
+    string receivedContentType = response.getContentType();
+    string receivedPayload = check response.getTextPayload();
+    test:assertEquals(receivedContentType, mime:APPLICATION_FORM_URLENCODED);
+    test:assertEquals(receivedPayload, expectedPayload);    
 }

@@ -17,6 +17,7 @@
 import ballerina/lang.'string as strings;
 import ballerina/url;
 import ballerina/http;
+import ballerina/mime;
 import ballerina/regex;
 
 isolated function retrieveParameter(map<string> params, string 'key) returns string|error {
@@ -101,12 +102,8 @@ isolated function updateSuccessResponse(http:Response response, anydata? message
 isolated function updateHubResponse(http:Response response, string hubMode, 
                                     anydata? messageBody, map<string|string[]>? headers, 
                                     string? reason = ()) {
-    response.setHeader("Content-type","application/x-www-form-urlencoded");
-
     string payload = generateResponsePayload(hubMode, messageBody, reason);
-
-    response.setTextPayload(payload);
-
+    response.setTextPayload(payload, mime:APPLICATION_FORM_URLENCODED);
     if (headers is map<string|string[]>) {
         foreach var [header, value] in headers.entries() {
             if (value is string) {

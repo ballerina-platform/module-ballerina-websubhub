@@ -72,8 +72,7 @@ isolated function processResult(Acknowledgement|error result) returns http:Respo
     http:Response response = new;
     response.statusCode = http:STATUS_OK;
     if (result is Acknowledgement) {
-        response.setTextPayload("hub.mode=accepted");
-        response.setHeader("Content-type","application/x-www-form-urlencoded");
+        response.setTextPayload("hub.mode=accepted", mime:APPLICATION_FORM_URLENCODED);
     } else if (result is UpdateMessageError) {
         var errorDetails = result.detail();
         updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
