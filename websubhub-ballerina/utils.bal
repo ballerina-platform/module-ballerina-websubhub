@@ -19,54 +19,17 @@ import ballerina/url;
 import ballerina/http;
 import ballerina/regex;
 
-# Processes the `topic` registration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processRegisterRequest(http:Caller caller, http:Response response,
-                                         http:Headers headers, map<string> params, 
-                                         HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicRegistration msg = {
-            topic: topic
-        };
-        TopicRegistrationSuccess|TopicRegistrationError|error result = adaptor.callRegisterMethod(msg, headers);
-        if (result is TopicRegistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicRegistrationError ? result.detail(): TOPIC_REGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+isolated function retrieveParameter(map<string> params, string 'key) returns string|error {
+    string? retrievedValue = params.removeIfHasKey('key);
+    if retrievedValue is string {
+        string|error decodedValue = url:decode(retrievedValue, "UTF-8");
+        if decodedValue is error {
+            return error("Invalid value found for parameter '" + 'key + "' : " + decodedValue.message());
+        } else if decodedValue != "" {
+            return decodedValue;
         }
     }
-}
-
-# Processes the `topic` deregistration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processDeregisterRequest(http:Caller caller, http:Response response,
-                                           http:Headers headers, map<string> params, 
-                                           HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicDeregistration msg = {
-            topic: topic
-        };
-        TopicDeregistrationSuccess|TopicDeregistrationError|error result = adaptor.callDeregisterMethod(msg, headers);
-        if (result is TopicDeregistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        }
-    }
+    return error("Empty value found for parameter '" + 'key + "'");
 }
 
 # Retrieves an URL-encoded parameter.
