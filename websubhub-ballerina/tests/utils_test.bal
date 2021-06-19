@@ -69,6 +69,34 @@ isolated function testParameterRetrievalFailureForNilValue() {
 }
 
 @test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGeneration() {
+    string baseUrl = "https://sample.com";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "?key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGenerationWithBaseStringWithQueryParam() {
+    string baseUrl = "https://sample.com?baseKey=baseVal";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "&key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
     groups: ["contentTypeRetrieval"]
 }
 isolated function testContentTypeRetrievalForString() returns @tainted error? {

@@ -136,14 +136,19 @@ isolated service class HttpService {
                 }
             }
             MODE_SUBSCRIBE => {
-                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
-                                                     headers, <@untainted> params, 
-                                                     <@untainted> self.adaptor,
-                                                     <@untainted> self.isSubscriptionAvailable,
-                                                     <@untainted> self.isSubscriptionValidationAvailable, 
-                                                     <@untainted> self.hub, 
-                                                     <@untainted> self.defaultHubLeaseSeconds, 
-                                                     self.clientConfig);
+                http:Response|Redirect|error? result = processSubscription(caller, response, headers, params, self.adaptor, 
+                                                                           self.isSubscriptionAvailable, self.isSubscriptionValidationAvailable, 
+                                                                           self.hub, self.defaultHubLeaseSeconds, self.clientConfig);
+                if result is error {
+                    response.statusCode = http:STATUS_BAD_REQUEST;
+                    response.setTextPayload(result.message());
+                    respondToRequest(caller, response);
+                } else if result is Redirect {
+                    http:RedirectCode redirectCode = result is SubscriptionPermanentRedirect ? http:REDIRECT_PERMANENT_REDIRECT_308 : http:REDIRECT_TEMPORARY_REDIRECT_307;
+                    error? redirectError = caller->redirect(response, redirectCode, result.redirectUrls);
+                } else if result is http:Response {
+                    respondToRequest(caller, result);
+                }
             }
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 

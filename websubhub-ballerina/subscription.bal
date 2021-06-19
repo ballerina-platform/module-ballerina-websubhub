@@ -19,144 +19,121 @@ import ballerina/log;
 import ballerina/lang.'string as strings;
 import ballerina/uuid;
 
-# Processes the subscription request.
-# 
-# + request - Received `http:Request` instance
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-# + isAvailable - Flag to notify whether an `onSubscription` is implemented in the `websubhub:Service`
-# + isSubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
-# + hubUrl - Public URL in which the `hub` is running
-# + defaultHubLeaseSeconds - The default subscription active timeout for the `hub`
-# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-isolated function processSubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response,
-                                                       http:Headers headers, map<string> params, HttpToWebsubhubAdaptor adaptor,
-                                                       boolean isAvailable, boolean isSubscriptionValidationAvailable, 
-                                                       string hubUrl, int defaultHubLeaseSeconds, ClientConfiguration config) {
+isolated function processSubscription(http:Caller caller, http:Response response, http:Headers headers, 
+                                      map<string> params, HttpToWebsubhubAdaptor adaptor,
+                                      boolean isAvailable, boolean isSubscriptionValidationAvailable, 
+                                      string hubUrl, int defaultHubLeaseSeconds, ClientConfiguration config) returns http:Response|Redirect|error? {
 
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is ()) {
-        respondToRequest(caller, response);
-        return;
-    }
-    string? hubCallback = getEncodedValueOrUpdatedErrorResponse(params, HUB_CALLBACK, response);
-    if (hubCallback is ()) {
-        respondToRequest(caller, response);
-        return;
-    }
-    var hubLeaseSeconds = params.removeIfHasKey(HUB_LEASE_SECONDS);
-    if (hubLeaseSeconds is ()) {
-        hubLeaseSeconds = defaultHubLeaseSeconds.toString();
-    } else {
-        var retrievedLeaseSeconds = 'int:fromString(hubLeaseSeconds);
-        if (retrievedLeaseSeconds is error || retrievedLeaseSeconds == 0) {
-            hubLeaseSeconds = defaultHubLeaseSeconds.toString();
-        }
-    }
-
+    string topic = check retrieveParameter(params, HUB_TOPIC);
+    string hubCallback = check retrieveParameter(params, HUB_CALLBACK);
+    int leaseSeconds = retrieveLeaseSeconds(params, defaultHubLeaseSeconds);
     Subscription message = {
         hub: hubUrl,
         hubMode: MODE_SUBSCRIBE,
-        hubCallback: <string> hubCallback,
-        hubTopic: <string> topic,
-        hubLeaseSeconds: hubLeaseSeconds,
-        hubSecret: params[HUB_SECRET]
+        hubCallback: hubCallback,
+        hubTopic: topic,
+        hubLeaseSeconds: leaseSeconds.toString(),
+        hubSecret: params.removeIfHasKey(HUB_SECRET)
     };
-    
     foreach var ['key, value] in params.entries() {
         message['key] = value;
     }
 
-    if (!isAvailable) {
+    if !isAvailable {
         response.statusCode = http:STATUS_ACCEPTED;
-        respondToRequest(caller, response);
+        return response;
     } else {
-        SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|
-        BadSubscriptionError|InternalSubscriptionError|error onSubscriptionResult = adaptor.callOnSubscriptionMethod(
-                                                                                        message, headers);
-        if (onSubscriptionResult is SubscriptionTemporaryRedirect) {
-            http:ListenerError? result = caller->redirect(
-                response, http:REDIRECT_TEMPORARY_REDIRECT_307, onSubscriptionResult.redirectUrls);
-        } else if (onSubscriptionResult is SubscriptionPermanentRedirect) {
-           SubscriptionPermanentRedirect redirMsg = <SubscriptionPermanentRedirect> onSubscriptionResult;
-           http:ListenerError? result = caller->redirect(
-               response, http:REDIRECT_PERMANENT_REDIRECT_308, redirMsg.redirectUrls);
-        } else if (onSubscriptionResult is SubscriptionAccepted) {
+        SubscriptionAccepted|Redirect|error result = adaptor.callOnSubscriptionMethod(message, headers);
+        if result is SubscriptionAccepted {
             response.statusCode = http:STATUS_ACCEPTED;
             respondToRequest(caller, response);
-            error? result = proceedToValidationAndVerification(headers, adaptor, message, isSubscriptionValidationAvailable, config);
-            if result is error {
-                log:printError("Error occurred while unsubscription verification ", err = result.message());
+            error? verificationResult = processSubscriptionVerification(headers, adaptor, message, isSubscriptionValidationAvailable, config);
+            if verificationResult is error {
+                log:printError("Error occurred while processing subscription", errorMsg = verificationResult.message());
             }
-        } else if (onSubscriptionResult is BadSubscriptionError) {
-            response.statusCode = http:STATUS_BAD_REQUEST;
-            var errorDetails = onSubscriptionResult.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onSubscriptionResult.message());
-            respondToRequest(caller, response);
+        } else if result is error {
+            return processSubscriptionError(result);
         } else {
-            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            var errorDetails = onSubscriptionResult is InternalSubscriptionError ? onSubscriptionResult.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onSubscriptionResult.message());
-            respondToRequest(caller, response);
+            return result;
         }
     }
-}   
+}  
 
-# Processes the subscription validation request.
-# 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-# + message - Subscriber details for the subscription request
-# + isSubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
-# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-# + return - `error` if there is any error in execution or else `()`
-isolated function proceedToValidationAndVerification(http:Headers headers, HttpToWebsubhubAdaptor adaptor, Subscription message,
-                                                     boolean isSubscriptionValidationAvailable, ClientConfiguration config) returns error? {
-    SubscriptionDeniedError|error? validationResult = ();
-    if (isSubscriptionValidationAvailable) {
-        validationResult = adaptor.callOnSubscriptionValidationMethod(message, headers);
+isolated function retrieveLeaseSeconds(map<string> params, int defaultHubLeaseSeconds) returns int {
+    var hubLeaseSeconds = params.removeIfHasKey(HUB_LEASE_SECONDS);
+    if hubLeaseSeconds is string {
+        var retrievedLeaseSeconds = 'int:fromString(hubLeaseSeconds);
+        if retrievedLeaseSeconds is int {
+            return retrievedLeaseSeconds;
+        }
+    }
+    return defaultHubLeaseSeconds;
+}
+
+isolated function processSubscriptionError(error result) returns http:Response|Redirect {
+    http:Response response = new;
+    if result is BadSubscriptionError {
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        var errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        return response;
     } else {
-        if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
-            validationResult = error SubscriptionDeniedError("Invalid hub.callback param in the request.");
-        }
-        if (!message.hubTopic.startsWith("http://") && !message.hubTopic.startsWith("https://")) {
-            validationResult = error SubscriptionDeniedError("Invalid hub.topic param in the request.'");
-        }
+        response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+        var errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        return response;
     }
+}
 
-    if (validationResult is SubscriptionDeniedError || validationResult is error) {
-        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
-                            + HUB_MODE + "=denied"
-                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                            + "&" + "hub.reason" + "=" + validationResult.message();
-        http:Response validationFailureRequest = check sendSubscriptionNotification(message.hubCallback, queryParams, config);
+isolated function processSubscriptionVerification(http:Headers headers, HttpToWebsubhubAdaptor adaptor, Subscription message, 
+                                                  boolean isSubscriptionValidationAvailable, ClientConfiguration config) returns error? {
+    error? validationResult = validateSubscription(isSubscriptionValidationAvailable, message, headers, adaptor);
+    if validationResult is error {
+        [string, string?][] params = [
+            [HUB_MODE, MODE_DENIED],
+            [HUB_TOPIC, message.hubTopic],
+            [HUB_REASON, validationResult.message()]
+        ];
+        _ = check sendNotification(message.hubCallback, params, config);
     } else {
         string challenge = uuid:createType4AsString();
-        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
-                            + HUB_MODE + "=" + MODE_SUBSCRIBE
-                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                            + "&" + HUB_CHALLENGE + "=" + challenge
-                            + "&" + HUB_LEASE_SECONDS + "=" + <string>message.hubLeaseSeconds;
-        http:Response subscriberResponse = check sendSubscriptionNotification(message.hubCallback, queryParams, config);
-        var respStringPayload = subscriberResponse.getTextPayload();
-        if (respStringPayload is string) {
-            if (respStringPayload == challenge) {
-                VerifiedSubscription verifiedMessage = {
-                    hub: message.hub,
-                    verificationSuccess: true,
-                    hubMode: message.hubMode,
-                    hubCallback: message.hubCallback,
-                    hubTopic: message.hubTopic,
-                    hubLeaseSeconds: message.hubLeaseSeconds,
-                    hubSecret: message.hubSecret
-                };
-                check adaptor.callOnSubscriptionIntentVerifiedMethod(verifiedMessage, headers);
-            }
+        [string, string?][] params = [
+            [HUB_MODE, MODE_SUBSCRIBE],
+            [HUB_TOPIC, message.hubTopic],
+            [HUB_CHALLENGE, challenge],
+            [HUB_LEASE_SECONDS, message.hubLeaseSeconds]
+        ];
+        http:Response subscriberResponse = check sendNotification(message.hubCallback, params, config);
+        string respStringPayload = check subscriberResponse.getTextPayload();
+        if (respStringPayload == challenge) {
+            VerifiedSubscription verifiedMessage = {
+                hub: message.hub,
+                hubMode: message.hubMode,
+                hubCallback: message.hubCallback,
+                hubTopic: message.hubTopic,
+                hubLeaseSeconds: message.hubLeaseSeconds,
+                hubSecret: message.hubSecret
+            };
+            check adaptor.callOnSubscriptionIntentVerifiedMethod(verifiedMessage, headers);
         }
     }
+}
+
+isolated function validateSubscription(boolean isRemoteMethodAvailable, Subscription message, 
+                                       http:Headers headers, HttpToWebsubhubAdaptor adaptor) returns error? {
+    if isRemoteMethodAvailable {
+        return adaptor.callOnSubscriptionValidationMethod(message, headers);
+    } else {
+        if !message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://") {
+            return error SubscriptionDeniedError("Invalid hub.callback param in the request.");
+        }
+    }
+}
+
+isolated function sendNotification(string callbackUrl, [string, string?][] params, ClientConfiguration config) returns http:Response|error {
+    string queryParams = generateQueryString(callbackUrl, params);
+    http:Client httpClient = check  new(callbackUrl, retrieveHttpClientConfig(config));
+    return httpClient->get(queryParams);
 }
 
 # Processes the unsubscription request.
@@ -263,7 +240,6 @@ isolated function proceedToUnsubscriptionVerification(http:Request initialReques
         if (respStringPayload is string) {
             if (respStringPayload == challenge) {
                 VerifiedUnsubscription verifiedMessage = {
-                    verificationSuccess: true,
                     hubMode: message.hubMode,
                     hubCallback: message.hubCallback,
                     hubTopic: message.hubTopic,

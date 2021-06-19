@@ -33,6 +33,16 @@ isolated function retrieveParameter(map<string> params, string 'key) returns str
     return error("Empty value found for parameter '" + 'key + "'");
 }
 
+isolated function generateQueryString(string callbackUrl, [string, string?][] params) returns string {
+    string[] keyValPairs = [];
+    foreach var ['key, value] in params {
+        if value is string {
+            keyValPairs.push(string `${'key}=${value}`);
+        }
+    }
+    return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
+}
+
 # Retrieves an URL-encoded parameter.
 # 
 # + params - Available query parameters
@@ -79,7 +89,7 @@ isolated function updateBadRequestErrorResponse(http:Response response, string p
 # + reason - Optional reason for rejecting the request
 isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
                                       map<string|string[]>? headers, string reason) {
-    updateHubResponse(response, "denied", messageBody, headers, reason);
+    updateHubResponse(response, MODE_DENIED, messageBody, headers, reason);
 }
 
 # Updates the generic success response.
@@ -89,7 +99,7 @@ isolated function updateErrorResponse(http:Response response, anydata? messageBo
 # + headers - Optional additional response headers
 isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
-    updateHubResponse(response, "accepted", messageBody, headers);
+    updateHubResponse(response, MODE_ACCEPTED, messageBody, headers);
 }
 
 # Updates the `hub` response.
@@ -124,8 +134,8 @@ isolated function updateHubResponse(http:Response response, string hubMode,
 # + reason - Optional reason for rejecting the request
 # + return - Response payload as a `string`
 isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
-    string payload = "hub.mode=" + hubMode;
-    payload += reason is string ? "&hub.reason=" + reason : "";
+    string payload = string `${HUB_MODE}=${hubMode}`;
+    payload += reason is string ? string `&${HUB_REASON}=${reason}` : "";
     if (messageBody is map<string> && messageBody.length() > 0) {
         payload += "&" + retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
     }
