@@ -39,9 +39,9 @@ isolated function testSendNotification() returns error? {
     test:assertEquals(payload, "Key1=val1/Key2=val2");
 }
 
-@test:Config { 
-    groups: ["sendNotification"]
-}
+// @test:Config { 
+//     groups: ["sendNotification"]
+// }
 isolated function testSendNotificationWithQueyParamInCallback() returns error? {
     [string, string?][] params = [
         ["key1", "val1"],
