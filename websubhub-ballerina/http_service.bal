@@ -27,19 +27,8 @@ isolated service class HttpService {
     private final boolean isSubscriptionValidationAvailable;
     private final boolean isUnsubscriptionAvailable;
     private final boolean isUnsubscriptionValidationAvailable;
-    private final boolean isRegisterAvailable;
-    private final boolean isDeregisterAvailable;
 
-    # Initializes the `websubhub:HttpService` endpoint.
-    # ```ballerina
-    # websubhub:HttpService httpServiceEp = check new (adaptor, "https://sample.hub.com", 3600);
-    # ```
-    #
-    # + adaptor - The `websubhub:HttpToWebsubhubAdaptor` instance which used as a wrapper to execute service methods
-    # + hubUrl       - Hub URL
-    # + leaseSeconds - Subscription expiration time for the `hub`
-    # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
-    # + return - The `websubhub:HttpService` or an `error` if the initialization failed
+
     isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
                            *ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
@@ -51,23 +40,54 @@ isolated service class HttpService {
         self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
         self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
         self.isUnsubscriptionValidationAvailable = isMethodAvailable("onUnsubscriptionValidation", methodNames);
-        self.isRegisterAvailable = isMethodAvailable("onRegisterTopic", methodNames);
-        self.isDeregisterAvailable = isMethodAvailable("onDeregisterTopic", methodNames);
     }
 
-    # Receives HTTP POST requests.
-    # 
-    # + caller - The `http:Caller` reference of the current request
-    # + request - Received `http:Request` instance
-    # + headers - HTTP headers found in the original HTTP request
-    # + return - An `error` if there is any exception in the request processing or else `()`
-    isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns @tainted error? {
-        http:Response response = new;
-        response.statusCode = http:STATUS_OK;
+    isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns error? {
+        map<string>|error params = self.retrieveQueryParams(request, headers);
+        if params is error {
+            http:Response response = new;
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            respondToRequest(caller, response);
+        } else {
+            string? mode = params[HUB_MODE];
+            match mode {
+                MODE_REGISTER => {
+                    self.handleTopicRegistration(caller, headers, params);
+                    return;
+                }
+                MODE_DEREGISTER => {
+                    self.handleTopicDeregistration(caller, headers, params);
+                    return;
+                }
+                MODE_SUBSCRIBE => {
+                    self.handleSubscription(caller, headers, params);
+                    return;
+                }
+                MODE_UNSUBSCRIBE => {
+                    http:Response response = new;
+                    processUnsubscriptionRequestAndRespond(request, caller, response, 
+                                                        headers, params, self.adaptor, 
+                                                        self.isUnsubscriptionAvailable, self.isUnsubscriptionValidationAvailable, 
+                                                        self.clientConfig);
+                }
+                MODE_PUBLISH => {
+                    self.handleContentPublish(caller, request, headers, params);
+                    return;
+                }
+                _ => {
+                    http:Response response = new;
+                    response.statusCode = http:STATUS_BAD_REQUEST;
+                    string errorMessage = "The request does not include valid `hub.mode` form param.";
+                    response.setTextPayload(errorMessage);
+                    respondToRequest(caller, response);
+                }
+            }
+        }
+    }
 
-        map<string> params = {};
-
+    isolated function retrieveQueryParams(http:Request request, http:Headers headers) returns map<string>|error {
         string contentType = check headers.getHeader(CONTENT_TYPE);
+        map<string> params = {};
         map<string[]> queryParams = request.getQueryParams();
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
@@ -82,10 +102,7 @@ isolated service class HttpService {
                         var reqFormParamMap = request.getFormParams();
                         params = reqFormParamMap is map<string> ? reqFormParamMap : {};
                     } else {
-                        response.statusCode = http:STATUS_BAD_REQUEST;
-                        response.setTextPayload("Invalid value for header " + BALLERINA_PUBLISH_HEADER);
-                        respondToRequest(caller, response);
-                        return;
+                        return error("Invalid value for header " + BALLERINA_PUBLISH_HEADER);
                     }
                 } else {
                     var reqFormParamMap = request.getFormParams();
@@ -99,109 +116,71 @@ isolated service class HttpService {
                 params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
             }
             _ => {
-                response.statusCode = http:STATUS_BAD_REQUEST;
-                string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
+                string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " + 
                                         "application/json, application/xml, application/octet-stream and text/plain";
-                response.setTextPayload(errorMessage);
-                respondToRequest(caller, response);
-                return;
+                return error(errorMessage);
             }
         }
+        return params;
+    }
 
-        string mode = params[HUB_MODE] ?: "";
-        match mode {
-            MODE_REGISTER => {
-                if self.isRegisterAvailable {
-                    http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
-                    if result is error {
-                        response.statusCode = http:STATUS_BAD_REQUEST;
-                        response.setTextPayload(result.message());
-                        respondToRequest(caller, response);
-                    } else {
-                        respondToRequest(caller, result);
-                    }
-                    return;
-                } else {
-                    response.statusCode = http:STATUS_NOT_IMPLEMENTED;
+    isolated function handleTopicRegistration(http:Caller caller, http:Headers headers, map<string> params) {
+        http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
+        handleResult(caller, result);
+    }
+
+    isolated function handleTopicDeregistration(http:Caller caller, http:Headers headers, map<string> params) {
+        http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
+        handleResult(caller, result);
+    }
+
+    isolated function handleSubscription(http:Caller caller, http:Headers headers, map<string> params) {
+        Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultHubLeaseSeconds, params);
+        if subscription is Subscription {
+            http:Response|Redirect result = processSubscription(subscription, headers, self.adaptor, self.isSubscriptionAvailable);
+            if result is Redirect {
+                error? redirectError = caller->redirect(new http:Response(), result.code, result.redirectUrls);
+                if redirectError is error {
+                    log:printError("Error occurred while redirecting the subscription", 'error = redirectError);
                 }
-            }
-            MODE_DEREGISTER => {
-                if self.isDeregisterAvailable {
-                    http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
-                    if result is error {
-                        response.statusCode = http:STATUS_BAD_REQUEST;
-                        response.setTextPayload(result.message());
-                        respondToRequest(caller, response);
-                    } else {
-                        respondToRequest(caller, result);
-                    }
-                    return;
-                } else {
-                    response.statusCode = http:STATUS_NOT_IMPLEMENTED;
-                }
-            }
-            MODE_SUBSCRIBE => {
-                Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultHubLeaseSeconds, params);
-                if subscription is Subscription {
-                    http:Response|Redirect result = processSubscription(subscription, headers, self.adaptor, self.isSubscriptionAvailable);
-                    if result is Redirect {
-                        error? redirectError = caller->redirect(response, result.code, result.redirectUrls);
-                        if redirectError is error {
-                            log:printError("Error occurred while redirecting the subscription", errorMsg = redirectError.message());
-                        }
-                    } else {
-                        int currentStatusCode = result.statusCode;
-                        if currentStatusCode == http:STATUS_ACCEPTED && self.isSubscriptionAvailable {
-                            respondToRequest(caller, result);
-                            error? verificationResult = processSubscriptionVerification(headers, self.adaptor, subscription, 
-                                                                                        self.isSubscriptionValidationAvailable, self.clientConfig);
-                            if verificationResult is error {
-                                log:printError("Error occurred while processing subscription", errorMsg = verificationResult.message());
-                            }
-                            return;
-                        }
-                        respondToRequest(caller, result);
-                    }
-                } else {
-                    response.statusCode = http:STATUS_BAD_REQUEST;
-                    response.setTextPayload(subscription.message());
-                    respondToRequest(caller, response);
-                }
-                return;
-            }
-            MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
-                                                       headers, <@untainted> params, self.adaptor,
-                                                       self.isUnsubscriptionAvailable,
-                                                       <@untainted> self.isUnsubscriptionValidationAvailable, 
-                                                       self.clientConfig);
-            }
-            MODE_PUBLISH => {
-                http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
-                if result is error {
-                    response.statusCode = http:STATUS_BAD_REQUEST;
-                    response.setTextPayload(result.message());
-                    respondToRequest(caller, response);
-                } else {
+            } else {
+                int currentStatusCode = result.statusCode;
+                if currentStatusCode == http:STATUS_ACCEPTED && self.isSubscriptionAvailable {
                     respondToRequest(caller, result);
+                    error? verificationResult = processSubscriptionVerification(headers, self.adaptor, subscription, 
+                                                                                        self.isSubscriptionValidationAvailable, self.clientConfig);
+                    if verificationResult is error {
+                        log:printError("Error occurred while processing subscription", 'error = verificationResult);
+                    }
+                    return;
                 }
-                return;
+                respondToRequest(caller, result);
             }
-            _ => {
-                response.statusCode = http:STATUS_BAD_REQUEST;
-                string errorMessage = "The request does not include valid `hub.mode` form param.";
-                response.setTextPayload(errorMessage);
-            }
+        } else {
+            http:Response response = new;
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            response.setTextPayload(subscription.message());
+            respondToRequest(caller, response);
         }
-        respondToRequest(caller, response);
+    }
+
+    isolated function handleContentPublish(http:Caller caller, http:Request request, http:Headers headers, map<string> params) {
+        http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
+        handleResult(caller, result);
     }
 }
 
-# Retrieves whether the particular remote method is available in service-object.
-# 
-# + methodName - Name of the required method
-# + methods - All available methods
-# + return - `true` if method available or else `false`
 isolated function isMethodAvailable(string methodName, string[] methods) returns boolean {
     return methods.indexOf(methodName) is int;
+}
+
+isolated function handleResult(http:Caller caller, http:Response|error result) {
+    if result is error {
+        http:Response response = new;
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        response.setTextPayload(result.message());
+        respondToRequest(caller, response);
+    } else {
+        respondToRequest(caller, result);
+    }
 }
