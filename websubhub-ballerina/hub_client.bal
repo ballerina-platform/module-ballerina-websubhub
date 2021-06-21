@@ -41,14 +41,14 @@ public client class HubClient {
     #
     # + subscription - Original subscription details for the `subscriber`
     # + config - The `websubhub:ClientConfiguration` for the underlying client
-    # + return - The `websubhub:HubClient` or an `error` if the initialization failed
-    public isolated function init(Subscription subscription, *ClientConfiguration config) returns error? {
+    # + return - The `websubhub:HubClient` or an `websubhub:Error` if the initialization failed
+    public isolated function init(Subscription subscription, *ClientConfiguration config) returns Error? {
         self.callback = subscription.hubCallback;
         self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
         self.linkHeaderValue = generateLinkUrl(self.hub,  self.topic);
         self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
-        self.httpClient = check new(subscription.hubCallback, retrieveHttpClientConfig(config));
+        self.httpClient = check retrieveHttpClient(subscription.hubCallback, retrieveHttpClientConfig(config));
     }
 
     # Distributes the published content to the subscribers.
@@ -61,10 +61,10 @@ public client class HubClient {
     # ```
     #
     # + msg - Content to be distributed to the topic subscriber 
-    # + return - An `error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
+    # + return - An `websubhub:Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
     #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
-                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|error {
+                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|Error {
         string contentType = retrieveContentType(msg.contentType, msg.content);
         http:Request request = new;
         string queryString = "";
@@ -91,54 +91,30 @@ public client class HubClient {
                 }
             }
         }
-        check request.setContentType(contentType);
+        error? result = request.setContentType(contentType);
+        if (result is error) {
+            return error Error("Error occurred while setting content type", result);
+        }
         request.setHeader(LINK, self.linkHeaderValue);
         if self.secret.length() > 0 {
-            byte[] hash = [];
-            if contentType == mime:APPLICATION_FORM_URLENCODED {
-                hash = check retrievePayloadSignature(self.secret, queryString);
+            byte[]|error hash = retrievePayloadSignature(contentType, self.secret, queryString, msg.content);
+            if (hash is byte[]) {
+                request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
             } else {
-                hash = check retrievePayloadSignature(self.secret, msg.content);
+                return error Error("Error retrieving content signature", hash);
             }
-            request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
         }
 
         http:Response|error response = self.httpClient->post("/", request);
-        if response is http:Response {
-            int status = response.statusCode;
-            if isSuccessStatusCode(status) {
-                string & readonly responseContentType = response.getContentType();
-                map<string|string[]> responseHeaders = check retrieveResponseHeaders(response);
-                if responseContentType.trim().length() > 1 {
-                    return {
-                        headers: responseHeaders,
-                        mediaType: responseContentType,
-                        body: retrieveResponseBody(response, responseContentType)
-                    };
-                } else {
-                    return {
-                        headers: responseHeaders
-                    };
-                }
-            } else if status == http:STATUS_GONE {
-                // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
-                return error SubscriptionDeletedError("Subscription to topic ["+self.topic+"] is terminated by the subscriber");
-            } else {
-                var result = response.getTextPayload();
-                string textPayload = result is string ? result : "";
-                return error ContentDeliveryError("Error occurred distributing updated content: " + textPayload);
-            }
+        if (response is http:Response) {
+            return processSubscriberResponse(response, self.topic);
         } else {
-            return error ContentDeliveryError("Content distribution failed for topic [" + self.topic + "]");
+            string errorMsg = string `Content distribution failed for topic [${self.topic}]`;
+            return error ContentDeliveryError(errorMsg);
         }
     }
 }
 
-# Retrieve the content type for the content distribution request.
-# 
-# + contentType - Provided content type (optional)
-# + payload - Content-distribution payload
-# + return - Content type of the content-distribution request
 isolated function retrieveContentType(string? contentType, string|xml|json|byte[] payload) returns string {
     if contentType is string {
         return contentType;
@@ -157,37 +133,32 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
     }
 }
 
-# Retrieve signature for the content-distribution request payload.
-# 
-# + 'key - hashing key to be used (this is provided by the subscriber)
-# + payload - content-distribution request body
-# + return - `byte[]` containing the content signature or an `error` if there is any exception in the 
-#            function execution
-isolated function retrievePayloadSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+isolated function retrievePayloadSignature(string contentType, string secret, string queryString, string|xml|json|byte[] payload) returns byte[]|error {
+    if contentType == mime:APPLICATION_FORM_URLENCODED {
+        return generateSignature(secret, queryString);
+    }
+    return generateSignature(secret, payload);
+}
+
+isolated function generateSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
     if payload is byte[] {
         return check crypto:hmacSha256(payload, keyArr);
     } else if payload is string {
-        byte[] inputArr = (<string>payload).toBytes();
+        byte[] inputArr = payload.toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);
     } else if payload is xml {
-        byte[] inputArr = (<xml>payload).toString().toBytes();
+        byte[] inputArr = payload.toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);   
     } else if payload is map<string> {
-        byte[] inputArr = (<map<string>>payload).toString().toBytes();
+        byte[] inputArr = payload.toString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr); 
     } else {
-        byte[] inputArr = (<json>payload).toJsonString().toBytes();
+        byte[] inputArr = payload.toJsonString().toBytes();
         return check crypto:hmacSha256(inputArr, keyArr);
     }
 }
 
-# Retrieve the service path to which the content should be delivered.
-# 
-# + originalServiceUrl - Subscriber callback URL
-# + contentType - Content type of the content-distribution request
-# + queryString - Generated query parameters for the request
-# + return - Service path, which should be called for content delivery
 isolated function getServicePath(string originalServiceUrl, string contentType, string queryString) returns string {
     match contentType {
         mime:APPLICATION_FORM_URLENCODED => {
@@ -200,63 +171,81 @@ isolated function getServicePath(string originalServiceUrl, string contentType, 
     }
 }
 
-# Retrieve the response headers from the subscriber response.
-# 
-# + subscriberResponse - The `http:Response` received for content delivery
-# + return - A `map<string|string[]>` containing header values or an `error` if there is any exception in the
-#            function execution
-isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]>|error {
+isolated function processSubscriberResponse(http:Response response, string topic) returns ContentDistributionSuccess|SubscriptionDeletedError|ContentDeliveryError {
+    int status = response.statusCode;
+    if isSuccessStatusCode(status) {
+        string & readonly responseContentType = response.getContentType();
+        map<string|string[]> responseHeaders = retrieveResponseHeaders(response);
+        if responseContentType.trim().length() > 1 {
+            return {
+                headers: responseHeaders,
+                mediaType: responseContentType,
+                body: retrieveResponseBody(response, responseContentType)
+            };
+        } else {
+            return {
+                headers: responseHeaders
+            };
+        }
+    } else if status == http:STATUS_GONE {
+        // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
+        string errorMsg = string `Subscription to topic [${topic}] is terminated by the subscriber`;
+        return error SubscriptionDeletedError(errorMsg);
+    } else {
+        var result = response.getTextPayload();
+        string textPayload = result is string ? result : "";
+        string errorMsg = string `Error occurred distributing updated content: ${textPayload}`;
+        return error ContentDeliveryError(errorMsg);
+    }
+}
+
+isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]> {
     map<string|string[]> responseHeaders = {};
     foreach var headerName in subscriberResponse.getHeaderNames() {
-        string[] retrievedValue = check subscriberResponse.getHeaders(headerName);
-        if retrievedValue.length() == 1 {
-            responseHeaders[headerName] = retrievedValue[0];
-        } else {
-            responseHeaders[headerName] = retrievedValue;
+        string[]|error retrievedValue = subscriberResponse.getHeaders(headerName);
+        if retrievedValue is string[] {
+            if retrievedValue.length() == 1 {
+                responseHeaders[headerName] = retrievedValue[0];
+            } else {
+                responseHeaders[headerName] = retrievedValue;
+            }
         }
     }
     return responseHeaders;
 }
 
-# Retrieve response body from subscriber-response.
-# 
-# + subscriberResponse - The `http:Response` received for content delivery
-# + contentType - Content type for the received response
-# + return - Response body of the `http:Response` or an `error` if there is any exception in the execution
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>? {
-    string|byte[]|json|xml|map<string>? responseBody = ();
     match contentType {
         mime:APPLICATION_JSON => {
             var content = subscriberResponse.getJsonPayload();
             if (content is json) {
-                responseBody = content;
+                return content;
             }
         }
         mime:APPLICATION_XML => {
             var content = subscriberResponse.getXmlPayload();
             if (content is xml) {
-                responseBody = content;
+                return content;
             }
         }
         mime:TEXT_PLAIN => {   
             var content = subscriberResponse.getTextPayload();
             if (content is string) {
-                responseBody = content;
+                return content;
             }         
         }
         mime:APPLICATION_OCTET_STREAM => {
             var content = subscriberResponse.getBinaryPayload();
             if (content is byte[]) {
-                responseBody = content;
+                return content;
             }  
         }
         mime:APPLICATION_FORM_URLENCODED => {
             var content = subscriberResponse.getTextPayload();
             if (content is string) {
-                responseBody = retrieveResponseBodyForFormUrlEncodedMessage(content);
+                return retrieveResponseBodyForFormUrlEncodedMessage(content);
             } 
         }
         _ => {}
     }
-    return responseBody;
 }

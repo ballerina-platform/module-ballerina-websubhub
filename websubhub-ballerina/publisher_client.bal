@@ -31,10 +31,10 @@ public client class PublisherClient {
     #
     # + url    - The URL to publish/notify updates
     # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
-    # + return - The `websubhub:PublisherClient` or an `error` if the initialization failed
-    public isolated function init(string url, *ClientConfiguration config) returns error? {
+    # + return - The `websubhub:PublisherClient` or an `websubhub:Error` if the initialization failed
+    public isolated function init(string url, *ClientConfiguration config) returns Error? {
         self.url = url;
-        self.httpClient = check new (self.url, retrieveHttpClientConfig(config));
+        self.httpClient = check retrieveHttpClient(self.url, retrieveHttpClientConfig(config));
     }
 
     # Registers a topic in a Ballerina WebSub Hub to which the subscribers can subscribe and the publisher will publish updates.
@@ -211,7 +211,7 @@ public client class PublisherClient {
 # + mode - Whether the request is for registration or deregistration
 # + topic - The topic to register/deregister
 # + return - An `http:Request` to be sent to the hub to register/deregister
-isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @untainted string topic) returns (http:Request) {
+isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @untainted string topic) returns http:Request {
     http:Request request = new;
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
