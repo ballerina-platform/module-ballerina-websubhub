@@ -52,16 +52,15 @@ isolated service class HttpService {
             string? mode = params[HUB_MODE];
             match mode {
                 MODE_REGISTER => {
-                    self.handleTopicRegistration(caller, headers, params);
-                    return;
+                    http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
+                    handleResult(caller, result);
                 }
                 MODE_DEREGISTER => {
-                    self.handleTopicDeregistration(caller, headers, params);
-                    return;
+                    http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
+                    handleResult(caller, result);
                 }
                 MODE_SUBSCRIBE => {
                     self.handleSubscription(caller, headers, params);
-                    return;
                 }
                 MODE_UNSUBSCRIBE => {
                     http:Response response = new;
@@ -71,8 +70,8 @@ isolated service class HttpService {
                                                         self.clientConfig);
                 }
                 MODE_PUBLISH => {
-                    self.handleContentPublish(caller, request, headers, params);
-                    return;
+                    http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
+                    handleResult(caller, result);
                 }
                 _ => {
                     http:Response response = new;
@@ -124,16 +123,6 @@ isolated service class HttpService {
         return params;
     }
 
-    isolated function handleTopicRegistration(http:Caller caller, http:Headers headers, map<string> params) {
-        http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
-        handleResult(caller, result);
-    }
-
-    isolated function handleTopicDeregistration(http:Caller caller, http:Headers headers, map<string> params) {
-        http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
-        handleResult(caller, result);
-    }
-
     isolated function handleSubscription(http:Caller caller, http:Headers headers, map<string> params) {
         Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultHubLeaseSeconds, params);
         if subscription is Subscription {
@@ -162,11 +151,6 @@ isolated service class HttpService {
             response.setTextPayload(subscription.message());
             respondToRequest(caller, response);
         }
-    }
-
-    isolated function handleContentPublish(http:Caller caller, http:Request request, http:Headers headers, map<string> params) {
-        http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
-        handleResult(caller, result);
     }
 }
 
