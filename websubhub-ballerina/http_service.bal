@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/log;
 import ballerina/mime;
 
 isolated service class HttpService {
@@ -84,6 +85,7 @@ isolated service class HttpService {
                         response.statusCode = http:STATUS_BAD_REQUEST;
                         response.setTextPayload("Invalid value for header " + BALLERINA_PUBLISH_HEADER);
                         respondToRequest(caller, response);
+                        return;
                     }
                 } else {
                     var reqFormParamMap = request.getFormParams();
@@ -102,6 +104,7 @@ isolated service class HttpService {
                                         "application/json, application/xml, application/octet-stream and text/plain";
                 response.setTextPayload(errorMessage);
                 respondToRequest(caller, response);
+                return;
             }
         }
 
@@ -117,6 +120,7 @@ isolated service class HttpService {
                     } else {
                         respondToRequest(caller, result);
                     }
+                    return;
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -131,24 +135,39 @@ isolated service class HttpService {
                     } else {
                         respondToRequest(caller, result);
                     }
+                    return;
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
             }
             MODE_SUBSCRIBE => {
-                http:Response|Redirect|error? result = processSubscription(caller, response, headers, params, self.adaptor, 
-                                                                           self.isSubscriptionAvailable, self.isSubscriptionValidationAvailable, 
-                                                                           self.hub, self.defaultHubLeaseSeconds, self.clientConfig);
-                if result is error {
+                Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultHubLeaseSeconds, params);
+                if subscription is Subscription {
+                    http:Response|Redirect result = processSubscription(subscription, headers, self.adaptor, self.isSubscriptionAvailable);
+                    if result is Redirect {
+                        error? redirectError = caller->redirect(response, result.code, result.redirectUrls);
+                        if redirectError is error {
+                            log:printError("Error occurred while redirecting the subscription", errorMsg = redirectError.message());
+                        }
+                    } else {
+                        int currentStatusCode = result.statusCode;
+                        if currentStatusCode == http:STATUS_ACCEPTED && self.isSubscriptionAvailable {
+                            respondToRequest(caller, result);
+                            error? verificationResult = processSubscriptionVerification(headers, self.adaptor, subscription, 
+                                                                                        self.isSubscriptionValidationAvailable, self.clientConfig);
+                            if verificationResult is error {
+                                log:printError("Error occurred while processing subscription", errorMsg = verificationResult.message());
+                            }
+                            return;
+                        }
+                        respondToRequest(caller, result);
+                    }
+                } else {
                     response.statusCode = http:STATUS_BAD_REQUEST;
-                    response.setTextPayload(result.message());
+                    response.setTextPayload(subscription.message());
                     respondToRequest(caller, response);
-                } else if result is Redirect {
-                    http:RedirectCode redirectCode = result is SubscriptionPermanentRedirect ? http:REDIRECT_PERMANENT_REDIRECT_308 : http:REDIRECT_TEMPORARY_REDIRECT_307;
-                    error? redirectError = caller->redirect(response, redirectCode, result.redirectUrls);
-                } else if result is http:Response {
-                    respondToRequest(caller, result);
                 }
+                return;
             }
             MODE_UNSUBSCRIBE => {
                 processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
@@ -166,14 +185,15 @@ isolated service class HttpService {
                 } else {
                     respondToRequest(caller, result);
                 }
+                return;
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "The request does not include valid `hub.mode` form param.";
                 response.setTextPayload(errorMessage);
-                respondToRequest(caller, response);
             }
         }
+        respondToRequest(caller, response);
     }
 }
 

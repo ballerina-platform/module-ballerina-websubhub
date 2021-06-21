@@ -19,11 +19,7 @@ import ballerina/log;
 import ballerina/lang.'string as strings;
 import ballerina/uuid;
 
-isolated function processSubscription(http:Caller caller, http:Response response, http:Headers headers, 
-                                      map<string> params, HttpToWebsubhubAdaptor adaptor,
-                                      boolean isAvailable, boolean isSubscriptionValidationAvailable, 
-                                      string hubUrl, int defaultHubLeaseSeconds, ClientConfiguration config) returns http:Response|Redirect|error? {
-
+isolated function createSubscriptionMessage(string hubUrl, int defaultHubLeaseSeconds, map<string> params) returns Subscription|error {
     string topic = check retrieveParameter(params, HUB_TOPIC);
     string hubCallback = check retrieveParameter(params, HUB_CALLBACK);
     int leaseSeconds = retrieveLeaseSeconds(params, defaultHubLeaseSeconds);
@@ -38,26 +34,8 @@ isolated function processSubscription(http:Caller caller, http:Response response
     foreach var ['key, value] in params.entries() {
         message['key] = value;
     }
-
-    if !isAvailable {
-        response.statusCode = http:STATUS_ACCEPTED;
-        return response;
-    } else {
-        SubscriptionAccepted|Redirect|error result = adaptor.callOnSubscriptionMethod(message, headers);
-        if result is SubscriptionAccepted {
-            response.statusCode = http:STATUS_ACCEPTED;
-            respondToRequest(caller, response);
-            error? verificationResult = processSubscriptionVerification(headers, adaptor, message, isSubscriptionValidationAvailable, config);
-            if verificationResult is error {
-                log:printError("Error occurred while processing subscription", errorMsg = verificationResult.message());
-            }
-        } else if result is error {
-            return processSubscriptionError(result);
-        } else {
-            return result;
-        }
-    }
-}  
+    return message;
+}
 
 isolated function retrieveLeaseSeconds(map<string> params, int defaultHubLeaseSeconds) returns int {
     var hubLeaseSeconds = params.removeIfHasKey(HUB_LEASE_SECONDS);
@@ -70,9 +48,27 @@ isolated function retrieveLeaseSeconds(map<string> params, int defaultHubLeaseSe
     return defaultHubLeaseSeconds;
 }
 
-isolated function processSubscriptionError(error result) returns http:Response|Redirect {
+isolated function processSubscription(Subscription message, http:Headers headers, 
+                                      HttpToWebsubhubAdaptor adaptor, boolean isAvailable) returns http:Response|Redirect {
+    if !isAvailable {
+        http:Response response = new;
+        response.statusCode = http:STATUS_ACCEPTED;
+        return response;
+    } else {
+        SubscriptionAccepted|Redirect|error result = adaptor.callOnSubscriptionMethod(message, headers);
+        if result is Redirect {
+            return result;
+        }
+        return processOnSubscriptionResult(result);
+    }
+}
+
+isolated function processOnSubscriptionResult(SubscriptionAccepted|error result) returns http:Response|Redirect {
     http:Response response = new;
-    if result is BadSubscriptionError {
+    if result is SubscriptionAccepted {
+        response.statusCode = http:STATUS_ACCEPTED;
+        return response;
+    } else if result is BadSubscriptionError {
         response.statusCode = http:STATUS_BAD_REQUEST;
         var errorDetails = result.detail();
         updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
