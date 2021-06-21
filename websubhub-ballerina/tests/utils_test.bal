@@ -410,7 +410,9 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
     return true;
 }
 
-service / on new http:Listener(9102) {
+listener http:Listener utilServiceListener = new http:Listener(9102);
+
+service / on utilServiceListener {
     isolated resource function get util (string name) returns string {
         return string `Hello, ${name}!`;
     }
