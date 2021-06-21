@@ -32,10 +32,15 @@ public class Listener {
     #
     # + listenTo - Port number or an `http:Listener` instance
     # + config - Custom `websubhub:ListenerConfiguration` to be provided to the underlying HTTP listener
-    # + return - The `websubhub:Listener` or an `error` if the initialization failed
-    public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns error? {
+    # + return - The `websubhub:Listener` or an `websubhub:Error` if the initialization failed
+    public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns Error? {
         if listenTo is int {
-            self.httpListener = check new(listenTo, config);
+            http:Listener|error httpListener = new(listenTo, config);
+            if httpListener is http:Listener {
+                self.httpListener = httpListener;
+            } else {
+                return error Error("Listener initialization failed", httpListener);
+            }
         } else {
             self.httpListener = listenTo;
         }
@@ -52,15 +57,15 @@ public class Listener {
     # 
     # + 'service - The `websubhub:Service` object to attach
     # + name - The path of the service to be hosted
-    # + return - An `error` if an error occurred during the service attaching process or else `()`
-    public isolated function attach(Service 'service, string[]|string? name = ()) returns error? {
+    # + return - An `websubhub:Error` if an error occurred during the service attaching process or else `()`
+    public isolated function attach(Service 'service, string[]|string? name = ()) returns Error? {
         if self.listenerConfig.secureSocket is () {
             log:printWarn("HTTPS is recommended but using HTTP");
         }
 
         string hubUrl = self.retrieveHubUrl(name);
         ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
-        HttpToWebsubhubAdaptor adaptor = check new ('service);
+        HttpToWebsubhubAdaptor adaptor = new('service);
         if configuration is ServiceConfiguration {
             int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
             if configuration?.webHookConfig is ClientConfiguration {
@@ -71,7 +76,10 @@ public class Listener {
         } else {
             self.httpService = new(adaptor, hubUrl, self.defaultHubLeaseSeconds);
         }
-        check self.httpListener.attach(<HttpService> self.httpService, name);
+        error? result = self.httpListener.attach(<HttpService> self.httpService, name);
+        if (result is error) {
+            return error Error("Error occurred while attaching the service", result);
+        }
     }
 
     # Retrieves the URL on which the `hub` is published.
@@ -104,9 +112,12 @@ public class Listener {
     # ```
     # 
     # + s - The `websubhub:Service` object to be detached
-    # + return - An `error` if an error occurred during the service detaching process or else `()`
-    public isolated function detach(Service s) returns error? {
-        check self.httpListener.detach(<HttpService> self.httpService);
+    # + return - An `websubhub:Error` if an error occurred during the service detaching process or else `()`
+    public isolated function detach(Service s) returns Error? {
+        error? result = self.httpListener.detach(<HttpService> self.httpService);
+        if (result is error) {
+            return error Error("Error occurred while detaching the service", result);
+        }
     }
 
     # Starts the registered service programmatically.
@@ -114,9 +125,12 @@ public class Listener {
     # check hubListenerEp.'start();
     # ```
     # 
-    # + return - An `error` if an error occurred during the listener-starting process or else `()`
-    public isolated function 'start() returns error? {
-        check self.httpListener.'start();
+    # + return - An `websubhub:Error` if an error occurred during the listener-starting process or else `()`
+    public isolated function 'start() returns Error? {
+        error? listenerError = self.httpListener.'start();
+        if (listenerError is error) {
+            return error Error("Error occurred while starting the service", listenerError);
+        }
     }
 
     # Gracefully stops the hub listener. Already-accepted requests will be served before the connection closure.
@@ -124,9 +138,12 @@ public class Listener {
     # check hubListenerEp.gracefulStop();
     # ```
     # 
-    # + return - An `error` if an error occurred during the listener-stopping process
-    public isolated function gracefulStop() returns error? {
-        return self.httpListener.gracefulStop();
+    # + return - An `websubhub:Error` if an error occurred during the listener-stopping process
+    public isolated function gracefulStop() returns Error? {
+        error? result = self.httpListener.gracefulStop();
+        if (result is error) {
+            return error Error("Error occurred while stopping the service", result);
+        }
     }
 
     # Stops the service listener immediately. It is not implemented yet.
@@ -134,9 +151,12 @@ public class Listener {
     # check hubListenerEp.immediateStop();
     # ```
     # 
-    # + return - An `error` if an error occurred during the listener-stopping process or else `()`
-    public isolated function immediateStop() returns error? {
-        return self.httpListener.immediateStop();
+    # + return - An `websubhub:Error` if an error occurred during the listener-stopping process or else `()`
+    public isolated function immediateStop() returns Error? {
+        error? result = self.httpListener.immediateStop();
+        if (result is error) {
+            return error Error("Error occurred while stopping the service", result);
+        }
     }
 }
 

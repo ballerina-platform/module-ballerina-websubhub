@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Fix logic issue in selecting the event-type for content-publishing](https://github.com/ballerina-platform/ballerina-standard-library/issues/1460)
 - [Fix Required parameter validation for WebSubHub Service Declaration](https://github.com/ballerina-platform/ballerina-standard-library/issues/1477)
 
+### Changed
+
+- [Return only module specific errors from public APIs](https://github.com/ballerina-platform/ballerina-standard-library/issues/1487)
+
 ## [0.2.0-beta.1] - 2021-05-06
 
 ### Added
