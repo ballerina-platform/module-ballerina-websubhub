@@ -206,11 +206,6 @@ public client class PublisherClient {
     }
 }
 
-# Builds the topic registration change request to register or deregister a topic at the `hub`.
-#
-# + mode - Whether the request is for registration or deregistration
-# + topic - The topic to register/deregister
-# + return - An `http:Request` to be sent to the hub to register/deregister
 isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @untainted string topic) returns http:Request {
     http:Request request = new;
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
@@ -218,17 +213,11 @@ isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @u
     return request;
 }
 
-# Retrieves form-data content from a `string` payload
-# 
-# + payload - Available payload
-# + return - A `map<string>` containing form-data values
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
-
     if payload == "" {
         return parameters;
     }
-
     string[] entries = regex:split(payload, "&");
     int entryIndex = 0;
     while (entryIndex < entries.length()) {
@@ -248,13 +237,8 @@ isolated function getFormData(string payload) returns map<string> {
     return parameters;
 }
 
-# Retrieves header values for the content-distribution response
-# 
-# + response - Original `http:Response` object
-# + return - Available response headers as `map<string|string[]>`
 isolated function getHeaders(http:Response response) returns @tainted map<string|string[]> {
     string[] headerNames = response.getHeaderNames();
-
     map<string|string[]> headers = {};
     foreach var header in headerNames {
         var responseHeaders = response.getHeaders(header);

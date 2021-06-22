@@ -43,72 +43,16 @@ isolated function generateQueryString(string callbackUrl, [string, string?][] pa
     return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
 }
 
-# Retrieves an URL-encoded parameter.
-# 
-# + params - Available query parameters
-# + 'key - Required parameter name/key
-# + response - The `http:Response`, which should be returned 
-# + return - Requested parameter value if present or else `()`
-isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, 
-                                                        http:Response response) returns string? {
-    string|error? requestedValue = ();
-    var retrievedValue = params.removeIfHasKey('key);
-    if retrievedValue is string {
-        requestedValue = url:decode(retrievedValue, "UTF-8");
-    }
-    if (requestedValue is string && requestedValue != "") {
-       return <string> requestedValue;
-    } else {
-        updateBadRequestErrorResponse(response, 'key, requestedValue);
-        return ();
-    }
-}
-
-# Updates the error response for a bad request.
-# 
-# + response - The `http:Response`, which should be returned 
-# + paramName - Errorneous parameter name
-# + topicParameter - Received value or `error`
-isolated function updateBadRequestErrorResponse(http:Response response, string paramName, 
-                                                string|error? topicParameter) {
-    string errorMessage = "";
-    if (topicParameter is error) {
-        errorMessage = "Invalid value found for parameter '" + paramName + "' : " + topicParameter.message();
-    } else {
-        errorMessage = "Empty value found for parameter '" + paramName + "'"; 
-    }
-    response.statusCode = http:STATUS_BAD_REQUEST;
-    response.setTextPayload(errorMessage);
-}
-
-# Updates the generic error response.
-# 
-# + response - The `http:Response`, which should be returned 
-# + messageBody - Optional response payload
-# + headers - Optional additional response headers
-# + reason - Optional reason for rejecting the request
 isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
                                       map<string|string[]>? headers, string reason) {
     updateHubResponse(response, MODE_DENIED, messageBody, headers, reason);
 }
 
-# Updates the generic success response.
-# 
-# + response - The `http:Response`, which should be returned 
-# + messageBody - Optional response payload
-# + headers - Optional additional response headers
 isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
     updateHubResponse(response, MODE_ACCEPTED, messageBody, headers);
 }
 
-# Updates the `hub` response.
-# 
-# + response - The `http:Response`, which should be returned 
-# + hubMode - Current Hub mode
-# + messageBody - Optional response payload
-# + headers - Optional additional response headers
-# + reason - Optional reason for rejecting the request
 isolated function updateHubResponse(http:Response response, string hubMode, 
                                     anydata? messageBody, map<string|string[]>? headers, 
                                     string? reason = ()) {
@@ -127,12 +71,6 @@ isolated function updateHubResponse(http:Response response, string hubMode,
     }
 }
 
-# Generates the payload to be added to the `hub` Response.
-# 
-# + hubMode - Current Hub mode
-# + messageBody - Optional response payload
-# + reason - Optional reason for rejecting the request
-# + return - Response payload as a `string`
 isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
     string payload = string `${HUB_MODE}=${hubMode}`;
     payload += reason is string ? string `&${HUB_REASON}=${reason}` : "";
@@ -142,10 +80,6 @@ isolated function generateResponsePayload(string hubMode, anydata? messageBody, 
     return payload;
 }
 
-# Generates the form-URL-encoded response payload.
-#
-# + messageBody - Provided response payload
-# + return - The formed URL-encoded response body
 isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messageBody) returns string {
     string payload = "";
     string[] messageParams = [];
@@ -156,10 +90,6 @@ isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messag
     return payload;
 }
 
-# Converts a text payload to `map<string>`.
-# 
-# + payload - Received text payload
-# + return - Response payload as `map<string>`
 isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) returns map<string> {
     map<string> responsePayload = {};
     string[] queryParams = regex:split(payload, "&");
@@ -181,10 +111,29 @@ isolated function retrieveHttpClient(string url, http:ClientConfiguration config
     }
 }
 
-# Responds to the received `http:Request`.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - Updated `http:Response`
 isolated function respondToRequest(http:Caller caller, http:Response response) {
     http:ListenerError? responseError = caller->respond(response);
+}
+
+isolated function isSuccessStatusCode(int statusCode) returns boolean {
+    return (200 <= statusCode && statusCode < 300);
+}
+
+isolated function generateLinkUrl(string hubUrl, string topic) returns string {
+    return string `${hubUrl}; rel=\"hub\", ${topic}; rel=\"self\"`;
+}
+
+isolated function retrieveHttpClientConfig(ClientConfiguration config) returns http:ClientConfiguration {
+    return {
+        httpVersion: config.httpVersion,
+        http1Settings: config.http1Settings,
+        http2Settings: config.http2Settings,
+        timeout: config.timeout,
+        poolConfig: config?.poolConfig,
+        auth: config?.auth,
+        retryConfig: config?.retryConfig,
+        responseLimits: config.responseLimits,
+        secureSocket: config?.secureSocket,
+        circuitBreaker: config?.circuitBreaker
+    };
 }
