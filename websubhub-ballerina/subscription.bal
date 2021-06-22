@@ -15,8 +15,6 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/log;
-import ballerina/lang.'string as strings;
 import ballerina/uuid;
 
 isolated function createSubscriptionMessage(string hubUrl, int defaultHubLeaseSeconds, map<string> params) returns Subscription|error {
@@ -132,122 +130,90 @@ isolated function sendNotification(string callbackUrl, [string, string?][] param
     return httpClient->get(queryParams);
 }
 
-# Processes the unsubscription request.
-# 
-# + request - Received `http:Request` instance
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-# + isUnsubscriptionAvailable - Flag to notify whether an `onUnsubscription` is implemented in the `websubhub:Service`
-# + isUnsubscriptionValidationAvailable - Flag to notify whether an `onUnsubscriptionValidation` is implemented in the `websubhub:Service`
-# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-isolated function processUnsubscriptionRequestAndRespond(http:Request request, http:Caller caller, http:Response response, 
-                                                         http:Headers headers, map<string> params, HttpToWebsubhubAdaptor adaptor,
-                                                         boolean isUnsubscriptionAvailable, boolean isUnsubscriptionValidationAvailable, 
-                                                         ClientConfiguration config) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is ()) {
-        return;
-    }
-    string? hubCallback = getEncodedValueOrUpdatedErrorResponse(params, HUB_CALLBACK, response);
-    if (hubCallback is ()) {
-        return;
-    } 
 
+isolated function createUnsubscriptionMessage(map<string> params) returns Unsubscription|error {
+    string topic = check retrieveParameter(params, HUB_TOPIC);
+    string hubCallback = check retrieveParameter(params, HUB_CALLBACK);
     Unsubscription message = {
         hubMode: MODE_UNSUBSCRIBE,
-        hubCallback: <string> hubCallback,
-        hubTopic: <string> topic,
+        hubCallback: hubCallback,
+        hubTopic: topic,
         hubSecret: params.removeIfHasKey(HUB_SECRET)
     };
-    
     foreach var ['key, value] in params.entries() {
         message['key] = value;
     }
+    return message;
+}
 
-    if (!isUnsubscriptionAvailable) {
+isolated function processUnsubscription(Unsubscription message, http:Headers headers, 
+                                        HttpToWebsubhubAdaptor adaptor, boolean isAvailable) returns http:Response {
+    if !isAvailable {
+        http:Response response = new;
         response.statusCode = http:STATUS_ACCEPTED;
-        respondToRequest(caller, response);
+        return response;
     } else {
-        UnsubscriptionAccepted|BadUnsubscriptionError
-            |InternalUnsubscriptionError|error onUnsubscriptionResult = adaptor.callOnUnsubscriptionMethod(
-                                                                            message, headers);
-        if (onUnsubscriptionResult is UnsubscriptionAccepted) {
-            response.statusCode = http:STATUS_ACCEPTED;
-            respondToRequest(caller, response);
-            error? result = proceedToUnsubscriptionVerification(request, headers, adaptor, message, isUnsubscriptionValidationAvailable, config);
-            if result is error {
-                log:printError("Error occurred while unsubscription verification ", err = result.message());
-            }
-        } else if (onUnsubscriptionResult is BadUnsubscriptionError) {
-            response.statusCode = http:STATUS_BAD_REQUEST;
-            var errorDetails = onUnsubscriptionResult.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onUnsubscriptionResult.message());
-            respondToRequest(caller, response);
-        } else {
-            response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-            var errorDetails = onUnsubscriptionResult is InternalUnsubscriptionError ? onUnsubscriptionResult.detail(): INTERNAL_UNSUBSCRIPTION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], onUnsubscriptionResult.message());
-            respondToRequest(caller, response);
-        } 
+        UnsubscriptionAccepted|error result = adaptor.callOnUnsubscriptionMethod(message, headers);
+        return processOnUnsubscriptionResult(result);
     }
 }
 
-# Processes the unsubscription validation request.
-#
-# + initialRequest - Original `http:Request` instance
-# + headers - The `http:Headers` received from the original `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor`
-# + message - Subscriber details for the unsubscription request
-# + isUnsubscriptionValidationAvailable - Flag to notify whether an `onSubscriptionValidation` is implemented in the `websubhub:Service`
-# + config - The `websubhub:ClientConfiguration` to be used in the `http:Client` used for the subscription intent verification
-# + return - `error` if there is any error in execution or else `()`
-isolated function proceedToUnsubscriptionVerification(http:Request initialRequest, http:Headers headers, HttpToWebsubhubAdaptor adaptor,
-                                                      Unsubscription message, boolean isUnsubscriptionValidationAvailable, 
-                                                      ClientConfiguration config) returns error? {
-    UnsubscriptionDeniedError|error? validationResult = ();
-    if (isUnsubscriptionValidationAvailable) {
-        validationResult = adaptor.callOnUnsubscriptionValidationMethod(message, headers);
+isolated function processOnUnsubscriptionResult(UnsubscriptionAccepted|error result) returns http:Response {
+    http:Response response = new;
+    if result is UnsubscriptionAccepted {
+        response.statusCode = http:STATUS_ACCEPTED;
+        return response;
+    } else if result is BadUnsubscriptionError {
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        var errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        return response;
     } else {
-        if (!message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://")) {
-            validationResult = error UnsubscriptionDeniedError("Invalid hub.callback param in the request.");
-        }
-        if (!message.hubTopic.startsWith("http://") && !message.hubTopic.startsWith("https://")) {
-            validationResult = error UnsubscriptionDeniedError("Invalid hub.topic param in the request.'");
-        }
+        response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
+        var errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_UNSUBSCRIPTION_ERROR.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        return response;
     }
+}
 
-    if (validationResult is UnsubscriptionDeniedError|| validationResult is error) {
-        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
-                            + HUB_MODE + "=denied"
-                            + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                            + "&" + "hub.reason" + "=" + validationResult.message();
-        http:Response validationFailureRequest = check sendSubscriptionNotification(message.hubCallback, queryParams, config);
+isolated function processUnSubscriptionVerification(http:Headers headers, HttpToWebsubhubAdaptor adaptor, Unsubscription message, 
+                                                    boolean isUnsubscriptionValidationAvailable, ClientConfiguration config) returns error? {
+    error? validationResult = validateUnsubscription(isUnsubscriptionValidationAvailable, message, headers, adaptor);
+    if validationResult is error {
+        [string, string?][] params = [
+            [HUB_MODE, MODE_DENIED],
+            [HUB_TOPIC, message.hubTopic],
+            [HUB_REASON, validationResult.message()]
+        ];
+        _ = check sendNotification(message.hubCallback, params, config);
     } else {
         string challenge = uuid:createType4AsString();
-        string queryParams = (strings:includes(<string> message.hubCallback, ("?")) ? "&" : "?")
-                                + HUB_MODE + "=" + MODE_UNSUBSCRIBE
-                                + "&" + HUB_TOPIC + "=" + <string> message.hubTopic
-                                + "&" + HUB_CHALLENGE + "=" + challenge;
-        http:Response subscriberResponse = check sendSubscriptionNotification(message.hubCallback, queryParams, config);
-        var respStringPayload = subscriberResponse.getTextPayload();
-        if (respStringPayload is string) {
-            if (respStringPayload == challenge) {
-                VerifiedUnsubscription verifiedMessage = {
-                    hubMode: message.hubMode,
-                    hubCallback: message.hubCallback,
-                    hubTopic: message.hubTopic,
-                    hubSecret: message.hubSecret
-                };
-                check adaptor.callOnUnsubscriptionIntentVerifiedMethod(verifiedMessage, headers);
-            }
+        [string, string?][] params = [
+            [HUB_MODE, MODE_SUBSCRIBE],
+            [HUB_TOPIC, message.hubTopic],
+            [HUB_CHALLENGE, challenge]
+        ];
+        http:Response subscriberResponse = check sendNotification(message.hubCallback, params, config);
+        string respStringPayload = check subscriberResponse.getTextPayload();
+        if (respStringPayload == challenge) {
+            VerifiedUnsubscription verifiedMessage = {
+                hubMode: message.hubMode,
+                hubCallback: message.hubCallback,
+                hubTopic: message.hubTopic,
+                hubSecret: message.hubSecret
+            };
+            check adaptor.callOnUnsubscriptionIntentVerifiedMethod(verifiedMessage, headers);
         }
     }
 }
 
-isolated function sendSubscriptionNotification(string url, string queryString, ClientConfiguration config) returns http:Response|error {
-    http:Client httpClient = check  new(url, retrieveHttpClientConfig(config));
-    return httpClient->get(queryString);
+isolated function validateUnsubscription(boolean isRemoteMethodAvailable, Unsubscription message, 
+                                        http:Headers headers, HttpToWebsubhubAdaptor adaptor) returns error? {
+    if isRemoteMethodAvailable {
+        return adaptor.callOnUnsubscriptionValidationMethod(message, headers);
+    } else {
+        if !message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://") {
+            return error SubscriptionDeniedError("Invalid hub.callback param in the request.");
+        }
+    }
 }
