@@ -20,11 +20,11 @@ import ballerina/test;
 listener http:Listener utilServiceListener = new http:Listener(9102);
 
 service /subscription on utilServiceListener {
-    isolated resource function get . (string key1, string key2) returns string {
+    isolated resource function get .(string key1, string key2) returns string {
         return string `Key1=${key1}/Key2=${key2}`;
     }
 
-        isolated resource function get additional (string baseKey, string key1, string key2) returns string {
+    isolated resource function get additional(string baseKey, string key1, string key2) returns string {
         return string `BaseKey=${baseKey}/Key1=${key1}/Key2=${key2}`;
     }
 }
