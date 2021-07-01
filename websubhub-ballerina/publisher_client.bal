@@ -59,8 +59,6 @@ public client class PublisherClient {
         }
     }
 
-    // todo remove all taint checks
-
     # Deregisters a topic in a Ballerina WebSub Hub.
     # ```ballerina
     # websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError deregisterTopic = websubHubClientEP->deregisterTopic("http://websubpubtopic.com");
