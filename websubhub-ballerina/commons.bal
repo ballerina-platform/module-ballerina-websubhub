@@ -32,6 +32,9 @@ const string MODE_DEREGISTER = "deregister";
 const string MODE_SUBSCRIBE = "subscribe";
 const string MODE_UNSUBSCRIBE = "unsubscribe";
 
+const string CONTENT_PUBLISH = "publish";
+const string EVENT_NOTIFY = "event";
+
 const string CONTENT_TYPE = "Content-Type";
 const string X_HUB_SIGNATURE = "X-Hub-Signature";
 const string LINK = "Link";
@@ -40,6 +43,11 @@ const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 const string SHA256_HMAC = "sha256";
 const string HTTP_1_1 = "1.1";
 const string HTTP_2_0 = "2.0";
+
+const string TOPIC_REGISTRATION_COMMON_ERROR = "Unknown error occurred while registering topic ";
+const string TOPIC_DEREGISTRATION_COMMON_ERROR = "Unknown error occurred while deregistering topic ";
+const string CONTENT_UPDATE_COMMON_ERROR = "Unknown error occurred while updating content for topic";
+const string EVENT_NOTIFY_COMMON_ERROR = "Unknown error occcurred while notifying event for topic";
 
 # Options to compress using Gzip or deflate.
 #

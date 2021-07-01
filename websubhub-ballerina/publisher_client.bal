@@ -39,174 +39,174 @@ public client class PublisherClient {
 
     # Registers a topic in a Ballerina WebSub Hub to which the subscribers can subscribe and the publisher will publish updates.
     # ```ballerina
-    # error? registerTopic = websubHubClientEP->registerTopic("http://websubpubtopic.com");
+    # websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError registerTopic = websubHubClientEP->registerTopic("http://websubpubtopic.com");
     # ```
     #
     # + topic - The topic to register
-    # + return - An `error` if an error occurred registering the topic or else `()`
-    isolated remote function registerTopic(string topic) returns @tainted TopicRegistrationSuccess|TopicRegistrationError {
-        http:Client httpClient = self.httpClient;
+    # + return - A `websubhub:TopicRegistrationError` if an error occurred registering the topic or else `websubhub:TopicRegistrationSuccess`
+    isolated remote function registerTopic(string topic) returns TopicRegistrationSuccess|TopicRegistrationError {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
-        http:Response|error registrationResponse = httpClient->post("", request);
+        http:Response|error registrationResponse = self.httpClient->post("", request);
         if registrationResponse is http:Response {
             var result = registrationResponse.getTextPayload();
             string payload = result is string ? result : "";
             if registrationResponse.statusCode != http:STATUS_OK {
-                return error TopicRegistrationError("Error occurred during topic registration, Status code : "
-                               +  registrationResponse.statusCode.toString() + ", payload: " + payload);
+                string errorMsg = string `"Error occurred during registering topic [${topic}], Status code : ${registrationResponse.statusCode}, payload: ${payload}`;
+                return error TopicRegistrationError(errorMsg);
             } else {
                 map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == "accepted" {
+                if params[HUB_MODE] == MODE_ACCEPTED {
                     TopicRegistrationSuccess successResult = {
                         headers: getHeaders(registrationResponse),
                         body: params
                     };
                     return successResult;
                 } else {
-                    string? failureReason = params["hub.reason"];
-                    return error TopicRegistrationError(failureReason is () ? "" : <string> failureReason);
+                    string? failureReason = params[HUB_REASON];
+                    string errorMsg = failureReason is string ? failureReason : string `${TOPIC_REGISTRATION_COMMON_ERROR} [${topic}]`;
+                    return error TopicRegistrationError(errorMsg);
                 }
             }
         } else {
-            return error TopicRegistrationError("Error sending topic registration request: " + (<error>registrationResponse).message());
+            return error TopicRegistrationError(string `"Error sending topic registration request for topic [${topic}]`, registrationResponse);
         }
     }
 
+    // todo remove all taint checks
+
     # Deregisters a topic in a Ballerina WebSub Hub.
     # ```ballerina
-    # error? deregisterTopic = websubHubClientEP->deregisterTopic("http://websubpubtopic.com");
+    # websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError deregisterTopic = websubHubClientEP->deregisterTopic("http://websubpubtopic.com");
     # ```
     #
     # + topic - The topic to deregister
-    # + return -  An `error`if an error occurred un registering the topic or else `()`
-    isolated remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
-        http:Client httpClient = self.httpClient;
+    # + return -  A `websubhub:TopicDeregistrationError` if an error occurred un registering the topic or else `websubhub:TopicDeregistrationSuccess`
+    isolated remote function deregisterTopic(string topic) returns TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
-        http:Response|error deregistrationResponse = httpClient->post("", request);
+        http:Response|error deregistrationResponse = self.httpClient->post("", request);
         if deregistrationResponse is http:Response {
-            var result = deregistrationResponse.getTextPayload();
-            string payload = result is string ? result : "";
+            string|http:ClientError result = deregistrationResponse.getTextPayload();
+            string payload = result is string ? result : result.message();
             if deregistrationResponse.statusCode != http:STATUS_OK {
-                return error TopicDeregistrationError("Error occurred during topic registration, Status code : "
-                        +  deregistrationResponse.statusCode.toString() + ", payload: " + payload);
+                string errorMsg = string `Error occurred during deregistering topic [${topic}], Status code : ${deregistrationResponse.statusCode}, payload: ${payload}`;
+                return error TopicDeregistrationError(errorMsg);
             } else {
                 map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == "accepted" {
+                if params[HUB_MODE] == MODE_ACCEPTED {
                     TopicDeregistrationSuccess successResult = {
                         headers: getHeaders(deregistrationResponse),
                         body: params
                     };
                     return successResult;
                 } else {
-                    string? failureReason = params["hub.reason"];
-                    return error TopicDeregistrationError(failureReason is () ? "" : <string> failureReason);
+                    string? failureReason = params[HUB_REASON];
+                    string errorMsg = failureReason is string ? failureReason : string `${TOPIC_DEREGISTRATION_COMMON_ERROR} [${topic}]`;
+                    return error TopicDeregistrationError(errorMsg);
                 }
             }
         } else {
-            return error TopicDeregistrationError("Error sending topic deregistration request: "
-                                    + (<error>deregistrationResponse).message());
+            return error TopicDeregistrationError(string `Error sending topic deregistration request for topic [${topic}]`, deregistrationResponse);
         }
     }
 
     # Publishes an update to a remote Ballerina WebSub Hub.
     # ```ballerina
-    # error? publishUpdate = websubHubClientEP->publishUpdate("http://websubpubtopic.com",{"action": "publish",
+    # websubhub:Acknowledgement|websubhub:UpdateMessageError publishUpdate = websubHubClientEP->publishUpdate("http://websubpubtopic.com",{"action": "publish",
     # "mode": "remote-hub"});
     # ```
     #
     # + topic - The topic for which the update occurred
     # + payload - The update payload
     # + contentType - The type of the update content to set as the `ContentType` header
-    # + return -  An `error`if an error occurred with the update or else `()`
-    isolated remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
-                                  string? contentType = ()) returns @tainted Acknowledgement|UpdateMessageError {
-        http:Client httpClient = self.httpClient;
-        http:Request request = new;
-        string queryParams = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
+    # + return -  A `websubhub:UpdateMessageError`if an error occurred with the update or else `websubhub:Acknowledgement`
+    isolated remote function publishUpdate(string topic, map<string>|xml|json|byte[] payload,
+                                  string? contentType = ()) returns Acknowledgement|UpdateMessageError {
+        http:Request contentUpdateRequest = new;
         if payload is map<string> {
-            string reqPayload = "";
+            string[] payloadValues = [];
             foreach var ['key, value] in payload.entries() {
-                reqPayload = reqPayload + 'key + "=" + value + "&";
+                payloadValues.push(string `${'key}=${value}`);
             }
-            if reqPayload != "" {
-                reqPayload = reqPayload.substring(0, reqPayload.length() - 2);
-            }
-            request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
-            request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+            string reqPayload = string:'join("&", ...payloadValues);
+            contentUpdateRequest.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
+            contentUpdateRequest.setHeader(BALLERINA_PUBLISH_HEADER, CONTENT_PUBLISH);
         } else {
-            request.setPayload(payload);
+            contentUpdateRequest.setPayload(payload);
         }
         if contentType is string {
-            var setContent = request.setContentType(contentType);
+            var setContent = contentUpdateRequest.setContentType(contentType);
             if setContent is error {
-                return error UpdateMessageError("Invalid content type is set, found " + contentType);
+                string errorMsg = string `Invalid content type is set, found ${contentType}`;
+                return error UpdateMessageError(errorMsg, setContent);
              }
         }
-        http:Response|error response = httpClient->post(<@untainted string> ("?" + queryParams), request);
+        string queryParams = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
+        http:Response|error response = self.httpClient->post(string `"${queryParams}`, contentUpdateRequest);
         if response is http:Response {
-            var result = response.getTextPayload();
-            string responsePayload = result is string ? result : "";
+            string|http:ClientError result = response.getTextPayload();
+            string responsePayload = result is string ? result : result.message();
             if response.statusCode != http:STATUS_OK {
-                return error UpdateMessageError("Error occurred during event publish update, Status code : "
-                +  response.statusCode.toString() + ", payload: " + responsePayload);
+                string errorMsg = string `Error occurred during event publish update for topic [${topic}], Status code : ${response.statusCode}, payload: ${responsePayload}`;
+                return error UpdateMessageError(errorMsg);
             } else {
                 map<string>? params = getFormData(responsePayload);
-                if params[HUB_MODE] == "accepted" {
+                if params[HUB_MODE] == MODE_ACCEPTED {
                     Acknowledgement successResult = {
                         headers: getHeaders(response),
                         body: params
                     };
                     return successResult;
                 } else {
-                    string? failureReason = params["hub.reason"];
-                    return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
+                    string? failureReason = params[HUB_REASON];
+                    string errorMsg = failureReason is string ? failureReason : string `${CONTENT_UPDATE_COMMON_ERROR} [${topic}]`;
+                    return error UpdateMessageError(errorMsg);
                 }
             }
         } else {
-            return error UpdateMessageError("Publish failed for topic [" + topic + "]");
+            return error UpdateMessageError(string `Publish failed for topic [${topic}]`, response);
         }
     }
 
     # Notifies a remote WebSubHub from which an update is available to fetch for hubs that require publishing.
     # ```ballerina
-    #  error? notifyUpdate = websubHubClientEP->notifyUpdate("http://websubpubtopic.com");
+    # websubhub:Acknowledgement|websubhub:UpdateMessageError notifyUpdate = websubHubClientEP->notifyUpdate("http://websubpubtopic.com");
     # ```
     #
     # + topic - The topic for which the update occurred
-    # + return -  An `error`if an error occurred with the notification or else `()`
-    isolated remote function notifyUpdate(string topic) returns @tainted Acknowledgement|UpdateMessageError {
-        http:Client httpClient = self.httpClient;
-        http:Request request = new;
-        string reqPayload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
-        request.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
-        request.setHeader(BALLERINA_PUBLISH_HEADER, "event");
-        http:Response|error response = httpClient->post("/", request);
+    # + return -  A `websubhub:UpdateMessageError` if an error occurred with the notification or else `websubhub:Acknowledgement`
+    isolated remote function notifyUpdate(string topic) returns Acknowledgement|UpdateMessageError {
+        http:Request notifyUpdateRequest = new;
+        string reqPayload = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
+        notifyUpdateRequest.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
+        notifyUpdateRequest.setHeader(BALLERINA_PUBLISH_HEADER, EVENT_NOTIFY);
+        http:Response|error response = self.httpClient->post("", notifyUpdateRequest);
         if response is http:Response {
-            var result = response.getTextPayload();
-            string payload = result is string ? result : "";
+            string|http:ClientError result = response.getTextPayload();
+            string responsePayload = result is string ? result : result.message();
             if response.statusCode != http:STATUS_OK {
-                return error UpdateMessageError("Error occurred during notify update, Status code : "
-                +  response.statusCode.toString() + ", payload: " + payload);
+                string errorMsg = string `Error occurred during notify update for topic [${topic}], Status code : ${response.statusCode}, payload : ${responsePayload}`;
+                return error UpdateMessageError(errorMsg);
             } else {
-                map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == "accepted" {
+                map<string>? params = getFormData(responsePayload);
+                if params[HUB_MODE] == MODE_ACCEPTED {
                     Acknowledgement successResult = {
                         headers: getHeaders(response),
                         body: params
                     };
                     return successResult;
                 } else {
-                    string? failureReason = params["hub.reason"];
-                    return error UpdateMessageError(failureReason is () ? "" : <string> failureReason);
+                    string? failureReason = params[HUB_REASON];
+                    string errorMsg = failureReason is string ? failureReason : string `${EVENT_NOTIFY_COMMON_ERROR} [${topic}]`;
+                    return error UpdateMessageError(errorMsg);
                 }
             }
         } else {
-            return error UpdateMessageError("Update availability notification failed for topic [" + topic + "]");
+            return error UpdateMessageError(string `Update availability notification failed for topic [${topic}]`, response);
         }
     }
 }
 
-isolated function buildTopicRegistrationChangeRequest(@untainted string mode, @untainted string topic) returns http:Request {
+isolated function buildTopicRegistrationChangeRequest(string mode, string topic) returns http:Request {
     http:Request request = new;
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
@@ -237,7 +237,7 @@ isolated function getFormData(string payload) returns map<string> {
     return parameters;
 }
 
-isolated function getHeaders(http:Response response) returns @tainted map<string|string[]> {
+isolated function getHeaders(http:Response response) returns map<string|string[]> {
     string[] headerNames = response.getHeaderNames();
     map<string|string[]> headers = {};
     foreach var header in headerNames {
