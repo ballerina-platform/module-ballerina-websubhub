@@ -48,24 +48,11 @@ public client class PublisherClient {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
         http:Response|error registrationResponse = self.httpClient->post("", request);
         if registrationResponse is http:Response {
-            var result = registrationResponse.getTextPayload();
-            string payload = result is string ? result : "";
-            if registrationResponse.statusCode != http:STATUS_OK {
-                string errorMsg = string `"Error occurred during registering topic [${topic}], Status code : ${registrationResponse.statusCode}, payload: ${payload}`;
-                return error TopicRegistrationError(errorMsg);
+            var clientResponse = handleResponse(registrationResponse, topic, REGISTER_TOPIC_ACTION);
+            if clientResponse is error {
+                return error TopicRegistrationError(clientResponse.message(), clientResponse);
             } else {
-                map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == MODE_ACCEPTED {
-                    TopicRegistrationSuccess successResult = {
-                        headers: getHeaders(registrationResponse),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params[HUB_REASON];
-                    string errorMsg = failureReason is string ? failureReason : string `${TOPIC_REGISTRATION_COMMON_ERROR} [${topic}]`;
-                    return error TopicRegistrationError(errorMsg);
-                }
+                return clientResponse;
             }
         } else {
             return error TopicRegistrationError(string `"Error sending topic registration request for topic [${topic}]`, registrationResponse);
@@ -85,24 +72,11 @@ public client class PublisherClient {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
         http:Response|error deregistrationResponse = self.httpClient->post("", request);
         if deregistrationResponse is http:Response {
-            string|http:ClientError result = deregistrationResponse.getTextPayload();
-            string payload = result is string ? result : result.message();
-            if deregistrationResponse.statusCode != http:STATUS_OK {
-                string errorMsg = string `Error occurred during deregistering topic [${topic}], Status code : ${deregistrationResponse.statusCode}, payload: ${payload}`;
-                return error TopicDeregistrationError(errorMsg);
+            var clientResponse = handleResponse(deregistrationResponse, topic, DEREGISTER_TOPIC_ACTION);
+            if clientResponse is error {
+                return error TopicDeregistrationError(clientResponse.message(), clientResponse);
             } else {
-                map<string>? params = getFormData(payload);
-                if params[HUB_MODE] == MODE_ACCEPTED {
-                    TopicDeregistrationSuccess successResult = {
-                        headers: getHeaders(deregistrationResponse),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params[HUB_REASON];
-                    string errorMsg = failureReason is string ? failureReason : string `${TOPIC_DEREGISTRATION_COMMON_ERROR} [${topic}]`;
-                    return error TopicDeregistrationError(errorMsg);
-                }
+                return clientResponse;
             }
         } else {
             return error TopicDeregistrationError(string `Error sending topic deregistration request for topic [${topic}]`, deregistrationResponse);
@@ -143,24 +117,11 @@ public client class PublisherClient {
         string queryParams = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
         http:Response|error response = self.httpClient->post(string `"${queryParams}`, contentUpdateRequest);
         if response is http:Response {
-            string|http:ClientError result = response.getTextPayload();
-            string responsePayload = result is string ? result : result.message();
-            if response.statusCode != http:STATUS_OK {
-                string errorMsg = string `Error occurred during event publish update for topic [${topic}], Status code : ${response.statusCode}, payload: ${responsePayload}`;
-                return error UpdateMessageError(errorMsg);
+            var clientResponse = handleResponse(response, topic, CONTENT_PUBLISH_ACTION);
+            if clientResponse is error {
+                return error UpdateMessageError(clientResponse.message(), clientResponse);
             } else {
-                map<string>? params = getFormData(responsePayload);
-                if params[HUB_MODE] == MODE_ACCEPTED {
-                    Acknowledgement successResult = {
-                        headers: getHeaders(response),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params[HUB_REASON];
-                    string errorMsg = failureReason is string ? failureReason : string `${CONTENT_UPDATE_COMMON_ERROR} [${topic}]`;
-                    return error UpdateMessageError(errorMsg);
-                }
+                return clientResponse;
             }
         } else {
             return error UpdateMessageError(string `Publish failed for topic [${topic}]`, response);
@@ -181,24 +142,11 @@ public client class PublisherClient {
         notifyUpdateRequest.setHeader(BALLERINA_PUBLISH_HEADER, EVENT_NOTIFY);
         http:Response|error response = self.httpClient->post("", notifyUpdateRequest);
         if response is http:Response {
-            string|http:ClientError result = response.getTextPayload();
-            string responsePayload = result is string ? result : result.message();
-            if response.statusCode != http:STATUS_OK {
-                string errorMsg = string `Error occurred during notify update for topic [${topic}], Status code : ${response.statusCode}, payload : ${responsePayload}`;
-                return error UpdateMessageError(errorMsg);
+            var clientResponse = handleResponse(response, topic, NOTIFY_UPDATE_ACTION);
+            if clientResponse is error {
+                return error UpdateMessageError(clientResponse.message(), clientResponse);
             } else {
-                map<string>? params = getFormData(responsePayload);
-                if params[HUB_MODE] == MODE_ACCEPTED {
-                    Acknowledgement successResult = {
-                        headers: getHeaders(response),
-                        body: params
-                    };
-                    return successResult;
-                } else {
-                    string? failureReason = params[HUB_REASON];
-                    string errorMsg = failureReason is string ? failureReason : string `${EVENT_NOTIFY_COMMON_ERROR} [${topic}]`;
-                    return error UpdateMessageError(errorMsg);
-                }
+                return clientResponse;
             }
         } else {
             return error UpdateMessageError(string `Update availability notification failed for topic [${topic}]`, response);
@@ -211,6 +159,28 @@ isolated function buildTopicRegistrationChangeRequest(string mode, string topic)
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
     return request;
+}
+
+isolated function handleResponse(http:Response response, string topic, string action) returns TopicRegistrationSuccess|TopicDeregistrationSuccess|Acknowledgement|error {
+    string|http:ClientError result = response.getTextPayload();
+    string responsePayload = result is string ? result : result.message();
+    if response.statusCode != http:STATUS_OK {
+        string errorMsg = string `Error occurred while executing ${action} action for topic [${topic}], Status code : ${response.statusCode}, payload : ${responsePayload}`;
+        return error(errorMsg);
+    } else {
+        map<string>? params = getFormData(responsePayload);
+        if params[HUB_MODE] == MODE_ACCEPTED {
+            Acknowledgement successResult = {
+                headers: getHeaders(response),
+                body: params
+            };
+            return successResult;
+        } else {
+            string? failureReason = params[HUB_REASON];
+            string errorMsg = failureReason is string ? failureReason : string `Unknown error occurred while executing ${action} action for topic [${topic}]`;
+            return error(errorMsg);
+        }
+    }
 }
 
 isolated function getFormData(string payload) returns map<string> {

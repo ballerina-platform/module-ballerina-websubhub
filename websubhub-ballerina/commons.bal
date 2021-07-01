@@ -44,10 +44,11 @@ const string SHA256_HMAC = "sha256";
 const string HTTP_1_1 = "1.1";
 const string HTTP_2_0 = "2.0";
 
-const string TOPIC_REGISTRATION_COMMON_ERROR = "Unknown error occurred while registering topic ";
-const string TOPIC_DEREGISTRATION_COMMON_ERROR = "Unknown error occurred while deregistering topic ";
-const string CONTENT_UPDATE_COMMON_ERROR = "Unknown error occurred while updating content for topic";
-const string EVENT_NOTIFY_COMMON_ERROR = "Unknown error occcurred while notifying event for topic";
+const string PUBLISHER_CLIENT_COMMON_ERROR = "Unknown error occurred while executing ";
+const string REGISTER_TOPIC_ACTION = "register-topic";
+const string DEREGISTER_TOPIC_ACTION = "deregister-topic";
+const string CONTENT_PUBLISH_ACTION = "publish-content";
+const string NOTIFY_UPDATE_ACTION = "notify-update";
 
 # Options to compress using Gzip or deflate.
 #
