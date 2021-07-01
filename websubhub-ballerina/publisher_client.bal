@@ -95,11 +95,7 @@ public client class PublisherClient {
                                   string? contentType = ()) returns Acknowledgement|UpdateMessageError {
         http:Request contentUpdateRequest = new;
         if payload is map<string> {
-            string[] payloadValues = [];
-            foreach var ['key, value] in payload.entries() {
-                payloadValues.push(string `${'key}=${value}`);
-            }
-            string reqPayload = string:'join("&", ...payloadValues);
+            string reqPayload = retrieveTextPayloadForFormUrlEncodedMessage(payload);
             contentUpdateRequest.setTextPayload(reqPayload, mime:APPLICATION_FORM_URLENCODED);
             contentUpdateRequest.setHeader(BALLERINA_PUBLISH_HEADER, CONTENT_PUBLISH);
         } else {
@@ -113,7 +109,7 @@ public client class PublisherClient {
              }
         }
         string queryParams = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
-        http:Response|error response = self.httpClient->post(string `"${queryParams}`, contentUpdateRequest);
+        http:Response|error response = self.httpClient->post(string `?${queryParams}`, contentUpdateRequest);
         if response is http:Response {
             var clientResponse = handleResponse(response, topic, CONTENT_PUBLISH_ACTION);
             if clientResponse is error {
