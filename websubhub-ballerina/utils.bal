@@ -81,13 +81,11 @@ isolated function generateResponsePayload(string hubMode, anydata? messageBody, 
 }
 
 isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messageBody) returns string {
-    string payload = "";
     string[] messageParams = [];
     foreach var ['key, value] in messageBody.entries() {
-        messageParams.push('key + "=" + value);
+        messageParams.push(string `${'key}=${value}`);
     }
-    payload += strings:'join("&", ...messageParams);
-    return payload;
+    return strings:'join("&", ...messageParams);
 }
 
 isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) returns map<string> {
