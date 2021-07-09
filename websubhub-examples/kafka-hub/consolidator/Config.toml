@@ -7,7 +7,7 @@ KAFKA_BOOTSTRAP_NODE = "localhost:9092"
 SUBSCRIBERS_TOPIC = "registered-subscribers"
 
 # Kafka topic which is stores consolidated websub subscribers for this server
-CONSOLIDATED_SUBSCRIBERS_TOPIC = "consolidated-subscribers";
+CONSOLIDATED_SUBSCRIBERS_TOPIC = "consolidated-subscribers"
 
 # The interval in which Kafka consumers wait for new messages
 POLLING_INTERVAL = 10.0
