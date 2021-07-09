@@ -41,27 +41,9 @@ public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> 
     check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
-public isolated function addSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedSubscription message) returns error? {
-    websubhub:VerifiedSubscription[] availableSubscriptions = [];
-    foreach var subscriber in subscribersCache {
-        availableSubscriptions.push(subscriber);
-    }
-    availableSubscriptions.push(message.cloneReadOnly());
-    json[] jsonData = <json[]> availableSubscriptions.toJson();
+public isolated function onSubscriptionEvent(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+    json jsonData = message.toJson();
     check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData); 
-}
-
-public isolated function removeSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedUnsubscription message) returns error? {
-    websubhub:VerifiedUnsubscription[] availableSubscriptions = [];
-    foreach var subscriber in subscribersCache {
-        availableSubscriptions.push(subscriber);
-    }
-    availableSubscriptions = 
-        from var subscription in availableSubscriptions
-        where subscription.hubTopic != message.hubTopic && subscription.hubCallback != message.hubCallback
-        select subscription.cloneReadOnly();
-    json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData);
 }
 
 public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {

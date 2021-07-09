@@ -31,7 +31,7 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTS
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: "registered-consumers-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:SUBSCRIBERS_TOPIC ]
+    topics: [ config:CONSOLIDATED_SUBSCRIBERS_TOPIC ]
 };
 public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
