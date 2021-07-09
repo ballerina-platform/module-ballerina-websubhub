@@ -24,7 +24,7 @@ public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription
         availableSubscriptions.push(subscriber);
     }
     json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData);
+    check produceKafkaMessage(config:CONSOLIDATED_SUBSCRIBERS_TOPIC, jsonData);
 }
 
 isolated function produceKafkaMessage(string topicName, json payload) returns error? {

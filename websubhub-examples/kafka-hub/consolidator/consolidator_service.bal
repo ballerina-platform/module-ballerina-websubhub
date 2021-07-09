@@ -25,6 +25,7 @@ import consolidatorService.persistence as persist;
 
 public function main() returns error? {
     // Start consolidation service
+    log:printInfo("Starting subscription consolidation service");
     check persistConsolidatedSubscriptions();
 }
 

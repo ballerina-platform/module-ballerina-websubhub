@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/websubhub;
+import ballerina/log;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
 
