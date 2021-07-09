@@ -133,7 +133,7 @@ service object {
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
-            error? persistingResult = persist:onSubscriptionEvent(message.cloneReadOnly());
+            error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
             }
@@ -186,7 +186,7 @@ service object {
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
-            var persistingResult = persist:onSubscriptionEvent(message.cloneReadOnly());
+            var persistingResult = persist:removeSubscription(message.cloneReadOnly());
             if (persistingResult is error) {
                 log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
             } 

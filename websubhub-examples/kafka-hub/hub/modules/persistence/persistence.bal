@@ -42,7 +42,15 @@ public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> 
     check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
 }
 
-public isolated function onSubscriptionEvent(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
+    check updateSubscriptionDetails(message); 
+}
+
+public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
+    check updateSubscriptionDetails(message); 
+}
+
+isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
     json jsonData = message.toJson();
     check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData); 
 }
