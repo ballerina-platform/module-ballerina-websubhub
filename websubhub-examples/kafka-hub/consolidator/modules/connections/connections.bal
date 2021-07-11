@@ -26,9 +26,9 @@ kafka:ProducerConfiguration statePersistConfig = {
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 // Consumer which reads the persisted subscription/unsubscription events
-kafka:ConsumerConfiguration subscribersConsumerConfig = {
+public final kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: "registered-consumers-group",
     offsetReset: "earliest",
-    topics: [ config:SUBSCRIBERS_TOPIC ]
+    topics: [ config:SUBSCRIBERS_TOPIC ],
+    autoCommit: false
 };
-public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);

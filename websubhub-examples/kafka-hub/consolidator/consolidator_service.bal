@@ -26,39 +26,32 @@ import consolidatorService.persistence as persist;
 public function main() returns error? {
     // Start consolidation service
     log:printInfo("Starting subscription consolidation service");
-    check persistConsolidatedSubscriptions();
 }
 
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
-function persistConsolidatedSubscriptions() returns error? {
-    do {
-        while true {
-            var subscriberEvent = getPersistedSubscriberEvents();
-            if subscriberEvent is websubhub:VerifiedSubscription || subscriberEvent is websubhub:VerifiedUnsubscription {
-                refreshSubscribersCache(subscriberEvent);
-                lock {
-                    _ = check persist:persistSubscriptions(subscribersCache);
-                }
+listener kafka:Listener kafkaListener = check new (config:KAFKA_BOOTSTRAP_NODE, conn:subscribersConsumerConfig);
+
+service kafka:Service on kafkaListener {
+    remote function onConsumerRecord(kafka:Caller caller, kafka:ConsumerRecord[] records) returns error? {
+        foreach kafka:ConsumerRecord 'record in records {
+            string lastPersistedData = check string:fromBytes('record.value);
+            var subscriberEvent = deSerializeSubscriberEvents(lastPersistedData);
+            if !(subscriberEvent is error) {
+                check persistConsolidatedSubscriptions(subscriberEvent);
             }
         }
-    } on fail var e {
-        _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        return e;
-    }  
+        kafka:Error? commitResult = caller->commit();
+        if commitResult is error {
+            log:printError("Error occurred while committing the offsets for the consumer ", 'error = commitResult);
+        }
+    }
 }
 
-function getPersistedSubscriberEvents() returns websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription|error? {
-    kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeSubscriberEvents(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving subscriber-data ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
+function persistConsolidatedSubscriptions(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription event) returns error? {
+    refreshSubscribersCache(event);
+    lock {
+        _ = check persist:persistSubscriptions(subscribersCache);
     } 
 }
 
