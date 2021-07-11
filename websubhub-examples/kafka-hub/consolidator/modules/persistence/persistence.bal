@@ -17,7 +17,6 @@
 import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.connections as conn;
-
 public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription> subscribersCache) returns error? {
     websubhub:VerifiedSubscription[] availableSubscriptions = [];
     foreach var subscriber in subscribersCache {

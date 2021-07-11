@@ -23,68 +23,56 @@ import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 
-public function main() returns error? {
-    // Start consolidation service
-    log:printInfo("Starting subscription consolidation service");
-}
-
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 listener kafka:Listener kafkaListener = check new (config:KAFKA_BOOTSTRAP_NODE, conn:subscribersConsumerConfig);
 
 service kafka:Service on kafkaListener {
     remote function onConsumerRecord(kafka:Caller caller, kafka:ConsumerRecord[] records) returns error? {
-        foreach kafka:ConsumerRecord 'record in records {
-            string lastPersistedData = check string:fromBytes('record.value);
-            var subscriberEvent = deSerializeSubscriberEvents(lastPersistedData);
-            if !(subscriberEvent is error) {
-                check persistConsolidatedSubscriptions(subscriberEvent);
-            }
+        if records.length() > 0 {
+            kafka:ConsumerRecord lastRecord = records.pop();
+            string lastPersistedData = check string:fromBytes(lastRecord.value);
+            check self.processPersistedData(lastPersistedData);
         }
         kafka:Error? commitResult = caller->commit();
         if commitResult is error {
             log:printError("Error occurred while committing the offsets for the consumer ", 'error = commitResult);
         }
     }
-}
 
-function persistConsolidatedSubscriptions(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription event) returns error? {
-    refreshSubscribersCache(event);
-    lock {
-        _ = check persist:persistSubscriptions(subscribersCache);
-    } 
-}
-
-function deSerializeSubscriberEvents(string lastPersistedData) returns websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription|error {
-    websubhub:VerifiedSubscription[] currentSubscriptions = [];
-    json payload =  check value:fromJsonString(lastPersistedData);
-    string hubMode = check payload.hubMode;
-    match hubMode {
-        "subscribe" => {
-            return check payload.cloneWithType(websubhub:VerifiedSubscription);
-        }
-        "unsubscribe" => {
-            return check payload.cloneWithType(websubhub:VerifiedUnsubscription);
-        }
-        _ => {
-            return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
+    function processPersistedData(string persistedData) returns error? {
+        json payload =  check value:fromJsonString(persistedData);
+        string hubMode = check payload.hubMode;
+        match hubMode {
+            "subscribe" => {
+                check processSubscription(payload);
+            }
+            "unsubscribe" => {
+                check processUnsubscription(payload);
+            }
+            _ => {
+                return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
+            }
         }
     }
 }
 
-function refreshSubscribersCache(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription event) {
-    string groupName = util:generateGroupName(event.hubTopic, event.hubCallback);
-    if event is websubhub:VerifiedSubscription {
-        lock {
-            // add the subscriber if subscription event received
-            if !subscribersCache.hasKey(groupName) {
-                subscribersCache[groupName] = event.cloneReadOnly();
-            }
-        }
-    } else {
+function processSubscription(json payload) returns error? {
+    websubhub:VerifiedSubscription subscription = check payload.cloneWithType(websubhub:VerifiedSubscription);
+    string groupName = util:generateGroupName(subscription.hubTopic, subscription.hubCallback);
+    lock {
+        // add the subscriber if subscription event received
+        subscribersCache[groupName] = subscription.cloneReadOnly();
+        _ = check persist:persistSubscriptions(subscribersCache);
+    }
+}
+
+function processUnsubscription(json payload) returns error? {
+    websubhub:VerifiedUnsubscription unsubscription = check payload.cloneWithType(websubhub:VerifiedUnsubscription);
+    string groupName = util:generateGroupName(unsubscription.hubTopic, unsubscription.hubCallback);
+    lock {
         // remove the subscriber if the unsubscription event received
-        lock {
-            _ = subscribersCache.removeIfHasKey(groupName);
-        }
+        _ = subscribersCache.removeIfHasKey(groupName);
+        _ = check persist:persistSubscriptions(subscribersCache);
     }
 }

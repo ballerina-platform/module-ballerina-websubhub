@@ -25,9 +25,17 @@ kafka:ProducerConfiguration statePersistConfig = {
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
-// Consumer which reads the persisted subscription/unsubscription events
+// Consumer which reads the consolidated subscriber details
+kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
+    groupId: string `consolidated-subscribers-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+    offsetReset: "earliest",
+    topics: [ config:CONSOLIDATED_SUBSCRIBERS_TOPIC ]
+};
+public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedSubscriberConsumerConfig);
+
+// Configurations for consumer which reads the persisted subscription/unsubscription events
 public final kafka:ConsumerConfiguration subscribersConsumerConfig = {
-    groupId: "registered-consumers-group",
+    groupId: string `registered-consumers-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
     topics: [ config:SUBSCRIBERS_TOPIC ],
     autoCommit: false

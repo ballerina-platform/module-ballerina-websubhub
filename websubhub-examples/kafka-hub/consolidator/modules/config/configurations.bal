@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import consolidatorService.util;
+
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
@@ -29,3 +31,5 @@ public configurable decimal POLLING_INTERVAL = 10;
 
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
+
+public final string CONSTRUCTED_CONSUMER_ID = util:generateRandomString();
