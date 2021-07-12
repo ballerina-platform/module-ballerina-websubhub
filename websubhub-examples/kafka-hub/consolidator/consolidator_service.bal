@@ -23,9 +23,6 @@ import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 
-isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
-isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
-
 listener kafka:Listener kafkaListener = check new (config:KAFKA_BOOTSTRAP_NODE, conn:subscribersConsumerConfig);
 
 service kafka:Service on kafkaListener {

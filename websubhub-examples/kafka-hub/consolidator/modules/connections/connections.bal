@@ -25,6 +25,14 @@ kafka:ProducerConfiguration statePersistConfig = {
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
+// Consumer which reads the consolidated topic details
+kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
+    groupId: string `consolidated-topics-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+    offsetReset: "earliest",
+    topics: [ config:CONSOLIDATED_TOPICS_TOPIC ]
+};
+public final kafka:Consumer consolidatedTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedTopicsConsumerConfig);
+
 // Consumer which reads the consolidated subscriber details
 kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
     groupId: string `consolidated-subscribers-group-${config:CONSTRUCTED_CONSUMER_ID}`,
