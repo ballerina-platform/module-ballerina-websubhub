@@ -68,8 +68,9 @@ public class Listener {
         HttpToWebsubhubAdaptor adaptor = new('service);
         if configuration is ServiceConfiguration {
             int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
-            if configuration?.webHookConfig is ClientConfiguration {
-                self.httpService = new(adaptor, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.webHookConfig));
+            ClientConfiguration? webhookConfig = configuration?.webHookConfig; 
+            if webhookConfig is ClientConfiguration {
+                self.httpService = new(adaptor, hubUrl, leaseSeconds, webhookConfig);
             } else {
                 self.httpService = new(adaptor, hubUrl, leaseSeconds);
             }
@@ -82,28 +83,18 @@ public class Listener {
         }
     }
 
-    # Retrieves the URL on which the `hub` is published.
-    # ```ballerina
-    # string hubUrl = retrieveHubUrl("/hub");
-    # ```
-    #
-    # + servicePath - Current service path
-    # + return - Callback URL, which should be used in the subscription request
     isolated function retrieveHubUrl(string[]|string? servicePath) returns string {
         string host = self.listenerConfig.host;
         string protocol = self.listenerConfig.secureSocket is () ? "http" : "https";
-        
         string concatenatedServicePath = "";
-        
         if servicePath is string {
-            concatenatedServicePath += "/" + <string>servicePath;
+            concatenatedServicePath += "/" + servicePath;
         } else if servicePath is string[] {
-            foreach var pathSegment in <string[]>servicePath {
+            foreach string pathSegment in servicePath {
                 concatenatedServicePath += "/" + pathSegment;
             }
         }
-
-        return protocol + "://" + host + ":" + self.port.toString() + concatenatedServicePath;
+        return string `${protocol}://${host}:${self.port.toString()}${concatenatedServicePath}`;
     }
 
     # Detaches the provided `websubhub:Service` from the `websubhub:Listener`.
@@ -160,13 +151,6 @@ public class Listener {
     }
 }
 
-# Retrieves the `websubhub:ServiceConfiguration` annotation values.
-# ```ballerina
-# websubhub:ServiceConfiguration? config = retrieveServiceAnnotations('service);
-# ```
-# 
-# + serviceType - Current `websubhub:Service` object
-# + return - Provided `websubhub:ServiceConfiguration` or else `()`
 isolated function retrieveServiceAnnotations(Service serviceType) returns ServiceConfiguration? {
     typedesc<any> serviceTypedesc = typeof serviceType;
     return serviceTypedesc.@ServiceConfig;

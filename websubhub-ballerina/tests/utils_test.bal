@@ -19,6 +19,84 @@ import ballerina/mime;
 import ballerina/http;
 
 @test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalSuccess() returns error? {
+    map<string> params = {
+        "key1": "val1"
+    };
+    string retrievedVal = check retrieveParameter(params, "key1");
+    test:assertEquals(retrievedVal, "val1");
+}
+
+@test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalSuccessForEncodedVal() returns error? {
+    map<string> params = {
+        "key1": "someval%24123"
+    };
+    string retrievedVal = check retrieveParameter(params, "key1");
+    test:assertEquals(retrievedVal, "someval$123");
+}
+
+@test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalFailureForEmptyVal() {
+    map<string> params = {
+        "key1": ""
+    };
+    string|error retrievedVal = retrieveParameter(params, "key1");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
+    }
+}
+
+@test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalFailureForNilValue() {
+    map<string> params = {
+        "key1": "val1"
+    };
+    string|error retrievedVal = retrieveParameter(params, "key2");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key2'");
+    }
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGeneration() {
+    string baseUrl = "https://sample.com";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "?key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGenerationWithBaseStringWithQueryParam() {
+    string baseUrl = "https://sample.com?baseKey=baseVal";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "&key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
     groups: ["contentTypeRetrieval"]
 }
 isolated function testContentTypeRetrievalForString() returns @tainted error? {
@@ -126,27 +204,6 @@ isolated function testByteArrayContentSignature() returns @tainted error? {
     byte[] hashedContent = check generateSignature(HASH_KEY, content);
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
 }
-
-@test:Config { 
-    groups: ["contentSignature"]
-}
-isolated function testJsonContentSignatureRetrieval() returns @tainted error? {
-    json content = {
-        contentUrl: "https://sample.content.com",
-        contentMsg: "Enjoy free offers this season"
-    };
-    byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_JSON, HASH_KEY, "", content);
-    test:assertEquals("3253fa36df638332580b551edad634e81990736179263a8d8966bd5c04a12198", hashedContent.toBase16());
-}
-
-@test:Config { 
-    groups: ["contentSignature"]
-}
-isolated function testUrlEncodedContentSignatureRetrieval() returns @tainted error? {
-    byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_FORM_URLENCODED, HASH_KEY, "key1=val1&key2=val2", "");
-    test:assertEquals("2d936793407340f43e3d6427534f536a08ba52899bedd94fc7b14ebc2d5c44c2", hashedContent.toBase16());
-}
-
 
 http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/subscriber");
 
@@ -350,21 +407,6 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
         }
     }
     return true;
-}
-
-service / on new http:Listener(9102) {
-    isolated resource function get util (string name) returns string {
-        return string `Hello, ${name}!`;
-    }
-}
-
-@test:Config { 
-    groups: ["subscriptionNotification"]
-}
-isolated function testSubscriptionNotificationSuccess() returns error? {
-    http:Response resp = check sendSubscriptionNotification("http://localhost:9102/util", "?name=Ayesh", {});
-    string responsePayload = check resp.getTextPayload();
-    test:assertEquals(responsePayload, "Hello, Ayesh!");
 }
 
 @test:Config { 

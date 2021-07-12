@@ -25,7 +25,7 @@ public client class HubClient {
     private string hub;
     private string topic;
     private string linkHeaderValue;
-    private string secret = "";
+    private string? secret;
     private http:Client httpClient;
 
     # Initializes the `websubhub:HubClient`.
@@ -47,13 +47,13 @@ public client class HubClient {
         self.hub = subscription.hub;
         self.topic = subscription.hubTopic;
         self.linkHeaderValue = generateLinkUrl(self.hub,  self.topic);
-        self.secret = subscription?.hubSecret is string ? <string>subscription?.hubSecret : "";
+        self.secret = retrieveHubSecret(subscription);
         self.httpClient = check retrieveHttpClient(subscription.hubCallback, retrieveHttpClientConfig(config));
     }
 
     # Distributes the published content to the subscribers.
     # ```ballerina
-    # ContentDistributionSuccess|SubscriptionDeletedError|error? publishUpdate = websubHubClientEP->notifyContentDistribution(
+    # websubhub:ContentDistributionSuccess|websubhub:SubscriptionDeletedError|websubhub:Error? publishUpdate = websubHubClientEP->notifyContentDistribution(
     #   { 
     #       content: "This is sample content" 
     #   }
@@ -64,40 +64,31 @@ public client class HubClient {
     # + return - An `websubhub:Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
     #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
-                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|Error {
-        string contentType = retrieveContentType(msg.contentType, msg.content);
+                                returns ContentDistributionSuccess|SubscriptionDeletedError|Error {
         http:Request request = new;
-        string queryString = "";
-        match contentType {
-            mime:APPLICATION_FORM_URLENCODED => {
-                map<string> messageBody = <map<string>> msg.content;
-                queryString += retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
-                request.setTextPayload(queryString, mime:APPLICATION_FORM_URLENCODED);
-            }
-            _ => {
-                request.setPayload(msg.content);
-            }
-        }
-
-        if msg?.headers is map<string|string[]> {
-            var headers = <map<string|string[]>>msg?.headers;
+        map<string|string[]>? headers = msg?.headers;
+        if headers is map<string|string[]> {
             foreach var [header, values] in headers.entries() {
                 if values is string {
                     request.addHeader(header, values);
                 } else {
-                    foreach var value in <string[]>values {
+                    foreach string value in values {
                         request.addHeader(header, value);
                     }
                 }
             }
         }
+        string contentType = retrieveContentType(msg.contentType, msg.content);
+        json|xml|byte[] payload = retrieveRequestPayload(contentType, msg.content);
+        request.setPayload(msg.content);
         error? result = request.setContentType(contentType);
         if (result is error) {
             return error Error("Error occurred while setting content type", result);
         }
         request.setHeader(LINK, self.linkHeaderValue);
-        if self.secret.length() > 0 {
-            byte[]|error hash = retrievePayloadSignature(contentType, self.secret, queryString, msg.content);
+        string? secret = self.secret;
+        if secret is string {
+            byte[]|error hash = generateSignature(secret, payload);
             if (hash is byte[]) {
                 request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
             } else {
@@ -105,12 +96,21 @@ public client class HubClient {
             }
         }
 
-        http:Response|error response = self.httpClient->post("/", request);
+        http:Response|error response = self.httpClient->post("", request);
         if (response is http:Response) {
             return processSubscriberResponse(response, self.topic);
         } else {
             string errorMsg = string `Content distribution failed for topic [${self.topic}]`;
             return error ContentDeliveryError(errorMsg);
+        }
+    }
+}
+
+isolated function retrieveHubSecret(Subscription sub) returns string? {
+    string? secret = sub.hubSecret;
+    if secret is string {
+        if secret.trim().length() > 0 {
+            return secret;
         }
     }
 }
@@ -133,14 +133,19 @@ isolated function retrieveContentType(string? contentType, string|xml|json|byte[
     }
 }
 
-isolated function retrievePayloadSignature(string contentType, string secret, string queryString, string|xml|json|byte[] payload) returns byte[]|error {
-    if contentType == mime:APPLICATION_FORM_URLENCODED {
-        return generateSignature(secret, queryString);
+isolated function retrieveRequestPayload(string contentType, json|xml|byte[] payload) returns json|xml|byte[] {
+    match contentType {
+        mime:APPLICATION_FORM_URLENCODED => {
+            map<string> messageBody = <map<string>>payload;
+            return retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
+        }
+        _ => {
+            return payload;
+        }
     }
-    return generateSignature(secret, payload);
 }
 
-isolated function generateSignature(string 'key, string|xml|json|byte[] payload) returns byte[]|error {
+isolated function generateSignature(string 'key, json|xml|byte[] payload) returns byte[]|error {
     byte[] keyArr = 'key.toBytes();
     if payload is byte[] {
         return check crypto:hmacSha256(payload, keyArr);

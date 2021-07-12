@@ -17,133 +17,47 @@
 import ballerina/lang.'string as strings;
 import ballerina/url;
 import ballerina/http;
+import ballerina/mime;
 import ballerina/regex;
 
-# Processes the `topic` registration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processRegisterRequest(http:Caller caller, http:Response response,
-                                         http:Headers headers, map<string> params, 
-                                         HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicRegistration msg = {
-            topic: topic
-        };
-        TopicRegistrationSuccess|TopicRegistrationError|error result = adaptor.callRegisterMethod(msg, headers);
-        if (result is TopicRegistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicRegistrationError ? result.detail(): TOPIC_REGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        }
-    }
-}
-
-# Processes the `topic` deregistration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processDeregisterRequest(http:Caller caller, http:Response response,
-                                           http:Headers headers, map<string> params, 
-                                           HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicDeregistration msg = {
-            topic: topic
-        };
-        TopicDeregistrationSuccess|TopicDeregistrationError|error result = adaptor.callDeregisterMethod(msg, headers);
-        if (result is TopicDeregistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        }
-    }
-}
-
-# Retrieves an URL-encoded parameter.
-# 
-# + params - Available query parameters
-# + 'key - Required parameter name/key
-# + response - The `http:Response`, which should be returned 
-# + return - Requested parameter value if present or else `()`
-isolated function getEncodedValueOrUpdatedErrorResponse(map<string> params, string 'key, 
-                                                        http:Response response) returns string? {
-    string|error? requestedValue = ();
-    var retrievedValue = params.removeIfHasKey('key);
+isolated function retrieveParameter(map<string> params, string 'key) returns string|error {
+    string? retrievedValue = params.removeIfHasKey('key);
     if retrievedValue is string {
-        requestedValue = url:decode(retrievedValue, "UTF-8");
+        string|error decodedValue = url:decode(retrievedValue, "UTF-8");
+        if decodedValue is error {
+            return error("Invalid value found for parameter '" + 'key + "' : " + decodedValue.message());
+        } else if decodedValue != "" {
+            return decodedValue;
+        }
     }
-    if (requestedValue is string && requestedValue != "") {
-       return <string> requestedValue;
-    } else {
-        updateBadRequestErrorResponse(response, 'key, requestedValue);
-        return ();
-    }
+    return error("Empty value found for parameter '" + 'key + "'");
 }
 
-# Updates the error response for a bad request.
-# 
-# + response - The `http:Response`, which should be returned 
-# + paramName - Errorneous parameter name
-# + topicParameter - Received value or `error`
-isolated function updateBadRequestErrorResponse(http:Response response, string paramName, 
-                                                string|error? topicParameter) {
-    string errorMessage = "";
-    if (topicParameter is error) {
-        errorMessage = "Invalid value found for parameter '" + paramName + "' : " + topicParameter.message();
-    } else {
-        errorMessage = "Empty value found for parameter '" + paramName + "'"; 
+isolated function generateQueryString(string callbackUrl, [string, string?][] params) returns string {
+    string[] keyValPairs = [];
+    foreach var ['key, value] in params {
+        if value is string {
+            keyValPairs.push(string `${'key}=${value}`);
+        }
     }
-    response.statusCode = http:STATUS_BAD_REQUEST;
-    response.setTextPayload(errorMessage);
+    return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
 }
 
-# Updates the generic error response.
-# 
-# + response - The `http:Response`, which should be returned 
-# + messageBody - Optional response payload
-# + headers - Optional additional response headers
-# + reason - Optional reason for rejecting the request
 isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
                                       map<string|string[]>? headers, string reason) {
-    updateHubResponse(response, "denied", messageBody, headers, reason);
+    updateHubResponse(response, MODE_DENIED, messageBody, headers, reason);
 }
 
-# Updates the generic success response.
-# 
-# + response - The `http:Response`, which should be returned 
-# + messageBody - Optional response payload
-# + headers - Optional additional response headers
 isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
                                         map<string|string[]>? headers) {
-    updateHubResponse(response, "accepted", messageBody, headers);
+    updateHubResponse(response, MODE_ACCEPTED, messageBody, headers);
 }
 
-# Updates the `hub` response.
-# 
-# + response - The `http:Response`, which should be returned 
-# + hubMode - Current Hub mode
-# + messageBody - Optional response payload
-# + headers - Optional additional response headers
-# + reason - Optional reason for rejecting the request
 isolated function updateHubResponse(http:Response response, string hubMode, 
                                     anydata? messageBody, map<string|string[]>? headers, 
                                     string? reason = ()) {
-    response.setHeader("Content-type","application/x-www-form-urlencoded");
-
     string payload = generateResponsePayload(hubMode, messageBody, reason);
-
-    response.setTextPayload(payload);
-
+    response.setTextPayload(payload, mime:APPLICATION_FORM_URLENCODED);
     if (headers is map<string|string[]>) {
         foreach var [header, value] in headers.entries() {
             if (value is string) {
@@ -157,39 +71,23 @@ isolated function updateHubResponse(http:Response response, string hubMode,
     }
 }
 
-# Generates the payload to be added to the `hub` Response.
-# 
-# + hubMode - Current Hub mode
-# + messageBody - Optional response payload
-# + reason - Optional reason for rejecting the request
-# + return - Response payload as a `string`
 isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
-    string payload = "hub.mode=" + hubMode;
-    payload += reason is string ? "&hub.reason=" + reason : "";
+    string payload = string `${HUB_MODE}=${hubMode}`;
+    payload += reason is string ? string `&${HUB_REASON}=${reason}` : "";
     if (messageBody is map<string> && messageBody.length() > 0) {
         payload += "&" + retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
     }
     return payload;
 }
 
-# Generates the form-URL-encoded response payload.
-#
-# + messageBody - Provided response payload
-# + return - The formed URL-encoded response body
 isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messageBody) returns string {
-    string payload = "";
     string[] messageParams = [];
     foreach var ['key, value] in messageBody.entries() {
-        messageParams.push('key + "=" + value);
+        messageParams.push(string `${'key}=${value}`);
     }
-    payload += strings:'join("&", ...messageParams);
-    return payload;
+    return strings:'join("&", ...messageParams);
 }
 
-# Converts a text payload to `map<string>`.
-# 
-# + payload - Received text payload
-# + return - Response payload as `map<string>`
 isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) returns map<string> {
     map<string> responsePayload = {};
     string[] queryParams = regex:split(payload, "&");
@@ -211,10 +109,29 @@ isolated function retrieveHttpClient(string url, http:ClientConfiguration config
     }
 }
 
-# Responds to the received `http:Request`.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - Updated `http:Response`
 isolated function respondToRequest(http:Caller caller, http:Response response) {
     http:ListenerError? responseError = caller->respond(response);
+}
+
+isolated function isSuccessStatusCode(int statusCode) returns boolean {
+    return (200 <= statusCode && statusCode < 300);
+}
+
+isolated function generateLinkUrl(string hubUrl, string topic) returns string {
+    return string `${hubUrl}; rel=\"hub\", ${topic}; rel=\"self\"`;
+}
+
+isolated function retrieveHttpClientConfig(ClientConfiguration config) returns http:ClientConfiguration {
+    return {
+        httpVersion: config.httpVersion,
+        http1Settings: config.http1Settings,
+        http2Settings: config.http2Settings,
+        timeout: config.timeout,
+        poolConfig: config?.poolConfig,
+        auth: config?.auth,
+        retryConfig: config?.retryConfig,
+        responseLimits: config.responseLimits,
+        secureSocket: config?.secureSocket,
+        circuitBreaker: config?.circuitBreaker
+    };
 }
