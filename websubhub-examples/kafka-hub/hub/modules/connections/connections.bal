@@ -39,7 +39,7 @@ public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTST
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     groupId: "registered-topics-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:REGISTERED_TOPICS_TOPIC ]
+    topics: [ config:CONSOLIDATED_TOPICS_TOPIC ]
 };
 public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 

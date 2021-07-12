@@ -52,7 +52,7 @@ service object {
             if registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
             }
-            error? persistingResult = persist:addRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:addRegsiteredTopic(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
             }
@@ -80,7 +80,7 @@ service object {
             if !registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
-            error? persistingResult = persist:removeRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:removeRegsiteredTopic(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-deregistration ", err = persistingResult.message());
             }
