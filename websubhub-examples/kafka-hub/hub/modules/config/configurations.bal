@@ -47,7 +47,7 @@ public configurable decimal POLLING_INTERVAL = 10;
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
 # The port that is used to start the hub
-public configurable int HUB_PORT = 9090;
+public configurable int HUB_PORT = 9000;
 
 # The period between retry requests
 public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;

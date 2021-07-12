@@ -17,7 +17,7 @@
 import ballerina/websub;
 import ballerina/log;
 
-listener websub:Listener securedSubscriber = new(9091,
+listener websub:Listener securedSubscriber = new(9100,
     host = "localhost",
     secureSocket = {
         key: {
@@ -28,7 +28,7 @@ listener websub:Listener securedSubscriber = new(9091,
 );
 
 @websub:SubscriberServiceConfig { 
-    target: ["https://localhost:9090/hub", "test"],
+    target: ["https://localhost:9000/hub", "test"],
     leaseSeconds: 36000,
     httpConfig: {
         auth : {
