@@ -31,7 +31,7 @@ isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:Topic
         topic: message.topic,
         hubMode: hubMode
     };
-    check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
+    check produceKafkaMessage(config:REGISTERED_WEBSUB_TOPICS_TOPIC, jsonData);
 }
 
 public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
@@ -44,7 +44,7 @@ public isolated function removeSubscription(websubhub:VerifiedUnsubscription mes
 
 isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
     json jsonData = message.toJson();
-    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData); 
+    check produceKafkaMessage(config:WEBSUB_SUBSCRIBERS_TOPIC, jsonData); 
 }
 
 public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {

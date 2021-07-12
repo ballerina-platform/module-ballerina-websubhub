@@ -28,17 +28,17 @@ public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
 # Kafka topic which will get notified for websub topic registration/deregistration
 # All the hubs must be pointed to the same Kafka topic to notify websub topic registration/deregistration
-public configurable string REGISTERED_TOPICS_TOPIC = "registered-topics";
+public configurable string REGISTERED_WEBSUB_TOPICS_TOPIC = "registered-websub-topics";
 
 # Kafka topic which stores consolidated websub topics for the hub
-public configurable string CONSOLIDATED_TOPICS_TOPIC = "consolidated-topics";
+public configurable string CONSOLIDATED_WEBSUB_TOPICS_TOPIC = "consolidated-websub-topics";
 
 # Kafka topic which will get notified for websub subscription/unsubscription
 # All the hubs must be pointed to the same Kafka topic to notify websub subscription/unsubscription
-public configurable string SUBSCRIBERS_TOPIC = "registered-subscribers";
+public configurable string WEBSUB_SUBSCRIBERS_TOPIC = "registered-websub-subscribers";
 
-# Kafka topic which stores consolidated websub subscribers for the hub
-public configurable string CONSOLIDATED_SUBSCRIBERS_TOPIC = "consolidated-subscribers";
+# Kafka topic which is stores consolidated websub subscribers for this server
+public configurable string CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC = "consolidated-websub-subscribers";
 
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;

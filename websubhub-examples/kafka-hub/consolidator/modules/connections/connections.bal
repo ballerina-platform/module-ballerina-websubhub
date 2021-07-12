@@ -27,17 +27,17 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTS
 
 // Consumer which reads the consolidated topic details
 kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
-    groupId: string `consolidated-topics-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+    groupId: string `consolidated--websub-topics-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
-    topics: [ config:CONSOLIDATED_TOPICS_TOPIC ]
+    topics: [ config:CONSOLIDATED_WEBSUB_TOPICS_TOPIC ]
 };
 public final kafka:Consumer consolidatedTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedTopicsConsumerConfig);
 
 // Consumer which reads the consolidated subscriber details
 kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
-    groupId: string `consolidated-subscribers-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+    groupId: string `consolidated-websub-subscribers-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
-    topics: [ config:CONSOLIDATED_SUBSCRIBERS_TOPIC ]
+    topics: [ config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC ]
 };
 public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedSubscriberConsumerConfig);
 
@@ -45,6 +45,6 @@ public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:K
 public final kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: string `state-update-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
-    topics: [ config:REGISTERED_TOPICS_TOPIC, config:SUBSCRIBERS_TOPIC ],
+    topics: [ config:REGISTERED_WEBSUB_TOPICS_TOPIC, config:WEBSUB_SUBSCRIBERS_TOPIC ],
     autoCommit: false
 };

@@ -24,7 +24,7 @@ public isolated function persistTopicRegistrations(map<websubhub:TopicRegistrati
         availableTopics.push(topic);
     }
     json[] jsonData = <json[]> availableTopics.toJson();
-    check produceKafkaMessage(config:CONSOLIDATED_TOPICS_TOPIC, jsonData);
+    check produceKafkaMessage(config:CONSOLIDATED_WEBSUB_TOPICS_TOPIC, jsonData);
 }
 
 public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription> subscribersCache) returns error? {
@@ -33,7 +33,7 @@ public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription
         availableSubscriptions.push(subscriber);
     }
     json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:CONSOLIDATED_SUBSCRIBERS_TOPIC, jsonData);
+    check produceKafkaMessage(config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC, jsonData);
 }
 
 isolated function produceKafkaMessage(string topicName, json payload) returns error? {
