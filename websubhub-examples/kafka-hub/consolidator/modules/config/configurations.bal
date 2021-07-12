@@ -19,6 +19,13 @@ import consolidatorService.util;
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
+# Kafka topic which will get notified for websub topic registration/deregistration
+# All the hubs must be pointed to the same Kafka topic to notify websub topic registration/deregistration
+public configurable string REGISTERED_TOPICS_TOPIC = "registered-topics";
+
+# Kafka topic which stores consolidated websub topics for the hub
+public configurable string CONSOLIDATED_TOPICS_TOPIC = "consolidated-topics";
+
 # Kafka topic which will get notified for websub subscription/unsubscription
 # All the hubs must be pointed to the same Kafka topic to notify websub subscription/unsubscription
 public configurable string SUBSCRIBERS_TOPIC = "registered-subscribers";

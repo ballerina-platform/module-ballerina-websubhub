@@ -17,6 +17,16 @@
 import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.connections as conn;
+
+public isolated function persistTopicRegistrations(map<websubhub:TopicRegistration> registeredTopicsCache) returns error? {
+    websubhub:TopicRegistration[] availableTopics = [];
+    foreach var topic in registeredTopicsCache {
+        availableTopics.push(topic);
+    }
+    json[] jsonData = <json[]> availableTopics.toJson();
+    check produceKafkaMessage(config:CONSOLIDATED_TOPICS_TOPIC, jsonData);
+}
+
 public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription> subscribersCache) returns error? {
     websubhub:VerifiedSubscription[] availableSubscriptions = [];
     foreach var subscriber in subscribersCache {

@@ -23,6 +23,7 @@ import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 
+isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 listener kafka:Listener kafkaListener = check new (config:KAFKA_BOOTSTRAP_NODE, conn:subscribersConsumerConfig);
@@ -32,8 +33,12 @@ service kafka:Service on kafkaListener {
         if records.length() > 0 {
             kafka:ConsumerRecord lastRecord = records.pop();
             string lastPersistedData = check string:fromBytes(lastRecord.value);
-            check self.processPersistedData(lastPersistedData);
+            error? result = self.processPersistedData(lastPersistedData);
+            if result is error {
+                log:printError("Error occurred while processing received event ", 'error = result);
+            }
         }
+
         kafka:Error? commitResult = caller->commit();
         if commitResult is error {
             log:printError("Error occurred while committing the offsets for the consumer ", 'error = commitResult);
@@ -44,6 +49,12 @@ service kafka:Service on kafkaListener {
         json payload =  check value:fromJsonString(persistedData);
         string hubMode = check payload.hubMode;
         match hubMode {
+            "register" => {
+                check processTopicRegistration(payload);
+            }
+            "deregister" => {
+                check processTopicDeregistration(payload);
+            }
             "subscribe" => {
                 check processSubscription(payload);
             }
@@ -55,6 +66,40 @@ service kafka:Service on kafkaListener {
             }
         }
     }
+}
+
+function processTopicRegistration(json payload) returns error? {
+    websubhub:TopicRegistration registration = check retrieveTopicRegistration(payload);
+    string topicName = util:sanitizeTopicName(registration.topic);
+    lock {
+        // add the topic if topic-registration event received
+        registeredTopicsCache[topicName] = registration.cloneReadOnly();
+        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
+    }
+}
+
+function retrieveTopicRegistration(json payload) returns websubhub:TopicRegistration|error {
+    string topic = check payload.topic;
+    return {
+        topic: topic
+    };
+}
+
+function processTopicDeregistration(json payload) returns error? {
+    websubhub:TopicDeregistration deregistration = check retrieveTopicDeregistration(payload);
+    string topicName = util:sanitizeTopicName(deregistration.topic);
+    lock {
+        // remove the topic if topic-deregistration event received
+        _ = registeredTopicsCache.removeIfHasKey(topicName);
+        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
+    }
+}
+
+function retrieveTopicDeregistration(json payload) returns websubhub:TopicDeregistration|error {
+    string topic = check payload.topic;
+    return {
+        topic: topic
+    };
 }
 
 function processSubscription(json payload) returns error? {

@@ -35,8 +35,8 @@ public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:K
 
 // Configurations for consumer which reads the persisted subscription/unsubscription events
 public final kafka:ConsumerConfiguration subscribersConsumerConfig = {
-    groupId: string `registered-consumers-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+    groupId: string `state-update-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
-    topics: [ config:SUBSCRIBERS_TOPIC ],
+    topics: [ config:REGISTERED_TOPICS_TOPIC, config:SUBSCRIBERS_TOPIC ],
     autoCommit: false
 };
