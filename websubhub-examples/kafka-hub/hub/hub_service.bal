@@ -40,7 +40,7 @@ service object {
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message, http:Headers headers)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
         if config:SECURITY_ON {
-            check security:authorizeSubscriber(headers, message.topic);
+            check security:authorizePublisher(headers, message.topic);
         }
         check self.registerTopic(message);
         return websubhub:TOPIC_REGISTRATION_SUCCESS;
@@ -68,7 +68,7 @@ service object {
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
         if config:SECURITY_ON {
-            check security:authorizeSubscriber(headers, message.topic);
+            check security:authorizePublisher(headers, message.topic);
         }
         check self.deregisterTopic(message);
         return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
