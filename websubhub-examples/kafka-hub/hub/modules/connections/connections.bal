@@ -29,17 +29,17 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTS
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
-    groupId: "registered-consumers-group-" + config:CONSTRUCTED_SERVER_ID,
+    groupId: "consolidated-websub-subscribers-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:SUBSCRIBERS_TOPIC ]
+    topics: [ config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC ]
 };
 public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
-    groupId: "registered-topics-group-" + config:CONSTRUCTED_SERVER_ID,
+    groupId: "consolidated--websub-topics-group-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:REGISTERED_TOPICS_TOPIC ]
+    topics: [ config:CONSOLIDATED_WEBSUB_TOPICS_TOPIC ]
 };
 public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 

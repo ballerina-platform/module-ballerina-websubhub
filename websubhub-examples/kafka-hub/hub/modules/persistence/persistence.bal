@@ -18,50 +18,33 @@ import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
 
-public isolated function addRegsiteredTopic(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicRegistration message) returns error? {
-    websubhub:TopicRegistration[] availableTopics = [];
-    foreach var topic in registeredTopics {
-        availableTopics.push(topic);
-    }
-    availableTopics.push(message.cloneReadOnly());
-    json[] jsonData = availableTopics;
-    check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
+public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
+    check updateTopicDetails(message, "register");
 }
 
-public isolated function removeRegsiteredTopic(map<websubhub:TopicRegistration> registeredTopics, websubhub:TopicDeregistration message) returns error? {
-    websubhub:TopicRegistration[] availableTopics = [];
-    foreach var topic in registeredTopics {
-        availableTopics.push(topic);
-    }
-    availableTopics = 
-        from var registration in availableTopics
-        where registration.topic != message.topic
-        select registration.cloneReadOnly();
-    json[] jsonData = availableTopics;
-    check produceKafkaMessage(config:REGISTERED_TOPICS_TOPIC, jsonData);
+public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration message) returns error? {
+    check updateTopicDetails(message, "deregister");
 }
 
-public isolated function addSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedSubscription message) returns error? {
-    websubhub:VerifiedSubscription[] availableSubscriptions = [];
-    foreach var subscriber in subscribersCache {
-        availableSubscriptions.push(subscriber);
-    }
-    availableSubscriptions.push(message.cloneReadOnly());
-    json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData); 
+isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:TopicDeregistration message, string hubMode) returns error? {
+    json jsonData = {
+        topic: message.topic,
+        hubMode: hubMode
+    };
+    check produceKafkaMessage(config:REGISTERED_WEBSUB_TOPICS_TOPIC, jsonData);
 }
 
-public isolated function removeSubscription(map<websubhub:VerifiedSubscription> subscribersCache, websubhub:VerifiedUnsubscription message) returns error? {
-    websubhub:VerifiedUnsubscription[] availableSubscriptions = [];
-    foreach var subscriber in subscribersCache {
-        availableSubscriptions.push(subscriber);
-    }
-    availableSubscriptions = 
-        from var subscription in availableSubscriptions
-        where subscription.hubTopic != message.hubTopic && subscription.hubCallback != message.hubCallback
-        select subscription.cloneReadOnly();
-    json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:SUBSCRIBERS_TOPIC, jsonData);
+public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
+    check updateSubscriptionDetails(message); 
+}
+
+public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
+    check updateSubscriptionDetails(message); 
+}
+
+isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+    json jsonData = message.toJson();
+    check produceKafkaMessage(config:WEBSUB_SUBSCRIBERS_TOPIC, jsonData); 
 }
 
 public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {

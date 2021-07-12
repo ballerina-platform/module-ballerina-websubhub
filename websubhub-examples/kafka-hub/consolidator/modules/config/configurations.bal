@@ -14,14 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import kafkaHub.util;
-
-# Flag to check whether to enable/disable security
-public configurable boolean SECURITY_ON = true;
-
-# Server ID is is used to uniquely identify each server 
-# Each server must have a unique ID
-public configurable string SERVER_ID = "server-1";
+import consolidatorService.util;
 
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
@@ -46,16 +39,4 @@ public configurable decimal POLLING_INTERVAL = 10;
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
-# The port that is used to start the hub
-public configurable int HUB_PORT = 9000;
-
-# The period between retry requests
-public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;
-
-# The maximum retry count
-public configurable int MESSAGE_DELIVERY_COUNT = 3;
-
-# The message delivery timeout
-public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
-
-public final string CONSTRUCTED_SERVER_ID = string `${SERVER_ID}-${util:generateRandomString()}`;
+public final string CONSTRUCTED_CONSUMER_ID = util:generateRandomString();
