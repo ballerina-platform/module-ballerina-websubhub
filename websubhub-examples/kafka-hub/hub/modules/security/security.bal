@@ -14,50 +14,120 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
 import ballerina/http;
-import ballerina/jwt;
+import ballerina/regex;
+import kafkaHub.config;
 
-final http:ListenerJwtAuthHandler handler = new({
-    issuer: "https://localhost:9443/oauth2/token",
-    audience: "ballerina",
-    signatureConfig: {
-        jwksConfig: {
-            url: "https://localhost:9443/oauth2/jwks",
-            clientConfig: {
-                secureSocket: {
-                    cert: {
-                        path: "../_resources/client-truststore.jks",
-                        password: "wso2carbon"
-                    }
-                }
-            }
-        }
-    },
-    scopeKey: "scope"
-});
+const string SUFFIX_GENERAL = "_GENERAL";
+const string SUFFIX_ALL_INDIVIDUAL = "_ALL_INDIVIDUAL";
+const string SUFFIX_INDIVIDUAL = "_INDIVIDUAL";
 
-# Checks for authorization for the current request.
-# 
-# + headers - `http:Headers` for the current request
-# + authScopes - Requested auth-scopes to access the current resource
+final http:Client clientEP = check new(config:MOSIP_AUTH_BASE_URL);
+
+# Authorize the subscriber.
+#
+# + headers - `http:Headers` of request
+# + topic - Topic of the message
 # + return - `error` if there is any authorization error or else `()`
-public isolated function authorize(http:Headers headers, string[] authScopes) returns error? {
-    string|http:HeaderNotFoundError authHeader = headers.getHeader(http:AUTH_HEADER);
-    if (authHeader is string) {
-        jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
-        if (auth is jwt:Payload) {
-            http:Forbidden? forbiddenError = handler.authorize(auth, authScopes);
-            if (forbiddenError is http:Forbidden) {
-                log:printError("Forbidden Error received - Authentication credentials invalid");
-                return error("Not authorized");
+public isolated function authorizeSubscriber(http:Headers headers, string topic) returns error? {
+    string token = check getToken(headers);
+    json response = check getValidatedTokenResponse(token);
+    string roles = (check response?.roles).toString();
+    string[] rolesArr = regex:split(roles, ",");
+    string userId = (check response?.userId).toString();
+    string? partnerID = buildPartnerId(topic);
+    string rolePrefix = buildRolePrefix(topic, "SUBSCRIBE_");
+    boolean authorized = isSubscriberAuthorized(partnerID, rolePrefix, rolesArr, userId);
+    if (!authorized) {
+        return error("Subscriber is not authorized");
+    }
+}
+
+# Authorize the publisher.
+#
+# + headers - `http:Headers` of request
+# + topic - Topic of the message
+# + return - `error` if there is any authorization error or else `()`
+public isolated function authorizePublisher(http:Headers headers, string topic) returns error? {
+    string token = check getToken(headers);
+    json response = check getValidatedTokenResponse(token);
+    string roles = (check response?.roles).toString();
+    string[] rolesArr = regex:split(roles, ",");
+    string? partnerID = buildPartnerId(topic);
+    string rolePrefix = buildRolePrefix(topic, "PUBLISH_");
+    boolean authorized = isPublisherAuthorized(partnerID, rolePrefix, rolesArr);
+    if (!authorized) {
+        return error("Publisher is not authorized");
+    }
+}
+
+// Token is extracted from the cookies header which has the key `Authorization`
+isolated function getToken(http:Headers headers) returns string|error {
+    string cookieHeader = check headers.getHeader("Cookie");
+    string[] values = regex:split(cookieHeader, "; ");
+    foreach string value in values {
+        if value.startsWith("Authorization=") {
+            return regex:split(value, "=")[1];
+        }
+    }
+    return error("Authorization token cannot be found");
+}
+
+isolated function buildRolePrefix(string topic, string prefix) returns string {
+    int? index = topic.indexOf("/");
+    if index is int {
+        return prefix + topic.substring(index + 1, topic.length());
+    } else {
+        return prefix + topic;
+    }
+}
+
+isolated function buildPartnerId(string topic) returns string? {
+    int? index = topic.indexOf("/");
+    if index is int {
+        return topic.substring(0, index);
+    }
+}
+
+isolated function getValidatedTokenResponse(string token) returns json|error {
+    map<string> headerMap = {
+        "Cookie": "Authorization=".concat(token)
+    };
+    json response = check clientEP->get(config:MOSIP_AUTH_VALIDATE_TOKEN_URL, headers = headerMap);
+    return response;
+}
+
+isolated function isPublisherAuthorized(string? partnerID, string rolePrefix, string[] rolesArr) returns boolean {
+    if partnerID is string {
+        foreach string role in rolesArr {
+            if role == rolePrefix.concat(SUFFIX_ALL_INDIVIDUAL) {
+                return true;
             }
-        } else {
-            log:printError("Unauthorized Error received - Authentication credentials invalid");
-            return error("Not authorized");
         }
     } else {
-        log:printError("Authorization header not found");
-        return error("Not authorized");
+        foreach string role in rolesArr {
+            if role == rolePrefix.concat(SUFFIX_GENERAL) {
+                return true;
+            }
+        }
     }
+    return false;
+}
+
+isolated function isSubscriberAuthorized(string? partnerID, string rolePrefix, string[] rolesArr, string userId)
+                                         returns boolean {
+    if partnerID is string {
+        foreach string role in rolesArr {
+            if role == rolePrefix.concat(SUFFIX_INDIVIDUAL) && partnerID == userId {
+                return true;
+            }
+        }
+    } else {
+        foreach string role in rolesArr {
+            if role == rolePrefix.concat(SUFFIX_GENERAL) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
