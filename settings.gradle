@@ -18,7 +18,6 @@ include ':websubhub-native'
 include ':websubhub-ballerina'
 include ':websubhub-compiler-plugin'
 include ':websubhub-compiler-plugin-test'
-// include ':websubhub-examples'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 project(':websubhub-native').projectDir = file("native")
