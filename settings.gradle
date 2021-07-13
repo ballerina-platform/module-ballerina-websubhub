@@ -12,12 +12,18 @@ plugins {
 }
 
 rootProject.name = 'websubhub'
-include ':build-config:checkstyle'
+
+include ':checkstyle'
 include ':websubhub-native'
 include ':websubhub-ballerina'
 include ':websubhub-compiler-plugin'
 include ':websubhub-compiler-plugin-test'
-// include ':websubhub-examples'
+
+project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
+project(':websubhub-native').projectDir = file("native")
+project(':websubhub-compiler-plugin').projectDir = file("compiler-plugin")
+project(':websubhub-ballerina').projectDir = file("ballerina")
+project(':websubhub-compiler-plugin-test').projectDir = file("compiler-plugin-test")
 
 gradleEnterprise {
     buildScan {
