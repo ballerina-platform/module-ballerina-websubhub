@@ -71,7 +71,7 @@ docker container run -d --name wso2-is-instance -p 9443:9443 ayeshalmeida/wso2-i
 
 If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
 
-## Starting the Hub
+## Starting the Consolidator Service
 Once those servers are up and running the `Event Consolidator Service` could be started. Go into `consolidator` directory and run following command to built the project.
 ```
 bal build
