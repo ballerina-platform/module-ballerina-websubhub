@@ -4,7 +4,7 @@ name = "websubhub"
 version = "@toml.version@"
 
 [[platform.java11.dependency]]
-path = "../websubhub-native/build/libs/websubhub-native-@project.version@.jar"
+path = "../native/build/libs/websubhub-native-@project.version@.jar"
 groupId = "ballerina"
 artifactId = "web-sub"
 version = "@project.version@"
