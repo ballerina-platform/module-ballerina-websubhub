@@ -41,10 +41,10 @@ kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
 };
 public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedSubscriberConsumerConfig);
 
-// Configurations for consumer which reads the persisted subscription/unsubscription events
-public final kafka:ConsumerConfiguration subscribersConsumerConfig = {
+// Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
+public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
     groupId: string `state-update-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
-    topics: [ config:REGISTERED_WEBSUB_TOPICS_TOPIC, config:WEBSUB_SUBSCRIBERS_TOPIC ],
-    autoCommit: false
+    topics: [ config:REGISTERED_WEBSUB_TOPICS_TOPIC, config:WEBSUB_SUBSCRIBERS_TOPIC ]
 };
+public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);
