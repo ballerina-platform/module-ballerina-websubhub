@@ -59,9 +59,9 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # The base URL of IDP
-public configurable string MOSIP_AUTH_BASE_URL = "";
+public configurable string MOSIP_AUTH_BASE_URL = "https://host/";
 
 # The token validation URL of IDP
-public configurable string MOSIP_AUTH_VALIDATE_TOKEN_URL = "";
+public configurable string MOSIP_AUTH_VALIDATE_TOKEN_URL = "https://host/oauth2/token";
 
 public final string CONSTRUCTED_SERVER_ID = string `${SERVER_ID}-${util:generateRandomString()}`;
