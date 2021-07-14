@@ -40,3 +40,9 @@ MESSAGE_DELIVERY_COUNT = 3
 
 # The message delivery timeout
 MESSAGE_DELIVERY_TIMEOUT = 10.0
+
+# The base URL of IDP
+MOSIP_AUTH_BASE_URL = "https://host/"
+
+# The token validation URL of IDP
+MOSIP_AUTH_VALIDATE_TOKEN_URL = "https://host/oauth2/token"
