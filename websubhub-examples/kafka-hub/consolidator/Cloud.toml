@@ -1,5 +1,5 @@
 [container.image]
-repository="ayeshalm"
+repository="ballerina"
 name="consolidator"
 tag="v1"
 

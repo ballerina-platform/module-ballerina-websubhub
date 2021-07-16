@@ -1,5 +1,5 @@
 [container.image]
-repository="anuruddhal"
+repository="ballerina"
 name="kafka"
 tag="v1"
 
