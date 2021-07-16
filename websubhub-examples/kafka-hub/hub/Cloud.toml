@@ -11,6 +11,10 @@ target="/home/ballerina/resources/server.crt"
 sourceFile="./resources/server.key"
 target="/home/ballerina/resources/server.key"
 
+[[container.copy.files]]
+sourceFile="./Config.toml"
+target="/home/ballerina/Config.toml"
+
 [[cloud.config.files]]
 file="./resources/server.key"
 mount_path="/home/ballerina/resorces/server.key"
