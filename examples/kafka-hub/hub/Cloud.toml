@@ -12,6 +12,10 @@ sourceFile="./resources/server.key"
 target="/home/ballerina/resources/server.key"
 
 [[container.copy.files]]
+sourceFile="./resources/client-truststore.jks"
+target="/home/ballerina/resources/client-truststore.jks"
+
+[[container.copy.files]]
 sourceFile="./Config.toml"
 target="/home/ballerina/Config.toml"
 
