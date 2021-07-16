@@ -72,7 +72,7 @@ docker container run -d --name wso2-is-instance -p 9443:9443 ayeshalmeida/wso2-i
 If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
 
 ## Starting the Consolidator Service
-Once those servers are up and running the `Event Consolidator Service` could be started. Go into `consolidator` directory and run following command to built the project.
+Once those servers are up and running the `Event Consolidator Service` could be started. Go into `consolidator` directory and run following command to build the project.
 ```
 bal build
 ```
@@ -83,7 +83,7 @@ bal run target/bin/consolidatorService.jar
 ```
 
 ### Running in Docker
-Go into `consolidator` directory and run following command to built the docker image for the project.
+Go into `consolidator` directory and run the following command to build the docker image for the project.
 ```
 bal build --cloud=docker
 ```
@@ -94,7 +94,7 @@ docker run -d ballerina/consolidator:v1
 ```
 
 ## Starting the Hub
-Once those servers are up and running the hub can be started using the following commands. Go into `hub` directory and run following command to built the project.
+Once those servers are up and running the hub can be started using the following commands. Go into `hub` directory and run following command to build the project.
 ```
 bal build 
 ```
@@ -105,7 +105,7 @@ bal run target/bin/kafka_hub_service.jar
 ```
 
 ### Running in Docker
-Go into `hub` directory and run following command to built the docker image for the project.
+Go into `hub` directory and run following command to build the docker image for the project.
 ```
 bal build --cloud=docker
 ```
