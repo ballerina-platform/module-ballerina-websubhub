@@ -35,8 +35,8 @@ public function main() returns error? {
     websubhub:Listener hubListener = check new (config:HUB_PORT, 
         secureSocket = {
             key: {
-                certFile: "../_resources/server.crt",
-                keyFile: "../_resources/server.key"
+                certFile: "./resources/server.crt",
+                keyFile: "./resources/server.key"
             }
         }
     );
@@ -163,7 +163,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                 },
                 timeout: config:MESSAGE_DELIVERY_TIMEOUT,
                 secureSocket: {
-                    cert: "../_resources/server.crt"
+                    cert: "./resources/server.crt"
                 }
             });
             _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName);
