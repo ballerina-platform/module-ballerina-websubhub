@@ -78,9 +78,19 @@ bal build
 ```
 
 Then to run the project execute the below command.
-
 ```
 bal run target/bin/consolidatorService.jar
+```
+
+### Running in Docker
+Go into `consolidator` directory and run following command to built the docker image for the project.
+```
+bal build --cloud=docker
+```
+
+Then to run the docker container execute the below command.
+```
+docker run -d ballerina/consolidator:v1
 ```
 
 ## Starting the Hub
@@ -90,9 +100,19 @@ bal build
 ```
 
 Then to run the project execute the below command.
-
 ```
 bal run target/bin/kafka_hub_service.jar
+```
+
+### Running in Docker
+Go into `hub` directory and run following command to built the docker image for the project.
+```
+bal build --cloud=docker
+```
+
+Then to run the docker container execute the below command.
+```
+docker run -p 9000:9000 -d ballerina/kafka:v1
 ```
 
 ### Starting Multiple Hub Instances
