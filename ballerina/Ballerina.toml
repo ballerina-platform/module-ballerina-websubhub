@@ -1,0 +1,7 @@
+[package]
+org = "ballerina"
+name = "websubhub"
+version = "@toml.version@"
+
+[[platform.java11.dependency]]
+path = "../native/build/libs/websubhub-native-@project.version@.jar"
