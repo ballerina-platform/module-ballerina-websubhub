@@ -25,7 +25,7 @@ import kafkaHub.util;
 websubhub:Service hubService = @websubhub:ServiceConfig { 
     webHookConfig: {
         secureSocket: {
-            cert: "../_resources/server.crt"
+            cert: "./resources/server.crt"
         }
     }
 }
