@@ -25,7 +25,7 @@ import kafkaHub.util;
 websubhub:Service hubService = @websubhub:ServiceConfig { 
     webHookConfig: {
         secureSocket: {
-            cert: "../_resources/server.crt"
+            cert: "./resources/server.crt"
         }
     }
 }
@@ -52,7 +52,7 @@ service object {
             if registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
             }
-            error? persistingResult = persist:addRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:addRegsiteredTopic(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
             }
@@ -80,7 +80,7 @@ service object {
             if !registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
-            error? persistingResult = persist:removeRegsiteredTopic(registeredTopicsCache, message.cloneReadOnly());
+            error? persistingResult = persist:removeRegsiteredTopic(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-deregistration ", err = persistingResult.message());
             }
@@ -133,7 +133,7 @@ service object {
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
-            error? persistingResult = persist:addSubscription(subscribersCache, message.cloneReadOnly());
+            error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
             }
@@ -186,7 +186,7 @@ service object {
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
-            var persistingResult = persist:removeSubscription(subscribersCache, message.cloneReadOnly());
+            var persistingResult = persist:removeSubscription(message.cloneReadOnly());
             if (persistingResult is error) {
                 log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
             } 

@@ -71,16 +71,48 @@ docker container run -d --name wso2-is-instance -p 9443:9443 ayeshalmeida/wso2-i
 
 If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
 
+## Starting the Consolidator Service
+Once those servers are up and running the `Event Consolidator Service` could be started. Go into `consolidator` directory and run following command to build the project.
+```
+bal build
+```
+
+Then to run the project execute the below command.
+```
+bal run target/bin/consolidatorService.jar
+```
+
+### Running in Docker
+Go into `consolidator` directory and run the following command to build the docker image for the project.
+```
+bal build --cloud=docker
+```
+
+Then to run the docker container execute the below command.
+```
+docker run -d ballerina/consolidator:v1
+```
+
 ## Starting the Hub
-Once those servers are up and running the hub can be started using the following commands. First the project needs to be built using the below command.
+Once those servers are up and running the hub can be started using the following commands. Go into `hub` directory and run following command to build the project.
 ```
 bal build 
 ```
 
 Then to run the project execute the below command.
-
 ```
 bal run target/bin/kafka_hub_service.jar
+```
+
+### Running in Docker
+Go into `hub` directory and run following command to build the docker image for the project.
+```
+bal build --cloud=docker
+```
+
+Then to run the docker container execute the below command.
+```
+docker run -p 9000:9000 -d ballerina/kafka:v1
 ```
 
 ### Starting Multiple Hub Instances
@@ -97,7 +129,7 @@ bal run kafka_hub_service.jar
 ```
 
 ## Registering Topics
-After all prerequisites are finished the first interaction to the hub could be made by registering a topic. We have included a sample to understand the usage of `websubhub:PublisherClient` in the `examples` directory inside the project. Execute the following command to build the `topic_registration_client.bal`.
+After all prerequisites are finished the first interaction to the hub could be made by registering a topic. We have included a sample to understand the usage of `websubhub:PublisherClient` in the `publisher` directory inside the project. Execute the following command to build the `topic_registration_client.bal`.
 
 ```
 bal build topic_registration_client.bal
@@ -110,7 +142,7 @@ bal run topic_registration_client.jar
 ```
 
 ## Subscribing to the Hub
-Now we have registered a `topic` in the hub. Next we could subscribe to the previously registered `topic` using `websub:SubscriberService`. Build `subscriber_service.bal` inside `examples` directory inside the project using the following command.
+Now we have registered a `topic` in the hub. Next we could subscribe to the previously registered `topic` using `websub:SubscriberService`. Build `subscriber_service.bal` inside `subscriber` directory inside the project using the following command.
 
 ```
 bal build subscriber_service.bal
@@ -123,7 +155,7 @@ bal run subscriber_service.jar
 ```
 
 ## Publishing to the Hub
-Content publishing could be considered as the final stage of interaction between a publisher, hub and subscriber. `websubhub:PublisherClient` has support to publish content to the hub. Find the `content_publish_client.bal` located in `examples` directory and execute the following command to build the program.
+Content publishing could be considered as the final stage of interaction between a publisher, hub and subscriber. `websubhub:PublisherClient` has support to publish content to the hub. Find the `content_publish_client.bal` located in `publisher` directory and execute the following command to build the program.
 
 ```
 bal build content_publish_client.bal

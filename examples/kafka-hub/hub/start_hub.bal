@@ -35,8 +35,8 @@ public function main() returns error? {
     websubhub:Listener hubListener = check new (config:HUB_PORT, 
         secureSocket = {
             key: {
-                certFile: "../_resources/server.crt",
-                keyFile: "../_resources/server.key"
+                certFile: "./resources/server.crt",
+                keyFile: "./resources/server.key"
             }
         }
     );
@@ -163,7 +163,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                 },
                 timeout: config:MESSAGE_DELIVERY_TIMEOUT,
                 secureSocket: {
-                    cert: "../_resources/server.crt"
+                    cert: "./resources/server.crt"
                 }
             });
             _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName);
@@ -175,7 +175,6 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
     do {
         while true {
             kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-            
             if !isValidConsumer(topicName, groupName) {
                 fail error(string `Consumer with group name ${groupName} or topic ${topicName} is invalid`);
             }
@@ -202,7 +201,7 @@ isolated function isValidConsumer(string topicName, string groupName) returns bo
     lock {
         subscriberAvailable = subscribersCache.hasKey(groupName);
     }
-    return !topicAvailable || !subscriberAvailable;
+    return topicAvailable && subscriberAvailable;
 }
 
 isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
