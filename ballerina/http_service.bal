@@ -66,7 +66,8 @@ isolated service class HttpService {
 
         map<string> params = {};
 
-        string contentType = check headers.getHeader(CONTENT_TYPE);
+        string contentTypeValue = check headers.getHeader(CONTENT_TYPE);
+        var [contentType, headerParameters] = check http:parseHeader(contentTypeValue);
         map<string[]> queryParams = request.getQueryParams();
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
