@@ -66,7 +66,7 @@ isolated service class HttpService {
 
         map<string> params = {};
 
-        string contentTypeValue = check headers.getHeader(CONTENT_TYPE);
+        string contentTypeValue = request.getContentType();
         var [contentType, headerParameters] = check http:parseHeader(contentTypeValue);
         map<string[]> queryParams = request.getQueryParams();
         match contentType {
