@@ -144,9 +144,31 @@ function testRegistrationSuccess() returns @tainted error? {
 
 @test:Config {
 }
+function testRegistrationSuccessWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded;charset=UTF-8");
+    string expectedPayload = "hub.mode=accepted&isSuccess=true";
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    test:assertEquals(response.getTextPayload(), expectedPayload);
+}
+
+@test:Config {
+}
 function testRegistrationFailure() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
+    string expectedPayload = "hub.mode=denied&hub.reason=Registration Failed!";
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    test:assertEquals(response.getTextPayload(), expectedPayload);
+}
+
+@test:Config {
+}
+function testRegistrationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded;charset=UTF-8");
     string expectedPayload = "hub.mode=denied&hub.reason=Registration Failed!";
     http:Response response = check httpClient->post("/", request);
     test:assertEquals(response.statusCode, 200);
@@ -166,9 +188,31 @@ function testDeregistrationSuccess() returns @tainted error? {
 
 @test:Config {
 }
+function testDeregistrationSuccessWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded;charset=UTF-8");
+    string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    test:assertEquals(response.getTextPayload(), expectedPayload);
+}
+
+@test:Config {
+}
 function testDeregistrationFailure() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
+    string expectedPayload = "hub.mode=denied&hub.reason=Topic Deregistration Failed!";
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 200);
+    test:assertEquals(response.getTextPayload(), expectedPayload);
+}
+
+@test:Config {
+}
+function testDeregistrationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded;charset=UTF-8");
     string expectedPayload = "hub.mode=denied&hub.reason=Topic Deregistration Failed!";
     http:Response response = check httpClient->post("/", request);
     test:assertEquals(response.statusCode, 200);
@@ -187,6 +231,16 @@ function testSubscriptionFailure() returns @tainted error? {
 
 @test:Config {
 }
+function testSubscriptionFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
+                            "application/x-www-form-urlencoded;charset=UTF-8");
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 400);
+}
+
+@test:Config {
+}
 function testSubscriptionValidationFailure() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber", 
@@ -197,10 +251,31 @@ function testSubscriptionValidationFailure() returns @tainted error? {
 
 @test:Config {
 }
+function testSubscriptionValidationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber", 
+                            "application/x-www-form-urlencoded;charset=UTF-8");
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 202);
+}
+
+@test:Config {
+}
 function testSubscriptionIntentVerification() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
+
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 202);
+}
+
+@test:Config {
+}
+function testSubscriptionIntentVerificationWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
+                            "application/x-www-form-urlencoded;charset=UTF-8");
 
     http:Response response = check httpClient->post("/", request);
     test:assertEquals(response.statusCode, 202);
@@ -229,6 +304,17 @@ function testUnsubscriptionFailure() returns @tainted error? {
 
 @test:Config {
 }
+function testUnsubscriptionFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
+                            "application/x-www-form-urlencoded;charset=UTF-8");
+
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 400);
+}
+
+@test:Config {
+}
 function testUnsubscriptionValidationFailure() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe",
@@ -239,10 +325,30 @@ function testUnsubscriptionValidationFailure() returns @tainted error? {
 
 @test:Config {
 }
+function testUnsubscriptionValidationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe",
+                            "application/x-www-form-urlencoded;charset=UTF-8");
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 202);
+}
+
+@test:Config {
+}
 function testUnsubscriptionIntentVerification() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
                             "application/x-www-form-urlencoded");
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, 202);
+}
+
+@test:Config {
+}
+function testUnsubscriptionIntentVerificationWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setTextPayload("hub.mode=unsubscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
+                            "application/x-www-form-urlencoded;charset=UTF-8");
     http:Response response = check httpClient->post("/", request);
     test:assertEquals(response.statusCode, 202);
 }
@@ -270,6 +376,16 @@ function testPublishContentFailure() returns @tainted error? {
 function testPublishContentLocal() returns @tainted error? {
     http:Request request = new;
     request.setTextPayload("event=event1", "application/x-www-form-urlencoded");
+    request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+    http:Response response = check httpClient->post("/?hub.mode=publish&hub.topic=test", request);
+    test:assertEquals(response.statusCode, 200);
+}
+
+@test:Config {
+}
+function testPublishContentLocalWithContentTypeHeaderWithParams() returns @tainted error? {
+    http:Request request = new;
+    request.setJsonPayload({ event: "event1" }, "application/json; charset=utf-8");
     request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
     http:Response response = check httpClient->post("/?hub.mode=publish&hub.topic=test", request);
     test:assertEquals(response.statusCode, 200);
