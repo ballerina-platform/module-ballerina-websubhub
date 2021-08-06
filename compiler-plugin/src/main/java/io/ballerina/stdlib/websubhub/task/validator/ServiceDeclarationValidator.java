@@ -1,11 +1,13 @@
 package io.ballerina.stdlib.websubhub.task.validator;
 
 import io.ballerina.compiler.api.ModuleID;
+import io.ballerina.compiler.api.symbols.ErrorTypeSymbol;
 import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
@@ -22,9 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getParamTypeDescription;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getQualifiedType;
-import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getReturnTypeDescription;
+import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.getTypeDescription;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.isRemoteMethod;
 import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.updateContext;
 
@@ -174,7 +175,7 @@ public class ServiceDeclarationValidator {
                     }
                 } else {
                     List<String> availableParamNames = params.stream()
-                            .map(e -> getParamTypeDescription(e.typeDescriptor()))
+                            .map(e -> getTypeDescription(e.typeDescriptor()))
                             .collect(Collectors.toList());
                     if (allowedParameters.containsAll(availableParamNames)) {
                         validateParamOrder(context, functionDefinition, functionName, allowedParameters,
@@ -235,7 +236,7 @@ public class ServiceDeclarationValidator {
                 boolean invalidReturnTypePresent = isReturnTypeNotAllowed(
                         predefinedReturnTypes, returnTypeDescription, nilableReturnTypeAllowed);
                 if (invalidReturnTypePresent) {
-                    String returnTypeName = getReturnTypeDescription(returnTypeDescription);
+                    String returnTypeName = getTypeDescription(returnTypeDescription);
                     WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_107;
                     updateContext(context, errorCode, functionDefinition.location(), returnTypeName, functionName);
                 }
@@ -258,26 +259,36 @@ public class ServiceDeclarationValidator {
                     .map(e -> isReturnTypeNotAllowed(allowedReturnTypes, e, nilableReturnTypeAllowed))
                     .reduce(false, (a , b) -> a || b);
         } else if (TypeDescKind.TYPE_REFERENCE.equals(typeKind)) {
-            String moduleName = returnTypeDescriptor.getModule().flatMap(ModuleSymbol::getName).orElse("");
-            String paramType = returnTypeDescriptor.getName().orElse("");
-            String qualifiedParamType = getQualifiedType(paramType, moduleName);
-            return !allowedReturnTypes.contains(qualifiedParamType);
-        } else if (TypeDescKind.ERROR.equals(typeKind)) {
-            String signature = returnTypeDescriptor.signature();
-            Optional<ModuleID> moduleIdOpt = returnTypeDescriptor.getModule().map(ModuleSymbol::id);
-            String moduleId = moduleIdOpt.map(ModuleID::toString).orElse("");
-            String paramType = signature.replace(moduleId, "").replace(":", "");
-            String moduleName = moduleIdOpt.map(ModuleID::modulePrefix).orElse("");
-            String qualifiedParamType = getQualifiedType(paramType, moduleName);
-            if (Constants.ERROR.equals(qualifiedParamType)) {
-                return false;
+            TypeSymbol internalType = ((TypeReferenceTypeSymbol) returnTypeDescriptor).typeDescriptor();
+            if (internalType instanceof ErrorTypeSymbol) {
+                return isInvalidErrorReturn(allowedReturnTypes, internalType);
             } else {
+                String moduleName = returnTypeDescriptor.getModule().flatMap(ModuleSymbol::getName).orElse("");
+                String paramType = returnTypeDescriptor.getName().orElse("");
+                String qualifiedParamType = getQualifiedType(paramType, moduleName);
                 return !allowedReturnTypes.contains(qualifiedParamType);
             }
+        } else if (TypeDescKind.ERROR.equals(typeKind)) {
+            return isInvalidErrorReturn(allowedReturnTypes, returnTypeDescriptor);
         } else if (TypeDescKind.NIL.equals(typeKind)) {
             return !nilableReturnTypeAllowed;
         } else {
             return true;
+        }
+    }
+
+    private boolean isInvalidErrorReturn(List<String> allowedReturnTypes,
+                                         TypeSymbol internalType) {
+        String signature = internalType.signature();
+        Optional<ModuleID> moduleIdOpt = internalType.getModule().map(ModuleSymbol::id);
+        String moduleId = moduleIdOpt.map(ModuleID::toString).orElse("");
+        String paramType = signature.replace(moduleId, "").replace(":", "");
+        String moduleName = moduleIdOpt.map(ModuleID::modulePrefix).orElse("");
+        String qualifiedParamType = getQualifiedType(paramType, moduleName);
+        if (Constants.ERROR.equals(qualifiedParamType)) {
+            return false;
+        } else {
+            return !allowedReturnTypes.contains(qualifiedParamType);
         }
     }
 }
