@@ -47,14 +47,14 @@ public function main() returns error? {
 function syncRegsisteredTopicsCache() returns error? {
     do {
         while true {
-            websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
+            websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
             if persistedTopics is websubhub:TopicRegistration[] {
                 refreshTopicCache(persistedTopics);
             }
         }
     } on fail var e {
         _ = check conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        return e;
+        log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
     }
 }
 
@@ -97,7 +97,7 @@ function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
 function syncSubscribersCache() returns error? {
     do {
         while true {
-            websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
+            websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
             if persistedSubscribers is websubhub:VerifiedSubscription[] {
                 refreshSubscribersCache(persistedSubscribers);
                 check startMissingSubscribers(persistedSubscribers);
@@ -105,7 +105,7 @@ function syncSubscribersCache() returns error? {
         }
     } on fail var e {
         _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        return e;
+        log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
     }  
 }
 
@@ -178,17 +178,14 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
             if !isValidConsumer(topicName, groupName) {
                 fail error(string `Consumer with group name ${groupName} or topic ${topicName} is invalid`);
             }
-            var result = notifySubscribers(records, clientEp, consumerEp);
-            if result is error {
-                lock {
-                    _ = subscribersCache.remove(groupName);
-                }
-                log:printError("Error occurred while sending notification to subscriber ", err = result.message());
-            }
+            _ = check notifySubscribers(records, clientEp, consumerEp);
         }
     } on fail var e {
+        lock {
+            _ = subscribersCache.remove(groupName);
+        }
         _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
-        return e;
+        log:printError("Error occurred while sending notification to subscriber ", err = e.message());
     }
 }
 
