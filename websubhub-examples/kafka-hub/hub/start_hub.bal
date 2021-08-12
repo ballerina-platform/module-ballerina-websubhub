@@ -44,7 +44,7 @@ public function main() returns error? {
     check hubListener.'start();
 }
 
-function syncRegsisteredTopicsCache() returns error? {
+function syncRegsisteredTopicsCache() {
     do {
         while true {
             websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
@@ -53,8 +53,12 @@ function syncRegsisteredTopicsCache() returns error? {
             }
         }
     } on fail var e {
-        _ = check conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
+
+        kafka:Error? result = conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+        if result is kafka:Error {
+            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
+        }
     }
 }
 
@@ -94,7 +98,7 @@ function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
     }
 }
 
-function syncSubscribersCache() returns error? {
+function syncSubscribersCache() {
     do {
         while true {
             websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
@@ -104,8 +108,12 @@ function syncSubscribersCache() returns error? {
             }
         }
     } on fail var e {
-        _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
+
+        kafka:Error? result = conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+        if result is kafka:Error {
+            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
+        }
     }  
 }
 
@@ -171,7 +179,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
     }
 }
 
-isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) returns error? {
+isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) {
     do {
         while true {
             kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
@@ -184,8 +192,12 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
         lock {
             _ = subscribersCache.remove(groupName);
         }
-        _ = check consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
-        log:printError("Error occurred while sending notification to subscriber ", err = e.message());
+        log:printError("Error occurred while sending notification to subscriber", err = e.message());
+
+        kafka:Error? result = consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
+        if result is kafka:Error {
+            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
+        }
     }
 }
 
