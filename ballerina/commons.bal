@@ -158,6 +158,7 @@ public type ContentDistributionSuccess record {|
 # + topic - `Topic`, which should be registered in the `hub`
 public type TopicRegistration record {|
     string topic;
+    string hubMode;
 |};
 
 # Record to represent the topic-deregistration request body.
@@ -165,6 +166,7 @@ public type TopicRegistration record {|
 # + topic - `Topic`, which should be unregistered from the `hub`
 public type TopicDeregistration record {|
     string topic;
+    string hubMode;
 |};
 
 # Record to represent the subscription request body.

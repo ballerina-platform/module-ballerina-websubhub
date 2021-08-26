@@ -32,7 +32,8 @@ isolated function processRegisterRequest(http:Caller caller, http:Response respo
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicRegistration msg = {
-            topic: topic
+            topic: topic,
+            hubMode: MODE_REGISTER
         };
         TopicRegistrationSuccess|TopicRegistrationError|error result = adaptor.callRegisterMethod(msg, headers);
         if (result is TopicRegistrationSuccess) {
@@ -57,7 +58,8 @@ isolated function processDeregisterRequest(http:Caller caller, http:Response res
     string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
     if (topic is string) {
         TopicDeregistration msg = {
-            topic: topic
+            topic: topic,
+            hubMode: MODE_DEREGISTER
         };
         TopicDeregistrationSuccess|TopicDeregistrationError|error result = adaptor.callDeregisterMethod(msg, headers);
         if (result is TopicDeregistrationSuccess) {
