@@ -156,15 +156,19 @@ public type ContentDistributionSuccess record {|
 # Record to represent the topic-registration request body.
 # 
 # + topic - `Topic`, which should be registered in the `hub`
+# + hubMode - Current `hub` action
 public type TopicRegistration record {|
     string topic;
+    string hubMode;
 |};
 
 # Record to represent the topic-deregistration request body.
 # 
 # + topic - `Topic`, which should be unregistered from the `hub`
+# + hubMode - Current `hub` action
 public type TopicDeregistration record {|
     string topic;
+    string hubMode;
 |};
 
 # Record to represent the subscription request body.

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [Add `hubMode` field to topic-registration and topic-deregistration request body](https://github.com/ballerina-platform/ballerina-standard-library/issues/1638)
+
+## [0.2.0.beta.2]  - 2021-07-06
+
 ### Fixed 
 
 - [Log error when return from the remote method leads to an error](https://github.com/ballerina-platform/ballerina-standard-library/issues/1449)
