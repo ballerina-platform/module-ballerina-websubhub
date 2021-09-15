@@ -28,4 +28,3 @@ jobs:
           scan-ref: '/github/workspace/ballerina'
           format: 'table'
           exit-code: '1'
-          
