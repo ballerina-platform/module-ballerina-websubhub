@@ -27,7 +27,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 #### Using Hub Client
 
-* **WebSub HubClient** can be used to distribute the published content among the `subscriber base`. The current implementation is based on `Ballerina HTTP Client`.
+* **WebSub HubClient** can be used to distribute the published content to subscribers. The current implementation is based on `Ballerina HTTP Client`.
 
 ```ballerina
     client class HubClient {
