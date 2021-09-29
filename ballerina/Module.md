@@ -32,7 +32,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
 ```ballerina
     client class HubClient {
         remote function notifyContentDistribution(websubhub:ContentDistributionMessage msg) 
-                returns ContentDistributionSuccess|SubscriptionDeletedError|error?
+                returns websubhub:ContentDistributionSuccess|websubhub:SubscriptionDeletedError|error?
     }
 ```
 
