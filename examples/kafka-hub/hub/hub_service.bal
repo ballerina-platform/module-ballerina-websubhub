@@ -22,6 +22,16 @@ import kafkaHub.persistence as persist;
 import kafkaHub.config;
 import kafkaHub.util;
 
+http:Service healthCheckService = service object {
+    resource function get . () returns http:Ok {
+        return {
+            body: {
+                "status": "active"
+            }
+        };
+    }
+};
+
 websubhub:Service hubService = @websubhub:ServiceConfig { 
     webHookConfig: {
         secureSocket: {

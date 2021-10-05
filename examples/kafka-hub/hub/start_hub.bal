@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/log;
+import ballerina/http;
 import ballerina/websubhub;
 import ballerinax/kafka;
 import ballerina/lang.value;
@@ -31,8 +32,8 @@ public function main() returns error? {
     _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
     _ = @strand { thread: "any" } start syncSubscribersCache();
     
-    // Start the Hub
-    websubhub:Listener hubListener = check new (config:HUB_PORT, 
+    // Start the HealthCheck Service
+    http:Listener httpListener = check new (config:HUB_PORT, 
         secureSocket = {
             key: {
                 certFile: "./resources/server.crt",
@@ -40,6 +41,10 @@ public function main() returns error? {
             }
         }
     );
+    check httpListener.attach(healthCheckService, "/health");
+
+    // Start the Hub
+    websubhub:Listener hubListener = check new (httpListener);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
 }
