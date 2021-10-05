@@ -112,7 +112,6 @@ function syncSubscribersCache() {
             }
         }
     } on fail var e {
-        _ = check conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
         kafka:Error? result = conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         if result is kafka:Error {
