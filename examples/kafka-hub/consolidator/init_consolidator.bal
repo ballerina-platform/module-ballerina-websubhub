@@ -37,15 +37,18 @@ public function main() returns error? {
     check startConsolidator();
 }
 
-isolated function syncRegsisteredTopicsCache() returns error? {
+isolated function syncRegsisteredTopicsCache() {
     do {
-        websubhub:TopicRegistration[]|error? persistedTopics = getPersistedTopics();
+        websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
         if persistedTopics is websubhub:TopicRegistration[] {
             refreshTopicCache(persistedTopics);
         }
     } on fail var e {
-        _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        return e;
+        log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
+        kafka:Error? result = conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+        if result is kafka:Error {
+            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
+        }
     }
 }
 
@@ -82,15 +85,18 @@ isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopic
     }
 }
 
-isolated function syncSubscribersCache() returns error? {
+isolated function syncSubscribersCache() {
     do {
-        websubhub:VerifiedSubscription[]|error? persistedSubscribers = getPersistedSubscribers();
+        websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
         if persistedSubscribers is websubhub:VerifiedSubscription[] {
             refreshSubscribersCache(persistedSubscribers);
         }
     } on fail var e {
-        _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        return e;
+        log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
+        kafka:Error? result = conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+        if result is kafka:Error {
+            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
+        }
     } 
 }
 
