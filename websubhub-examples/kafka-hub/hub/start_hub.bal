@@ -41,7 +41,7 @@ public function main() returns error? {
             }
         }
     );
-    check httpListener.attach(healthCheckService, "hub/_status");
+    check httpListener.attach(healthCheckService, "/health");
 
     // Start the Hub
     websubhub:Listener hubListener = check new (httpListener);
