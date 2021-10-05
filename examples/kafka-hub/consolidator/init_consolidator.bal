@@ -27,9 +27,9 @@ isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 public function main() returns error? {
     // Initialize consolidator-service state
-    check syncRegsisteredTopicsCache();
+    syncRegsisteredTopicsCache();
     _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-    check syncSubscribersCache();
+    syncSubscribersCache();
     _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
     log:printInfo("Starting Event Consolidator Service");
 
