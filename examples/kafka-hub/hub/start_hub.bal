@@ -145,7 +145,9 @@ function deSerializeSubscribersMessage(string lastPersistedData) returns websubh
 }
 
 function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
-    string[] groupNames = persistedSubscribers.'map(sub => util:generateGroupName(sub.hubTopic, sub.hubCallback));
+    final readonly & string[] groupNames = persistedSubscribers
+        .'map(sub => util:generateGroupName(sub.hubTopic, sub.hubCallback))
+        .cloneReadOnly();
     lock {
         string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => groupNames.indexOf('key) is ());
         foreach var sub in unsubscribedSubscribers {
