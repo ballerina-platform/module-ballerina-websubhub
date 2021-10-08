@@ -19,18 +19,15 @@ import kafkaHub.config;
 import kafkaHub.connections as conn;
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
-    check updateTopicDetails(message, "register");
+    check updateTopicDetails(message);
 }
 
 public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration message) returns error? {
-    check updateTopicDetails(message, "deregister");
+    check updateTopicDetails(message);
 }
 
-isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:TopicDeregistration message, string hubMode) returns error? {
-    json jsonData = {
-        topic: message.topic,
-        hubMode: hubMode
-    };
+isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
+    json jsonData = message.toJson();
     check produceKafkaMessage(config:REGISTERED_WEBSUB_TOPICS_TOPIC, jsonData);
 }
 
