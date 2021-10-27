@@ -30,4 +30,3 @@ jobs:
           format: 'table'
           timeout: '10m0s'
           exit-code: '1'
-          
