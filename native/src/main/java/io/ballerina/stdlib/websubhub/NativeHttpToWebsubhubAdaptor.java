@@ -21,6 +21,7 @@ package io.ballerina.stdlib.websubhub;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.MethodType;
@@ -130,8 +131,15 @@ public class NativeHttpToWebsubhubAdaptor {
         Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                 parentFunctionName);
-        env.getRuntime().invokeMethodAsync(bHubService, remoteFunctionName, null, metadata,
-                new HubCallback(balFuture, module), args);
+        if (bHubService.getType().isIsolated(remoteFunctionName)) {
+            env.getRuntime().invokeMethodAsyncConcurrently(
+                    bHubService, remoteFunctionName, null, metadata,
+                    new HubCallback(balFuture, module), null, PredefinedTypes.TYPE_NULL, args);
+        } else {
+            env.getRuntime().invokeMethodAsyncSequentially(
+                    bHubService, remoteFunctionName, null, metadata,
+                    new HubCallback(balFuture, module), null, PredefinedTypes.TYPE_NULL, args);;
+        }
         return null;
     }
 }
