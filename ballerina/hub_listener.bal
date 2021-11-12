@@ -21,7 +21,7 @@ import ballerina/log;
 public class Listener {
     private final int defaultHubLeaseSeconds = 864000;
     private http:Listener httpListener;
-    private http:ListenerConfiguration listenerConfig;
+    private http:InferredListenerConfiguration listenerConfig;
     private int port;
     private HttpService? httpService;
 
