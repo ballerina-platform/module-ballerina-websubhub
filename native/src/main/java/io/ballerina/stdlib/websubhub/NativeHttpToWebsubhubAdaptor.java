@@ -131,7 +131,7 @@ public class NativeHttpToWebsubhubAdaptor {
         Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                 parentFunctionName);
-        if (bHubService.getType().isIsolated(remoteFunctionName)) {
+        if (bHubService.getType().isIsolated() && bHubService.getType().isIsolated(remoteFunctionName)) {
             env.getRuntime().invokeMethodAsyncConcurrently(
                     bHubService, remoteFunctionName, null, metadata,
                     new HubCallback(balFuture, module), null, PredefinedTypes.TYPE_NULL, args);
