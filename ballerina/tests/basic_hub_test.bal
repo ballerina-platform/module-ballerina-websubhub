@@ -123,7 +123,7 @@ service /websubhub on functionWithArgumentsListener {
 
 @test:Config {
 }
-function testFailurePost() returns @tainted error? {
+function testFailurePost() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register123&hub.topic=test", "application/x-www-form-urlencoded");
     http:Response response = check httpClient->post("/", request);
@@ -133,7 +133,7 @@ function testFailurePost() returns @tainted error? {
 
 @test:Config {
 }
-function testRegistrationSuccess() returns @tainted error? {
+function testRegistrationSuccess() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=accepted&isSuccess=true";
@@ -144,7 +144,7 @@ function testRegistrationSuccess() returns @tainted error? {
 
 @test:Config {
 }
-function testRegistrationSuccessWithContentTypeHeaderWithParams() returns @tainted error? {
+function testRegistrationSuccessWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded;charset=UTF-8");
     string expectedPayload = "hub.mode=accepted&isSuccess=true";
@@ -155,7 +155,7 @@ function testRegistrationSuccessWithContentTypeHeaderWithParams() returns @taint
 
 @test:Config {
 }
-function testRegistrationFailure() returns @tainted error? {
+function testRegistrationFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=denied&hub.reason=Registration Failed!";
@@ -166,7 +166,7 @@ function testRegistrationFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testRegistrationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+function testRegistrationFailureWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded;charset=UTF-8");
     string expectedPayload = "hub.mode=denied&hub.reason=Registration Failed!";
@@ -177,7 +177,7 @@ function testRegistrationFailureWithContentTypeHeaderWithParams() returns @taint
 
 @test:Config {
 }
-function testDeregistrationSuccess() returns @tainted error? {
+function testDeregistrationSuccess() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";
@@ -188,7 +188,7 @@ function testDeregistrationSuccess() returns @tainted error? {
 
 @test:Config {
 }
-function testDeregistrationSuccessWithContentTypeHeaderWithParams() returns @tainted error? {
+function testDeregistrationSuccessWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded;charset=UTF-8");
     string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";
@@ -199,7 +199,7 @@ function testDeregistrationSuccessWithContentTypeHeaderWithParams() returns @tai
 
 @test:Config {
 }
-function testDeregistrationFailure() returns @tainted error? {
+function testDeregistrationFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=denied&hub.reason=Topic Deregistration Failed!";
@@ -210,7 +210,7 @@ function testDeregistrationFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testDeregistrationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+function testDeregistrationFailureWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded;charset=UTF-8");
     string expectedPayload = "hub.mode=denied&hub.reason=Topic Deregistration Failed!";
@@ -221,7 +221,7 @@ function testDeregistrationFailureWithContentTypeHeaderWithParams() returns @tai
 
 @test:Config {
 }
-function testSubscriptionFailure() returns @tainted error? {
+function testSubscriptionFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -231,7 +231,7 @@ function testSubscriptionFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testSubscriptionFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+function testSubscriptionFailureWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded;charset=UTF-8");
@@ -241,7 +241,7 @@ function testSubscriptionFailureWithContentTypeHeaderWithParams() returns @taint
 
 @test:Config {
 }
-function testSubscriptionValidationFailure() returns @tainted error? {
+function testSubscriptionValidationFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -251,7 +251,7 @@ function testSubscriptionValidationFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testSubscriptionValidationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+function testSubscriptionValidationFailureWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded;charset=UTF-8");
@@ -261,7 +261,7 @@ function testSubscriptionValidationFailureWithContentTypeHeaderWithParams() retu
 
 @test:Config {
 }
-function testSubscriptionIntentVerification() returns @tainted error? {
+function testSubscriptionIntentVerification() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -272,7 +272,7 @@ function testSubscriptionIntentVerification() returns @tainted error? {
 
 @test:Config {
 }
-function testSubscriptionIntentVerificationWithContentTypeHeaderWithParams() returns @tainted error? {
+function testSubscriptionIntentVerificationWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded;charset=UTF-8");
@@ -283,7 +283,7 @@ function testSubscriptionIntentVerificationWithContentTypeHeaderWithParams() ret
 
 @test:Config {
 }
-function testSubscriptionWithAdditionalParams() returns @tainted error? {
+function testSubscriptionWithAdditionalParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber&param1=value1&param2=value2", 
                             "application/x-www-form-urlencoded");
@@ -293,7 +293,7 @@ function testSubscriptionWithAdditionalParams() returns @tainted error? {
 
 @test:Config {
 }
-function testUnsubscriptionFailure() returns @tainted error? {
+function testUnsubscriptionFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
@@ -304,7 +304,7 @@ function testUnsubscriptionFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testUnsubscriptionFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+function testUnsubscriptionFailureWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded;charset=UTF-8");
@@ -315,7 +315,7 @@ function testUnsubscriptionFailureWithContentTypeHeaderWithParams() returns @tai
 
 @test:Config {
 }
-function testUnsubscriptionValidationFailure() returns @tainted error? {
+function testUnsubscriptionValidationFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
@@ -325,7 +325,7 @@ function testUnsubscriptionValidationFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testUnsubscriptionValidationFailureWithContentTypeHeaderWithParams() returns @tainted error? {
+function testUnsubscriptionValidationFailureWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test1&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded;charset=UTF-8");
@@ -335,7 +335,7 @@ function testUnsubscriptionValidationFailureWithContentTypeHeaderWithParams() re
 
 @test:Config {
 }
-function testUnsubscriptionIntentVerification() returns @tainted error? {
+function testUnsubscriptionIntentVerification() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
                             "application/x-www-form-urlencoded");
@@ -345,7 +345,7 @@ function testUnsubscriptionIntentVerification() returns @tainted error? {
 
 @test:Config {
 }
-function testUnsubscriptionIntentVerificationWithContentTypeHeaderWithParams() returns @tainted error? {
+function testUnsubscriptionIntentVerificationWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber/unsubscribe", 
                             "application/x-www-form-urlencoded;charset=UTF-8");
@@ -355,7 +355,7 @@ function testUnsubscriptionIntentVerificationWithContentTypeHeaderWithParams() r
 
 @test:Config {
 }
-function testPublishContent() returns @tainted error? {
+function testPublishContent() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test", "application/x-www-form-urlencoded");
     http:Response response = check httpClient->post("/", request);
@@ -364,7 +364,7 @@ function testPublishContent() returns @tainted error? {
 
 @test:Config {
 }
-function testPublishContentFailure() returns @tainted error? {
+function testPublishContentFailure() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test1", "application/x-www-form-urlencoded");
     http:Response response = check httpClient->post("/", request);
@@ -373,7 +373,7 @@ function testPublishContentFailure() returns @tainted error? {
 
 @test:Config {
 }
-function testPublishContentLocal() returns @tainted error? {
+function testPublishContentLocal() returns error? {
     http:Request request = new;
     request.setTextPayload("event=event1", "application/x-www-form-urlencoded");
     request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
@@ -383,7 +383,7 @@ function testPublishContentLocal() returns @tainted error? {
 
 @test:Config {
 }
-function testPublishContentLocalWithContentTypeHeaderWithParams() returns @tainted error? {
+function testPublishContentLocalWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setJsonPayload({ event: "event1" }, "application/json; charset=utf-8");
     request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");

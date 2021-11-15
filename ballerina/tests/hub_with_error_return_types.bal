@@ -63,7 +63,7 @@ service /websubhub on hubWithErrorReturnTypesListener {
 
 @test:Config {
 }
-function testFailurePostWithErrorReturnTypes() returns @tainted error? {
+function testFailurePostWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register123&hub.topic=test", "application/x-www-form-urlencoded");
     http:Response response = check hubWithErrorReturnTypesClient->post("/", request);
@@ -73,7 +73,7 @@ function testFailurePostWithErrorReturnTypes() returns @tainted error? {
 
 @test:Config {
 }
-function testRegistrationFailureWithErrorReturnTypes() returns @tainted error? {
+function testRegistrationFailureWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=denied&hub.reason=Registration Failed!";
@@ -84,7 +84,7 @@ function testRegistrationFailureWithErrorReturnTypes() returns @tainted error? {
 
 @test:Config {
 }
-function testDeregistrationFailureWithErrorReturnTypes() returns @tainted error? {
+function testDeregistrationFailureWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=denied&hub.reason=Topic Deregistration Failed!";
@@ -95,7 +95,7 @@ function testDeregistrationFailureWithErrorReturnTypes() returns @tainted error?
 
 @test:Config {
 }
-function testSubscriptionFailureWithErrorReturnTypes() returns @tainted error? {
+function testSubscriptionFailureWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -105,7 +105,7 @@ function testSubscriptionFailureWithErrorReturnTypes() returns @tainted error? {
 
 @test:Config {
 }
-function testUnsubscriptionFailureWithErrorReturnTypes() returns @tainted error? {
+function testUnsubscriptionFailureWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");
@@ -115,7 +115,7 @@ function testUnsubscriptionFailureWithErrorReturnTypes() returns @tainted error?
 
 @test:Config {
 }
-function testPublishContentFailureWithErrorReturnTypes() returns @tainted error? {
+function testPublishContentFailureWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test1", "application/x-www-form-urlencoded");
     http:Response response = check hubWithErrorReturnTypesClient->post("/", request);

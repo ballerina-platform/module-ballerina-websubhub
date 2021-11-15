@@ -44,7 +44,7 @@ public client class PublisherClient {
     #
     # + topic - The topic to register
     # + return - An `error` if an error occurred registering the topic or else `()`
-    isolated remote function registerTopic(string topic) returns @tainted TopicRegistrationSuccess|TopicRegistrationError {
+    isolated remote function registerTopic(string topic) returns TopicRegistrationSuccess|TopicRegistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
         http:Response|error registrationResponse = httpClient->post("", request);
@@ -79,7 +79,7 @@ public client class PublisherClient {
     #
     # + topic - The topic to deregister
     # + return -  An `error`if an error occurred un registering the topic or else `()`
-    isolated remote function deregisterTopic(string topic) returns @tainted TopicDeregistrationSuccess|TopicDeregistrationError {
+    isolated remote function deregisterTopic(string topic) returns TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Client httpClient = self.httpClient;
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
         http:Response|error deregistrationResponse = httpClient->post("", request);
@@ -119,7 +119,7 @@ public client class PublisherClient {
     # + contentType - The type of the update content to set as the `ContentType` header
     # + return -  An `error`if an error occurred with the update or else `()`
     isolated remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
-                                  string? contentType = ()) returns @tainted Acknowledgement|UpdateMessageError {
+                                  string? contentType = ()) returns Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
         string queryParams = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
@@ -142,7 +142,7 @@ public client class PublisherClient {
                 return error UpdateMessageError("Invalid content type is set, found " + contentType);
              }
         }
-        http:Response|error response = httpClient->post(<@untainted string> ("?" + queryParams), request);
+        http:Response|error response = httpClient->post("?" + queryParams, request);
         if response is http:Response {
             var result = response.getTextPayload();
             string responsePayload = result is string ? result : "";
@@ -174,7 +174,7 @@ public client class PublisherClient {
     #
     # + topic - The topic for which the update occurred
     # + return -  An `error`if an error occurred with the notification or else `()`
-    isolated remote function notifyUpdate(string topic) returns @tainted Acknowledgement|UpdateMessageError {
+    isolated remote function notifyUpdate(string topic) returns Acknowledgement|UpdateMessageError {
         http:Client httpClient = self.httpClient;
         http:Request request = new;
         string reqPayload = HUB_MODE + "=" + MODE_PUBLISH + "&" + HUB_TOPIC + "=" + topic;
@@ -252,7 +252,7 @@ isolated function getFormData(string payload) returns map<string> {
 # 
 # + response - Original `http:Response` object
 # + return - Available response headers as `map<string|string[]>`
-isolated function getHeaders(http:Response response) returns @tainted map<string|string[]> {
+isolated function getHeaders(http:Response response) returns map<string|string[]> {
     string[] headerNames = response.getHeaderNames();
 
     map<string|string[]> headers = {};

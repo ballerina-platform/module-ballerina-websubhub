@@ -64,7 +64,7 @@ public client class HubClient {
     # + return - An `websubhub:Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
     #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage msg) 
-                                returns @tainted ContentDistributionSuccess|SubscriptionDeletedError|Error {
+                                returns ContentDistributionSuccess|SubscriptionDeletedError|Error {
         string contentType = retrieveContentType(msg.contentType, msg.content);
         http:Request request = new;
         string queryString = "";

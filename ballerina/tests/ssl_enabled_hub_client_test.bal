@@ -51,7 +51,7 @@ ClientConfiguration hubClientSslConfig = {
 
 @test:Config {
 }
-function testTextContentDeliveryWithSsl() returns @tainted error? {
+function testTextContentDeliveryWithSsl() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
     HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);
@@ -62,7 +62,7 @@ function testTextContentDeliveryWithSsl() returns @tainted error? {
 
 @test:Config {
 }
-function testJsonContentDeliveryWithSsl() returns @tainted error? {
+function testJsonContentDeliveryWithSsl() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
     json publishedContent = {
         contentUrl: "https://sample.content.com",
@@ -77,7 +77,7 @@ function testJsonContentDeliveryWithSsl() returns @tainted error? {
 
 @test:Config {
 }
-function testXmlContentDeliveryWithSsl() returns @tainted error? {
+function testXmlContentDeliveryWithSsl() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
     xml publishedContent = xml `<content>
         <contentUrl>The Lost World</contentUrl>
@@ -92,7 +92,7 @@ function testXmlContentDeliveryWithSsl() returns @tainted error? {
 
 @test:Config {
 }
-function testByteArrayContentDeliveryWithSsl() returns @tainted error? {
+function testByteArrayContentDeliveryWithSsl() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/success");
     byte[] publishedContent = "This is sample content".toBytes();
     ContentDistributionMessage msg = {content: publishedContent};
@@ -104,7 +104,7 @@ function testByteArrayContentDeliveryWithSsl() returns @tainted error? {
 
 @test:Config {
 }
-function testSubscriptionDeletedWithSsl() returns @tainted error? {
+function testSubscriptionDeletedWithSsl() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("https://localhost:9097/callback/deleted");
 
     HubClient hubClientEP = check new(subscriptionMsg, hubClientSslConfig);

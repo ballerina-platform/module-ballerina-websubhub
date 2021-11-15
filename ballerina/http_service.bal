@@ -60,7 +60,7 @@ isolated service class HttpService {
     # + request - Received `http:Request` instance
     # + headers - HTTP headers found in the original HTTP request
     # + return - An `error` if there is any exception in the request processing or else `()`
-    isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns @tainted error? {
+    isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns error? {
         http:Response response = new;
         response.statusCode = http:STATUS_OK;
 

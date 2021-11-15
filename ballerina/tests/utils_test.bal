@@ -21,7 +21,7 @@ import ballerina/http;
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-isolated function testContentTypeRetrievalForString() returns @tainted error? {
+isolated function testContentTypeRetrievalForString() returns error? {
     string contentType = retrieveContentType((), "This is sample content delivery");
     test:assertEquals(contentType, mime:TEXT_PLAIN);
 }
@@ -29,7 +29,7 @@ isolated function testContentTypeRetrievalForString() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-isolated function testContentTypeRetrievalForXml() returns @tainted error? {
+isolated function testContentTypeRetrievalForXml() returns error? {
     xml content = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
@@ -41,7 +41,7 @@ isolated function testContentTypeRetrievalForXml() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-isolated function testContentTypeRetrievalForJson() returns @tainted error? {
+isolated function testContentTypeRetrievalForJson() returns error? {
     json content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -53,7 +53,7 @@ isolated function testContentTypeRetrievalForJson() returns @tainted error? {
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-isolated function testContentTypeRetrievalForFormUrlEncoded() returns @tainted error? {
+isolated function testContentTypeRetrievalForFormUrlEncoded() returns error? {
     map<string> content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -65,7 +65,7 @@ isolated function testContentTypeRetrievalForFormUrlEncoded() returns @tainted e
 @test:Config { 
     groups: ["contentTypeRetrieval"]
 }
-isolated function testContentTypeRetrievalForByteArray() returns @tainted error? {
+isolated function testContentTypeRetrievalForByteArray() returns error? {
     byte[] content = "This is sample content delivery".toBytes();
     string contentType = retrieveContentType((), content);
     test:assertEquals(contentType, mime:APPLICATION_OCTET_STREAM);
@@ -76,7 +76,7 @@ const string HASH_KEY = "secret";
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testStringContentSignature() returns @tainted error? {
+isolated function testStringContentSignature() returns error? {
     string content = "This is sample content delivery";
     byte[] hashedContent = check generateSignature(HASH_KEY, content);
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
@@ -85,7 +85,7 @@ isolated function testStringContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testXmlContentSignature() returns @tainted error? {
+isolated function testXmlContentSignature() returns error? {
     xml content = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
@@ -97,7 +97,7 @@ isolated function testXmlContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testJsonContentSignature() returns @tainted error? {
+isolated function testJsonContentSignature() returns error? {
     json content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -109,7 +109,7 @@ isolated function testJsonContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testFormUrlEncodedContentSignature() returns @tainted error? {
+isolated function testFormUrlEncodedContentSignature() returns error? {
     map<string> content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -121,7 +121,7 @@ isolated function testFormUrlEncodedContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testByteArrayContentSignature() returns @tainted error? {
+isolated function testByteArrayContentSignature() returns error? {
     byte[] content = "This is sample content delivery".toBytes();
     byte[] hashedContent = check generateSignature(HASH_KEY, content);
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
@@ -130,7 +130,7 @@ isolated function testByteArrayContentSignature() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testJsonContentSignatureRetrieval() returns @tainted error? {
+isolated function testJsonContentSignatureRetrieval() returns error? {
     json content = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -142,7 +142,7 @@ isolated function testJsonContentSignatureRetrieval() returns @tainted error? {
 @test:Config { 
     groups: ["contentSignature"]
 }
-isolated function testUrlEncodedContentSignatureRetrieval() returns @tainted error? {
+isolated function testUrlEncodedContentSignatureRetrieval() returns error? {
     byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_FORM_URLENCODED, HASH_KEY, "key1=val1&key2=val2", "");
     test:assertEquals("2d936793407340f43e3d6427534f536a08ba52899bedd94fc7b14ebc2d5c44c2", hashedContent.toBase16());
 }
@@ -153,7 +153,7 @@ http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/sub
 @test:Config { 
     groups: ["clientResponseHeaderRetrieval"]
 }
-function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns @tainted error? {
+function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error? {
     http:Response response = new;
     foreach var [header, value] in CUSTOM_HEADERS.entries() {
         if (value is string) {
@@ -174,7 +174,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns @taint
 @test:Config { 
     groups: ["clientResponseHeaderRetrieval"]
 }
-function testResponseHeaderRetrievalWithApiCall() returns @tainted error? {
+function testResponseHeaderRetrievalWithApiCall() returns error? {
     http:Request request = new;
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addHeaders", request);
     map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(retrievedResponse);
@@ -186,7 +186,7 @@ function testResponseHeaderRetrievalWithApiCall() returns @tainted error? {
 @test:Config { 
     groups: ["clientResponseBodyRetrieval"]
 }
-function testResponsePayloadRetrievalForText() returns @tainted error? {
+function testResponsePayloadRetrievalForText() returns error? {
     http:Request request = new;
     request.setTextPayload("text");
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
@@ -198,7 +198,7 @@ function testResponsePayloadRetrievalForText() returns @tainted error? {
 @test:Config { 
     groups: ["clientResponseBodyRetrieval"]
 }
-function testResponsePayloadRetrievalForJson() returns @tainted error? {
+function testResponsePayloadRetrievalForJson() returns error? {
     http:Request request = new;
     request.setTextPayload("json");
     json expectedPayload = {
@@ -213,7 +213,7 @@ function testResponsePayloadRetrievalForJson() returns @tainted error? {
 @test:Config { 
     groups: ["clientResponseBodyRetrieval"]
 }
-function testResponsePayloadRetrievalForXml() returns @tainted error? {
+function testResponsePayloadRetrievalForXml() returns error? {
     http:Request request = new;
     request.setTextPayload("xml");
     xml expectedPayload = xml `<content><message>This is a test message</message></content>`;
@@ -226,7 +226,7 @@ function testResponsePayloadRetrievalForXml() returns @tainted error? {
 @test:Config { 
     groups: ["clientResponseBodyRetrieval"]
 }
-function testResponsePayloadRetrievalForByteArray() returns @tainted error? {
+function testResponsePayloadRetrievalForByteArray() returns error? {
     http:Request request = new;
     request.setTextPayload("byte");
     byte[] expectedPayload = "This is a test message".toBytes();
@@ -239,7 +239,7 @@ function testResponsePayloadRetrievalForByteArray() returns @tainted error? {
 @test:Config { 
     groups: ["clientResponseBodyRetrieval"]
 }
-function testResponsePayloadRetrievalForNoContent() returns @tainted error? {
+function testResponsePayloadRetrievalForNoContent() returns error? {
     http:Request request = new;
     request.setTextPayload("other");
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addPayload", request);
@@ -249,7 +249,7 @@ function testResponsePayloadRetrievalForNoContent() returns @tainted error? {
 @test:Config { 
     groups: ["formUrlEncodedContent"]
 }
-isolated function testResponsePayloadGenerationWithReason() returns @tainted error? {
+isolated function testResponsePayloadGenerationWithReason() returns error? {
     map<string> message = {
         "query1": "value1",
         "query2": "value2"
@@ -261,7 +261,7 @@ isolated function testResponsePayloadGenerationWithReason() returns @tainted err
 @test:Config { 
     groups: ["formUrlEncodedContent"]
 }
-isolated function testResponsePayloadGenerationWithOutReason() returns @tainted error? {
+isolated function testResponsePayloadGenerationWithOutReason() returns error? {
     map<string> message = {
         "query1": "value1",
         "query2": "value2"
@@ -273,7 +273,7 @@ isolated function testResponsePayloadGenerationWithOutReason() returns @tainted 
 @test:Config { 
     groups: ["formUrlEncodedContent"]
 }
-isolated function testFormUrlEncodedTextPayloadRetrieval() returns @tainted error? {
+isolated function testFormUrlEncodedTextPayloadRetrieval() returns error? {
     map<string> message = {
         "query1": "value1",
         "query2": "value2"
@@ -285,7 +285,7 @@ isolated function testFormUrlEncodedTextPayloadRetrieval() returns @tainted erro
 @test:Config { 
     groups: ["formUrlEncodedContent"]
 }
-isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns @tainted error? {
+isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns error? {
     map<string> message = {
         "query1": "value1",
         "query2": "value2",
@@ -370,7 +370,7 @@ isolated function testSubscriptionNotificationSuccess() returns error? {
 @test:Config { 
     groups: ["httpClientRetrieval"]
 }
-isolated function testRetrieveHttpClientWithConfig() returns @tainted error? {
+isolated function testRetrieveHttpClientWithConfig() returns error? {
     http:ClientConfiguration httpsConfig = {
         secureSocket: {
             cert: {

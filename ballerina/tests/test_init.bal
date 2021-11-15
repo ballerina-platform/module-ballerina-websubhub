@@ -105,11 +105,11 @@ var simpleSubscriber = service object {
 };
 
 @test:BeforeSuite
-function beforeSuiteFunc() returns @tainted error? {
+function beforeSuiteFunc() returns error? {
     check simpleSubscriberListener.attach(simpleSubscriber, "subscriber");
 }
 
 @test:AfterSuite { }
-function afterSuiteFunc() returns @tainted error? {
+function afterSuiteFunc() returns error? {
     check simpleSubscriberListener.gracefulStop();
 }
