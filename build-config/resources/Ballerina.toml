@@ -1,0 +1,12 @@
+[package]
+org = "ballerina"
+name = "websubhub"
+version = "@toml.version@"
+authors = ["Ballerina"]
+keywords = ["websub", "hub", "publisher", "service", "listener", "client"]
+repository = "https://github.com/ballerina-platform/module-ballerina-websubhub"
+license = ["Apache-2.0"]
+distribution = "slbeta3"
+
+[[platform.java11.dependency]]
+path = "../native/build/libs/websubhub-native-@project.version@.jar"
