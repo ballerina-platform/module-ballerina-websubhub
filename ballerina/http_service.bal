@@ -110,7 +110,7 @@ isolated service class HttpService {
         match mode {
             MODE_REGISTER => {
                 if self.isRegisterAvailable {
-                    processRegisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
+                    processRegisterRequest(caller, response, headers, params, self.adaptor);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
@@ -118,27 +118,24 @@ isolated service class HttpService {
             }
             MODE_DEREGISTER => {
                 if self.isDeregisterAvailable {
-                    processDeregisterRequest(caller, response, headers, <@untainted> params, self.adaptor);
+                    processDeregisterRequest(caller, response, headers, params, self.adaptor);
                 } else {
                     response.statusCode = http:STATUS_NOT_IMPLEMENTED;
                 }
                 respondToRequest(caller, response);
             }
             MODE_SUBSCRIBE => {
-                processSubscriptionRequestAndRespond(<@untainted> request, caller, response, 
-                                                     headers, <@untainted> params, 
-                                                     <@untainted> self.adaptor,
-                                                     <@untainted> self.isSubscriptionAvailable,
-                                                     <@untainted> self.isSubscriptionValidationAvailable, 
-                                                     <@untainted> self.hub, 
-                                                     <@untainted> self.defaultHubLeaseSeconds, 
+                processSubscriptionRequestAndRespond(request, caller, response, 
+                                                     headers, params, self.adaptor,
+                                                     self.isSubscriptionAvailable,
+                                                     self.isSubscriptionValidationAvailable, 
+                                                     self.hub, self.defaultHubLeaseSeconds, 
                                                      self.clientConfig);
             }
             MODE_UNSUBSCRIBE => {
-                processUnsubscriptionRequestAndRespond(<@untainted> request, caller, response, 
-                                                       headers, <@untainted> params, self.adaptor,
-                                                       self.isUnsubscriptionAvailable,
-                                                       <@untainted> self.isUnsubscriptionValidationAvailable, 
+                processUnsubscriptionRequestAndRespond(request, caller, response, headers, 
+                                                       params, self.adaptor, self.isUnsubscriptionAvailable,
+                                                       self.isUnsubscriptionValidationAvailable, 
                                                        self.clientConfig);
             }
             MODE_PUBLISH => {
