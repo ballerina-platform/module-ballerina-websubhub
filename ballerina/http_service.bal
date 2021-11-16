@@ -73,12 +73,8 @@ isolated service class HttpService {
                     handleResult(caller, result);
                 }
                 MODE_DEREGISTER => {
-                    if self.isDeregisterAvailable {
-                        processDeregisterRequest(caller, response, headers, params, self.adaptor);
-                    } else {
-                        response.statusCode = http:STATUS_NOT_IMPLEMENTED;
-                    }
-                    respondToRequest(caller, response);
+                    http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
+                    handleResult(caller, result);
                 }
                 MODE_SUBSCRIBE => {
                     self.handleSubscription(caller, headers, params);

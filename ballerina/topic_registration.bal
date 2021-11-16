@@ -24,7 +24,7 @@ isolated function processTopicRegistration(http:Headers headers, map<string> par
     };
     TopicRegistrationSuccess|error result = adaptor.callRegisterMethod(msg, headers);
     http:Response response = new;
-    if (result is TopicRegistrationSuccess) {
+    if result is TopicRegistrationSuccess {
         updateSuccessResponse(response, result["body"], result["headers"]);
     } else {
         var errorDetails = result is TopicRegistrationError ? result.detail() : TOPIC_REGISTRATION_ERROR.detail();
@@ -33,28 +33,19 @@ isolated function processTopicRegistration(http:Headers headers, map<string> par
     return response;
 }
 
-# Processes the `topic` deregistration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processDeregisterRequest(http:Caller caller, http:Response response,
-                                           http:Headers headers, map<string> params, 
-                                           HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicDeregistration msg = {
-            topic: topic,
-            hubMode: MODE_DEREGISTER
-        };
-        TopicDeregistrationSuccess|TopicDeregistrationError|error result = adaptor.callDeregisterMethod(msg, headers);
-        if (result is TopicDeregistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        }
+isolated function processTopicDeregistration(http:Headers headers, map<string> params, 
+                                             HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
+    string topic = check retrieveParameter(params, HUB_TOPIC);
+    TopicDeregistration msg = {
+        topic: topic
+    };
+    TopicDeregistrationSuccess|error result = adaptor.callDeregisterMethod(msg, headers);
+    http:Response response = new;
+    if result is TopicDeregistrationSuccess {
+        updateSuccessResponse(response, result["body"], result["headers"]);
+    } else {
+        var errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
     }
+    return response;
 }
