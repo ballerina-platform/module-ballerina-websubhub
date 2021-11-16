@@ -34,6 +34,11 @@ const string HUB_SECRET = "hub.secret";
 # The `hub.challenge` parameter represents a hub-generated, random string that MUST be echoed by the subscriber to verify the subscription.
 const string HUB_CHALLENGE = "hub.challenge";
 
+const string HUB_REASON = "hub.reason";
+
+const string MODE_ACCEPTED = "accepted";
+const string MODE_DENIED = "denied";
+
 # The `hub.mode` value indicates the `publish` mode used by a publisher to notify an update to a topic.
 const string MODE_PUBLISH = "publish";
 
@@ -193,7 +198,7 @@ public type Subscription record {
 # + verificationSuccess - Flag to notify whether a subscription verification is successfull
 public type VerifiedSubscription record {
     *Subscription;
-    boolean verificationSuccess;
+    boolean verificationSuccess = true;
 };
 
 # Record to represent the unsubscription request body.
@@ -214,7 +219,7 @@ public type Unsubscription record {
 # + verificationSuccess - Flag to notify whether a unsubscription verification is successfull
 public type VerifiedUnsubscription record {
     *Unsubscription;
-    boolean verificationSuccess;
+    boolean verificationSuccess = true;
 };
 
 # Enum to differentiate the type of the content-update message.
@@ -261,6 +266,8 @@ type SubscriptionRedirect record {
     *CommonResponse;
     string[] redirectUrls;
 };
+
+type Redirect SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect;
 
 # Record to represent the permanent subscription redirects.
 # 

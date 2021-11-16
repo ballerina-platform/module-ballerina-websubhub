@@ -19,6 +19,29 @@ import ballerina/url;
 import ballerina/http;
 import ballerina/regex;
 
+isolated function retrieveParameter(map<string> params, string 'key) returns string|error {
+    string? retrievedValue = params.removeIfHasKey('key);
+    if retrievedValue is string {
+        string|error decodedValue = url:decode(retrievedValue, "UTF-8");
+        if decodedValue is error {
+            return error("Invalid value found for parameter '" + 'key + "' : " + decodedValue.message());
+        } else if decodedValue != "" {
+            return decodedValue;
+        }
+    }
+    return error("Empty value found for parameter '" + 'key + "'");
+}
+
+isolated function generateQueryString(string callbackUrl, [string, string?][] params) returns string {
+    string[] keyValPairs = [];
+    foreach var ['key, value] in params {
+        if value is string {
+            keyValPairs.push(string `${'key}=${value}`);
+        }
+    }
+    return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
+}
+
 # Processes the `topic` registration request.
 # 
 # + caller - The `http:Caller` reference of the current request
