@@ -15,64 +15,29 @@
 // under the License.
 import ballerina/http;
 
-# Parameter `hub.mode` representing the mode of the request from hub to subscriber or subscriber to hub.
 const string HUB_MODE = "hub.mode";
-
-# Subscription change or intent verification request parameter 'hub.topic'' representing the topic relevant to the for
-# which the request is initiated.
 const string HUB_TOPIC = "hub.topic";
-
-# The `hub.callback`  parameter represents the callback URL for the subscriber to receive distributed contents.
 const string HUB_CALLBACK = "hub.callback";
-
-# The `hub.lease_seconds` parameter represents the lease time (in seconds) until which the subscription is valid.
 const string HUB_LEASE_SECONDS = "hub.lease_seconds";
-
-# The `hub.secret` parameter represents the secret key, which the `hub` should use to sign the content in the content distribution.
 const string HUB_SECRET = "hub.secret";
-
-# The `hub.challenge` parameter represents a hub-generated, random string that MUST be echoed by the subscriber to verify the subscription.
 const string HUB_CHALLENGE = "hub.challenge";
-
 const string HUB_REASON = "hub.reason";
 
 const string MODE_ACCEPTED = "accepted";
 const string MODE_DENIED = "denied";
-
-# The `hub.mode` value indicates the `publish` mode used by a publisher to notify an update to a topic.
 const string MODE_PUBLISH = "publish";
-
-# `hub.mode` value indicating "register" mode, used by a publisher to register a topic at a hub.
 const string MODE_REGISTER = "register";
-
-# `hub.mode` value indicating "deregister" mode, used by a publisher to deregister a topic at a hub.
 const string MODE_DEREGISTER = "deregister";
-
-# `hub.mode` value indicating "subscribe" mode, used by a subscriber to subscribe a topic at a hub.
 const string MODE_SUBSCRIBE = "subscribe";
-
-# `hub.mode` value indicating "unsubscribe" mode, used by a subscriber to unsubscribe a topic at a hub.
 const string MODE_UNSUBSCRIBE = "unsubscribe";
 
-# `HTTP Content-Type` Header Name, used to include `Content-Type` header value manually to `HTTP Request`.
 const string CONTENT_TYPE = "Content-Type";
-
-# `HTTP X-Hub-Signature` Header Name, used to include `X-Hub-Signature` header value manually to `HTTP Request`,
-#  value of this `HTTP Header` is used by subscriber to verify whether the content is published by a valid hub.
 const string X_HUB_SIGNATURE = "X-Hub-Signature";
-
-# `HTTP Link` Header Name, used to include `Link` header value manually to `HTTP Request`.
 const string LINK = "Link";
-
 const string BALLERINA_PUBLISH_HEADER = "x-ballerina-publisher";
 
-# `SHA256 HMAC` algorithm name, this is prepended to the generated signature value.
 const string SHA256_HMAC = "sha256";
-
-# Represents the HTTP/1.1 protocol.
 const string HTTP_1_1 = "1.1";
-
-# Represents the HTTP/2.0 protocol.
 const string HTTP_2_0 = "2.0";
 
 # Options to compress using Gzip or deflate.
