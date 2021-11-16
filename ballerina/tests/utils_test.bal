@@ -19,6 +19,84 @@ import ballerina/mime;
 import ballerina/http;
 
 @test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalSuccess() returns error? {
+    map<string> params = {
+        "key1": "val1"
+    };
+    string retrievedVal = check retrieveParameter(params, "key1");
+    test:assertEquals(retrievedVal, "val1");
+}
+
+@test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalSuccessForEncodedVal() returns error? {
+    map<string> params = {
+        "key1": "someval%24123"
+    };
+    string retrievedVal = check retrieveParameter(params, "key1");
+    test:assertEquals(retrievedVal, "someval$123");
+}
+
+@test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalFailureForEmptyVal() {
+    map<string> params = {
+        "key1": ""
+    };
+    string|error retrievedVal = retrieveParameter(params, "key1");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
+    }
+}
+
+@test:Config { 
+    groups: ["retrieveParameter"]
+}
+isolated function testParameterRetrievalFailureForNilValue() {
+    map<string> params = {
+        "key1": "val1"
+    };
+    string|error retrievedVal = retrieveParameter(params, "key2");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key2'");
+    }
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGeneration() {
+    string baseUrl = "https://sample.com";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "?key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGenerationWithBaseStringWithQueryParam() {
+    string baseUrl = "https://sample.com?baseKey=baseVal";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "&key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
     groups: ["contentTypeRetrieval"]
 }
 isolated function testContentTypeRetrievalForString() returns error? {
