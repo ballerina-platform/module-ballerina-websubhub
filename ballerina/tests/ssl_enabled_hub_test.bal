@@ -133,7 +133,7 @@ public function testPublisherPubishEventSuccessWithSsl() {
 }
 
 @test:Config {}
-function testSubscriptionWithSsl() returns @tainted error? {
+function testSubscriptionWithSsl() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -142,7 +142,7 @@ function testSubscriptionWithSsl() returns @tainted error? {
 }
 
 @test:Config {}
-function testUnsubscriptionWithSsl() returns @tainted error? {
+function testUnsubscriptionWithSsl() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");

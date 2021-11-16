@@ -45,12 +45,12 @@ var hubWithHeaderDetails = service object {
 };
 
 @test:BeforeGroups { value:["http-header-details"] }
-function beforeHttpHeaderDetailsTest() returns @tainted error? {
+function beforeHttpHeaderDetailsTest() returns error? {
     check hubWithHeaderDetailsListener.attach(hubWithHeaderDetails, "websubhub");
 }
 
 @test:AfterGroups { value:["http-header-details"] }
-function afterHttpHeaderDetailsTest() returns @tainted error? {
+function afterHttpHeaderDetailsTest() returns error? {
     check hubWithHeaderDetailsListener.gracefulStop();
 }
 
@@ -59,7 +59,7 @@ http:Client httpHeaderDetailsTestClientEp = check new("http://localhost:9095/web
 @test:Config {
     groups: ["http-header-details"]
 }
-function testRegistrationWithHeaderDetails() returns @tainted error? {
+function testRegistrationWithHeaderDetails() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=accepted&isSuccess=true";
@@ -71,7 +71,7 @@ function testRegistrationWithHeaderDetails() returns @tainted error? {
 @test:Config {
     groups: ["http-header-details"]
 }
-function testDeregistrationSuccessWithHeaderDetails() returns @tainted error? {
+function testDeregistrationSuccessWithHeaderDetails() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test", "application/x-www-form-urlencoded");
     string expectedPayload = "hub.mode=accepted&isDeregisterSuccess=true";

@@ -93,12 +93,12 @@ var hubServiceToTestAdditionalErrorDetails = service object {
 };
 
 @test:BeforeGroups { value:["additional-error-details"] }
-function beforeAdditionalErrorDetailsTest() returns @tainted error? {
+function beforeAdditionalErrorDetailsTest() returns error? {
     check hubListenerToAdditionalErrorDetails.attach(hubServiceToTestAdditionalErrorDetails, "websubhub");
 }
 
 @test:AfterGroups { value:["additional-error-details"] }
-function afterAdditionalErrorDetailsTest() returns @tainted error? {
+function afterAdditionalErrorDetailsTest() returns error? {
     check hubListenerToAdditionalErrorDetails.gracefulStop();
 }
 
@@ -107,7 +107,7 @@ http:Client errorDetailsTestClientEp = check new("http://localhost:9093/websubhu
 @test:Config {
     groups: ["additional-error-details"]
 }
-function testRegistrationFailureErrorDetails() returns @tainted error? {
+function testRegistrationFailureErrorDetails() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=register&hub.topic=test1", "application/x-www-form-urlencoded");
 
@@ -123,7 +123,7 @@ function testRegistrationFailureErrorDetails() returns @tainted error? {
 @test:Config {
     groups: ["additional-error-details"]
 }
-function testDeregistrationFailureErrorDetails() returns @tainted error? {
+function testDeregistrationFailureErrorDetails() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=deregister&hub.topic=test1", "application/x-www-form-urlencoded");
 
@@ -138,7 +138,7 @@ function testDeregistrationFailureErrorDetails() returns @tainted error? {
 @test:Config {
     groups: ["additional-error-details"]
 }
-function testUpdateMessageErrorDetails() returns @tainted error? {
+function testUpdateMessageErrorDetails() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test", "application/x-www-form-urlencoded");
 

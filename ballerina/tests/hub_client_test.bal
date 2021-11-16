@@ -73,7 +73,7 @@ HubClient contentDeliveryClient = check new(subscriptionMsg);
 
 @test:Config {
 }
-function testTextContentDelivery() returns @tainted error? {
+function testTextContentDelivery() returns error? {
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);
     test:assertEquals(publishResponse.status.code, 200);
@@ -82,7 +82,7 @@ function testTextContentDelivery() returns @tainted error? {
 
 @test:Config {
 }
-function testJsonContentDelivery() returns @tainted error? {
+function testJsonContentDelivery() returns error? {
     json publishedContent = {
         contentUrl: "https://sample.content.com",
         contentMsg: "Enjoy free offers this season"
@@ -95,7 +95,7 @@ function testJsonContentDelivery() returns @tainted error? {
 
 @test:Config {
 }
-function testXmlContentDelivery() returns @tainted error? {
+function testXmlContentDelivery() returns error? {
     xml publishedContent = xml `<content>
         <contentUrl>The Lost World</contentUrl>
         <contentMsg>Enjoy free offers this season</contentMsg>
@@ -108,7 +108,7 @@ function testXmlContentDelivery() returns @tainted error? {
 
 @test:Config {
 }
-function testByteArrayContentDelivery() returns @tainted error? {
+function testByteArrayContentDelivery() returns error? {
     byte[] publishedContent = "This is sample content".toBytes();
     ContentDistributionMessage msg = {content: publishedContent};
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
@@ -118,7 +118,7 @@ function testByteArrayContentDelivery() returns @tainted error? {
 
 @test:Config {
 }
-function testUrlEncodedContentDelivery() returns @tainted error? {
+function testUrlEncodedContentDelivery() returns error? {
     map<string> publishedContent = {
         "query1": "value1",
         "query2": "value2"
@@ -134,7 +134,7 @@ function testUrlEncodedContentDelivery() returns @tainted error? {
 
 @test:Config {
 }
-isolated function testContentDeliveryWithNoResponse() returns @tainted error? {
+isolated function testContentDeliveryWithNoResponse() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/noContent");
     HubClient hubClientEP = check new(subscriptionMsg);
     byte[] publishedContent = "This is sample content".toBytes();
@@ -146,7 +146,7 @@ isolated function testContentDeliveryWithNoResponse() returns @tainted error? {
 
 @test:Config {
 }
-isolated function testSubscriptionDeleted() returns @tainted error? {
+isolated function testSubscriptionDeleted() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
     HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
@@ -160,7 +160,7 @@ isolated function testSubscriptionDeleted() returns @tainted error? {
 
 @test:Config {
 }
-isolated function testContentDeliveryRetrySuccess() returns @tainted error? {
+isolated function testContentDeliveryRetrySuccess() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retrySuccess");
     ClientConfiguration config = {
 	        retryConfig: {
@@ -181,7 +181,7 @@ isolated function testContentDeliveryRetrySuccess() returns @tainted error? {
 
 @test:Config {
 }
-isolated function testContentDeliveryRetryFailed() returns @tainted error? {
+isolated function testContentDeliveryRetryFailed() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/retryFailed");
     ClientConfiguration config = {
 	        retryConfig: {

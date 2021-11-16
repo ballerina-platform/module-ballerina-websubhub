@@ -206,7 +206,7 @@ public function testPublisherPubishEventSuccessWithAuthentication() {
 @test:Config{
     groups: ["authEnabledHub"]
 }
-function testSubscriptionWithAuthentication() returns @tainted error? {
+function testSubscriptionWithAuthentication() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=http://localhost:9091/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -217,7 +217,7 @@ function testSubscriptionWithAuthentication() returns @tainted error? {
 @test:Config{
     groups: ["authEnabledHub"]
 }
-function testUnsubscriptionWithAuthentication() returns @tainted error? {
+function testUnsubscriptionWithAuthentication() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=unsubscribe&hub.topic=test2&hub.callback=http://localhost:9091/subscriber/unsubscribe",
                             "application/x-www-form-urlencoded");

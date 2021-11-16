@@ -32,7 +32,7 @@ http:ListenerConfiguration subConfigs = {
 };
 
 service /subscriber on new http:Listener(9098, subConfigs) {
-    resource function get .(http:Request req, http:Caller caller) returns @tainted error? {
+    resource function get .(http:Request req, http:Caller caller) returns error? {
         map<string[]> payload = req.getQueryParams();
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
@@ -46,7 +46,7 @@ service /subscriber on new http:Listener(9098, subConfigs) {
         }
     }
 
-    resource function post .(http:Request req, http:Caller caller) returns @tainted error? {
+    resource function post .(http:Request req, http:Caller caller) returns error? {
         isContentDeliveredWithSsl = true;
         check caller->respond();
     }
@@ -111,7 +111,7 @@ PublisherClient annotationTestPublisher = check new ("http://localhost:9099/webs
 http:Client annotationTestClient = check new("http://localhost:9099/websubhub");
 
 @test:Config {}
-function testSubscriptionWithAnnotationConfig() returns @tainted error? {
+function testSubscriptionWithAnnotationConfig() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=subscribe&hub.topic=test&hub.callback=https://localhost:9098/subscriber", 
                             "application/x-www-form-urlencoded");
@@ -122,7 +122,7 @@ function testSubscriptionWithAnnotationConfig() returns @tainted error? {
 }
 
 @test:Config {}
-function testContentUpdateWithAnnotationConfig() returns @tainted error? {
+function testContentUpdateWithAnnotationConfig() returns error? {
     Acknowledgement response = check annotationTestPublisher->publishUpdate("test", "This is a test message");
     waitForActionCompletion(isContentDeliveredWithSsl);
     test:assertTrue(isContentDeliveredWithSsl);
