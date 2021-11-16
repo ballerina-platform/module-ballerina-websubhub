@@ -210,3 +210,7 @@ isolated function handleResult(http:Caller caller, http:Response|error result) {
         respondToRequest(caller, result);
     }
 }
+
+isolated function respondToRequest(http:Caller caller, http:Response response) {
+    http:ListenerError? responseError = caller->respond(response);
+}
