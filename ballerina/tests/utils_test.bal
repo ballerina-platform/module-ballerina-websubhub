@@ -430,21 +430,6 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
     return true;
 }
 
-service / on new http:Listener(9102) {
-    isolated resource function get util (string name) returns string {
-        return string `Hello, ${name}!`;
-    }
-}
-
-@test:Config { 
-    groups: ["subscriptionNotification"]
-}
-isolated function testSubscriptionNotificationSuccess() returns error? {
-    http:Response resp = check sendSubscriptionNotification("http://localhost:9102/util", "?name=Ayesh", {});
-    string responsePayload = check resp.getTextPayload();
-    test:assertEquals(responsePayload, "Hello, Ayesh!");
-}
-
 @test:Config { 
     groups: ["httpClientRetrieval"]
 }
@@ -459,4 +444,42 @@ isolated function testRetrieveHttpClientWithConfig() returns error? {
     };
     var clientEp = retrieveHttpClient("https://test.com/sample", httpsConfig);
     test:assertTrue(clientEp is http:Client);
+}
+
+listener http:Listener utilServiceListener = new http:Listener(9103);
+
+service /subscription on utilServiceListener {
+    isolated resource function get .(string key1, string key2) returns string {
+        return string `Key1=${key1}/Key2=${key2}`;
+    }
+
+    isolated resource function get additional(string baseKey, string key1, string key2) returns string {
+        return string `BaseKey=${baseKey}/Key1=${key1}/Key2=${key2}`;
+    }
+}
+
+@test:Config { 
+    groups: ["sendNotification"]
+}
+isolated function testSendNotification() returns error? {
+    [string, string?][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]    
+    ];
+    http:Response res = check sendNotification("http://localhost:9103/subscription", params, {});
+    string payload = check res.getTextPayload();
+    test:assertEquals(payload, "Key1=val1/Key2=val2");
+}
+
+@test:Config { 
+    groups: ["sendNotification"]
+}
+isolated function testSendNotificationWithQueyParamInCallback() returns error? {
+    [string, string?][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]    
+    ];
+    http:Response res = check sendNotification("http://localhost:9103/subscription/additional?baseKey=baseVal", params, {});
+    string payload = check res.getTextPayload();
+    test:assertEquals(payload, "BaseKey=baseVal/Key1=val1/Key2=val2");
 }

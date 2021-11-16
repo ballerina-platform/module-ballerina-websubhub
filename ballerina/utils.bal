@@ -32,6 +32,12 @@ isolated function retrieveParameter(map<string> params, string 'key) returns str
     return error("Empty value found for parameter '" + 'key + "'");
 }
 
+isolated function sendNotification(string callbackUrl, [string, string?][] params, ClientConfiguration config) returns http:Response|error {
+    string queryParams = generateQueryString(callbackUrl, params);
+    http:Client httpClient = check  new(callbackUrl, retrieveHttpClientConfig(config));
+    return httpClient->get(queryParams);
+}
+
 isolated function generateQueryString(string callbackUrl, [string, string?][] params) returns string {
     string[] keyValPairs = [];
     foreach var ['key, value] in params {

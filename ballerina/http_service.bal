@@ -90,10 +90,7 @@ isolated service class HttpService {
                     self.handleSubscription(caller, headers, params);
                 }
                 MODE_UNSUBSCRIBE => {
-                    processUnsubscriptionRequestAndRespond(request, caller, response, headers,
-                                                        params, self.adaptor, self.isUnsubscriptionAvailable,
-                                                        self.isUnsubscriptionValidationAvailable,
-                                                        self.clientConfig);
+                    self.handleUnsubscription(caller, headers, params);
                 }
                 MODE_PUBLISH => {
                     http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
@@ -181,6 +178,29 @@ isolated service class HttpService {
             http:Response response = new;
             response.statusCode = http:STATUS_BAD_REQUEST;
             response.setTextPayload(subscription.message());
+            respondToRequest(caller, response);
+        }
+    }
+
+    isolated function handleUnsubscription(http:Caller caller, http:Headers headers, map<string> params) {
+        Unsubscription|error unsubscription = createUnsubscriptionMessage(params);
+        if unsubscription is Unsubscription {
+            http:Response result = processUnsubscription(unsubscription, headers, self.adaptor, self.isUnsubscriptionAvailable);
+            int currentStatusCode = result.statusCode;
+            if currentStatusCode == http:STATUS_ACCEPTED {
+                respondToRequest(caller, result);
+                error? verificationResult = processUnSubscriptionVerification(headers, self.adaptor, unsubscription, 
+                                                                                        self.isUnsubscriptionValidationAvailable, self.clientConfig);
+                if verificationResult is error {
+                    log:printError("Error occurred while processing unsubscription", 'error = verificationResult);
+                }
+                return;
+            }
+            respondToRequest(caller, result);
+        } else {
+            http:Response response = new;
+            response.statusCode = http:STATUS_BAD_REQUEST;
+            response.setTextPayload(unsubscription.message());
             respondToRequest(caller, response);
         }
     }
