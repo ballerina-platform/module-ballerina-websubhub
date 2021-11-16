@@ -390,3 +390,13 @@ function testPublishContentLocalWithContentTypeHeaderWithParams() returns error?
     http:Response response = check httpClient->post("/?hub.mode=publish&hub.topic=test", request);
     test:assertEquals(response.statusCode, 200);
 }
+
+@test:Config {
+}
+function testPublishContentLocalWithUnsupportedContentType() returns error? {
+    http:Request request = new;
+    request.setJsonPayload({ event: "event1" }, "application/vnd.ford.car+json; charset=utf-8");
+    request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+    http:Response response = check httpClient->post("/?hub.mode=publish&hub.topic=test", request);
+    test:assertEquals(response.statusCode, 400);
+}
