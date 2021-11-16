@@ -48,58 +48,6 @@ isolated function generateQueryString(string callbackUrl, [string, string?][] pa
     return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
 }
 
-# Processes the `topic` registration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processRegisterRequest(http:Caller caller, http:Response response,
-                                         http:Headers headers, map<string> params, 
-                                         HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicRegistration msg = {
-            topic: topic,
-            hubMode: MODE_REGISTER
-        };
-        TopicRegistrationSuccess|TopicRegistrationError|error result = adaptor.callRegisterMethod(msg, headers);
-        if (result is TopicRegistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicRegistrationError ? result.detail(): TOPIC_REGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        }
-    }
-}
-
-# Processes the `topic` deregistration request.
-# 
-# + caller - The `http:Caller` reference of the current request
-# + response - The `http:Response`, which should be returned 
-# + headers - The `http:Headers` received from the original `http:Request`
-# + params - Query parameters retrieved from the `http:Request`
-# + adaptor - Current `websubhub:HttpToWebsubhubAdaptor` instance
-isolated function processDeregisterRequest(http:Caller caller, http:Response response,
-                                           http:Headers headers, map<string> params, 
-                                           HttpToWebsubhubAdaptor adaptor) {
-    string? topic = getEncodedValueOrUpdatedErrorResponse(params, HUB_TOPIC, response);
-    if (topic is string) {
-        TopicDeregistration msg = {
-            topic: topic,
-            hubMode: MODE_DEREGISTER
-        };
-        TopicDeregistrationSuccess|TopicDeregistrationError|error result = adaptor.callDeregisterMethod(msg, headers);
-        if (result is TopicDeregistrationSuccess) {
-            updateSuccessResponse(response, result["body"], result["headers"]);
-        } else {
-            var errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
-        }
-    }
-}
-
 # Retrieves an URL-encoded parameter.
 # 
 # + params - Available query parameters

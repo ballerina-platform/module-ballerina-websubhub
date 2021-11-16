@@ -27,7 +27,6 @@ isolated service class HttpService {
     private final boolean isSubscriptionValidationAvailable;
     private final boolean isUnsubscriptionAvailable;
     private final boolean isUnsubscriptionValidationAvailable;
-    private final boolean isRegisterAvailable;
     private final boolean isDeregisterAvailable;
 
     # Initializes the `websubhub:HttpService` endpoint.
@@ -51,7 +50,6 @@ isolated service class HttpService {
         self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
         self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
         self.isUnsubscriptionValidationAvailable = isMethodAvailable("onUnsubscriptionValidation", methodNames);
-        self.isRegisterAvailable = isMethodAvailable("onRegisterTopic", methodNames);
         self.isDeregisterAvailable = isMethodAvailable("onDeregisterTopic", methodNames);
     }
 
@@ -71,12 +69,8 @@ isolated service class HttpService {
             string? mode = params[HUB_MODE];
             match mode {
                 MODE_REGISTER => {
-                    if self.isRegisterAvailable {
-                        processRegisterRequest(caller, response, headers, params, self.adaptor);
-                    } else {
-                        response.statusCode = http:STATUS_NOT_IMPLEMENTED;
-                    }
-                    respondToRequest(caller, response);
+                    http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
+                    handleResult(caller, result);
                 }
                 MODE_DEREGISTER => {
                     if self.isDeregisterAvailable {
@@ -206,11 +200,17 @@ isolated service class HttpService {
     }
 }
 
-# Retrieves whether the particular remote method is available in service-object.
-# 
-# + methodName - Name of the required method
-# + methods - All available methods
-# + return - `true` if method available or else `false`
 isolated function isMethodAvailable(string methodName, string[] methods) returns boolean {
     return methods.indexOf(methodName) is int;
+}
+
+isolated function handleResult(http:Caller caller, http:Response|error result) {
+    if result is error {
+        http:Response response = new;
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        response.setTextPayload(result.message());
+        respondToRequest(caller, response);
+    } else {
+        respondToRequest(caller, result);
+    }
 }

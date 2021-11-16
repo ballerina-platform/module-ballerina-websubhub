@@ -129,7 +129,7 @@ public type ContentDistributionSuccess record {|
 # + hubMode - Current `hub` action
 public type TopicRegistration record {|
     string topic;
-    string hubMode;
+    string hubMode = MODE_REGISTER;
 |};
 
 # Record to represent the topic-deregistration request body.
@@ -138,7 +138,7 @@ public type TopicRegistration record {|
 # + hubMode - Current `hub` action
 public type TopicDeregistration record {|
     string topic;
-    string hubMode;
+    string hubMode = MODE_DEREGISTER;
 |};
 
 # Record to represent the subscription request body.
