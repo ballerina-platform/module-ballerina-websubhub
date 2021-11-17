@@ -383,6 +383,18 @@ function testPublishContentLocal() returns error? {
 
 @test:Config {
 }
+function testPublishContentFailureForEmptyTopic() returns error? {
+    http:Request request = new;
+    request.setTextPayload("event=event1", "application/x-www-form-urlencoded");
+    request.setHeader(BALLERINA_PUBLISH_HEADER, "publish");
+    http:Response response = check httpClient->post("/?hub.mode=publish", request);
+    test:assertEquals(response.statusCode, 400);
+    string responsePayload = check response.getTextPayload();
+    test:assertEquals(responsePayload, "Empty value found for parameter 'hub.topic'");
+}
+
+@test:Config {
+}
 function testPublishContentLocalWithContentTypeHeaderWithParams() returns error? {
     http:Request request = new;
     request.setJsonPayload({ event: "event1" }, "application/json; charset=utf-8");

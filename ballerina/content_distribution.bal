@@ -19,7 +19,7 @@ import ballerina/mime;
 
 isolated function processContentPublish(http:Request request, http:Headers headers, 
                                         map<string> params, HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
-    string topic = check retrieveParameter(params, HUB_TOPIC);
+    string topic = check retrieveQueryParameters(params, HUB_TOPIC);
     string contentTypeValue = request.getContentType();
     var [contentType, headerParameters] = check http:parseHeader(contentTypeValue);
     UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);

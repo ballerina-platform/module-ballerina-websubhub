@@ -19,17 +19,30 @@ import ballerina/url;
 import ballerina/http;
 import ballerina/regex;
 
-isolated function retrieveParameter(map<string> params, string 'key) returns string|error {
-    string? retrievedValue = params.removeIfHasKey('key);
+isolated function retrieveQueryParameters(map<string|string[]> params, string 'key) returns string|error {
+    string|string[]? retrievedValue = params.removeIfHasKey('key);
     if retrievedValue is string {
-        string|error decodedValue = url:decode(retrievedValue, "UTF-8");
-        if decodedValue is error {
-            return error("Invalid value found for parameter '" + 'key + "' : " + decodedValue.message());
-        } else if decodedValue != "" {
+        string? decodedValue = check decodeQueryParam(retrievedValue, 'key);
+        if decodedValue is string {
+            return decodedValue;
+        }
+    } else if retrievedValue is string[] && retrievedValue.length() >= 1 {
+        string? decodedValue = check decodeQueryParam(retrievedValue[0], 'key);
+        if decodedValue is string {
             return decodedValue;
         }
     }
     return error("Empty value found for parameter '" + 'key + "'");
+}
+
+isolated function decodeQueryParam(string value, string 'key) returns string|error? {
+    string|error decodedValue = url:decode(value, "UTF-8");
+    if decodedValue is error {
+        return error("Invalid value found for parameter '" + 'key + "' : " + decodedValue.message());
+    } else if decodedValue != "" {
+        return decodedValue;
+    }
+    return ();
 }
 
 isolated function sendNotification(string callbackUrl, [string, string?][] params, ClientConfiguration config) returns http:Response|error {

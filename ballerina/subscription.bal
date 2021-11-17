@@ -18,8 +18,8 @@ import ballerina/http;
 import ballerina/uuid;
 
 isolated function createSubscriptionMessage(string hubUrl, int defaultHubLeaseSeconds, map<string> params) returns Subscription|error {
-    string topic = check retrieveParameter(params, HUB_TOPIC);
-    string hubCallback = check retrieveParameter(params, HUB_CALLBACK);
+    string topic = check retrieveQueryParameters(params, HUB_TOPIC);
+    string hubCallback = check retrieveQueryParameters(params, HUB_CALLBACK);
     int leaseSeconds = retrieveLeaseSeconds(params, defaultHubLeaseSeconds);
     Subscription message = {
         hub: hubUrl,
@@ -125,8 +125,8 @@ isolated function validateSubscription(boolean isRemoteMethodAvailable, Subscrip
 }
 
 isolated function createUnsubscriptionMessage(map<string> params) returns Unsubscription|error {
-    string topic = check retrieveParameter(params, HUB_TOPIC);
-    string hubCallback = check retrieveParameter(params, HUB_CALLBACK);
+    string topic = check retrieveQueryParameters(params, HUB_TOPIC);
+    string hubCallback = check retrieveQueryParameters(params, HUB_CALLBACK);
     Unsubscription message = {
         hubMode: MODE_UNSUBSCRIBE,
         hubCallback: hubCallback,

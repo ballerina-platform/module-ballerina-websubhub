@@ -62,6 +62,7 @@ isolated service class HttpService {
         map<string>|error params = self.retrieveQueryParams(request, headers);
         if params is error {
             response.statusCode = http:STATUS_BAD_REQUEST;
+            response.setTextPayload(params.message());
             respondToRequest(caller, response);
         } else {
             string? mode = params[HUB_MODE];
@@ -110,26 +111,20 @@ isolated service class HttpService {
                 string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
                 if publisherHeader is string {
                     if publisherHeader == "publish" {
-                        string[] hubMode = queryParams.get(HUB_MODE);
-                        string[] hubTopic = queryParams.get(HUB_TOPIC);
-                        params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
-                        params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
+                        params[HUB_MODE] = check retrieveQueryParameters(queryParams, HUB_MODE);
+                        params[HUB_TOPIC] = check retrieveQueryParameters(queryParams, HUB_TOPIC);
                     } else if publisherHeader == "event" {
-                        var reqFormParamMap = request.getFormParams();
-                        params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+                        params = check request.getFormParams();
                     } else {
                         return error("Invalid value for header " + BALLERINA_PUBLISH_HEADER);
                     }
                 } else {
-                    var reqFormParamMap = request.getFormParams();
-                    params = reqFormParamMap is map<string> ? reqFormParamMap : {};
+                    params = check request.getFormParams();
                 }
             }
             mime:APPLICATION_JSON|mime:APPLICATION_XML|mime:APPLICATION_OCTET_STREAM|mime:TEXT_PLAIN => {
-                string[] hubMode = queryParams.get(HUB_MODE);
-                string[] hubTopic = queryParams.get(HUB_TOPIC);
-                params[HUB_MODE] = hubMode.length() == 1 ? hubMode[0] : "";
-                params[HUB_TOPIC] = hubTopic.length() == 1 ? hubTopic[0] : "";
+                params[HUB_MODE] = check retrieveQueryParameters(queryParams, HUB_MODE);
+                params[HUB_TOPIC] = check retrieveQueryParameters(queryParams, HUB_TOPIC);
             }
             _ => {
                 string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " + 
