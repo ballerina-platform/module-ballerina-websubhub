@@ -21,7 +21,7 @@ import ballerina/regex;
 
 listener Listener hubListenerToAdditionalErrorDetails = new(9093);
 
-var hubServiceToTestAdditionalErrorDetails = service object {
+Service hubServiceToTestAdditionalErrorDetails = service object {
 
     isolated remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationError {

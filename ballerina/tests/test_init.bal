@@ -26,7 +26,7 @@ map<string|string[]> CUSTOM_HEADERS = {
         "header3": ["value4"]
 };
 
-var simpleSubscriber = service object {
+http:Service simpleSubscriber = service object {
 
     isolated resource function get .(http:Caller caller, http:Request req)
             returns error? {
