@@ -18,6 +18,8 @@ import ballerina/http;
 import ballerina/mime;
 
 isolated service class HttpService {
+    *http:Service;
+    
     private final HttpToWebsubhubAdaptor adaptor;
     private final readonly & ClientConfiguration clientConfig;
     private final string hub;

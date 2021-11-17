@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Service service object {
+public type Service distinct service object {
 
    //todo Remove methods and write compiler plugin for service
 

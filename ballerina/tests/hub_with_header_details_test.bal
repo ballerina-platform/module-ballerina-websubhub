@@ -20,7 +20,7 @@ import ballerina/test;
 
 listener Listener hubWithHeaderDetailsListener = new(9095);
 
-var hubWithHeaderDetails = service object {
+Service hubWithHeaderDetails = service object {
 
     isolated remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
                                 returns TopicRegistrationSuccess {
