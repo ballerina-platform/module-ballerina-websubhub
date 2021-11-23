@@ -436,7 +436,7 @@ isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns err
     map<string> generatedResponseBody = retrieveResponseBodyForFormUrlEncodedMessage("query1=value1&query2=value2&query3=value3");
     test:assertEquals(generatedResponseBody.length(), message.length());
     foreach string 'key in message.keys() {
-        string value = generatedResponseBody.remove('key);
+        _ = generatedResponseBody.remove('key);
     }
     test:assertTrue(generatedResponseBody.length() == 0);
 }

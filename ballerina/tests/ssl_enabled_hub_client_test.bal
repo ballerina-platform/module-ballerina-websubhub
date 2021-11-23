@@ -29,14 +29,14 @@ http:ListenerConfiguration listenerConfiguration = {
 listener http:Listener serviceListener = new (9097, listenerConfiguration);
 
 service /callback on serviceListener {
-    isolated resource function post success(http:Caller caller, http:Request req) {
-        http:ListenerError? result = caller->respond("Content Delivery Success");
+    isolated resource function post success(http:Caller caller, http:Request req) returns error? {
+        return caller->respond("Content Delivery Success");
     }
 
-    isolated resource function post deleted(http:Caller caller, http:Request req) {
+    isolated resource function post deleted(http:Caller caller, http:Request req) returns error? {
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
-        http:ListenerError? result = caller->respond(res);
+        return caller->respond(res);
     }
 }
 

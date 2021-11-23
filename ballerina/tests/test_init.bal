@@ -82,7 +82,7 @@ http:Service simpleSubscriber = service object {
         }
         http:Response resp = new;
         resp.setPayload(samplePayload);
-        http:ListenerError? result = caller->respond(resp);
+        return caller->respond(resp);
     }
 
     isolated resource function get unsubscribe(http:Caller caller, http:Request req)
@@ -91,16 +91,16 @@ http:Service simpleSubscriber = service object {
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
             log:printDebug("Unsubscription Validation failed ", retrievedPayload = payload);
-            check caller->respond("");
+            return caller->respond("");
         } else {
             string[] challengeArray = <string[]> payload["hub.challenge"];
-            http:ListenerError? result = caller->respond(challengeArray[0]);
+            return caller->respond(challengeArray[0]);
         }
     }
 
     isolated resource function post unsubscribe(http:Caller caller, http:Request req)
             returns error? {
-        http:ListenerError? result = caller->respond();
+        return caller->respond();
     }
 };
 

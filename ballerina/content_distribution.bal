@@ -21,7 +21,7 @@ isolated function processContentPublish(http:Request request, http:Headers heade
                                         map<string> params, HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
     string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     string contentTypeValue = request.getContentType();
-    var [contentType, headerParameters] = check http:parseHeader(contentTypeValue);
+    var [contentType, _] = check http:parseHeader(contentTypeValue);
     UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
     Acknowledgement|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
     return processResult(updateResult);
