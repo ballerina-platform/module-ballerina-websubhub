@@ -25,7 +25,7 @@ public client class PublisherClient {
 
     # Initializes the `websub:PublisherClient`.
     # ```ballerina
-    # websub:PublisherClient websubHubClientEP = new("http://localhost:9191/websub/publish");
+    # websub:PublisherClient publisherClient = new("http://localhost:9191/websub/publish");
     # ```
     #
     # + url    - The URL to publish/notify updates
@@ -38,11 +38,11 @@ public client class PublisherClient {
 
     # Registers a topic in a Ballerina WebSub Hub to which the subscribers can subscribe and the publisher will publish updates.
     # ```ballerina
-    # websubhub:TopicRegistrationSuccess response = check websubHubClientEP->registerTopic("http://websubpubtopic.com");
+    # websubhub:TopicRegistrationSuccess response = check publisherClient->registerTopic("http://websubpubtopic.com");
     # ```
     #
     # + topic - The topic to register
-    # + return - An `error` if an error occurred registering the topic or else `()`
+    # + return - A `websubhub:TopicRegistrationError` if an error occurred registering the topic or else `websubhub:TopicRegistrationSuccess`
     isolated remote function registerTopic(string topic) returns TopicRegistrationSuccess|TopicRegistrationError {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
         http:Response|error registrationResponse = self.httpClient->post("", request);
@@ -60,11 +60,11 @@ public client class PublisherClient {
 
     # Deregisters a topic in a Ballerina WebSub Hub.
     # ```ballerina
-    # websubhub:TopicDeregistrationSuccess response = check websubHubClientEP->deregisterTopic("http://websubpubtopic.com");
+    # websubhub:TopicDeregistrationSuccess response = check publisherClient->deregisterTopic("http://websubpubtopic.com");
     # ```
     #
     # + topic - The topic to deregister
-    # + return -  An `error`if an error occurred un registering the topic or else `()`
+    # + return - A `websubhub:TopicDeregistrationError` if an error occurred un registering the topic or else `websubhub:TopicDeregistrationSuccess`
     isolated remote function deregisterTopic(string topic) returns TopicDeregistrationSuccess|TopicDeregistrationError {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
         http:Response|error deregistrationResponse = self.httpClient->post("", request);
@@ -82,14 +82,14 @@ public client class PublisherClient {
 
     # Publishes an update to a remote Ballerina WebSub Hub.
     # ```ballerina
-    # websubhub:Acknowledgement publishUpdate = check websubHubClientEP->publishUpdate("http://websubpubtopic.com",{"action": "publish",
+    # websubhub:Acknowledgement response = check publisherClient->publishUpdate("http://websubpubtopic.com",{"action": "publish",
     # "mode": "remote-hub"});
     # ```
     #
     # + topic - The topic for which the update occurred
     # + payload - The update payload
     # + contentType - The type of the update content to set as the `ContentType` header
-    # + return -  An `error`if an error occurred with the update or else `()`
+    # + return - A `websubhub:UpdateMessageError`if an error occurred with the update or else `websubhub:Acknowledgement`
     isolated remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload,
                                   string? contentType = ()) returns Acknowledgement|UpdateMessageError {
         http:Request contentUpdateRequest = new;
@@ -123,11 +123,11 @@ public client class PublisherClient {
 
     # Notifies a remote WebSubHub from which an update is available to fetch for hubs that require publishing.
     # ```ballerina
-    #  error? notifyUpdate = websubHubClientEP->notifyUpdate("http://websubpubtopic.com");
+    #  websubhub:Acknowledgement|websubhub:UpdateMessageError response = check publisherClient->notifyUpdate("http://websubpubtopic.com");
     # ```
     #
     # + topic - The topic for which the update occurred
-    # + return -  An `error`if an error occurred with the notification or else `()`
+    # + return - A `websubhub:UpdateMessageError` if an error occurred with the notification or else `websubhub:Acknowledgement`
     isolated remote function notifyUpdate(string topic) returns Acknowledgement|UpdateMessageError {
         http:Request notifyUpdateRequest = new;
         string reqPayload = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
@@ -170,11 +170,6 @@ isolated function handleResponse(http:Response response, string topic, string ac
     }
 }
 
-# Builds the topic registration change request to register or deregister a topic at the `hub`.
-#
-# + mode - Whether the request is for registration or deregistration
-# + topic - The topic to register/deregister
-# + return - An `http:Request` to be sent to the hub to register/deregister
 isolated function buildTopicRegistrationChangeRequest(string mode, string topic) returns http:Request {
     http:Request request = new;
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
@@ -182,10 +177,6 @@ isolated function buildTopicRegistrationChangeRequest(string mode, string topic)
     return request;
 }
 
-# Retrieves form-data content from a `string` payload
-# 
-# + payload - Available payload
-# + return - A `map<string>` containing form-data values
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
 
@@ -212,10 +203,6 @@ isolated function getFormData(string payload) returns map<string> {
     return parameters;
 }
 
-# Retrieves header values for the content-distribution response
-# 
-# + response - Original `http:Response` object
-# + return - Available response headers as `map<string|string[]>`
 isolated function getHeaders(http:Response response) returns map<string|string[]> {
     string[] headerNames = response.getHeaderNames();
 
