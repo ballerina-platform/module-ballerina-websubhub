@@ -19,7 +19,7 @@ import ballerina/url;
 import ballerina/http;
 import ballerina/regex;
 
-isolated function retrieveQueryParameters(map<string|string[]> params, string 'key) returns string|error {
+isolated function retrieveQueryParameter(map<string|string[]> params, string 'key) returns string|error {
     string|string[]? retrievedValue = params.removeIfHasKey('key);
     if retrievedValue is string {
         string? decodedValue = check decodeQueryParam(retrievedValue, 'key);

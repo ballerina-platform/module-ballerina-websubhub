@@ -61,7 +61,7 @@ isolated service class HttpService {
     # + return - An `error` if there is any exception in the request processing or else `()`
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns error? {
         http:Response response = new;
-        map<string>|error params = self.retrieveQueryParams(request, headers);
+        map<string>|error params = self.retrieveParams(request, headers);
         if params is error {
             response.statusCode = http:STATUS_BAD_REQUEST;
             response.setTextPayload(params.message());
@@ -103,7 +103,7 @@ isolated service class HttpService {
         }
     }
 
-    isolated function retrieveQueryParams(http:Request request, http:Headers headers) returns map<string>|error {
+    isolated function retrieveParams(http:Request request, http:Headers headers) returns map<string>|error {
         map<string> params = {};
         string contentTypeValue = request.getContentType();
         var [contentType, headerParameters] = check http:parseHeader(contentTypeValue);
@@ -113,8 +113,8 @@ isolated service class HttpService {
                 string|http:HeaderNotFoundError publisherHeader = headers.getHeader(BALLERINA_PUBLISH_HEADER);
                 if publisherHeader is string {
                     if publisherHeader == "publish" {
-                        params[HUB_MODE] = check retrieveQueryParameters(queryParams, HUB_MODE);
-                        params[HUB_TOPIC] = check retrieveQueryParameters(queryParams, HUB_TOPIC);
+                        params[HUB_MODE] = check retrieveQueryParameter(queryParams, HUB_MODE);
+                        params[HUB_TOPIC] = check retrieveQueryParameter(queryParams, HUB_TOPIC);
                     } else if publisherHeader == "event" {
                         params = check request.getFormParams();
                     } else {
@@ -125,8 +125,8 @@ isolated service class HttpService {
                 }
             }
             mime:APPLICATION_JSON|mime:APPLICATION_XML|mime:APPLICATION_OCTET_STREAM|mime:TEXT_PLAIN => {
-                params[HUB_MODE] = check retrieveQueryParameters(queryParams, HUB_MODE);
-                params[HUB_TOPIC] = check retrieveQueryParameters(queryParams, HUB_TOPIC);
+                params[HUB_MODE] = check retrieveQueryParameter(queryParams, HUB_MODE);
+                params[HUB_TOPIC] = check retrieveQueryParameter(queryParams, HUB_TOPIC);
             }
             _ => {
                 string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " + 

@@ -25,7 +25,7 @@ isolated function testParameterRetrievalSuccess() returns error? {
     map<string> params = {
         "key1": "val1"
     };
-    string retrievedVal = check retrieveQueryParameters(params, "key1");
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
     test:assertEquals(retrievedVal, "val1");
 }
 
@@ -36,7 +36,7 @@ isolated function testParameterRetrievalSuccessForParamArr() returns error? {
     map<string[]> params = {
         "key1": ["val1"]
     };
-    string retrievedVal = check retrieveQueryParameters(params, "key1");
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
     test:assertEquals(retrievedVal, "val1");
 }
 
@@ -47,7 +47,7 @@ isolated function testParameterRetrievalSuccessForEncodedVal() returns error? {
     map<string> params = {
         "key1": "someval%24123"
     };
-    string retrievedVal = check retrieveQueryParameters(params, "key1");
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
     test:assertEquals(retrievedVal, "someval$123");
 }
 
@@ -58,7 +58,7 @@ isolated function testParameterRetrievalSuccessForEncodedValForParamArr() return
     map<string[]> params = {
         "key1": ["someval%24123"]
     };
-    string retrievedVal = check retrieveQueryParameters(params, "key1");
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
     test:assertEquals(retrievedVal, "someval$123");
 }
 
@@ -69,7 +69,7 @@ isolated function testParameterRetrievalFailureForEmptyVal() {
     map<string> params = {
         "key1": ""
     };
-    string|error retrievedVal = retrieveQueryParameters(params, "key1");
+    string|error retrievedVal = retrieveQueryParameter(params, "key1");
     test:assertTrue(retrievedVal is error);
     if retrievedVal is error {
         test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
@@ -83,7 +83,7 @@ isolated function testParameterRetrievalFailureForEmptyArr() {
     map<string[]> params = {
         "key1": []
     };
-    string|error retrievedVal = retrieveQueryParameters(params, "key1");
+    string|error retrievedVal = retrieveQueryParameter(params, "key1");
     test:assertTrue(retrievedVal is error);
     if retrievedVal is error {
         test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
@@ -97,7 +97,7 @@ isolated function testParameterRetrievalFailureForEmptyValForParamArr() {
     map<string[]> params = {
         "key1": [""]
     };
-    string|error retrievedVal = retrieveQueryParameters(params, "key1");
+    string|error retrievedVal = retrieveQueryParameter(params, "key1");
     test:assertTrue(retrievedVal is error);
     if retrievedVal is error {
         test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
@@ -111,7 +111,7 @@ isolated function testParameterRetrievalFailureForNilValue() {
     map<string> params = {
         "key1": "val1"
     };
-    string|error retrievedVal = retrieveQueryParameters(params, "key2");
+    string|error retrievedVal = retrieveQueryParameter(params, "key2");
     test:assertTrue(retrievedVal is error);
     if retrievedVal is error {
         test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key2'");
@@ -125,7 +125,7 @@ isolated function testParameterRetrievalFailureForNilValueForParamArr() {
     map<string[]> params = {
         "key1": ["val1"]
     };
-    string|error retrievedVal = retrieveQueryParameters(params, "key2");
+    string|error retrievedVal = retrieveQueryParameter(params, "key2");
     test:assertTrue(retrievedVal is error);
     if retrievedVal is error {
         test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key2'");

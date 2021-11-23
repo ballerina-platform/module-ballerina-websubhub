@@ -18,7 +18,7 @@ import ballerina/http;
 
 isolated function processTopicRegistration(http:Headers headers, map<string> params, 
                                            HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
-    string topic = check retrieveQueryParameters(params, HUB_TOPIC);
+    string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     TopicRegistration msg = {
         topic: topic
     };
@@ -35,7 +35,7 @@ isolated function processTopicRegistration(http:Headers headers, map<string> par
 
 isolated function processTopicDeregistration(http:Headers headers, map<string> params, 
                                              HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
-    string topic = check retrieveQueryParameters(params, HUB_TOPIC);
+    string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     TopicDeregistration msg = {
         topic: topic
     };
