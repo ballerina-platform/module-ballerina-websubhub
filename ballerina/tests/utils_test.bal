@@ -269,27 +269,6 @@ isolated function testByteArrayContentSignature() returns error? {
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
 }
 
-@test:Config { 
-    groups: ["contentSignature"]
-}
-isolated function testJsonContentSignatureRetrieval() returns error? {
-    json content = {
-        contentUrl: "https://sample.content.com",
-        contentMsg: "Enjoy free offers this season"
-    };
-    byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_JSON, HASH_KEY, "", content);
-    test:assertEquals("3253fa36df638332580b551edad634e81990736179263a8d8966bd5c04a12198", hashedContent.toBase16());
-}
-
-@test:Config { 
-    groups: ["contentSignature"]
-}
-isolated function testUrlEncodedContentSignatureRetrieval() returns error? {
-    byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_FORM_URLENCODED, HASH_KEY, "key1=val1&key2=val2", "");
-    test:assertEquals("2d936793407340f43e3d6427534f536a08ba52899bedd94fc7b14ebc2d5c44c2", hashedContent.toBase16());
-}
-
-
 http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/subscriber");
 
 @test:Config { 
@@ -439,30 +418,6 @@ isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns err
         _ = generatedResponseBody.remove('key);
     }
     test:assertTrue(generatedResponseBody.length() == 0);
-}
-
-@test:Config { 
-    groups: ["servicePathRetrieval"]
-}
-isolated function testServicePathRetrievalForUrlEncodedContent() returns error? {
-    string servicePath = getServicePath("https://subscriber.com/callback", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
-    test:assertEquals(servicePath, "?query1=value1&query2=value2");
-}
-
-@test:Config { 
-    groups: ["servicePathRetrieval"]
-}
-isolated function testServicePathRetrievalForUrlEncodedContentWithCallbackParameters() returns error? {
-    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
-    test:assertEquals(servicePath, "&query1=value1&query2=value2");
-}
-
-@test:Config { 
-    groups: ["servicePathRetrieval"]
-}
-isolated function testServicePathRetrievalForOtherContentTypes() returns error? {
-    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:TEXT_PLAIN, "query1=value1&query2=value2");
-    test:assertEquals(servicePath, "");
 }
 
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {
