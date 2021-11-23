@@ -20,11 +20,17 @@ import ballerina/log;
 
 listener http:Listener simpleSubscriberListener = new (9191);
 
-map<string|string[]> CUSTOM_HEADERS = {
+isolated map<string|string[]> CUSTOM_HEADERS = {
         "header1": ["value1", "value2"],
         "header2": "value3",
         "header3": ["value4"]
 };
+
+isolated function retrieveCustomHeaders() returns map<string|string[]> {
+    lock {
+        return CUSTOM_HEADERS.cloneReadOnly();
+    }
+}
 
 http:Service simpleSubscriber = service object {
 
@@ -47,8 +53,8 @@ http:Service simpleSubscriber = service object {
     }
 
     resource function post addHeaders(http:Caller caller, http:Request req) returns error? {
-        http:Response response = new;    
-        foreach var [header, value] in CUSTOM_HEADERS.entries() {
+        http:Response response = new;
+        foreach var [header, value] in retrieveCustomHeaders().entries() {
             if (value is string) {
                 response.setHeader(header, value);
             } else {

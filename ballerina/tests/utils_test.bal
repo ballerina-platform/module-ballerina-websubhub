@@ -297,7 +297,7 @@ http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/sub
 }
 function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error? {
     http:Response response = new;
-    foreach var [header, value] in CUSTOM_HEADERS.entries() {
+    foreach var [header, value] in retrieveCustomHeaders().entries() {
         if (value is string) {
             response.setHeader(header, value);
         } else {
@@ -466,7 +466,7 @@ isolated function testServicePathRetrievalForOtherContentTypes() returns error? 
 }
 
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {
-    foreach var [header, value] in CUSTOM_HEADERS.entries() {
+    foreach var [header, value] in retrieveCustomHeaders().entries() {
         if (retrievedHeaders.hasKey(header)) {
             string|string[] retrievedValue = retrievedHeaders.get(header);
             if (retrievedValue is string) {

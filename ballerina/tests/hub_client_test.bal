@@ -19,7 +19,21 @@ import ballerina/http;
 import ballerina/test;
 
 const string CONTENT_DELIVERY_SUCCESS = "Content Delivery Success";
-int retrySuccessCount = 0;
+
+isolated int retrySuccessCount = 0;
+
+isolated function incrementSuccessCount() {
+    lock {
+        retrySuccessCount += 1;
+    }
+}
+
+isolated function retrieveSuccessCount() returns int {
+    lock {
+        return retrySuccessCount;
+    }
+}
+
 service /callback on new http:Listener(9094) {
     isolated resource function post success(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
@@ -35,8 +49,8 @@ service /callback on new http:Listener(9094) {
 
     resource function post retrySuccess(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [RETRY_SUCCESS] : ", req.getTextPayload());
-        retrySuccessCount += 1;
-        if (retrySuccessCount == 3) {
+        incrementSuccessCount();
+        if (retrieveSuccessCount() == 3) {
             return caller->respond("Content Delivery Success");
         } else {
             http:Response res = new ();
