@@ -24,7 +24,8 @@ isolated function processContentPublish(http:Request request, http:Headers heade
         return error Error("Could not find the `hub.topic` parameter");
     } else {
         string contentTypeValue = request.getContentType();
-        var [contentType, headerParameters] = check http:parseHeader(contentTypeValue);
+        http:HeaderValue[] values = check http:parseHeader(contentTypeValue);
+        string contentType = values[0].value;
         UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
         Acknowledgement|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
         http:Response response = new;
