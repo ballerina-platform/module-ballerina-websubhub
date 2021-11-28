@@ -17,11 +17,12 @@
 import ballerina/http;
 import ballerina/mime;
 
-isolated function processContentPublish(http:Request request, http:Headers headers, 
+isolated function processContentPublish(http:Request request, http:Headers headers,
                                         map<string> params, HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
     string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     string contentTypeValue = request.getContentType();
-    var [contentType, _] = check http:parseHeader(contentTypeValue);
+    http:HeaderValue[] values = check http:parseHeader(contentTypeValue);
+    string contentType = values[0].value;
     UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
     Acknowledgement|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
     return processResult(updateResult);

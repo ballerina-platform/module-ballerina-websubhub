@@ -106,7 +106,8 @@ isolated service class HttpService {
     isolated function retrieveParams(http:Request request, http:Headers headers) returns map<string>|error {
         map<string> params = {};
         string contentTypeValue = request.getContentType();
-        var [contentType, _] = check http:parseHeader(contentTypeValue);
+        http:HeaderValue[] values = check http:parseHeader(contentTypeValue);
+        string contentType = values[0].value;
         map<string[]> queryParams = request.getQueryParams();
         match contentType {
             mime:APPLICATION_FORM_URLENCODED => {
@@ -129,7 +130,7 @@ isolated service class HttpService {
                 params[HUB_TOPIC] = check retrieveQueryParameter(queryParams, HUB_TOPIC);
             }
             _ => {
-                string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " + 
+                string errorMessage = "Endpoint only supports content type of application/x-www-form-urlencoded, " +
                                         "application/json, application/xml, application/octet-stream and text/plain";
                 return error(errorMessage);
             }
@@ -150,7 +151,7 @@ isolated service class HttpService {
                 int currentStatusCode = result.statusCode;
                 if currentStatusCode == http:STATUS_ACCEPTED {
                     check respondToRequest(caller, result);
-                    error? verificationResult = processSubscriptionVerification(headers, self.adaptor, subscription, 
+                    error? verificationResult = processSubscriptionVerification(headers, self.adaptor, subscription,
                                                                                         self.isSubscriptionValidationAvailable, self.clientConfig);
                     if verificationResult is error {
                         log:printError("Error occurred while processing subscription", 'error = verificationResult);
@@ -174,7 +175,7 @@ isolated service class HttpService {
             int currentStatusCode = result.statusCode;
             if currentStatusCode == http:STATUS_ACCEPTED {
                 check respondToRequest(caller, result);
-                error? verificationResult = processUnSubscriptionVerification(headers, self.adaptor, unsubscription, 
+                error? verificationResult = processUnSubscriptionVerification(headers, self.adaptor, unsubscription,
                                                                                         self.isUnsubscriptionValidationAvailable, self.clientConfig);
                 if verificationResult is error {
                     log:printError("Error occurred while processing unsubscription", 'error = verificationResult);
