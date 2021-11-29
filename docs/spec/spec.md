@@ -233,8 +233,8 @@ isolated function authorize(http:Headers headers, string[] authScopes) returns e
 
 ### 2.2.1. Service Annotation 
 
-`WebSubHub` has support to add few additional configurations to the `hub` which could be useful for the developer. 
-Hence, we have introduced `websubhub:ServiceConfig` a service-level-annotation for `websubhub:Service` which contains 
+Apart from the listener level configurations a `hub` will require few additional configurations. Hence, we have 
+introduced `websubhub:ServiceConfig` a service-level-annotation for `websubhub:Service` which contains 
 `websubhub:ServiceConfiguration` record.
 ```ballerina
 # Configuration for a WebSub Hub service.
