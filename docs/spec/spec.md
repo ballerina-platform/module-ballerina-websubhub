@@ -4,12 +4,13 @@ _Owners_: @shafreenAnfar @chamil321 @ayeshLK
 _Reviewers_: @shafreenAnfar    
 _Created_: 2021/11/23  
 _Updated_: 2021/11/23  
-_Issue_: [#2162](https://github.com/ballerina-platform/ballerina-standard-library/issues/2162)
+_Issue_: [#786](https://github.com/ballerina-platform/ballerina-standard-library/issues/786)
 
 # Introduction
 
-This is the specification for WebSubHub standard library, an API framework to implement WebSub compliant `hub` services 
-and `publisher` clients using [Ballerina programming language](https://ballerina.io/).  
+This is the specification for WebSubHub standard library which is used to implement WebSub compliant `hub` services 
+and `publisher` clients using [Ballerina programming language](https://ballerina.io/), which is an open-source programming language for the 
+cloud that makes it easier to use, combine, and create network services. 
 
 # Contents  
 1. [Overview](#1-overview)  
