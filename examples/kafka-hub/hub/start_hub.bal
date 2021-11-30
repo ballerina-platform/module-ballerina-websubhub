@@ -78,7 +78,7 @@ function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
             return lastPersistedData;
         }
     }
-    return ();
+    return;
 }
 
 function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
@@ -133,7 +133,7 @@ function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|erro
             return lastPersistedData;
         }
     }
-    return ();
+    return;
 }
 
 function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {

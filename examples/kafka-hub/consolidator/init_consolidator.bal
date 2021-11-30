@@ -64,7 +64,7 @@ isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|err
             return lastPersistedData;
         }
     }
-    return ();
+    return;
 }
 
 isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
@@ -113,7 +113,7 @@ isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscripti
             return lastPersistedData;
         }
     }
-    return ();
+    return;
 }
 
 isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
