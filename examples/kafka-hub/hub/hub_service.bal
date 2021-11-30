@@ -141,7 +141,6 @@ service object {
     # + message - Details of the subscription
     # + return - `error` if there is any unexpected error or else `()`
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
-        string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
@@ -194,7 +193,6 @@ service object {
     # 
     # + message - Details of the unsubscription
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
-        string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
         lock {
             var persistingResult = persist:removeSubscription(message.cloneReadOnly());
             if (persistingResult is error) {
