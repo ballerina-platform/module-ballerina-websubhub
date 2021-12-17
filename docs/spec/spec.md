@@ -55,6 +55,9 @@ The `hub` is designed in the form of `listener` and `service`.
 - `websubhub:Listener`: A listener end-point to which `websubhub:Service` could be attached. 
 - `websubhub:Service`: An API service, which receives WebSub events.
 
+In addition to `websubhub:Listener` and `websubhub:Service`, `websubhub:HubClient` is available which could be used to 
+notify content updates to the subscribers.
+
 ### 2.1. Listener
 
 The `websubhub:Listener` will opens the given port and attaches the provided `websubhub:Service` object to the given 
