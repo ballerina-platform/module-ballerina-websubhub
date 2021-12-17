@@ -23,19 +23,19 @@ cloud that makes it easier to use, combine, and create network services.
 
 ## 1. Overview
 
-[WebSub](https://www.w3.org/TR/websub/) is a real-time content delivery protocol over HTTP(s) and it is a simple 
-specification which evolved from [PubSubHubbub](https://github.com/pubsubhubbub/PubSubHubbub).
+[WebSub](https://www.w3.org/TR/websub/) is a real-time content delivery protocol over HTTP(S) and it is a specification 
+which evolved from [PubSubHubbub](https://github.com/pubsubhubbub/PubSubHubbub).
 
 WebSub specification describes three main roles: 
-- Publisher: An implementation that advertises a topic and hub URL on one or more resource URLs.
-- Subscriber: An implementation that discovers the `hub` and topic URL given a resource URL, subscribes to updates at 
-the `hub`, and accepts content distribution requests from the `hub`.
-- Hub: An implementation that handles subscription requests and distributes the content to subscribers when the 
-corresponding topic URL has been updated.
+- Publisher: Advertises a topic and hub URL on one or more resource URLs.
+- Subscriber: Discovers the `hub` and topic URL given a resource URL, subscribes to updates at the `hub`, and accepts 
+content distribution requests from the `hub`.
+- Hub: Handles subscription requests and distributes the content to subscribers when the corresponding topic URL has 
+been updated.
 
-`WebSubHub` is an API framework which is derived from the WebSub specification which could be used by developers to 
-implement WebSub compliant `hub` services and `publisher` clients. Since WebSub specification has limited details on 
-the relationship between `publisher` and `hub`, the Ballerina standard library team has made minor improvements to the 
+`WebSubHub` is a library which is derived from the WebSub specification which could be used by developers to implement 
+WebSub compliant `hub` services and `publisher` clients. Since WebSub specification has limited details on the 
+relationship between `publisher` and `hub`, the Ballerina standard library team has made minor improvements to the 
 original protocol to provide a seamless developer experience.
 
 ## 2. Hub
