@@ -3,14 +3,14 @@
 _Owners_: @shafreenAnfar @chamil321 @ayeshLK    
 _Reviewers_: @shafreenAnfar    
 _Created_: 2021/11/23  
-_Updated_: 2021/11/23  
+_Updated_: 2021/12/17  
 _Issue_: [#786](https://github.com/ballerina-platform/ballerina-standard-library/issues/786)
 
 # Introduction
 
 This is the specification for WebSubHub standard library which is used to implement WebSub compliant `hub` services 
-and `publisher` clients using [Ballerina programming language](https://ballerina.io/), which is an open-source programming language for the 
-cloud that makes it easier to use, combine, and create network services. 
+and `publisher` clients using [Ballerina programming language](https://ballerina.io/), which is an open-source 
+programming language for the cloud that makes it easier to use, combine, and create network services. 
 
 # Contents  
 1. [Overview](#1-overview)  
@@ -48,37 +48,99 @@ It has the following responsibilities:
 * Handles WebSub content distribution.
 
 The `hub` is designed in the form of `listener` and `service`.
-- `websubhub:Listener`: A listener end-point which is a wrapper for ballerina `http:Listener`. 
-- `websubhub:Service`: An API service, which could be attached to `websubhub:Listener` to receive WebSub events.
+- `websubhub:Listener`: A listener end-point to which `websubhub:Service` could be attached. 
+- `websubhub:Service`: An API service, which receives WebSub events.
 
-### 2.1 Hub Listener
+### 2.1. Listener
 
-`websubhub:Listener` is essentially a wrapper for ballerina `http:Listener`. 
+The `websubhub:Listener` will opens the given port and attaches the provided `websubhub:Service` object to the given 
+service-path. We can initialize a `websubhub:Listener` either by providing a port with listener configurations or by 
+providing an `http:Listener`.
 
-Following is a sample of the `websubhub:Listener`:
+#### 2.1.1. Listener Configuration 
+
+When initializing a `websubhub:Listener`, developer could pass `websubhub:ListenerConfiguration`.   
 ```ballerina
-listener websub:HubListener hub = new(new http:Listener(9090));
-listener websub:HubListener hub = new(9090);
+# Provides a set of configurations for configure the underlying HTTP listener of the WebSubHub listener.
+public type ListenerConfiguration record {|
+    *http:ListenerConfiguration;
+|};
 ```
 
-For more advance cases, developer could provide a `websubhub:ListenerConfiguration` when initializing the 
-`websubhub:Listener`. `websubhub:ListenerConfiguration` contains all the configurations in `http:ListenerConfiguration` 
-and developer could use them according to his requirement.
+For more details on the available configurations please refer [`http:ListenerConfiguration`](https://lib.ballerina.io/ballerina/http/latest/records/ListenerConfiguration).
+
+#### 2.1.2. Initialization
+
+The `websubhub:Listener` could be initialized by providing either a port with `websubhub:ListenerConfiguration` or by 
+providing an `http:Listener`.  
 ```ballerina
-// configuring SSL in `websubhub:Listener`
-listener websubhub:Listener hubListener = new (9090,
-    secureSocket = {
-        'key: {
-            certFile: "./resources/server.crt",
-            keyFile: "./resources/server.key"
-        }
-    }
-);
+# Initiliazes the `websubhub:Listener` instance.
+# ```ballerina
+# listener websubhub:Listener hubListenerEp = check new (9090);
+# ```
+#
+# + listenTo - Port number or an `http:Listener` instance
+# + config - Custom `websubhub:ListenerConfiguration` to be provided to the underlying HTTP listener
+# + return - The `websubhub:Listener` or an `websubhub:Error` if the initialization failed
+public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns Error? {
+```
+
+#### 2.1.3. Attaching and Detaching `websubhub:Service` objects  
+
+Following APIs should be available in the `websubhub:Listener` to dynamically attach/detach `websubhub:Service` objects 
+to/from it.  
+```ballerina
+# Attaches the provided `websubhub:Service` to the `websubhub:Listener`.
+# ```ballerina
+# check hubListenerEp.attach('service, "/hub");
+# ```
+# 
+# + 'service - The `websubhub:Service` object to attach
+# + name - The path of the service to be hosted
+# + return - An `websubhub:Error` if an error occurred during the service attaching process or else `()`
+public isolated function attach(Service 'service, string[]|string? name = ()) returns Error?
+
+# Detaches the provided `websubhub:Service` from the `websubhub:Listener`.
+# ```ballerina
+# check hubListenerEp.detach('service);
+# ```
+# 
+# + s - The `websubhub:Service` object to be detached
+# + return - An `websubhub:Error` if an error occurred during the service detaching process or else `()`
+public isolated function detach(Service s) returns Error?
+```
+
+#### 2.1.4. Starting and Stopping  
+
+Following APIs should be available to dynamically start/stop `websubhub:Listener`.
+```ballerina
+# Starts the registered service programmatically.
+# ```ballerina
+# check hubListenerEp.'start();
+# ```
+# 
+# + return - An `websubhub:Error` if an error occurred during the listener-starting process or else `()`
+public isolated function 'start() returns Error?
+
+# Gracefully stops the hub listener. Already-accepted requests will be served before the connection closure.
+# ```ballerina
+# check hubListenerEp.gracefulStop();
+# ```
+# 
+# + return - An `websubhub:Error` if an error occurred during the listener-stopping process
+
+# Stops the service listener immediately.
+# ```ballerina
+# check hubListenerEp.immediateStop();
+# ```
+# 
+# + return - An `websubhub:Error` if an error occurred during the listener-stopping process or else `()`
+public isolated function immediateStop() returns Error?
 ```
 
 ### 2.2 Hub Service
 
-`websubhub:Service` is responsible to handle the received events. Underlying `http:Service` will receive the original 
+`websubhub:Service` is responsible for handling the received events. Underlying `http:Service` will receive the original 
 request, and then it will trigger the WebSubHub dispatcher which will invoke the respective remote method with the event 
 details.
 
