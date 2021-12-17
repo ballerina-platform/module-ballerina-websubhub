@@ -16,6 +16,10 @@ programming language for the cloud that makes it easier to use, combine, and cre
 1. [Overview](#1-overview)  
 2. [Hub](#2-hub)
    * 2.1. [Hub Listener](#21-hub-listener)
+     * 2.1.1 [Listener Configuration](#211-listener-configuration)
+     * 2.1.2 [Initialization](#212-initialization)
+     * 2.1.3 [Dynamically Attach and Detach `websubhub:Service` objects](#213-dynamically-attach-and-detach-websubhubservice-objects)
+     * 2.1.4 [Dynamically Start and Stop](#214-dynamically-start-and-stop)
    * 2.2. [Hub Service](#22-hub-service)
      * 2.2.1. [Service Annotation](#221-service-annotation)
 3. [Hub Client](#3-hub-client)
@@ -85,7 +89,7 @@ providing an `http:Listener`.
 public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns Error? {
 ```
 
-#### 2.1.3. Attaching and Detaching `websubhub:Service` objects  
+#### 2.1.3. Dynamically Attach and Detach `websubhub:Service` objects  
 
 Following APIs should be available in the `websubhub:Listener` to dynamically attach/detach `websubhub:Service` objects 
 to/from it.  
@@ -110,7 +114,7 @@ public isolated function attach(Service 'service, string[]|string? name = ()) re
 public isolated function detach(Service s) returns Error?
 ```
 
-#### 2.1.4. Starting and Stopping  
+#### 2.1.4. Dynamically Start and Stop  
 
 Following APIs should be available to dynamically start/stop `websubhub:Listener`.
 ```ballerina
@@ -128,6 +132,7 @@ public isolated function 'start() returns Error?
 # ```
 # 
 # + return - An `websubhub:Error` if an error occurred during the listener-stopping process
+public isolated function gracefulStop() returns Error?
 
 # Stops the service listener immediately.
 # ```ballerina
