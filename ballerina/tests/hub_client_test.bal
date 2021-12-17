@@ -19,42 +19,56 @@ import ballerina/http;
 import ballerina/test;
 
 const string CONTENT_DELIVERY_SUCCESS = "Content Delivery Success";
-int retrySuccessCount = 0;
+
+isolated int retrySuccessCount = 0;
+
+isolated function incrementSuccessCount() {
+    lock {
+        retrySuccessCount += 1;
+    }
+}
+
+isolated function retrieveSuccessCount() returns int {
+    lock {
+        return retrySuccessCount;
+    }
+}
+
 service /callback on new http:Listener(9094) {
-    isolated resource function post success(http:Caller caller, http:Request req) {
+    isolated resource function post success(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
-        http:ListenerError? result = caller->respond("Content Delivery Success");
+        return caller->respond("Content Delivery Success");
     }
 
-    isolated resource function post deleted(http:Caller caller, http:Request req) {
+    isolated resource function post deleted(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [SUB-TERMINATE] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
-        http:ListenerError? result = caller->respond(res);
+        return caller->respond(res);
     }
 
-    resource function post retrySuccess(http:Caller caller, http:Request req) {
+    resource function post retrySuccess(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [RETRY_SUCCESS] : ", req.getTextPayload());
-        retrySuccessCount += 1;
-        if (retrySuccessCount == 3) {
-            http:ListenerError?  result = caller->respond("Content Delivery Success");
+        incrementSuccessCount();
+        if (retrieveSuccessCount() == 3) {
+            return caller->respond("Content Delivery Success");
         } else {
             http:Response res = new ();
             res.statusCode = http:STATUS_BAD_REQUEST;
-            http:ListenerError?  result = caller->respond(res);
+            return caller->respond(res);
         }
     }
 
-    isolated resource function post retryFailed(http:Caller caller, http:Request req) {
+    isolated resource function post retryFailed(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [RETRY_FAILED] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-        http:ListenerError? result = caller->respond(res);
+        return caller->respond(res);
     }
 
-    isolated resource function post noContent(http:Caller caller, http:Request req) {
+    isolated resource function post noContent(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [NO_RESPONSE] : ", req.getTextPayload());
-        http:ListenerError? result = caller->respond();
+        return caller->respond();
     }
 }
 

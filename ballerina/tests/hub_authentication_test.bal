@@ -28,7 +28,7 @@ listener Listener securedListener = new(9100,
     }
 );
 
-http:ListenerJwtAuthHandler handler = new({
+final http:ListenerJwtAuthHandler handler = new({
     issuer: "wso2",
     audience: "ballerina",
     signatureConfig: {
@@ -96,7 +96,7 @@ service /websubhub on securedListener {
     }
 }
 
-function doAuth(http:Request req) returns string? {
+isolated function doAuth(http:Request req) returns string? {
     jwt:Payload|http:Unauthorized authn = handler.authenticate(req);
     if (authn is http:Unauthorized) {
         string errorMsg = "Failed to authenticate the request. " + <string>authn?.body;

@@ -17,6 +17,7 @@
 import ballerina/lang.runtime;
 import ballerina/http;
 import ballerina/io;
+import ballerina/log;
 import ballerina/test;
 
 boolean isSubscriptionVerifiedWithSsl = false;
@@ -78,6 +79,11 @@ service /websubhub on new Listener(9099) {
         if (clientEp is HubClient) {
             ContentDistributionMessage updateMsg = {content: <string>msg.content};
             ContentDistributionSuccess|SubscriptionDeletedError|error? publishResponse = clientEp->notifyContentDistribution(updateMsg);
+            if publishResponse is ContentDistributionSuccess {
+                log:printInfo("Received content-distribution success");
+            } else {
+                log:printError("Received content-distribution error", 'error = publishResponse);
+            }
             return ACKNOWLEDGEMENT;
         } else {
             return UPDATE_MESSAGE_ERROR;
@@ -122,8 +128,9 @@ function testSubscriptionWithAnnotationConfig() returns error? {
 }
 
 @test:Config {}
-function testContentUpdateWithAnnotationConfig() returns error? {
-    Acknowledgement response = check annotationTestPublisher->publishUpdate("test", "This is a test message");
+function testContentUpdateWithAnnotationConfig() {
+    Acknowledgement|UpdateMessageError response = annotationTestPublisher->publishUpdate("test", "This is a test message");
+    test:assertTrue(response is Acknowledgement);
     waitForActionCompletion(isContentDeliveredWithSsl);
     test:assertTrue(isContentDeliveredWithSsl);
 }

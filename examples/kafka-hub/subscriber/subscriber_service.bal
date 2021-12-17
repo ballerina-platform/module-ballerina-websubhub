@@ -29,7 +29,6 @@ listener websub:Listener securedSubscriber = new(9100,
 
 @websub:SubscriberServiceConfig { 
     target: ["https://localhost:9000/hub", "test"],
-    leaseSeconds: 36000,
     httpConfig: {
         auth : {
             tokenUrl: "https://localhost:9443/oauth2/token",

@@ -20,11 +20,17 @@ import ballerina/log;
 
 listener http:Listener simpleSubscriberListener = new (9191);
 
-map<string|string[]> CUSTOM_HEADERS = {
+isolated map<string|string[]> CUSTOM_HEADERS = {
         "header1": ["value1", "value2"],
         "header2": "value3",
         "header3": ["value4"]
 };
+
+isolated function retrieveCustomHeaders() returns map<string|string[]> {
+    lock {
+        return CUSTOM_HEADERS.cloneReadOnly();
+    }
+}
 
 http:Service simpleSubscriber = service object {
 
@@ -47,8 +53,8 @@ http:Service simpleSubscriber = service object {
     }
 
     resource function post addHeaders(http:Caller caller, http:Request req) returns error? {
-        http:Response response = new;    
-        foreach var [header, value] in CUSTOM_HEADERS.entries() {
+        http:Response response = new;
+        foreach var [header, value] in retrieveCustomHeaders().entries() {
             if (value is string) {
                 response.setHeader(header, value);
             } else {
@@ -82,7 +88,7 @@ http:Service simpleSubscriber = service object {
         }
         http:Response resp = new;
         resp.setPayload(samplePayload);
-        http:ListenerError? result = caller->respond(resp);
+        return caller->respond(resp);
     }
 
     isolated resource function get unsubscribe(http:Caller caller, http:Request req)
@@ -91,16 +97,16 @@ http:Service simpleSubscriber = service object {
         string[] hubMode = <string[]> payload["hub.mode"];
         if (hubMode[0] == "denied") {
             log:printDebug("Unsubscription Validation failed ", retrievedPayload = payload);
-            check caller->respond("");
+            return caller->respond("");
         } else {
             string[] challengeArray = <string[]> payload["hub.challenge"];
-            http:ListenerError? result = caller->respond(challengeArray[0]);
+            return caller->respond(challengeArray[0]);
         }
     }
 
     isolated resource function post unsubscribe(http:Caller caller, http:Request req)
             returns error? {
-        http:ListenerError? result = caller->respond();
+        return caller->respond();
     }
 };
 

@@ -19,6 +19,148 @@ import ballerina/mime;
 import ballerina/http;
 
 @test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalSuccess() returns error? {
+    map<string> params = {
+        "key1": "val1"
+    };
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
+    test:assertEquals(retrievedVal, "val1");
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalSuccessForParamArr() returns error? {
+    map<string[]> params = {
+        "key1": ["val1"]
+    };
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
+    test:assertEquals(retrievedVal, "val1");
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalSuccessForEncodedVal() returns error? {
+    map<string> params = {
+        "key1": "someval%24123"
+    };
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
+    test:assertEquals(retrievedVal, "someval$123");
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalSuccessForEncodedValForParamArr() returns error? {
+    map<string[]> params = {
+        "key1": ["someval%24123"]
+    };
+    string retrievedVal = check retrieveQueryParameter(params, "key1");
+    test:assertEquals(retrievedVal, "someval$123");
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalFailureForEmptyVal() {
+    map<string> params = {
+        "key1": ""
+    };
+    string|error retrievedVal = retrieveQueryParameter(params, "key1");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
+    }
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalFailureForEmptyArr() {
+    map<string[]> params = {
+        "key1": []
+    };
+    string|error retrievedVal = retrieveQueryParameter(params, "key1");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
+    }
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalFailureForEmptyValForParamArr() {
+    map<string[]> params = {
+        "key1": [""]
+    };
+    string|error retrievedVal = retrieveQueryParameter(params, "key1");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key1'");
+    }
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalFailureForNilValue() {
+    map<string> params = {
+        "key1": "val1"
+    };
+    string|error retrievedVal = retrieveQueryParameter(params, "key2");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key2'");
+    }
+}
+
+@test:Config { 
+    groups: ["retrieveQueryParameters"]
+}
+isolated function testParameterRetrievalFailureForNilValueForParamArr() {
+    map<string[]> params = {
+        "key1": ["val1"]
+    };
+    string|error retrievedVal = retrieveQueryParameter(params, "key2");
+    test:assertTrue(retrievedVal is error);
+    if retrievedVal is error {
+        test:assertEquals(retrievedVal.message(), "Empty value found for parameter 'key2'");
+    }
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGeneration() {
+    string baseUrl = "https://sample.com";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "?key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
+    groups: ["generateQueryString"]
+}
+isolated function testQueryStringGenerationWithBaseStringWithQueryParam() {
+    string baseUrl = "https://sample.com?baseKey=baseVal";
+    [string, string][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]
+    ];
+    string expected = "&key1=val1&key2=val2";
+    string generatedQuery = generateQueryString(baseUrl, params);
+    test:assertEquals(generatedQuery, expected);
+}
+
+@test:Config { 
     groups: ["contentTypeRetrieval"]
 }
 isolated function testContentTypeRetrievalForString() returns error? {
@@ -127,27 +269,6 @@ isolated function testByteArrayContentSignature() returns error? {
     test:assertEquals("d66181d67f963fff2dde0b0a4ca50ac1a6bc5828dd32eabaf0d5049f6fe8b5ff", hashedContent.toBase16());
 }
 
-@test:Config { 
-    groups: ["contentSignature"]
-}
-isolated function testJsonContentSignatureRetrieval() returns error? {
-    json content = {
-        contentUrl: "https://sample.content.com",
-        contentMsg: "Enjoy free offers this season"
-    };
-    byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_JSON, HASH_KEY, "", content);
-    test:assertEquals("3253fa36df638332580b551edad634e81990736179263a8d8966bd5c04a12198", hashedContent.toBase16());
-}
-
-@test:Config { 
-    groups: ["contentSignature"]
-}
-isolated function testUrlEncodedContentSignatureRetrieval() returns error? {
-    byte[] hashedContent = check retrievePayloadSignature(mime:APPLICATION_FORM_URLENCODED, HASH_KEY, "key1=val1&key2=val2", "");
-    test:assertEquals("2d936793407340f43e3d6427534f536a08ba52899bedd94fc7b14ebc2d5c44c2", hashedContent.toBase16());
-}
-
-
 http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/subscriber");
 
 @test:Config { 
@@ -155,7 +276,7 @@ http:Client headerRetrievalTestingClient = check new ("http://localhost:9191/sub
 }
 function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error? {
     http:Response response = new;
-    foreach var [header, value] in CUSTOM_HEADERS.entries() {
+    foreach var [header, value] in retrieveCustomHeaders().entries() {
         if (value is string) {
             response.setHeader(header, value);
         } else {
@@ -294,37 +415,13 @@ isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns err
     map<string> generatedResponseBody = retrieveResponseBodyForFormUrlEncodedMessage("query1=value1&query2=value2&query3=value3");
     test:assertEquals(generatedResponseBody.length(), message.length());
     foreach string 'key in message.keys() {
-        string value = generatedResponseBody.remove('key);
+        _ = generatedResponseBody.remove('key);
     }
     test:assertTrue(generatedResponseBody.length() == 0);
 }
 
-@test:Config { 
-    groups: ["servicePathRetrieval"]
-}
-isolated function testServicePathRetrievalForUrlEncodedContent() returns error? {
-    string servicePath = getServicePath("https://subscriber.com/callback", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
-    test:assertEquals(servicePath, "?query1=value1&query2=value2");
-}
-
-@test:Config { 
-    groups: ["servicePathRetrieval"]
-}
-isolated function testServicePathRetrievalForUrlEncodedContentWithCallbackParameters() returns error? {
-    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:APPLICATION_FORM_URLENCODED, "query1=value1&query2=value2");
-    test:assertEquals(servicePath, "&query1=value1&query2=value2");
-}
-
-@test:Config { 
-    groups: ["servicePathRetrieval"]
-}
-isolated function testServicePathRetrievalForOtherContentTypes() returns error? {
-    string servicePath = getServicePath("https://subscriber.com/callback?this1=that1", mime:TEXT_PLAIN, "query1=value1&query2=value2");
-    test:assertEquals(servicePath, "");
-}
-
 function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|error {
-    foreach var [header, value] in CUSTOM_HEADERS.entries() {
+    foreach var [header, value] in retrieveCustomHeaders().entries() {
         if (retrievedHeaders.hasKey(header)) {
             string|string[] retrievedValue = retrievedHeaders.get(header);
             if (retrievedValue is string) {
@@ -352,21 +449,6 @@ function hasAllHeaders(map<string|string[]> retrievedHeaders) returns boolean|er
     return true;
 }
 
-service / on new http:Listener(9102) {
-    isolated resource function get util (string name) returns string {
-        return string `Hello, ${name}!`;
-    }
-}
-
-@test:Config { 
-    groups: ["subscriptionNotification"]
-}
-isolated function testSubscriptionNotificationSuccess() returns error? {
-    http:Response resp = check sendSubscriptionNotification("http://localhost:9102/util", "?name=Ayesh", {});
-    string responsePayload = check resp.getTextPayload();
-    test:assertEquals(responsePayload, "Hello, Ayesh!");
-}
-
 @test:Config { 
     groups: ["httpClientRetrieval"]
 }
@@ -381,4 +463,42 @@ isolated function testRetrieveHttpClientWithConfig() returns error? {
     };
     var clientEp = retrieveHttpClient("https://test.com/sample", httpsConfig);
     test:assertTrue(clientEp is http:Client);
+}
+
+listener http:Listener utilServiceListener = new http:Listener(9103);
+
+service /subscription on utilServiceListener {
+    isolated resource function get .(string key1, string key2) returns string {
+        return string `Key1=${key1}/Key2=${key2}`;
+    }
+
+    isolated resource function get additional(string baseKey, string key1, string key2) returns string {
+        return string `BaseKey=${baseKey}/Key1=${key1}/Key2=${key2}`;
+    }
+}
+
+@test:Config { 
+    groups: ["sendNotification"]
+}
+isolated function testSendNotification() returns error? {
+    [string, string?][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]    
+    ];
+    http:Response res = check sendNotification("http://localhost:9103/subscription", params, {});
+    string payload = check res.getTextPayload();
+    test:assertEquals(payload, "Key1=val1/Key2=val2");
+}
+
+@test:Config { 
+    groups: ["sendNotification"]
+}
+isolated function testSendNotificationWithQueyParamInCallback() returns error? {
+    [string, string?][] params = [
+        ["key1", "val1"],
+        ["key2", "val2"]    
+    ];
+    http:Response res = check sendNotification("http://localhost:9103/subscription/additional?baseKey=baseVal", params, {});
+    string payload = check res.getTextPayload();
+    test:assertEquals(payload, "BaseKey=baseVal/Key1=val1/Key2=val2");
 }

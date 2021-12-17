@@ -17,13 +17,13 @@ include ':checkstyle'
 include ':websubhub-native'
 include ':websubhub-ballerina'
 include ':websubhub-compiler-plugin'
-include ':websubhub-compiler-plugin-test'
+include ':websubhub-compiler-plugin-tests'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 project(':websubhub-native').projectDir = file("native")
 project(':websubhub-compiler-plugin').projectDir = file("compiler-plugin")
 project(':websubhub-ballerina').projectDir = file("ballerina")
-project(':websubhub-compiler-plugin-test').projectDir = file("compiler-plugin-test")
+project(':websubhub-compiler-plugin-tests').projectDir = file("compiler-plugin-tests")
 
 gradleEnterprise {
     buildScan {

@@ -17,51 +17,26 @@
 import ballerina/http;
 import ballerina/mime;
 
-isolated function processContentPublish(http:Request request, http:Headers headers, 
+isolated function processContentPublish(http:Request request, http:Headers headers,
                                         map<string> params, HttpToWebsubhubAdaptor adaptor) returns http:Response|error {
-    string? topic = params[HUB_TOPIC];
-    if topic is () {
-        return error Error("Could not find the `hub.topic` parameter");
-    } else {
-        string contentTypeValue = request.getContentType();
-        http:HeaderValue[] values = check http:parseHeader(contentTypeValue);
-        string contentType = values[0].value;
-        UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
-        Acknowledgement|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
-        http:Response response = new;
-        response.statusCode = http:STATUS_OK;
-        if (updateResult is Acknowledgement) {
-            response.setTextPayload("hub.mode=accepted");
-            response.setHeader("Content-type","application/x-www-form-urlencoded");
-        } else if (updateResult is UpdateMessageError) {
-            var errorDetails = updateResult.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
-        } else {
-            var errorDetails = UPDATE_MESSAGE_ERROR.detail();
-            updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], updateResult.message());
-        }
-        return response;
-    }
+    string topic = check retrieveQueryParameter(params, HUB_TOPIC);
+    string contentTypeValue = request.getContentType();
+    http:HeaderValue[] values = check http:parseHeader(contentTypeValue);
+    string contentType = values[0].value;
+    UpdateMessage updateMsg = check createUpdateMessage(contentType, topic, request);
+    Acknowledgement|error updateResult = adaptor.callOnUpdateMethod(updateMsg, headers);
+    return processResult(updateResult);
 }
 
 isolated function createUpdateMessage(string contentType, string topic, http:Request request) returns UpdateMessage|error {
     string|http:HeaderNotFoundError ballerinaPublishEvent = request.getHeader(BALLERINA_PUBLISH_HEADER);
-    if ballerinaPublishEvent is string {
-        if ballerinaPublishEvent == "publish" {
-            return {
-                hubTopic: topic,
-                msgType: PUBLISH,
-                contentType: contentType,
-                content: check retrieveRequestBody(contentType, request)
-            };
-        } else {
-            return {
-                hubTopic: topic,
-                msgType: EVENT,
-                contentType: contentType,
-                content: ()
-            };
-        }
+    if ballerinaPublishEvent is string && ballerinaPublishEvent == "event" {
+        return {
+            hubTopic: topic,
+            msgType: EVENT,
+            contentType: contentType,
+            content: ()
+        };
     } else {
         return {
             hubTopic: topic,
@@ -93,4 +68,19 @@ isolated function retrieveRequestBody(string contentType, http:Request request) 
             return error Error("Requested content type is not supported");
         }
     }
+}
+
+isolated function processResult(Acknowledgement|error result) returns http:Response {
+    http:Response response = new;
+    response.statusCode = http:STATUS_OK;
+    if (result is Acknowledgement) {
+        response.setTextPayload("hub.mode=accepted", mime:APPLICATION_FORM_URLENCODED);
+    } else if (result is UpdateMessageError) {
+        var errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+    } else {
+        var errorDetails = UPDATE_MESSAGE_ERROR.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+    }
+    return response;
 }

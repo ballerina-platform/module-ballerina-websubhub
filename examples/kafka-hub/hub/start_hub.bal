@@ -78,6 +78,7 @@ function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
             return lastPersistedData;
         }
     }
+    return;
 }
 
 function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
@@ -131,7 +132,8 @@ function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|erro
             log:printError("Error occurred while retrieving subscriber-data ", err = lastPersistedData.message());
             return lastPersistedData;
         }
-    } 
+    }
+    return;
 }
 
 function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
