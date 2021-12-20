@@ -23,7 +23,10 @@ programming language for the cloud that makes it easier to use, combine, and cre
    * 2.2. [Hub Service](#22-hub-service)
      * 2.2.1. [Service Annotation](#221-service-annotation)
    * 2.3. [Hub Client](#23-hub-client)
+     * 2.3.1. [Initialization](#231-initialization)
+     * 2.3.2. [Distribute Content](#232-distribute-content)
 3. [Publisher Client](#3-publisher-client)
+4. [Client Configuration](#4-client-configuration)
 
 ## 1. Overview
 
@@ -353,7 +356,8 @@ has provided support for `websubhub:HubClient` which could be used to distribute
 #### 2.3.1. Initialization
 
 Since the relationship of the `subscriber` and the `topic` is unique in the `hub`, `websubhub:HubClient` is designed to 
-be initialized per `subscription` basis.
+be initialized per `subscription` basis. Hence, `websubhub:HubClient` could be initialized by providing 
+`websubhub:Subscription` and optional `websubhub:ClientConfiguration`. 
 ```ballerina
 # Record to represent the subscription request body.
 # 
@@ -372,7 +376,7 @@ public type Subscription record {
     string? hubSecret = ();
 };
 
-public isolated function init(Subscription subscription, *ClientConfiguration config) returns Error?
+public isolated function init(websubhub:Subscription subscription, *websubhub:ClientConfiguration config) returns Error?
 ```
 
 #### 2.3.2. Distribute Content
@@ -410,40 +414,111 @@ WebSub `publisher`, has two main responsibilities:
 - Advertise `topics` in a `hub`  
 - Publish/Update content for the `topics` registered in a `hub`
 
-`websubhub:PublisherClient` will provide the functionalities to support the roles of a WebSub publisher. Publisher client 
-is also a wrapper around the `http:Client`.
+### 3.1. Initialization
+
+`websubhub:PublisherClient` can be initialized by providing the hub URL and optional `websubhub:ClientConfiguration`. 
 ```ballerina
-websubhub:PublisherClient publisherClientEp = check new ("https://sample.hub.com", 
-// configure underlying `http:Client` by passing `websubhub:ClientConfiguration`
-secureSocket = {
-    'key: {
-        certFile: "./resources/server.crt",
-        keyFile: "./resources/server.key"
-    }
-});
+# Initializes the `websub:PublisherClient`.
+# ```ballerina
+# websub:PublisherClient publisherClient = check new("http://localhost:9191/websub/publish");
+# ```
+#
+# + hubUrl    - The URL to publish/notify updates
+# + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
+# + return - The `websubhub:PublisherClient` or an `websubhub:Error` if the initialization failed
+public isolated function init(string hubUrl, *ClientConfiguration config) returns Error?
 ```
 
-Following is a sample on how to register/deregister `topic` in a `hub` using `websubhub:PublisherClient`:
-```ballerina
-// register a topic in the `hub`
-websubhub:TopicRegistrationSuccess topicRegistration = check publisherClientEp->registerTopic("https://topic1.com");
+### 3.2. Register/Deregister Topics
 
-// deregister a topic from the `hub`
-websubhub:TopicDeregistrationSuccess topicDeregistration = check publisherClientEp->deregisterTopic("https://topic2.com");
+`websubhub:PublisherClient` could be used to register/deregister topics in a `hub`.
+
+**registerTopic**
+This remote method is invoked when the `publisher` tries to register a `topic` in a particular `hub`.
+```ballerina
+# Registers a topic in a Ballerina WebSub Hub to which the subscribers can subscribe and the publisher will publish updates.
+# ```ballerina
+# websubhub:TopicRegistrationSuccess response = check publisherClient->registerTopic("http://websubpubtopic.com");
+# ```
+#
+# + topic - The topic to register
+# + return - A `websubhub:TopicRegistrationError` if an error occurred registering the topic or else `websubhub:TopicRegistrationSuccess`
+remote function registerTopic(string topic) returns TopicRegistrationSuccess|TopicRegistrationError
 ```
 
-The content-update for a `topic` could be done with two ways:
-- Update the content in the `topic` itself and notify the `hub`
-- Send updated content directly to the `hub` 
+**deregisterTopic**
+This remote method is invoked when the `publisher` tries to deregister a `topic` from a particular `hub`.
 ```ballerina
-// notify the `hub` that the content is updated in the `topic`
-websubhub:Acknowledgement updateNotificationResponse = check publisherClientEp->notifyUpdate("https://topic1.com");
-
-// send updated content directly to the `hub`
-json payload = {
-    "action": "publish",
-    "mode": "remote-hub"
-};
-websubhub:Acknowledgement contetnPublishResponse = check publisherClientEp->publishUpdate("https://topic3.com", payload);
+# Deregisters a topic in a Ballerina WebSub Hub.
+# ```ballerina
+# websubhub:TopicDeregistrationSuccess response = check publisherClient->deregisterTopic("http://websubpubtopic.com");
+# ```
+#
+# + topic - The topic to deregister
+# + return - A `websubhub:TopicDeregistrationError` if an error occurred un registering the topic or else `websubhub:TopicDeregistrationSuccess`
+remote function deregisterTopic(string topic) returns TopicDeregistrationSuccess|TopicDeregistrationError
 ```
-The developer could use one of `map<string>`/`string`/`xml`/`json`/`byte[]` as the payload for `publishUpdate` API. 
+
+### 3.2. Update Content
+
+`websubhub:PublisherClient` has the capability to notify the content-update for a `topic` to the `hub`.
+
+**publishUpdate**
+This remote method is used to directly send the content-update for a `topic` to the `hub`.
+```ballerina
+# Publishes an update to a remote Ballerina WebSub Hub.
+# ```ballerina
+# websubhub:Acknowledgement response = check publisherClient->publishUpdate("http://websubpubtopic.com",{"action": "publish",
+# "mode": "remote-hub"});
+# ```
+#
+# + topic - The topic for which the update occurred
+# + payload - The update payload
+# + contentType - The type of the update content to set as the `ContentType` header
+# + return - A `websubhub:UpdateMessageError`if an error occurred with the update or else `websubhub:Acknowledgement`
+remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload, string? contentType = ()) 
+    returns Acknowledgement|UpdateMessageError
+```
+
+**notifyUpdate**
+This remote method is used to notify the `hub`, that the `topic` has been updated.
+```ballerina
+# Notifies a remote WebSubHub from which an update is available to fetch for hubs that require publishing.
+# ```ballerina
+#  websubhub:Acknowledgement|websubhub:UpdateMessageError response = check publisherClient->notifyUpdate("http://websubpubtopic.com");
+# ```
+#
+# + topic - The topic for which the update occurred
+# + return - A `websubhub:UpdateMessageError` if an error occurred with the notification or else `websubhub:Acknowledgement`
+remote function notifyUpdate(string topic) returns Acknowledgement|UpdateMessageError
+```
+
+### 4. Client Configuration
+
+WebSubHub library provides following client configurations to be used when initializing `websubhub:HubClient`/`websubhub:PublisherClient`.
+```ballerina
+# Record to represent client configuration for HubClient / PublisherClient
+# 
+# + httpVersion - The HTTP version understood by the client
+# + http1Settings - Configurations related to HTTP/1.x protocol
+# + http2Settings - Configurations related to HTTP/2 protocol
+# + timeout - The maximum time to wait (in seconds) for a response before closing the connection
+# + poolConfig - Configurations associated with request pooling
+# + auth - Configurations related to client authentication
+# + retryConfig - Configurations associated with retrying
+# + responseLimits - Configurations associated with inbound response size limits
+# + secureSocket - SSL/TLS related options
+# + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
+public type ClientConfiguration record {|
+    string httpVersion = HTTP_1_1;
+    http:ClientHttp1Settings http1Settings = {};
+    http:ClientHttp2Settings http2Settings = {};
+    decimal timeout = 60;
+    http:PoolConfiguration poolConfig?;
+    http:ClientAuthConfig auth?;
+    http:RetryConfig retryConfig?;
+    http:ResponseLimitConfigs responseLimits = {};
+    http:ClientSecureSocket secureSocket?;
+    http:CircuitBreakerConfig circuitBreaker?;
+|};
+```
