@@ -15,11 +15,11 @@ programming language for the cloud that makes it easier to use, combine, and cre
 # Contents  
 1. [Overview](#1-overview)  
 2. [Hub](#2-hub)
-   * 2.1. [Hub Listener](#21-hub-listener)
-     * 2.1.1 [Listener Configuration](#211-configuration)
+   * 2.1. [Listener](#21-listener)
+     * 2.1.1 [Configuration](#211-configuration)
      * 2.1.2 [Initialization](#212-initialization)
      * 2.1.3 [Functions](#213-functions)
-   * 2.2. [Hub Service](#22-hub-service)
+   * 2.2. [Service](#22-service)
      * 2.2.1. [Functions](#221-functions)
        * 2.2.1.1. [onRegisterTopic](#2211-onregistertopic)
        * 2.2.1.2. [onDeregisterTopic](#2212-onderegistertopic)
@@ -161,7 +161,7 @@ public isolated function gracefulStop() returns websubhub:Error?
 public isolated function immediateStop() returns websubhub:Error?
 ```
 
-### 2.2. Hub Service
+### 2.2. Service
 
 `websubhub:Service` is responsible for handling the received events. Underlying `http:Service` will receive the original 
 request, and then it will trigger the WebSubHub dispatcher which will invoke the respective remote method with the event 
