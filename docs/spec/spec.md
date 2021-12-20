@@ -18,9 +18,9 @@ programming language for the cloud that makes it easier to use, combine, and cre
    * 2.1. [Listener](#21-listener)
      * 2.1.1 [Configuration](#211-configuration)
      * 2.1.2 [Initialization](#212-initialization)
-     * 2.1.3 [Functions](#213-functions)
+     * 2.1.3 [Methods](#213-methods)
    * 2.2. [Service](#22-service)
-     * 2.2.1. [Functions](#221-functions)
+     * 2.2.1. [Methods](#221-methods)
        * 2.2.1.1. [onRegisterTopic](#2211-onregistertopic)
        * 2.2.1.2. [onDeregisterTopic](#2212-onderegistertopic)
        * 2.2.1.3. [onEventMessage](#2213-oneventmessage)
@@ -104,7 +104,7 @@ providing an `http:Listener`.
 public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns websubhub:Error? {
 ```
 
-#### 2.1.3. Functions 
+#### 2.1.3. Methods 
 
 Following APIs should be available in the `websubhub:Listener` to dynamically attach `websubhub:Service` objects to it.  
 ```ballerina
@@ -209,7 +209,7 @@ public type Service distinct service object {
 };
 ```
 
-#### 2.2.1. Functions
+#### 2.2.1. Methods
 
 ##### 2.2.1.1. onRegisterTopic
 
