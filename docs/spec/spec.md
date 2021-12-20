@@ -35,7 +35,7 @@ programming language for the cloud that makes it easier to use, combine, and cre
      * 2.3.1. [Initialization](#231-initialization)
      * 2.3.2. [Distribute Content](#232-distribute-content)
 3. [Publisher Client](#3-publisher-client)
-4. [Client Configuration](#4-client-configuration)
+4. [Common Client Configuration](#4-common-client-configuration)
 
 ## 1. Overview
 
@@ -520,7 +520,7 @@ This remote method is used to notify the `hub`, that the `topic` has been update
 remote function notifyUpdate(string topic) returns websubhub:Acknowledgement|websubhub:UpdateMessageError
 ```
 
-### 4. Client Configuration
+### 4. Common Client Configuration
 
 WebSubHub library provides following client configurations to be used when initializing `websubhub:HubClient`/`websubhub:PublisherClient`.
 ```ballerina
