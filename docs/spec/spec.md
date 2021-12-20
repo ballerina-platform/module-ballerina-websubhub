@@ -16,10 +16,9 @@ programming language for the cloud that makes it easier to use, combine, and cre
 1. [Overview](#1-overview)  
 2. [Hub](#2-hub)
    * 2.1. [Hub Listener](#21-hub-listener)
-     * 2.1.1 [Listener Configuration](#211-listener-configuration)
+     * 2.1.1 [Listener Configuration](#211-configuration)
      * 2.1.2 [Initialization](#212-initialization)
-     * 2.1.3 [Dynamically Attach and Detach `websubhub:Service` objects](#213-dynamically-attach-and-detach-websubhubservice-objects)
-     * 2.1.4 [Dynamically Start and Stop](#214-dynamically-start-and-stop)
+     * 2.1.3 [Functions](#213-functions)
    * 2.2. [Hub Service](#22-hub-service)
      * 2.2.1. [Service Annotation](#221-service-annotation)
    * 2.3. [Hub Client](#23-hub-client)
@@ -34,7 +33,7 @@ programming language for the cloud that makes it easier to use, combine, and cre
 which evolved from [PubSubHubbub](https://github.com/pubsubhubbub/PubSubHubbub).
 
 WebSub specification describes three main roles: 
-- Publisher: Advertises a topic and hub URL on one or more resource URLs.
+- Publisher: Advertises a `topic` and `hub` URL on one or more resource URLs.
 - Subscriber: Discovers the `hub` and topic URL given a resource URL, subscribes to updates at the `hub`, and accepts 
 content distribution requests from the `hub`.
 - Hub: Handles subscription requests and distributes the content to subscribers when the corresponding topic URL has 
@@ -63,11 +62,11 @@ notify content updates to the subscribers.
 
 ### 2.1. Listener
 
-The `websubhub:Listener` will opens the given port and attaches the provided `websubhub:Service` object to the given 
-service-path. We can initialize a `websubhub:Listener` either by providing a port with listener configurations or by 
+The `websubhub:Listener` opens the given port and attaches the provided `websubhub:Service` object to the given 
+service-path. `websubhub:Listener` can be initialized either by providing a port with listener configurations or by 
 providing an `http:Listener`.
 
-#### 2.1.1. Listener Configuration 
+#### 2.1.1. Configuration 
 
 When initializing a `websubhub:Listener`, developer could pass `websubhub:ListenerConfiguration`.   
 ```ballerina
@@ -95,10 +94,9 @@ providing an `http:Listener`.
 public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns websubhub:Error? {
 ```
 
-#### 2.1.3. Dynamically Attach and Detach `websubhub:Service` objects  
+#### 2.1.3. Functions 
 
-Following APIs should be available in the `websubhub:Listener` to dynamically attach/detach `websubhub:Service` objects 
-to/from it.  
+Following APIs should be available in the `websubhub:Listener` to dynamically attach `websubhub:Service` objects to it.  
 ```ballerina
 # Attaches the provided `websubhub:Service` to the `websubhub:Listener`.
 # ```ballerina
@@ -109,7 +107,10 @@ to/from it.
 # + name - The path of the service to be hosted
 # + return - An `websubhub:Error` if an error occurred during the service attaching process or else `()`
 public isolated function attach(websubhub:Service 'service, string[]|string? name = ()) returns websubhub:Error?
+```
 
+Following APIs should be available in the `websubhub:Listener` to dynamically detach `websubhub:Service` objects from it.
+```ballerina
 # Detaches the provided `websubhub:Service` from the `websubhub:Listener`.
 # ```ballerina
 # check hubListenerEp.detach('service);
@@ -120,9 +121,7 @@ public isolated function attach(websubhub:Service 'service, string[]|string? nam
 public isolated function detach(websubhub:Service s) returns websubhub:Error?
 ```
 
-#### 2.1.4. Dynamically Start and Stop  
-
-Following APIs should be available to dynamically start/stop `websubhub:Listener`.
+Following APIs should be available to dynamically start the `websubhub:Listener`.
 ```ballerina
 # Starts the registered service programmatically.
 # ```ballerina
@@ -131,7 +130,10 @@ Following APIs should be available to dynamically start/stop `websubhub:Listener
 # 
 # + return - An `websubhub:Error` if an error occurred during the listener-starting process or else `()`
 public isolated function 'start() returns websubhub:Error?
+```
 
+Following APIs should be available to dynamically stop the `websubhub:Listener`.
+```ballerina
 # Gracefully stops the hub listener. Already-accepted requests will be served before the connection closure.
 # ```ballerina
 # check hubListenerEp.gracefulStop();
