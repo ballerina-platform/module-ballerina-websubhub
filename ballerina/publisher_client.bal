@@ -25,7 +25,7 @@ public client class PublisherClient {
 
     # Initializes the `websub:PublisherClient`.
     # ```ballerina
-    # websub:PublisherClient publisherClient = new("http://localhost:9191/websub/publish");
+    # websub:PublisherClient publisherClient = check new("https://sample.hub.com");
     # ```
     #
     # + url    - The URL to publish/notify updates
