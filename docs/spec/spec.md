@@ -20,7 +20,17 @@ programming language for the cloud that makes it easier to use, combine, and cre
      * 2.1.2 [Initialization](#212-initialization)
      * 2.1.3 [Functions](#213-functions)
    * 2.2. [Hub Service](#22-hub-service)
-     * 2.2.1. [Service Annotation](#221-service-annotation)
+     * 2.2.1. [Functions](#221-functions)
+       * 2.2.1.1. [onRegisterTopic](#2211-onregistertopic)
+       * 2.2.1.2. [onDeregisterTopic](#2212-onderegistertopic)
+       * 2.2.1.3. [onEventMessage](#2213-oneventmessage)
+       * 2.2.1.4. [onSubscription](#2214-onsubscription)
+       * 2.2.1.5. [onSubscriptionValidation](#2215-onsubscriptionvalidation)
+       * 2.2.1.6. [onSubscriptionIntentVerified](#2216-onsubscriptionintentverified)
+       * 2.2.1.7. [onUnsubscritpion](#2217-onunsubscritpion)
+       * 2.2.1.8. [onUnsubscriptionValidation](#2218-onunsubscriptionvalidation)
+       * 2.2.1.9. [onUnsubscriptionIntenVerified](#2219-onunsubscriptionintenverified)
+     * 2.2.1. [Annotation](#222-annotation)
    * 2.3. [Hub Client](#23-hub-client)
      * 2.3.1. [Initialization](#231-initialization)
      * 2.3.2. [Distribute Content](#232-distribute-content)
@@ -151,7 +161,7 @@ public isolated function gracefulStop() returns websubhub:Error?
 public isolated function immediateStop() returns websubhub:Error?
 ```
 
-### 2.2 Hub Service
+### 2.2. Hub Service
 
 `websubhub:Service` is responsible for handling the received events. Underlying `http:Service` will receive the original 
 request, and then it will trigger the WebSubHub dispatcher which will invoke the respective remote method with the event 
@@ -199,7 +209,9 @@ public type Service distinct service object {
 };
 ```
 
-**onRegisterTopic**
+#### 2.2.1. Functions
+
+##### 2.2.1.1. onRegisterTopic
 
 This remote method is invoked when the `publisher` sends a request to register a `topic` to the `hub`.
 ```ballerina
@@ -212,7 +224,7 @@ remote function onRegisterTopic(websubhub:TopicRegistration msg)
     returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error;
 ```
 
-**onUnregisterTopic**
+##### 2.2.1.2. onDeregisterTopic
 
 This remote method is invoked when the `publisher` sends a request to remove a `topic` from the `hub`.
 ```ballerina
@@ -225,7 +237,7 @@ remote function onDeregisterTopic(websubhub:TopicDeregistration msg)
     returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error;
 ```
 
-**onEventMessage**
+##### 2.2.1.3. onEventMessage
 
 This remote method is invoked when the `publisher` sends a request to notify the `hub` about content update for a 
 `topic`.
@@ -239,7 +251,7 @@ remote function onUpdateMessage(websubhub:UpdateMessage msg)
     returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error;
 ```
 
-**onSubscription**  
+##### 2.2.1.4. onSubscription
 
 This remote method is invoked when the `subscriber` sends a request to subscribe for a `topic` in the `hub`. (This is an
 optional remote method.)
@@ -257,7 +269,7 @@ remote function onSubscription(websubhub:Subscription msg)
         websubhub:InternalSubscriptionError|error;
 ```
 
-**onSubscriptionValidation**  
+##### 2.2.1.5. onSubscriptionValidation
 
 This remote method is invoked when subscription request from the `subscriber` is accepted from the `hub`. `hub` could 
 enforce additional validation for the subscription request when this method is invoked. If the validations are failed 
@@ -272,7 +284,7 @@ remote function onSubscriptionValidation(websubhub:Subscription msg)
     returns websubhub:SubscriptionDeniedError|error?;
 ```
 
-**onSubscriptionIntentVerified**  
+##### 2.2.1.6. onSubscriptionIntentVerified
 
 This remote method is invoked after the `hub` verifies the subscription request.
 ```ballerina
@@ -283,7 +295,7 @@ This remote method is invoked after the `hub` verifies the subscription request.
 remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) returns error?;
 ```
 
-**onUnsubscritpion**  
+##### 2.2.1.7. onUnsubscritpion
 
 This remote method is invoked when the `subscriber` sends a request to unsubscribe from a `topic` in the `hub`. (This is 
 an optional remote method.)
@@ -299,7 +311,7 @@ remote function onUnsubscription(websubhub:Unsubscription msg)
         websubhub:InternalUnsubscriptionError|error;
 ```
 
-**onUnsubscriptionValidation**  
+##### 2.2.1.8. onUnsubscriptionValidation
 
 This remote method is invoked when unsubscription request from the `subscriber` is accepted from the `hub`. `hub` could
 enforce additional validation for the unsubscription request when this method is invoked. If the validations are failed
@@ -314,7 +326,7 @@ remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
     returns websubhub:UnsubscriptionDeniedError|error?;
 ```
 
-**onUnsubscriptionIntenVerified**  
+##### 2.2.1.9. onUnsubscriptionIntenVerified
 
 This remote method is invoked after the `hub` verifies the unsubscription request.
 ```ballerina
@@ -343,7 +355,7 @@ This is due to the limited information in the WebSub specification on the relati
 In the event of a bad request from the `publisher` or the `subscriber`, the WebSubHub dispatcher will automatically send 
 back the appropriate response to the client.
 
-#### 2.2.1. Service Annotation 
+#### 2.2.2. Annotation 
 
 Apart from the listener level configurations a `hub` will require few additional configurations. Hence, we have 
 introduced `websubhub:ServiceConfig` a service-level-annotation for `websubhub:Service` which contains 
