@@ -78,7 +78,7 @@ providing an `http:Listener`.
 
 #### 2.1.1. Configuration 
 
-When initializing a `websubhub:Listener`, developer could pass `websubhub:ListenerConfiguration`.   
+When initializing a `websubhub:Listener`, following configurations could be provided.   
 ```ballerina
 # Provides a set of configurations for configure the underlying HTTP listener of the WebSubHub listener.
 public type ListenerConfiguration record {|
@@ -357,8 +357,8 @@ back the appropriate response to the client.
 
 #### 2.2.2. Annotation 
 
-Apart from the listener level configurations a `hub` will require few additional configurations. Hence, we have 
-introduced `websubhub:ServiceConfig` a service-level-annotation for `websubhub:Service` which contains 
+Apart from the listener level configurations a `hub` will require few additional configurations. Hence, there should be 
+`websubhub:ServiceConfig` a service-level-annotation for `websubhub:Service` which contains
 `websubhub:ServiceConfiguration` record.
 ```ballerina
 # Configuration for a WebSub Hub service.
