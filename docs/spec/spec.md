@@ -108,7 +108,7 @@ to/from it.
 # + 'service - The `websubhub:Service` object to attach
 # + name - The path of the service to be hosted
 # + return - An `websubhub:Error` if an error occurred during the service attaching process or else `()`
-public isolated function attach(Service 'service, string[]|string? name = ()) returns websubhub:Error?
+public isolated function attach(websubhub:Service 'service, string[]|string? name = ()) returns websubhub:Error?
 
 # Detaches the provided `websubhub:Service` from the `websubhub:Listener`.
 # ```ballerina
@@ -117,7 +117,7 @@ public isolated function attach(Service 'service, string[]|string? name = ()) re
 # 
 # + s - The `websubhub:Service` object to be detached
 # + return - An `websubhub:Error` if an error occurred during the service detaching process or else `()`
-public isolated function detach(Service s) returns websubhub:Error?
+public isolated function detach(websubhub:Service s) returns websubhub:Error?
 ```
 
 #### 2.1.4. Dynamically Start and Stop  
@@ -198,6 +198,7 @@ public type Service distinct service object {
 ```
 
 **onRegisterTopic**
+
 This remote method is invoked when the `publisher` sends a request to register a `topic` to the `hub`.
 ```ballerina
 # Registers a `topic` in the hub.
@@ -210,6 +211,7 @@ remote function onRegisterTopic(websubhub:TopicRegistration msg)
 ```
 
 **onUnregisterTopic**
+
 This remote method is invoked when the `publisher` sends a request to remove a `topic` from the `hub`.
 ```ballerina
 # Deregisters a `topic` in the hub.
@@ -222,6 +224,7 @@ remote function onDeregisterTopic(websubhub:TopicDeregistration msg)
 ```
 
 **onEventMessage**
+
 This remote method is invoked when the `publisher` sends a request to notify the `hub` about content update for a 
 `topic`.
 ```ballerina
@@ -235,6 +238,7 @@ remote function onUpdateMessage(websubhub:UpdateMessage msg)
 ```
 
 **onSubscription**  
+
 This remote method is invoked when the `subscriber` sends a request to subscribe for a `topic` in the `hub`. (This is an
 optional remote method.)
 ```ballerina
@@ -252,6 +256,7 @@ remote function onSubscription(websubhub:Subscription msg)
 ```
 
 **onSubscriptionValidation**  
+
 This remote method is invoked when subscription request from the `subscriber` is accepted from the `hub`. `hub` could 
 enforce additional validation for the subscription request when this method is invoked. If the validations are failed 
 the `hub` could deny the subscription request by responding with `websubhub:SubscriptionDeniedError`. (This is an 
@@ -266,6 +271,7 @@ remote function onSubscriptionValidation(websubhub:Subscription msg)
 ```
 
 **onSubscriptionIntentVerified**  
+
 This remote method is invoked after the `hub` verifies the subscription request.
 ```ballerina
 # Processes a verified subscription request.
@@ -276,6 +282,7 @@ remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg)
 ```
 
 **onUnsubscritpion**  
+
 This remote method is invoked when the `subscriber` sends a request to unsubscribe from a `topic` in the `hub`. (This is 
 an optional remote method.)
 ```ballerina
@@ -291,6 +298,7 @@ remote function onUnsubscription(websubhub:Unsubscription msg)
 ```
 
 **onUnsubscriptionValidation**  
+
 This remote method is invoked when unsubscription request from the `subscriber` is accepted from the `hub`. `hub` could
 enforce additional validation for the unsubscription request when this method is invoked. If the validations are failed
 the `hub` could deny the unsubscription request by responding with `websubhub:UnsubscriptionDeniedError`. (This is an
@@ -305,6 +313,7 @@ remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
 ```
 
 **onUnsubscriptionIntenVerified**  
+
 This remote method is invoked after the `hub` verifies the unsubscription request.
 ```ballerina
 # Processes a verified unsubscription request.
@@ -434,6 +443,7 @@ public isolated function init(string hubUrl, *websubhub:ClientConfiguration conf
 `websubhub:PublisherClient` could be used to register/deregister topics in a `hub`.
 
 **registerTopic**
+
 This remote method is invoked when the `publisher` tries to register a `topic` in a particular `hub`.
 ```ballerina
 # Registers a topic in a Ballerina WebSub Hub to which the subscribers can subscribe and the publisher will publish updates.
@@ -447,6 +457,7 @@ remote function registerTopic(string topic) returns websubhub:TopicRegistrationS
 ```
 
 **deregisterTopic**
+
 This remote method is invoked when the `publisher` tries to deregister a `topic` from a particular `hub`.
 ```ballerina
 # Deregisters a topic in a Ballerina WebSub Hub.
@@ -464,6 +475,7 @@ remote function deregisterTopic(string topic) returns websubhub:TopicDeregistrat
 `websubhub:PublisherClient` has the capability to notify the content-update for a `topic` to the `hub`.
 
 **publishUpdate**
+
 This remote method is used to directly send the content-update for a `topic` to the `hub`.
 ```ballerina
 # Publishes an update to a remote Ballerina WebSub Hub.
@@ -481,6 +493,7 @@ remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] p
 ```
 
 **notifyUpdate**
+
 This remote method is used to notify the `hub`, that the `topic` has been updated.
 ```ballerina
 # Notifies a remote WebSubHub from which an update is available to fetch for hubs that require publishing.
