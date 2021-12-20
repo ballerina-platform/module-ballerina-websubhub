@@ -22,8 +22,8 @@ programming language for the cloud that makes it easier to use, combine, and cre
      * 2.1.4 [Dynamically Start and Stop](#214-dynamically-start-and-stop)
    * 2.2. [Hub Service](#22-hub-service)
      * 2.2.1. [Service Annotation](#221-service-annotation)
-3. [Hub Client](#3-hub-client)
-4. [Publisher Client](#4-publisher-client)
+   * 2.3. [Hub Client](#23-hub-client)
+3. [Publisher Client](#3-publisher-client)
 
 ## 1. Overview
 
@@ -194,6 +194,122 @@ public type Service distinct service object {
 };
 ```
 
+**onRegisterTopic**
+This remote method is invoked when the `publisher` sends a request to register a `topic` to the `hub`.
+```ballerina
+# Registers a `topic` in the hub.
+# 
+# + msg - Details related to the topic-registration
+# + return - `websubhub:TopicRegistrationSuccess` if topic registration is successful, `websubhub:TopicRegistrationError`
+#            if topic registration failed or `error` if there is any unexpected error
+remote function onRegisterTopic(websubhub:TopicRegistration msg)
+    returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error;
+```
+
+**onUnregisterTopic**
+This remote method is invoked when the `publisher` sends a request to remove a `topic` from the `hub`.
+```ballerina
+# Deregisters a `topic` in the hub.
+# 
+# + msg - Details related to the topic-deregistration
+# + return - `websubhub:TopicDeregistrationSuccess` if topic deregistration is successful, `websubhub:TopicDeregistrationError`
+#            if topic deregistration failed or `error` if there is any unexpected error
+remote function onDeregisterTopic(websubhub:TopicDeregistration msg)
+    returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error;
+```
+
+**onEventMessage**
+This remote method is invoked when the `publisher` sends a request to notify the `hub` about content update for a 
+`topic`.
+```ballerina
+# Publishes content to the hub.
+# 
+# + msg - Details of the published content
+# + return - `websubhub:Acknowledgement` if publish content is successful, `websubhub:UpdateMessageError`
+#            if publish content failed or `error` if there is any unexpected error
+remote function onUpdateMessage(websubhub:UpdateMessage msg)
+    returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error;
+```
+
+**onSubscription**  
+This remote method is invoked when the `subscriber` sends a request to subscribe for a `topic` in the `hub`. (This is an
+optional remote method.)
+```ballerina
+# Subscribes a `subscriber` to the hub.
+# 
+# + msg - Details of the subscription
+# + return - `websubhub:SubscriptionAccepted` if subscription is accepted from the hub, `websubhub:BadSubscriptionError`
+#            if subscription is denied from the hub, `websubhub:SubscriptionPermanentRedirect` or a `websubhub:SubscriptionTemporaryRedirect`
+#            if the subscription request is redirected from the `hub`, `websubhub:InternalSubscriptionError` if there is an internal error 
+#            while processing the subscription request or `error` if there is any unexpected error
+remote function onSubscription(websubhub:Subscription msg)
+    returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|
+        websubhub:SubscriptionTemporaryRedirect|websubhub:BadSubscriptionError|
+        websubhub:InternalSubscriptionError|error;
+```
+
+**onSubscriptionValidation**  
+This remote method is invoked when subscription request from the `subscriber` is accepted from the `hub`. `hub` could 
+enforce additional validation for the subscription request when this method is invoked. If the validations are failed 
+the `hub` could deny the subscription request by responding with `websubhub:SubscriptionDeniedError`. (This is an 
+optional remote method.)
+```ballerina
+# Validates a incomming subscription request.
+# 
+# + msg - Details of the subscription
+# + return - `websubhub:SubscriptionDeniedError` if the subscription is denied by the hub, `error` if there is any unexpected error or else `()`
+remote function onSubscriptionValidation(websubhub:Subscription msg) 
+    returns websubhub:SubscriptionDeniedError|error?;
+```
+
+**onSubscriptionIntentVerified**  
+This remote method is invoked after the `hub` verifies the subscription request.
+```ballerina
+# Processes a verified subscription request.
+# 
+# + msg - Details of the subscription
+# + return - `error` if there is any unexpected error or else `()`
+remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) returns error?;
+```
+
+**onUnsubscritpion**  
+This remote method is invoked when the `subscriber` sends a request to unsubscribe from a `topic` in the `hub`. (This is 
+an optional remote method.)
+```ballerina
+# Unsubscribes a `subscriber` from the hub.
+# 
+# + msg - Details of the unsubscription
+# + return - `websubhub:UnsubscriptionAccepted` if unsubscription is accepted from the hub, `websubhub:BadUnsubscriptionError`
+#            if unsubscription is denied from the hub, `websubhub:InternalUnsubscriptionError` if there is any internal error while processing the 
+#             unsubscription request or `error` if there is any unexpected error
+remote function onUnsubscription(websubhub:Unsubscription msg)
+    returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|
+        websubhub:InternalUnsubscriptionError|error;
+```
+
+**onUnsubscriptionValidation**  
+This remote method is invoked when unsubscription request from the `subscriber` is accepted from the `hub`. `hub` could
+enforce additional validation for the unsubscription request when this method is invoked. If the validations are failed
+the `hub` could deny the unsubscription request by responding with `websubhub:UnsubscriptionDeniedError`. (This is an
+optional remote method.)
+```ballerina
+# Validates a incomming unsubscription request.
+# 
+# + msg - Details of the unsubscription
+# + return - `websubhub:UnsubscriptionDeniedError` if the unsubscription is denied by the hub or else `()`
+remote function onUnsubscriptionValidation(websubhub:Unsubscription msg) 
+    returns websubhub:UnsubscriptionDeniedError|error?;
+```
+
+**onUnsubscriptionIntenVerified**  
+This remote method is invoked after the `hub` verifies the unsubscription request.
+```ballerina
+# Processes a verified unsubscription request.
+# 
+# + msg - Details of the unsubscription
+remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg) returns error?;
+```
+
 While the below remote methods are strictly WebSub compliant,
 - onSubscription 
 - onSubscriptionValidation
@@ -210,99 +326,10 @@ The below remote functions are not,
 This is due to the limited information in the WebSub specification on the relationship between the `publisher` and the 
 `hub`.
 
-In addition to that, following remote methods are optional,
-- onSubscription
-- onSubscriptionValidation
-- onUnsubscritpion
-- onUnsubscriptionValidation
-
 In the event of a bad request from the `publisher` or the `subscriber`, the WebSubHub dispatcher will automatically send 
 back the appropriate response to the client.
 
-Following is a sample implementation of the `hub`:
-```ballerina
-service /hub on hubListener {
-    isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
-                returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
-        // implement logic here
-        return websubhub:TOPIC_REGISTRATION_SUCCESS;
-    }
-
-    isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message)
-                returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
-        // implement logic here
-        return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
-    }
-
-    isolated remote function onUpdateMessage(websubhub:UpdateMessage message)
-                returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
-        // implement logic here
-        return websubhub:ACKNOWLEDGEMENT;
-    }
-
-    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) {
-        // implement logic here
-    }
-
-    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
-        // implement logic here
-    }
-}
-```
-
-Apart from the basic WebSub features, the developer could integrate other cross-cutting concerns to the `hub` with 
-minimum effort. Following is a sample `hub` implementation secured with OAuth2:
-```ballerina
-service /hub on hubListener {
-    isolated remote function onRegisterTopic(websubhub:TopicRegistration message, http:Headers headers)
-                returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
-        check authorize(headers, ["register_topic"]);
-
-        // implement logic here
-        return websubhub:TOPIC_REGISTRATION_SUCCESS;
-    }
-
-    // implement other remote methods
-}
-
-final http:ListenerJwtAuthHandler handler = new ({
-    issuer: "https://sample.isp.com/oauth2/token",
-    audience: "sample",
-    signatureConfig: {
-        jwksConfig: {
-            url: "https://sample.isp.com/oauth2/jwks",
-            clientConfig: {
-                secureSocket: {
-                    'key: {
-                        certFile: "./resources/server.crt",
-                        keyFile: "./resources/server.key"
-                    }
-                }
-            }
-        }
-    },
-    scopeKey: "scope"
-});
-
-isolated function authorize(http:Headers headers, string[] authScopes) returns error? {
-    string|http:HeaderNotFoundError authHeader = headers.getHeader(http:AUTH_HEADER);
-    if (authHeader is string) {
-        jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
-        if (auth is jwt:Payload) {
-            http:Forbidden? forbiddenError = handler.authorize(auth, authScopes);
-            if (forbiddenError is http:Forbidden) {
-                return error("Not authorized");
-            }
-        } else {
-            return error("Not authorized");
-        }
-    } else {
-        return error("Not authorized");
-    }
-}
-```
-
-### 2.2.1. Service Annotation 
+#### 2.2.1. Service Annotation 
 
 Apart from the listener level configurations a `hub` will require few additional configurations. Hence, we have 
 introduced `websubhub:ServiceConfig` a service-level-annotation for `websubhub:Service` which contains 
@@ -318,59 +345,39 @@ public type ServiceConfiguration record {|
 |};
 ```
 
-Following is a sample `hub` with `websubhub:ServiceConfig` annotation:
-```ballerina
-@websubhub:ServiceConfig {
-    leaseSeconds: 86400,
-    webHookConfig: {
-        secureSocket: {
-            'key: {
-                certFile: "./resources/webhook.crt",
-                keyFile: "./resources/webhook.key"
-            }
-        }
-    }
-}
-service /hub on hubListener {
-    isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
-                returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
-        // implement logic here
-        return websubhub:TOPIC_REGISTRATION_SUCCESS;
-    }
-    
-    // implement other remote methods
-}
-```
-
-## 3. Hub Client
+### 2.3. Hub Client
 
 In accordance with the [WebSub specification](https://www.w3.org/TR/websub/#content-distribution), `WebSubHub` package 
-has provided support for `websubhub:HubClient` which could be used to distribute content-updates to `subscribers`. 
-`websubhub:HubClient` is implemented by wrapping ballerina `http:Client` and it could be instantiated as 
-follows.
-```ballerina
-websubhub:Subscription subscriptionDetails = {
-    hub: "https://hub.com",
-    hubMode: "subscribe",
-    hubCallback: "http://subscriber.com/callback",
-    hubTopic: "https://topic.com",
-    hubSecret: "key"
-};
+has provided support for `websubhub:HubClient` which could be used to distribute content-updates to `subscribers`.
 
-websubhub:HubClient hubClientEP = check new (subscriptionDetails,
-// configure underlying `http:Client` by passing `websubhub:ClientConfiguration`
-secureSocket = {
-    'key: {
-        certFile: "./resources/server.crt",
-        keyFile: "./resources/server.key"
-    }
-});
-```
+#### 2.3.1. Initialization
 
 Since the relationship of the `subscriber` and the `topic` is unique in the `hub`, `websubhub:HubClient` is designed to 
-be instantiated per `subscription` basis.
+be initialized per `subscription` basis.
+```ballerina
+# Record to represent the subscription request body.
+# 
+# + hub - URL of the `hub` to which the subscriber has subscribed
+# + hubMode - Current `hub` action
+# + hubCallback - Callback URL for subscriber to receive distributed content
+# + hubTopic - Topic to which subscriber has subscribed
+# + hubLeaseSeconds - Amount of time in seconds during when the subscription is valid
+# + hubSecret - Secret Key to sign the distributed content
+public type Subscription record {
+    string hub;
+    string hubMode;
+    string hubCallback;
+    string hubTopic;
+    string? hubLeaseSeconds = ();
+    string? hubSecret = ();
+};
 
-`websubhub:HubClient` provides following API to be used to deliver content to the `subscriber`.
+public isolated function init(Subscription subscription, *ClientConfiguration config) returns Error?
+```
+
+#### 2.3.2. Distribute Content
+
+`websubhub:HubClient` should provide following API to be used to deliver content to the `subscriber`.
 ```ballerina
 # Record to represent a WebSub content delivery.
 #
@@ -384,28 +391,20 @@ public type ContentDistributionMessage record {|
 |};
 
 type HubClient client object {
+    # Distributes the published content to the subscribers.
+    # ```ballerina
+    # ContentDistributionSuccess publishUpdate = check websubHubClientEP->notifyContentDistribution({ content: "This is sample content" });
+    # ```
+    #
+    # + msg - Content to be distributed to the topic subscriber 
+    # + return - An `websubhub:Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
+    #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     remote function notifyContentDistribution(websubhub:ContentDistributionMessage msg) 
             returns websubhub:ContentDistributionSuccess|websubhub:SubscriptionDeletedError|websubhub:Error;
 };
 ```
 
-If the content distribution is successful, Hub Client will return a `websubhub:ContentDistributionSuccess`. 
-If the `subscriber` responded with `HTTP 410`, then it will return `websubhub:SubscriptionDeletedError` which is an 
-indication to remove the subscription from the `hub`. And if there is an error while distributing the content, it will 
-return an `webubhub:Error`.  
-```ballerina
-websubhub:ContentDistributionMessage msg = { content: "This is sample content delivery" };
-websubhub:ContentDistributionSuccess|websubhub:Error response = hubClientEP->notifyContentDistribution(msg);
-if response is websubhub:ContentDistributionSuccess {
-    // implement logic for successful content-delivery
-} else if response is websubhub:SubscriptionDeletedError {
-    // implement logic to remove the subscription
-} else {
-    // implemnt logic to handle unexpected error
-}
-```
-
-## 4. Publisher Client  
+## 3. Publisher Client  
 
 WebSub `publisher`, has two main responsibilities:  
 - Advertise `topics` in a `hub`  
