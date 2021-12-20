@@ -146,7 +146,7 @@ public class Listener {
         }
     }
 
-    # Stops the service listener immediately. It is not implemented yet.
+    # Stops the service listener immediately.
     # ```ballerina
     # check hubListenerEp.immediateStop();
     # ```
