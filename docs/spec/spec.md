@@ -92,7 +92,7 @@ providing an `http:Listener`.
 # + listenTo - Port number or an `http:Listener` instance
 # + config - Custom `websubhub:ListenerConfiguration` to be provided to the underlying HTTP listener
 # + return - The `websubhub:Listener` or an `websubhub:Error` if the initialization failed
-public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns Error? {
+public isolated function init(int|http:Listener listenTo, *ListenerConfiguration config) returns websubhub:Error? {
 ```
 
 #### 2.1.3. Dynamically Attach and Detach `websubhub:Service` objects  
@@ -108,7 +108,7 @@ to/from it.
 # + 'service - The `websubhub:Service` object to attach
 # + name - The path of the service to be hosted
 # + return - An `websubhub:Error` if an error occurred during the service attaching process or else `()`
-public isolated function attach(Service 'service, string[]|string? name = ()) returns Error?
+public isolated function attach(Service 'service, string[]|string? name = ()) returns websubhub:Error?
 
 # Detaches the provided `websubhub:Service` from the `websubhub:Listener`.
 # ```ballerina
@@ -117,7 +117,7 @@ public isolated function attach(Service 'service, string[]|string? name = ()) re
 # 
 # + s - The `websubhub:Service` object to be detached
 # + return - An `websubhub:Error` if an error occurred during the service detaching process or else `()`
-public isolated function detach(Service s) returns Error?
+public isolated function detach(Service s) returns websubhub:Error?
 ```
 
 #### 2.1.4. Dynamically Start and Stop  
@@ -130,7 +130,7 @@ Following APIs should be available to dynamically start/stop `websubhub:Listener
 # ```
 # 
 # + return - An `websubhub:Error` if an error occurred during the listener-starting process or else `()`
-public isolated function 'start() returns Error?
+public isolated function 'start() returns websubhub:Error?
 
 # Gracefully stops the hub listener. Already-accepted requests will be served before the connection closure.
 # ```ballerina
@@ -138,7 +138,7 @@ public isolated function 'start() returns Error?
 # ```
 # 
 # + return - An `websubhub:Error` if an error occurred during the listener-stopping process
-public isolated function gracefulStop() returns Error?
+public isolated function gracefulStop() returns websubhub:Error?
 
 # Stops the service listener immediately.
 # ```ballerina
@@ -146,7 +146,7 @@ public isolated function gracefulStop() returns Error?
 # ```
 # 
 # + return - An `websubhub:Error` if an error occurred during the listener-stopping process or else `()`
-public isolated function immediateStop() returns Error?
+public isolated function immediateStop() returns websubhub:Error?
 ```
 
 ### 2.2 Hub Service
@@ -376,7 +376,7 @@ public type Subscription record {
     string? hubSecret = ();
 };
 
-public isolated function init(websubhub:Subscription subscription, *websubhub:ClientConfiguration config) returns Error?
+public isolated function init(websubhub:Subscription subscription, *websubhub:ClientConfiguration config) returns websubhub:Error?
 ```
 
 #### 2.3.2. Distribute Content
@@ -426,7 +426,7 @@ WebSub `publisher`, has two main responsibilities:
 # + hubUrl    - The URL to publish/notify updates
 # + config - The `websubhub:ClientConfiguration` for the underlying client or else `()`
 # + return - The `websubhub:PublisherClient` or an `websubhub:Error` if the initialization failed
-public isolated function init(string hubUrl, *ClientConfiguration config) returns Error?
+public isolated function init(string hubUrl, *websubhub:ClientConfiguration config) returns websubhub:Error?
 ```
 
 ### 3.2. Register/Deregister Topics
@@ -443,7 +443,7 @@ This remote method is invoked when the `publisher` tries to register a `topic` i
 #
 # + topic - The topic to register
 # + return - A `websubhub:TopicRegistrationError` if an error occurred registering the topic or else `websubhub:TopicRegistrationSuccess`
-remote function registerTopic(string topic) returns TopicRegistrationSuccess|TopicRegistrationError
+remote function registerTopic(string topic) returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError
 ```
 
 **deregisterTopic**
@@ -456,7 +456,7 @@ This remote method is invoked when the `publisher` tries to deregister a `topic`
 #
 # + topic - The topic to deregister
 # + return - A `websubhub:TopicDeregistrationError` if an error occurred un registering the topic or else `websubhub:TopicDeregistrationSuccess`
-remote function deregisterTopic(string topic) returns TopicDeregistrationSuccess|TopicDeregistrationError
+remote function deregisterTopic(string topic) returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError
 ```
 
 ### 3.2. Update Content
@@ -477,7 +477,7 @@ This remote method is used to directly send the content-update for a `topic` to 
 # + contentType - The type of the update content to set as the `ContentType` header
 # + return - A `websubhub:UpdateMessageError`if an error occurred with the update or else `websubhub:Acknowledgement`
 remote function publishUpdate(string topic, map<string>|string|xml|json|byte[] payload, string? contentType = ()) 
-    returns Acknowledgement|UpdateMessageError
+    returns websubhub:Acknowledgement|websubhub:UpdateMessageError
 ```
 
 **notifyUpdate**
@@ -490,7 +490,7 @@ This remote method is used to notify the `hub`, that the `topic` has been update
 #
 # + topic - The topic for which the update occurred
 # + return - A `websubhub:UpdateMessageError` if an error occurred with the notification or else `websubhub:Acknowledgement`
-remote function notifyUpdate(string topic) returns Acknowledgement|UpdateMessageError
+remote function notifyUpdate(string topic) returns websubhub:Acknowledgement|websubhub:UpdateMessageError
 ```
 
 ### 4. Client Configuration
