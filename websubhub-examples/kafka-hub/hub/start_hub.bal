@@ -221,9 +221,9 @@ isolated function isValidConsumer(string topicName, string groupName) returns bo
 isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
     foreach var kafkaRecord in records {
         var message = deSerializeKafkaRecord(kafkaRecord);
-        if (message is websubhub:ContentDistributionMessage) {
+        if message is websubhub:ContentDistributionMessage {
             var response = clientEp->notifyContentDistribution(message);
-            if (response is error) {
+            if response is error {
                 return response;
             } else {
                 _ = check consumerEp->commit();

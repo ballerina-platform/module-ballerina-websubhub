@@ -38,7 +38,7 @@ public isolated function authorizeSubscriber(http:Headers headers, string topic)
     string? partnerID = buildPartnerId(topic);
     string rolePrefix = buildRolePrefix(topic, "SUBSCRIBE_");
     boolean authorized = isSubscriberAuthorized(partnerID, rolePrefix, rolesArr, userId);
-    if (!authorized) {
+    if !authorized {
         return error("Subscriber is not authorized");
     }
 }
@@ -56,7 +56,7 @@ public isolated function authorizePublisher(http:Headers headers, string topic) 
     string? partnerID = buildPartnerId(topic);
     string rolePrefix = buildRolePrefix(topic, "PUBLISH_");
     boolean authorized = isPublisherAuthorized(partnerID, rolePrefix, rolesArr);
-    if (!authorized) {
+    if !authorized {
         return error("Publisher is not authorized");
     }
 }
