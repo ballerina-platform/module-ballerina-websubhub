@@ -195,12 +195,10 @@ service object {
     # + message - Details of the unsubscription
     isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
         string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
-        lock {
-            var persistingResult = persist:removeSubscription(message.cloneReadOnly());
-            if (persistingResult is error) {
-                log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
-            } 
-        } 
+        var persistingResult = persist:removeSubscription(message.cloneReadOnly());
+        if (persistingResult is error) {
+            log:printError("Error occurred while persisting the unsubscription ", err = persistingResult.message());
+        }
     }
 
     # Publishes content to the hub.
