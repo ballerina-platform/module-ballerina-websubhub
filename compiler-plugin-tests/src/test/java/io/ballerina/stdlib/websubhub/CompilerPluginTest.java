@@ -335,6 +335,48 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnostics.size(), 0);
     }
 
+    @Test
+    public void testWithReadonlyParams() {
+        Package currentPackage = loadPackage("sample_19");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnostics.size(), 0);
+    }
+
+    @Test
+    public void testInvalidReadonlyParams() {
+        Package currentPackage = loadPackage("sample_20");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnostics.size(), 5);
+        WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_105;
+        String invalidTypeDesc = "http:Headers & readonly";
+        validateErrorsForInvalidReadonlyTypes(expectedCode, errorDiagnostics.get(0),
+                invalidTypeDesc, "onRegisterTopic");
+        validateErrorsForInvalidReadonlyTypes(expectedCode, errorDiagnostics.get(1),
+                invalidTypeDesc, "onDeregisterTopic");
+        validateErrorsForInvalidReadonlyTypes(expectedCode, errorDiagnostics.get(2),
+                invalidTypeDesc, "onUpdateMessage");
+        validateErrorsForInvalidReadonlyTypes(expectedCode, errorDiagnostics.get(3),
+                invalidTypeDesc, "onSubscription");
+        validateErrorsForInvalidReadonlyTypes(expectedCode, errorDiagnostics.get(4),
+                invalidTypeDesc, "onUnsubscription");
+    }
+
+    private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,
+                                                       String typeDesc, String remoteMethodName) {
+        DiagnosticInfo info = diagnostic.diagnosticInfo();
+        Assert.assertEquals(info.code(), expectedCode.getCode());
+        String expectedMsg1 = MessageFormat.format(expectedCode.getDescription(), typeDesc, remoteMethodName);
+        Assert.assertEquals(diagnostic.message(), expectedMsg1);
+    }
+
     private Package loadPackage(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
