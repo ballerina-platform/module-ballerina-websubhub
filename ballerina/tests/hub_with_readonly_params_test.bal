@@ -49,6 +49,7 @@ service /websubhub on new Listener(9102) {
     }
 
     isolated function onUnsubscription(readonly & Subscription msg) returns SubscriptionAccepted {
+        test:assertTrue(msg is readonly);
         return UNSUBSCRIPTION_ACCEPTED;
     }
 
