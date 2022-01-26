@@ -62,6 +62,7 @@ public interface Constants {
     String UNSUBSCRIPTION_DENIED_ERROR = "websubhub:UnsubscriptionDeniedError";
     String ACKNOWLEDGEMENT = "websubhub:Acknowledgement";
     String ERROR = "annotations:error";
+    String READONLY = "readonly";
 
     String OPTIONAL = "?";
 }

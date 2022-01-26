@@ -21,6 +21,7 @@ package io.ballerina.stdlib.websubhub.task;
 import io.ballerina.compiler.api.ModuleID;
 import io.ballerina.compiler.api.symbols.ErrorTypeSymbol;
 import io.ballerina.compiler.api.symbols.FunctionSymbol;
+import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
@@ -100,8 +101,20 @@ public final class AnalyserUtils {
                     .filter(e -> !e.isEmpty() && !e.isBlank())
                     .reduce((a, b) -> String.join("|", a, b)).orElse("");
             return optionalSymbolAvailable ? concatenatedTypeDesc + Constants.OPTIONAL : concatenatedTypeDesc;
+        } else if (TypeDescKind.INTERSECTION.equals(paramKind)) {
+            List<TypeSymbol> availableTypes = ((IntersectionTypeSymbol) paramType).memberTypeDescriptors();
+            // Intersection type description generation, should not skip `readonly` for `http:Headers`
+            boolean containsHttpHeaders = availableTypes.stream()
+                    .anyMatch(e -> Constants.HTTP_HEADERS.equals(getTypeDescription(e)));
+            return availableTypes.stream()
+                    .filter(e -> containsHttpHeaders || !TypeDescKind.READONLY.equals(e.typeKind()))
+                    .map(AnalyserUtils::getTypeDescription)
+                    .filter(e -> !e.isEmpty() && !e.isBlank())
+                    .reduce((a, b) -> String.join(" & ", a, b)).orElse("");
         } else if (TypeDescKind.ERROR.equals(paramKind)) {
             return getErrorTypeDescription(paramType);
+        } else if (TypeDescKind.READONLY.equals(paramKind)) {
+            return Constants.READONLY;
         } else {
             return paramType.getName().orElse("");
         }
