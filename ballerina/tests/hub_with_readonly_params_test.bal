@@ -97,7 +97,7 @@ http:Client readonlyParamsTestSubscriber = check new ("http://localhost:9102/web
 }
 public function testSubscriptionSuccessWithReadonly() returns error? {
     http:Request req = new;
-    string payload = string `${HUB_MODE}=unsubscribe&${HUB_TOPIC}=test&${HUB_CALLBACK}=http://localhost:9191/subscriber`;
+    string payload = string `${HUB_MODE}=subscribe&${HUB_TOPIC}=test&${HUB_CALLBACK}=http://localhost:9191/subscriber`;
     req.setTextPayload(payload, mime:APPLICATION_FORM_URLENCODED);
     http:Response response = check readonlyParamsTestSubscriber->post("", req);
     test:assertEquals(response.statusCode, 202, "Unexpected response status-code");
