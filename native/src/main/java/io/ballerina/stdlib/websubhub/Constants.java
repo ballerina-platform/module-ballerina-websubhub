@@ -26,4 +26,14 @@ public interface Constants {
     String PACKAGE_NAME = "websubhub";
 
     String SERVICE_OBJECT = "WEBSUBHUB_SERVICE_OBJECT";
+
+    String ON_REGISTER_TOPIC = "onRegisterTopic";
+    String ON_DEREGISTER_TOPIC = "onDeregisterTopic";
+    String ON_UPDATE_MESSAGE = "onUpdateMessage";
+    String ON_SUBSCRIPTION = "onSubscription";
+    String ON_SUBSCRIPTION_VALIDATION = "onSubscriptionValidation";
+    String ON_SUBSCRIPTION_INTENT_VERIFIED = "onSubscriptionIntentVerified";
+    String ON_UNSUBSCRIPTION = "onUnsubscription";
+    String ON_UNSUBSCRIPTION_VALIDATION = "onUnsubscriptionValidation";
+    String ON_UNSUBSCRIPTION_INTENT_VERIFIED = "onUnsubscriptionIntentVerified";
 }
