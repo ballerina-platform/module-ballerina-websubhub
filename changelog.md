@@ -6,10 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [WebSub/WebSubHub should support `readonly` parameters for remote methods](https://github.com/ballerina-platform/ballerina-standard-library/issues/2604)
+
+## [1.0.1] - 2021-12-14
+
 ### Changed
 - [Mark WebSubHub Service type as distinct](https://github.com/ballerina-platform/ballerina-standard-library/issues/2398)
 
-## [2.0.0] - 2021-10-09
+## [1.0.0] - 2021-10-09
 
 ### Added
 - [Add `hubMode` field to topic-registration and topic-deregistration request body](https://github.com/ballerina-platform/ballerina-standard-library/issues/1638)
