@@ -270,46 +270,46 @@ public type Acknowledgement record {
     *CommonResponse;
 };
 
-# Common response which could be used for `websubhub:TopicRegistrationSuccess`.
+# Common response, which could be used for `websubhub:TopicRegistrationSuccess`.
 public final readonly & TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
 
-# Common response which could be used for `websubhub:TopicRegistrationError`.
+# Common response, which could be used for `websubhub:TopicRegistrationError`.
 public final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed");
 
-# Common response which could be used for `websubhub:TopicDeregistrationSuccess`.
+# Common response, which could be used for `websubhub:TopicDeregistrationSuccess`.
 public final readonly & TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};
 
-# Common response which could be used for `websubhub:TopicDeregistrationError`.
+# Common response, which could be used for `websubhub:TopicDeregistrationError`.
 public final TopicDeregistrationError TOPIC_DEREGISTRATION_ERROR = error TopicDeregistrationError("Topic deregistration failed!");
 
-# Common response which could be used for `websubhub:Acknowledgement`.
+# Common response, which could be used for `websubhub:Acknowledgement`.
 public final readonly & Acknowledgement ACKNOWLEDGEMENT = {};
 
-# Common response which could be used for `websubhub:UpdateMessageError`.
+# Common response, which could be used for `websubhub:UpdateMessageError`.
 public final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError("Error in accessing content");
 
-# Common response which could be used for `websubhub:SubscriptionAccepted`.
+# Common response, which could be used for `websubhub:SubscriptionAccepted`.
 public final readonly & SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
 
-# Common response which could be used for `websubhub:BadSubscriptionError`.
+# Common response, which could be used for `websubhub:BadSubscriptionError`.
 public final BadSubscriptionError BAD_SUBSCRIPTION_ERROR = error BadSubscriptionError("Bad subscription request");
 
-# Common response which could be used for `websubhub:InternalSubscriptionError`.
+# Common response, which could be used for `websubhub:InternalSubscriptionError`.
 public final InternalSubscriptionError INTERNAL_SUBSCRIPTION_ERROR = error InternalSubscriptionError("Internal error occurred while processing subscription request");
 
-# Common response which could be used for `websubhub:SubscriptionDeniedError`.
+# Common response, which could be used for `websubhub:SubscriptionDeniedError`.
 public final SubscriptionDeniedError SUBSCRIPTION_DENIED_ERROR = error SubscriptionDeniedError("Subscription denied");
 
-# Common response which could be used for `websubhub:UnsubscriptionAccepted`.
+# Common response, which could be used for `websubhub:UnsubscriptionAccepted`.
 public final readonly & UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {};
 
-# Common response which could be used for `websubhub:BadUnsubscriptionError`.
+# Common response, which could be used for `websubhub:BadUnsubscriptionError`.
 public final BadUnsubscriptionError BAD_UNSUBSCRIPTION_ERROR = error BadUnsubscriptionError("Bad unsubscription request");
 
-# Common response which could be used for `websubhub:InternalUnsubscriptionError`.
+# Common response, which could be used for `websubhub:InternalUnsubscriptionError`.
 public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error InternalUnsubscriptionError("Internal error occurred while processing unsubscription request");
 
-# Common response which could be used for `websubhub:UnsubscriptionDeniedError`.
+# Common response, which could be used for `websubhub:UnsubscriptionDeniedError`.
 public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied");
 
 # Record to represent client configuration for HubClient / PublisherClient.
