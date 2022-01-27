@@ -68,12 +68,13 @@ public const COMPRESSION_NEVER = "NEVER";
 
 # Response Status object, used to communicate status of the executed actions.
 # 
-# + code - status code value
+# + code - Status code value
 type Status distinct object {
     public int code;
 };
 
 # Response status OK.
+# 
 # + code - Status code for action
 public readonly class StatusOK {
     *Status;
@@ -81,6 +82,7 @@ public readonly class StatusOK {
 }
 
 # Response status Temporary Redirect.
+# 
 # + code - Status code for action
 public readonly class StatusTemporaryRedirect {
     *Status;
@@ -268,23 +270,49 @@ public type Acknowledgement record {
     *CommonResponse;
 };
 
-# Common responses to be used in the hub implementation.
+# Common response which could be used for `websubhub:TopicRegistrationSuccess`.
 public final readonly & TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
+
+# Common response which could be used for `websubhub:TopicRegistrationError`.
 public final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed");
+
+# Common response which could be used for `websubhub:TopicDeregistrationSuccess`.
 public final readonly & TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};
+
+# Common response which could be used for `websubhub:TopicDeregistrationError`.
 public final TopicDeregistrationError TOPIC_DEREGISTRATION_ERROR = error TopicDeregistrationError("Topic deregistration failed!");
+
+# Common response which could be used for `websubhub:Acknowledgement`.
 public final readonly & Acknowledgement ACKNOWLEDGEMENT = {};
+
+# Common response which could be used for `websubhub:UpdateMessageError`.
 public final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError("Error in accessing content");
+
+# Common response which could be used for `websubhub:SubscriptionAccepted`.
 public final readonly & SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
+
+# Common response which could be used for `websubhub:BadSubscriptionError`.
 public final BadSubscriptionError BAD_SUBSCRIPTION_ERROR = error BadSubscriptionError("Bad subscription request");
+
+# Common response which could be used for `websubhub:InternalSubscriptionError`.
 public final InternalSubscriptionError INTERNAL_SUBSCRIPTION_ERROR = error InternalSubscriptionError("Internal error occurred while processing subscription request");
+
+# Common response which could be used for `websubhub:SubscriptionDeniedError`.
 public final SubscriptionDeniedError SUBSCRIPTION_DENIED_ERROR = error SubscriptionDeniedError("Subscription denied");
+
+# Common response which could be used for `websubhub:UnsubscriptionAccepted`.
 public final readonly & UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {};
+
+# Common response which could be used for `websubhub:BadUnsubscriptionError`.
 public final BadUnsubscriptionError BAD_UNSUBSCRIPTION_ERROR = error BadUnsubscriptionError("Bad unsubscription request");
+
+# Common response which could be used for `websubhub:InternalUnsubscriptionError`.
 public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error InternalUnsubscriptionError("Internal error occurred while processing unsubscription request");
+
+# Common response which could be used for `websubhub:UnsubscriptionDeniedError`.
 public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied");
 
-# Record to represent client configuration for HubClient / PublisherClient
+# Record to represent client configuration for HubClient / PublisherClient.
 # 
 # + httpVersion - The HTTP version understood by the client
 # + http1Settings - Configurations related to HTTP/1.x protocol
@@ -314,33 +342,14 @@ public type ListenerConfiguration record {|
     *http:ListenerConfiguration;
 |};
 
-# Checks whether `HTTP Response` is a success response
-# ```ballerina
-#       boolean isSuccess = websubhub:isSuccessStatusCode(300);
-# ```
-# 
-# + statusCode - `HTTP Status Code` of current response
-# + return - a `boolean` if the `statusCode` is in `2XX` range
 isolated function isSuccessStatusCode(int statusCode) returns boolean {
     return (200 <= statusCode && statusCode < 300);
 }
 
-# Generates the `HTTP Link Header` for content-distribution request
-# ```ballerina
-#       string linkHeaderValue = websubhub:generateLinkUrl("https://sample.hub.com", "https://sample.topic.com");
-# ```
-# 
-# + hubUrl - URL for the current `hub`
-# + topic - Name of the `topic`
-# + return - a `string` containing the value for `HTTP Link Header`
 isolated function generateLinkUrl(string hubUrl, string topic) returns string {
     return string `${hubUrl}; rel=\"hub\", ${topic}; rel=\"self\"`;
 }
 
-# Converts {@code websubhub:ClientConfiguration} to {@code http:ClientConfiguration}
-# 
-# + config - provided {@code websubhub:ClientConfiguration}
-# + return - a {@code http:ClientConfiguration} from the provided {@code websubhub:ClientConfiguration}
 isolated function retrieveHttpClientConfig(ClientConfiguration config) returns http:ClientConfiguration {
     return {
         httpVersion: config.httpVersion,

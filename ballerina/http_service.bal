@@ -30,16 +30,6 @@ isolated service class HttpService {
     private final boolean isUnsubscriptionAvailable;
     private final boolean isUnsubscriptionValidationAvailable;
 
-    # Initializes the `websubhub:HttpService` endpoint.
-    # ```ballerina
-    # websubhub:HttpService httpServiceEp = check new (adaptor, "https://sample.hub.com", 3600);
-    # ```
-    #
-    # + adaptor - The `websubhub:HttpToWebsubhubAdaptor` instance which used as a wrapper to execute service methods
-    # + hubUrl       - Hub URL
-    # + leaseSeconds - Subscription expiration time for the `hub`
-    # + clientConfig - The `websubhub:ClientConfiguration` to be used in the HTTP Client used for subscription/unsubscription intent verification
-    # + return - The `websubhub:HttpService` or an `error` if the initialization failed
     isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
                            *ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
@@ -53,12 +43,6 @@ isolated service class HttpService {
         self.isUnsubscriptionValidationAvailable = isMethodAvailable("onUnsubscriptionValidation", methodNames);
     }
 
-    # Receives HTTP POST requests.
-    # 
-    # + caller - The `http:Caller` reference of the current request
-    # + request - Received `http:Request` instance
-    # + headers - HTTP headers found in the original HTTP request
-    # + return - An `error` if there is any exception in the request processing or else `()`
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {
         http:Response response = new;
         map<string>|error params = self.retrieveParams(request, headers);
