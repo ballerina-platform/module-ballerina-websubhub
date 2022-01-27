@@ -182,7 +182,7 @@ isolated function processUnSubscriptionVerification(http:Headers headers, HttpTo
     } else {
         string challenge = uuid:createType4AsString();
         [string, string?][] params = [
-            [HUB_MODE, MODE_SUBSCRIBE],
+            [HUB_MODE, MODE_UNSUBSCRIBE],
             [HUB_TOPIC, message.hubTopic],
             [HUB_CHALLENGE, challenge]
         ];
