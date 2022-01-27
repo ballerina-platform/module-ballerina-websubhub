@@ -38,7 +38,7 @@ public client class HubClient {
     # });
     # ```
     #
-    # + subscription - Original `websubhub:Subscription` record which contains the details of the `subscriber`
+    # + subscription - Original `websubhub:Subscription` record, which contains the details of the `subscriber`
     # + config - The `websubhub:ClientConfiguration` for the underlying client
     # + return - The `websubhub:HubClient` or an `websubhub:Error` if the initialization failed
     public isolated function init(Subscription subscription, *ClientConfiguration config) returns Error? {

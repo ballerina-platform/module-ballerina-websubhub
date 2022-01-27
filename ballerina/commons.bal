@@ -312,7 +312,7 @@ public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error I
 # Common response, which could be used for `websubhub:UnsubscriptionDeniedError`.
 public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied");
 
-# Record to represent client configuration for HubClient / PublisherClient.
+# Record to represent the client configuration for the HubClient/PublisherClient.
 # 
 # + httpVersion - The HTTP version understood by the client
 # + http1Settings - Configurations related to HTTP/1.x protocol
