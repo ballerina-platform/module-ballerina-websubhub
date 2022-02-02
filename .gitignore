@@ -37,4 +37,7 @@ target/
 
 # Ballerina related ignores
 Ballerina.lock
+
+# Dependencies.toml of examples and load-tests
 examples/**/Dependencies.toml
+load-tests/**/Dependencies.toml
