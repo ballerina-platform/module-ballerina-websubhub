@@ -4,13 +4,18 @@ _Owners_: @shafreenAnfar @chamil321 @ayeshLK
 _Reviewers_: @shafreenAnfar    
 _Created_: 2021/11/23  
 _Updated_: 2021/12/17  
+_Edition_: Swan Lake  
 _Issue_: [#786](https://github.com/ballerina-platform/ballerina-standard-library/issues/786)
 
 # Introduction
 
-This is the specification for WebSubHub standard library which is used to implement WebSub compliant `hub` services 
-and `publisher` clients using [Ballerina programming language](https://ballerina.io/), which is an open-source 
-programming language for the cloud that makes it easier to use, combine, and create network services. 
+This is the specification for the WebSubHub standard library of [Ballerina language](https://ballerina.io/), which provides WebSub compliant `hub` and `publisher` related functionalities.
+
+The WebSubHub library specification has evolved and may continue to evolve in the future. Released versions of the specification can be found under the relevant Github tag. 
+
+If you have any feedback or suggestions about the library, start a discussion via a Github issue or in the [Slack channel](https://ballerina.io/community/). Based on the outcome specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in Github.
+
+Conforming implementation of the specification is released and included in the distribution. Any deviation from the specification is considered a bug.
 
 # Contents  
 1. [Overview](#1-overview)  
