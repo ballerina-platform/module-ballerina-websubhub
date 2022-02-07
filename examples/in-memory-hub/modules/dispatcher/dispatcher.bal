@@ -16,6 +16,8 @@
 
 import in_memory_hub.message_queue as mq;
 import in_memory_hub.store;
+import ballerina/task;
+import ballerina/log;
 import ballerina/websubhub;
 
 type ClientDetails record {|
@@ -25,7 +27,18 @@ type ClientDetails record {|
 
 isolated map<ClientDetails[]> dispatcherClients = {};
 
-public isolated function syncDispatcherState() returns error? {
+public isolated class DispatcherJob {
+    *task:Job;
+
+    public function execute() {
+        error? exception = syncDispatcherState();
+        if exception is error {
+            log:printError("error occurred while syncing the dispatcher state ", 'error = exception);
+        }
+    }
+}
+
+function syncDispatcherState() returns error? {
     readonly & string[] availableTopics = store:retrieveAvailableTopics();
     lock {
         // remove unavailable topics from the dispatchers
@@ -38,8 +51,17 @@ public isolated function syncDispatcherState() returns error? {
         }
     }
 
-    // update the dispatchers for available topics
+    // update the dispatcher-clients for available topics and start the message consuming for new `topics` 
     foreach string topic in availableTopics {
+        boolean isNewTopic = false;
+        lock {
+            isNewTopic = !dispatcherClients.hasKey(topic);
+        }
+        if isNewTopic {
+            // start the content-dispatcher for the newly added `topic`
+            _ = @strand {thread: "any"} start consumeMessages(topic);
+        }
+
         readonly & websubhub:Subscription[]? subscribers = store:retrieveAvailableSubscriptions(topic);
         if subscribers is () {
             lock {
@@ -58,7 +80,7 @@ public isolated function syncDispatcherState() returns error? {
     }
 }
 
-public isolated function startDispatcher(string topic) {
+isolated function consumeMessages(string topic) {
     while store:isTopicAvailable(topic) {
         mq:Message? message = mq:poll(topic);
         if message is () {

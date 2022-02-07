@@ -37,23 +37,18 @@ public isolated function enqueue(readonly & websubhub:UpdateMessage request) {
     }
 }
 
-public isolated function dequeue(string topic) returns Message? {
-    Message[] availableMessages = [];
+public isolated function dequeue(readonly & string topic) returns Message? {
     lock {
-        availableMessages.push(...queue.filter(msg => msg.topic == topic));
-    }
-
-    if availableMessages.length() < 1 {
-        return;
-    }
-    Message firstMsg = availableMessages.remove(0);
-    lock {
-        int? idxOfMsg = queue.indexOf(firstMsg);
-        if idxOfMsg is int {
-            return queue.remove(idxOfMsg);
+        [int, Message][] availableMessages = queue.enumerate().filter(isolated function([int, Message] details) returns boolean {
+            var [idx, msg] = details;
+            return msg.topic == topic;
+        });
+        if availableMessages.length() < 1 {
+            return;
         }
+        var [idx, msg] = availableMessages[0];
+        return queue.remove(idx);
     }
-    return;
 }
 
 public isolated function poll(string topic, decimal timeout = 10.0) returns Message? {

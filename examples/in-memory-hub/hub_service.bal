@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/websubhub;
-import in_memory_hub.dispatcher;
 import in_memory_hub.message_queue as mq;
 import in_memory_hub.store;
 
@@ -33,8 +32,6 @@ websubhub:Service hubService = service object {
             return websubhub:TOPIC_REGISTRATION_ERROR;
         }
         store:registerTopic(message);
-        // start the content-dispatcher for the topic
-        _ = @strand { thread: "any" } start dispatcher:startDispatcher(message.topic);
         return websubhub:TOPIC_REGISTRATION_SUCCESS;
     }
 
