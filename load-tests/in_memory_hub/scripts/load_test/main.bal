@@ -63,8 +63,8 @@ public function main(string label, string output_csv_path) returns error? {
     int sentCount = 0;
     int errorCount = 0;
     time:Utc startedTime = time:utcNow();
-    time:Utc expiaryTime = time:utcAddSeconds(startedTime, 1 * 60);
-    while time:utcDiffSeconds(expiaryTime, time:utcNow()) > 0D {
+    time:Utc expiryTime = time:utcAddSeconds(startedTime, 3600);
+    while time:utcDiffSeconds(expiryTime, time:utcNow()) > 0D {
         json params = {event: "event"};
         websubhub:Acknowledgement|websubhub:UpdateMessageError response = publisherClient->publishUpdate("test", params);
         sentCount += 1;
