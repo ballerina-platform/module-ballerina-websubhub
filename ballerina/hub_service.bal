@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+#The WebSubHub service type.
 public type Service distinct service object {
 
    //todo Remove methods and write compiler plugin for service
