@@ -16,8 +16,6 @@
 
 import in_memory_hub.message_queue as mq;
 import in_memory_hub.store;
-import ballerina/task;
-import ballerina/log;
 import ballerina/websubhub;
 
 type ClientDetails record {|
@@ -27,59 +25,62 @@ type ClientDetails record {|
 
 isolated map<ClientDetails[]> dispatcherClients = {};
 
-# A `task:Job` to run the dispatcher state update.
-public isolated class DispatcherJob {
-    *task:Job;
+# Updates the internal state of the content dispatcher.
+# 
+# + return - `error` if there is any exception occurred while executing the update
+public function syncDispatcherState() returns error? {
+    while true {
+        readonly & string[] availableTopics = store:retrieveAvailableTopics();
+        lock {
+            // remove unavailable topics from the dispatchers
+            foreach string dispatcher in dispatcherClients.keys() {
+                if availableTopics.indexOf(dispatcher) is () {
+                    lock {
+                        _ = dispatcherClients.removeIfHasKey(dispatcher);
+                    }
+                }
+            }
+        }
 
-    public function execute() {
-        error? exception = syncDispatcherState();
-        if exception is error {
-            log:printError("error occurred while syncing the dispatcher state ", 'error = exception);
+        // update the dispatcher-clients for available topics and start the message consuming for new `topics` 
+        foreach string topic in availableTopics {
+            boolean isNewTopic = false;
+            lock {
+                isNewTopic = !dispatcherClients.hasKey(topic);
+            }
+            if isNewTopic {
+                _ = @strand {thread: "any"} start consumeMessages(topic);
+            }
+
+            readonly & websubhub:Subscription[]? subscribers = store:retrieveAvailableSubscriptions(topic);
+            if subscribers is () {
+                lock {
+                    dispatcherClients[topic] = [];
+                }
+                continue;
+            }
+
+            lock {
+                ClientDetails[] clientDetails = isNewTopic ? [] : retrieveValidClientDetails(subscribers, dispatcherClients.get(topic));
+                readonly & websubhub:Subscription[] newSubscribers = retrieveNewSubscribers(subscribers, clientDetails);
+                foreach var subscriber in newSubscribers {
+                    websubhub:HubClient clientEp = check new (subscriber);
+                    clientDetails.push({subscription: subscriber, clientEp: clientEp});
+                }
+                dispatcherClients[topic] = clientDetails;
+            }
         }
     }
 }
 
-function syncDispatcherState() returns error? {
-    readonly & string[] availableTopics = store:retrieveAvailableTopics();
-    lock {
-        // remove unavailable topics from the dispatchers
-        foreach string dispatcher in dispatcherClients.keys() {
-            if availableTopics.indexOf(dispatcher) is () {
-                lock {
-                    _ = dispatcherClients.removeIfHasKey(dispatcher);
-                }
-            }
-        }
-    }
+isolated function retrieveValidClientDetails(websubhub:Subscription[] availableSubscriptions, ClientDetails[] availableClientDetails) returns ClientDetails[] {
+    final readonly & string[] subscriberCallbacks = availableSubscriptions.'map(sub => sub.hubCallback).cloneReadOnly();
+    return availableClientDetails.filter(cd => subscriberCallbacks.indexOf(cd.subscription.hubCallback) is int);
+}
 
-    // update the dispatcher-clients for available topics and start the message consuming for new `topics` 
-    foreach string topic in availableTopics {
-        boolean isNewTopic = false;
-        lock {
-            isNewTopic = !dispatcherClients.hasKey(topic);
-        }
-        if isNewTopic {
-            // start the content-dispatcher for the newly added `topic`
-            _ = @strand {thread: "any"} start consumeMessages(topic);
-        }
-
-        readonly & websubhub:Subscription[]? subscribers = store:retrieveAvailableSubscriptions(topic);
-        if subscribers is () {
-            lock {
-                dispatcherClients[topic] = [];
-            }
-            continue;
-        }
-        // TODO: no need to create clients for available subscriptions. hence refactor following logic.
-        lock {
-            ClientDetails[] clientDetails = [];
-            foreach var subscriber in subscribers {
-                websubhub:HubClient clientEp = check new (subscriber);
-                clientDetails.push({subscription: subscriber, clientEp: clientEp});
-            }
-            dispatcherClients[topic] = clientDetails;
-        }
-    }
+isolated function retrieveNewSubscribers(websubhub:Subscription[] availableSubscriptions, ClientDetails[] availableClientDetails) returns readonly & websubhub:Subscription[] {
+    final readonly & string[] subscriberCallbacksForClients = availableClientDetails.'map(cd => cd.subscription.hubCallback).cloneReadOnly();
+    return availableSubscriptions.filter(sub => subscriberCallbacksForClients.indexOf(sub.hubCallback) == ()).cloneReadOnly();
 }
 
 isolated function consumeMessages(string topic) {

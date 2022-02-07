@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.runtime;
+import ballerina/time;
 import ballerina/websubhub;
 
 isolated websubhub:UpdateMessage[] queue = [];
@@ -56,6 +56,9 @@ public isolated function poll(string topic, decimal timeout = 10.0) returns read
     if message is websubhub:UpdateMessage {
         return message;
     }
-    runtime:sleep(timeout);
-    return dequeue(topic);
+    time:Utc expiaryTime = time:utcAddSeconds(time:utcNow(), timeout);
+    while message is () && time:utcDiffSeconds(expiaryTime, time:utcNow()) > 0D {
+        message = dequeue(topic);
+    }
+    return message;
 }

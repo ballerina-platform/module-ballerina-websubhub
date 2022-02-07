@@ -16,12 +16,11 @@
 
 import ballerina/websubhub;
 import ballerina/lang.runtime;
-import ballerina/task;
 import in_memory_hub.dispatcher;
 
 public function main() returns error? {
     // Initialize the Hub
-    _ = check task:scheduleJobRecurByFrequency(new dispatcher:DispatcherJob(), 10.0);
+    _ = @strand {thread: "any"} start dispatcher:syncDispatcherState();
 
     websubhub:Listener hubListener = check new (9090);
     check hubListener.attach(hubService, "hub");
