@@ -1,0 +1,4 @@
+[container.image]
+repository = "ballerina"
+name = "in_memory_hub"
+tag="v1"
