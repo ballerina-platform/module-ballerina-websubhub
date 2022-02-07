@@ -17,43 +17,43 @@
 import ballerina/lang.runtime;
 import ballerina/websubhub;
 
-public type Message readonly & record {|
-    string & readonly topic;
-    readonly & websubhub:ContentDistributionMessage payload;
-|};
+isolated websubhub:UpdateMessage[] queue = [];
 
-isolated Message[] queue = [];
-
-public isolated function enqueue(readonly & websubhub:UpdateMessage request) {
-    Message msg = {
-        topic: request.hubTopic,
-        payload: {
-            contentType: request.contentType,
-            content: request.content
-        }
-    };
+# Add messages to the end of the `queue`.
+#
+# + message - Received content-update request
+public isolated function enqueue(readonly & websubhub:UpdateMessage message) {
     lock {
-        queue.push(msg);
+        queue.push(message);
     }
 }
 
-public isolated function dequeue(readonly & string topic) returns Message? {
+# Retrieves the first message for the `topic` from the `queue`.
+#
+# + topic - Requested `topic`
+# + return - `message_queue:Message` if a message is available for the `topic` or else `()`
+public isolated function dequeue(readonly & string topic) returns readonly & websubhub:UpdateMessage? {
     lock {
-        [int, Message][] availableMessages = queue.enumerate().filter(isolated function([int, Message] details) returns boolean {
+        [int, websubhub:UpdateMessage][] availableMessages = queue.enumerate().filter(isolated function([int, websubhub:UpdateMessage] details) returns boolean {
             var [idx, msg] = details;
-            return msg.topic == topic;
+            return msg.hubTopic == topic;
         });
         if availableMessages.length() < 1 {
             return;
         }
         var [idx, msg] = availableMessages[0];
-        return queue.remove(idx);
+        return queue.remove(idx).cloneReadOnly();
     }
 }
 
-public isolated function poll(string topic, decimal timeout = 10.0) returns Message? {
-    Message? message = dequeue(topic);
-    if message is Message {
+# Polls the queue for the first message for a `topic`.
+#
+# + topic - Requested `topic`  
+# + timeout - Polling time-out
+# + return - `Message` if a message is available for the `topic` or else `()`
+public isolated function poll(string topic, decimal timeout = 10.0) returns readonly & websubhub:UpdateMessage? {
+    readonly & websubhub:UpdateMessage? message = dequeue(topic);
+    if message is websubhub:UpdateMessage {
         return message;
     }
     runtime:sleep(timeout);

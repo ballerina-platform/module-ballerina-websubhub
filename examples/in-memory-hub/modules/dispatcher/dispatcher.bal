@@ -27,6 +27,7 @@ type ClientDetails record {|
 
 isolated map<ClientDetails[]> dispatcherClients = {};
 
+# A `task:Job` to run the dispatcher state update.
 public isolated class DispatcherJob {
     *task:Job;
 
@@ -69,6 +70,7 @@ function syncDispatcherState() returns error? {
             }
             continue;
         }
+        // TODO: no need to create clients for available subscriptions. hence refactor following logic.
         lock {
             ClientDetails[] clientDetails = [];
             foreach var subscriber in subscribers {
@@ -82,10 +84,11 @@ function syncDispatcherState() returns error? {
 
 isolated function consumeMessages(string topic) {
     while store:isTopicAvailable(topic) {
-        mq:Message? message = mq:poll(topic);
+        readonly & websubhub:UpdateMessage? message = mq:poll(topic);
         if message is () {
             continue;
         }
+        readonly & websubhub:ContentDistributionMessage payload = constructContentDistributionMessage(message);
         lock {
             if dispatcherClients.hasKey(topic) {
                 foreach ClientDetails clientDetails in dispatcherClients.get(topic) {
@@ -95,7 +98,7 @@ isolated function consumeMessages(string topic) {
                         continue;
                     }
                     websubhub:HubClient clientEp = clientDetails.clientEp;
-                    websubhub:ContentDistributionSuccess|error response = clientEp->notifyContentDistribution(message.payload);
+                    websubhub:ContentDistributionSuccess|error response = clientEp->notifyContentDistribution(payload);
                     if response is websubhub:SubscriptionDeletedError {
                         store:removeSubscription(subscription.hubTopic, subscription.hubCallback);
                     }
@@ -103,4 +106,11 @@ isolated function consumeMessages(string topic) {
             }
         }
     }
+}
+
+isolated function constructContentDistributionMessage(readonly & websubhub:UpdateMessage message) returns readonly & websubhub:ContentDistributionMessage {
+    return {
+        contentType: message.contentType,
+        content: message.content
+    };
 }
