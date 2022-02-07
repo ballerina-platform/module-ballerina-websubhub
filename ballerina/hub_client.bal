@@ -38,7 +38,7 @@ public client class HubClient {
     # });
     # ```
     #
-    # + subscription - Original subscription details for the `subscriber`
+    # + subscription - Original `websubhub:Subscription` record, which contains the details of the `subscriber`
     # + config - The `websubhub:ClientConfiguration` for the underlying client
     # + return - The `websubhub:HubClient` or an `websubhub:Error` if the initialization failed
     public isolated function init(Subscription subscription, *ClientConfiguration config) returns Error? {
@@ -55,7 +55,7 @@ public client class HubClient {
     # ContentDistributionSuccess publishUpdate = check websubHubClientEP->notifyContentDistribution({ content: "This is sample content" });
     # ```
     #
-    # + msg - Content to be distributed to the topic subscriber 
+    # + message - Content to be distributed to the topic subscriber 
     # + return - An `websubhub:Error` if an exception occurred, a `websubhub:SubscriptionDeletedError` if the subscriber responded with `HTTP 410`,
     #            or else a `websubhub:ContentDistributionSuccess` for successful content delivery
     isolated remote function notifyContentDistribution(ContentDistributionMessage message) 
