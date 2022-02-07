@@ -1,0 +1,3 @@
+resources:
+  - in_memory_hub.yaml
+  - ingress.yaml
