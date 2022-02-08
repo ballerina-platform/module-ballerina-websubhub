@@ -85,7 +85,7 @@ json payload = {
 websubhub:Acknowledgement publishResponse = check publisherClient->publishUpdate("http://websubpubtopic.com", payload);
 ```
 
-### Returning Errors from Remote Methods
+#### Returning Errors from Remote Methods
 
 * Remote functions in `websubhub:Service` can return `error` type.
 ```ballerina
