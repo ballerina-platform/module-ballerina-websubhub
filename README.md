@@ -15,7 +15,6 @@ This module provides APIs for a WebSub Hub service and WebSub Publisher client.
 
 [**WebSub Publisher**](https://www.w3.org/TR/websub/#publisher) is an implementation that advertises a topic and hub URL on one or more resource URLs.
 
- For more information, go to [The WebSub Hub Module](https://ballerina.io/learn/api-docs/ballerina/websubhub/index.html).
 
  ### Basic flow with WebSub
 
