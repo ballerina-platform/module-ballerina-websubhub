@@ -7,7 +7,7 @@ Ballerina WebSubHub Library
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/websubhub.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Fwebsubhub)
   [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-websubhub/branch/main/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-websubhub) 
 
-This module provides APIs for a WebSub Hub service and WebSub Publisher client.
+This library provides APIs for a WebSub Hub service and WebSub Publisher client.
 
 [**WebSub**](https://www.w3.org/TR/websub/) is a common mechanism for communication between publishers of any kind of web content and their subscribers based on HTTP webhooks. Subscription requests are relayed through hubs, which validate and verify the requests. Hubs then distribute new and updated content to subscribers when it becomes available. WebSub was previously known as PubSubHubbub.
 
