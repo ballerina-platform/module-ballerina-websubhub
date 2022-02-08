@@ -189,7 +189,7 @@ All contributors are encouraged to read the [Ballerina Code of Conduct](https://
 
 ## Useful Links
 
-* For more information, go to [The WebSub Hub Module](https://ballerina.io/learn/api-docs/ballerina/websubhub/index.html).
+* For more information, go to the [`websubhub` library](https://lib.ballerina.io/ballerina/websubhub/latest).
 * Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).
 * Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
 * View the [Ballerina performance test results](performance/benchmarks/summary.md).
