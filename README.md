@@ -15,7 +15,10 @@ This library provides APIs for a WebSub Hub service and WebSub Publisher client.
 
 [**WebSub Publisher**](https://www.w3.org/TR/websub/#publisher) is an implementation that advertises a topic and hub URL on one or more resource URLs.
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
  ### Basic flow with WebSub
 
 1. The subscriber discovers (from the publisher) the topic it needs to subscribe to and the hub(s) that deliver notifications on the updates of the topic.
@@ -190,6 +193,7 @@ All contributors are encouraged to read the [Ballerina Code of Conduct](https://
 
 ## Useful Links
 
+* For more information, go to [The WebSub Hub Module](https://ballerina.io/learn/api-docs/ballerina/websubhub/index.html).
 * Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).
 * Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
 * View the [Ballerina performance test results](performance/benchmarks/summary.md).
