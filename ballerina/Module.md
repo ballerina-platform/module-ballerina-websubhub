@@ -36,27 +36,27 @@ verification (by echoing a challenge specified in the request) by the subscriber
     }
 ```
 
-* The following is a sample **WebSub HubClient**.
+* The following is a sample usage for **WebSub HubClient**.
 
 ```ballerina
-    type HubService service object {
-        remote function onSubscriptionIntentVerified(websubhub:Subscription msg) {
+websubhub:Service hubService = service object {
+    remote function onSubscriptionIntentVerified(websubhub:Subscription msg) returns error? {
 
-            // you can pass client config if you want 
-            // say maybe retry config
-            websub:HubClient hubclient = new(msg);
-            check start notifySubscriber(hubclient);
-        }
+        // you can pass client config if you want 
+        // say maybe retry config
+        websubhub:HubClient hubclient = check new (msg);
+        _ = start self.notifySubscriber(hubclient);
+    }
 
-        function notifySubscriber(websubhub:HubClient hubclient) returns error? {
-            while (true) {
-                // fetch the message from MB
-                check hubclient->notifyContentDistribution({
-                    content: "This is sample content delivery"
-                });
-            }   
+    function notifySubscriber(websubhub:HubClient hubclient) returns error? {
+        while true {
+            // fetch the message from MB
+            _ = check hubclient->notifyContentDistribution({
+                content: "This is sample content delivery"
+            });
         }
     }
+};
 ```
 
 #### Using Publisher Client
@@ -67,16 +67,13 @@ WebSub specification extensively discusses the relationship between the subscrib
 * The following is a sample **WebSub Publisher Client**.
 
 ```ballerina
-    websubhub:PublisherClient publisherClient = new ("http://localhost:9191/websub/hub");
-
-    check publisherClient->registerTopic("http://websubpubtopic.com");
-   
-    var publishResponse = publisherClient->publishUpdate(
-                "http://websubpubtopic.com",
-                {
-                    "action": "publish", 
-                    "mode": "remote-hub"
-                });
+websubhub:PublisherClient publisherClient = check new ("http://localhost:9191/websub/hub");
+websubhub:TopicDeregistrationSuccess topicRegResponse = check publisherClient->registerTopic("http://websubpubtopic.com");
+json payload = {
+    "action": "publish",
+    "mode": "remote-hub"
+};
+websubhub:Acknowledgement publishResponse = check publisherClient->publishUpdate("http://websubpubtopic.com", payload);
 ```
 
 # Returning Errors from Remote Methods
@@ -88,7 +85,7 @@ service /websubhub on new websubhub:Listener(9090) {
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
         boolean validationSuccessfull = check validateRegistration(message);
-        if (validationSuccessfull) {
+        if validationSuccessfull {
             websubhub:TOPIC_REGISTRATION_SUCCESS;
         } else {
             return websubhub:TOPIC_REGISTRATION_ERROR;
