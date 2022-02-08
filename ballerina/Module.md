@@ -30,10 +30,10 @@ verification (by echoing a challenge specified in the request) by the subscriber
 * **WebSub HubClient** can be used to distribute the published content to subscribers. The current implementation is based on `Ballerina HTTP Client`.
 
 ```ballerina
-    client class HubClient {
-        remote function notifyContentDistribution(websubhub:ContentDistributionMessage msg) 
-                returns websubhub:ContentDistributionSuccess|websubhub:SubscriptionDeletedError|error?
-    }
+type HubClient client object {
+    remote function notifyContentDistribution(websubhub:ContentDistributionMessage msg)
+                returns websubhub:ContentDistributionSuccess|websubhub:SubscriptionDeletedError|error?;
+};
 ```
 
 * The following is a sample usage for **WebSub HubClient**.
