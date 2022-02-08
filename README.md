@@ -15,10 +15,6 @@ This library provides APIs for a WebSub Hub service and WebSub Publisher client.
 
 [**WebSub Publisher**](https://www.w3.org/TR/websub/#publisher) is an implementation that advertises a topic and hub URL on one or more resource URLs.
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
  ### Basic flow with WebSub
 
 1. The subscriber discovers (from the publisher) the topic it needs to subscribe to and the hub(s) that deliver notifications on the updates of the topic.
