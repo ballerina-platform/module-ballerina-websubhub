@@ -19,7 +19,7 @@ import in_memory_hub.message_queue as mq;
 import in_memory_hub.store;
 
 # An in-memory WebSub Hub implementation.
-service /hub on new websubhub:Listener(9090) {
+websubhub:Service hubService = service object {
 
     # Registers a `topic` in the hub.
     #
