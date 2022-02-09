@@ -1,0 +1,17 @@
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: no-name
+spec:
+  template:
+    metadata:
+      labels:
+        logs: "true"
+    spec:
+      containers:
+        - name: "in-memory-hub-deployment"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9090
+              name: "port-1-in-mem"
+              protocol: "TCP"
