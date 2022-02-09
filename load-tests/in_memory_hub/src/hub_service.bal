@@ -96,4 +96,4 @@ websubhub:Service hubService = service object {
     remote function onUnsubscriptionIntentVerified(readonly & websubhub:VerifiedUnsubscription message) returns error? {
         store:removeSubscription(message.hubTopic, message.hubCallback);
     }    
-}
+};
