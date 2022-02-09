@@ -1,3 +1,4 @@
+import ballerina/log;
 import ballerina/websub;
 
 @websub:SubscriberServiceConfig {
@@ -7,6 +8,7 @@ import ballerina/websub;
 }
 service /JuApTOXq19 on new websub:Listener(9091) {
     remote function onEventNotification(readonly & websub:ContentDistributionMessage msg) returns websub:Acknowledgement {
+        log:printInfo("Received content update: ", payload = msg);
         return websub:ACKNOWLEDGEMENT;
     }
 }
