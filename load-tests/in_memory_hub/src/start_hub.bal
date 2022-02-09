@@ -21,7 +21,7 @@ public function main() returns error? {
     // Initialize the Hub
     _ = @strand {thread: "any"} start dispatcher:syncDispatcherState();
 
-    websubhub:Listener hubListener = check new (9090);
+    websubhub:Listener hubListener = check new(9090);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
 }

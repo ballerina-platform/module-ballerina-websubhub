@@ -18,12 +18,7 @@
 # ----------------------------------------------------------------------------
 set -e
 
-# Using the ballerina zip version for testing. Once finalized, can use a docker image with process_csv_output util
-echo "----------Downloading Ballerina----------"
-wget https://dist.ballerina.io/downloads/2201.0.0/ballerina-2201.0.0-swan-lake-linux-x64.deb
+source base-scenario.sh
 
-echo "----------Setting Up Ballerina----------"
-sudo dpkg -i ballerina-2201.0.0-swan-lake-linux-x64.deb
-
-echo "----------Finalizing results----------"
-bal run $scriptsDir/load_test/ -- "In Memory Hub" "$resultsDir/summary.csv"
+echo "----------Running Load Test----------"
+java -jar $scriptsDir/load_test.jar "In Memory Hub" "$resultsDir/summary.csv"

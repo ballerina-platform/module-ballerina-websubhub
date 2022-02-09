@@ -36,8 +36,8 @@ isolated function retrieveReceivedCount() returns int {
 }
 
 websub:SubscriberService subscriberService = @websub:SubscriberServiceConfig {
-    target: ["http://bal.perf.test/hub", "test"],
-    callback: "http://bal.perf.test.sub/sub",
+    target: ["http://in-memory-hub-svc.default.svc.cluster.local:9090/hub", "test"],
+    callback: "http://in-memory-hub-svc.default.svc.cluster.local:9100/sub",
     unsubscribeOnShutdown: true,
     leaseSeconds: 36000
 } service object {
@@ -48,7 +48,7 @@ websub:SubscriberService subscriberService = @websub:SubscriberServiceConfig {
 };
 
 public function main(string label, string output_csv_path) returns error? {
-    websubhub:PublisherClient publisherClient = check new("http://bal.perf.test/hub");
+    websubhub:PublisherClient publisherClient = check new("http://in-memory-hub-svc.default.svc.cluster.local:9090/hub");
     
     // register the topic
     _ = check publisherClient->registerTopic("test");
@@ -64,9 +64,9 @@ public function main(string label, string output_csv_path) returns error? {
     int errorCount = 0;
     time:Utc startedTime = time:utcNow();
     time:Utc expiryTime = time:utcAddSeconds(startedTime, 3600);
+    json payload = {event: "event"};
     while time:utcDiffSeconds(expiryTime, time:utcNow()) > 0D {
-        json params = {event: "event"};
-        websubhub:Acknowledgement|websubhub:UpdateMessageError response = publisherClient->publishUpdate("test", params);
+        websubhub:Acknowledgement|websubhub:UpdateMessageError response = publisherClient->publishUpdate("test", payload);
         sentCount += 1;
         if response is websubhub:UpdateMessageError {
             errorCount += 1;
