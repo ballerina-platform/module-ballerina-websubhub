@@ -14,3 +14,19 @@ spec:
   selector:
     app: "in_memory_hub"
   type: "ClusterIP"
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  labels:
+    app: "jmeter"
+  name: "client-svc"
+spec:
+  ports:
+    - name: "client-port"
+      port: 9100
+      protocol: "TCP"
+      targetPort: 9100
+  selector:
+    app: "jmeter"
+  type: "ClusterIP"
