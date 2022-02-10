@@ -37,7 +37,7 @@ isolated function retrieveReceivedCount() returns int {
 
 websub:SubscriberService subscriberService = @websub:SubscriberServiceConfig {
     target: ["http://in-memory-hub-svc.default.svc.cluster.local:9090/hub", "test"],
-    callback: "http://in-memory-hub-svc.default.svc.cluster.local:9100/sub",
+    callback: "http://client-svc.default.svc.cluster.local:9100/sub",
     unsubscribeOnShutdown: true,
     leaseSeconds: 36000
 } service object {
