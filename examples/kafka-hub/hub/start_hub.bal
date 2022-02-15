@@ -168,7 +168,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[groupName] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, groupName);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
