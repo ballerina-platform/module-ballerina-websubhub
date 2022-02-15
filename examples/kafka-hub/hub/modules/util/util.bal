@@ -16,6 +16,7 @@
 
 import ballerina/regex;
 import ballerina/random;
+import ballerina/time;
 import ballerina/lang.'string as strings;
 
 # Sanitizes the name of the `topic` by replacing special characters with `_`.
@@ -26,13 +27,23 @@ public isolated function sanitizeTopicName(string topic) returns string {
     return nomalizeString(topic);
 }
 
-# Generates a group-name for a subscriber.
+# Generates a unique Id for a subscriber.
 # 
 # + topic - The `topic` which subscriber needs to subscribe
 # + callbackUrl - Subscriber callback URL
-# + return - Generated group-name for subscriber
-public isolated function generateGroupName(string topic, string callbackUrl) returns string {
+# + return - Generated subscriber Id for the subscriber
+public isolated function generateSubscriberId(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl;
+    return nomalizeString(idValue);
+}
+
+# Generates a group name for the kafka-consumer.
+# 
+# + topic - The `topic` which subscriber needs to subscribe
+# + callbackUrl - Subscriber callback URL
+# + return - Generated consumer group name the subscriber
+public isolated function generateGroupName(string topic, string callbackUrl) returns string {
+    string idValue = topic + ":::" + callbackUrl + ":::" + time:monotonicNow().toBalString();
     return nomalizeString(idValue);
 }
 

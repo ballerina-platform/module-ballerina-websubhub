@@ -147,11 +147,11 @@ function deSerializeSubscribersMessage(string lastPersistedData) returns websubh
 }
 
 function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
-    final readonly & string[] groupNames = persistedSubscribers
-        .'map(sub => util:generateGroupName(sub.hubTopic, sub.hubCallback))
+    final readonly & string[] subscriberIds = persistedSubscribers
+        .'map(sub => util:generateSubscriberId(sub.hubTopic, sub.hubCallback))
         .cloneReadOnly();
     lock {
-        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => groupNames.indexOf('key) is ());
+        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
         foreach var sub in unsubscribedSubscribers {
             _ = subscribersCache.removeIfHasKey(sub);
         }
@@ -161,14 +161,15 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
         string topicName = util:sanitizeTopicName(subscriber.hubTopic);
-        string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
+        string subscriberId = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         boolean subscriberNotAvailable = true;
         lock {
-            subscriberNotAvailable = !subscribersCache.hasKey(groupName);
-            subscribersCache[groupName] = subscriber.cloneReadOnly();
+            subscriberNotAvailable = !subscribersCache.hasKey(subscriberId);
+            subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, groupName);
+            string consumerGroup = check value:ensureType(subscriber["consumerGroup"]);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, consumerGroup);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -181,7 +182,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     cert: "./resources/server.crt"
                 }
             });
-            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName);
+            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, subscriberId);
         }
     }
 }
