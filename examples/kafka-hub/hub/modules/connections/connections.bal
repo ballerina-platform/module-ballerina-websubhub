@@ -15,7 +15,7 @@
 // under the License.
 
 import ballerinax/kafka;
-import ballerina/websubhub;
+// import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.util;
 
@@ -45,11 +45,11 @@ public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_B
 
 # Creates a `kafka:Consumer` for a subscriber.
 # 
-# + message - The subscription details
+# + topic - The WebSub `topic` to which subscriber has subscribed
+# + groupName - The group-name for the kafka consumer
 # + return - `kafka:Consumer` if succcessful or else `error`
-public isolated function createMessageConsumer(websubhub:VerifiedSubscription message) returns kafka:Consumer|error {
-    string topicName = util:sanitizeTopicName(message.hubTopic);
-    string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
+public isolated function createMessageConsumer(string topic, string groupName) returns kafka:Consumer|error {
+    string topicName = util:sanitizeTopicName(topic);
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
         topics: [topicName],

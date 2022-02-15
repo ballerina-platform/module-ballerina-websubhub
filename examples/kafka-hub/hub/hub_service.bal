@@ -125,7 +125,7 @@ service object {
         if !topicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
-            string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
+            string groupName = util:generateSubscriberId(message.hubTopic, message.hubCallback);
             boolean subscriberAvailable = false;
             lock {
                 subscriberAvailable = subscribersCache.hasKey(groupName);
@@ -178,7 +178,7 @@ service object {
         if !topicAvailable {
             return error websubhub:UnsubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
-            string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
+            string groupName = util:generateSubscriberId(message.hubTopic, message.hubCallback);
             lock {
                 subscriberAvailable = subscribersCache.hasKey(groupName);
             }

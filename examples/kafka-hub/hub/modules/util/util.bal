@@ -26,14 +26,23 @@ public isolated function sanitizeTopicName(string topic) returns string {
     return nomalizeString(topic);
 }
 
-# Generates a group-name for a subscriber.
+# Generates a subscriber-ID for a subscriber.
 # 
 # + topic - The `topic` which subscriber needs to subscribe
 # + callbackUrl - Subscriber callback URL
-# + return - Generated group-name for subscriber
-public isolated function generateGroupName(string topic, string callbackUrl) returns string {
+# + return - Generated subscriber-Id for subscriber
+public isolated function generateSubscriberId(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl;
     return nomalizeString(idValue);
+}
+
+# Generates a group-name for a subscriber.
+# 
+# + subscriberId - Unique Id for the subscription
+# + return - Generated group-name for subscriber
+public isolated function generateGroupName(string subscriberId) returns string {
+    string groupName = subscriberId + ":::" + generateRandomString();
+    return nomalizeString(groupName);
 }
 
 # Normalizes a `string` by replacing special characters with `_`.
