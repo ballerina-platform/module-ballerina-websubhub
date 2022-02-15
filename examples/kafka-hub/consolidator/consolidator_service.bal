@@ -89,7 +89,9 @@ isolated function processSubscription(json payload) returns error? {
     string groupName = util:generateGroupName(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
-        subscribersCache[groupName] = subscription.cloneReadOnly();
+        if !subscribersCache.hasKey(groupName) {
+            subscribersCache[groupName] = subscription.cloneReadOnly();
+        }
         _ = check persist:persistSubscriptions(subscribersCache);
     }
 }
