@@ -198,7 +198,7 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
         }
     } on fail var e {
         lock {
-            _ = subscribersCache.remove(groupName);
+            _ = subscribersCache.removeIfHasKey(groupName);
         }
         log:printError("Error occurred while sending notification to subscriber", err = e.message());
 
