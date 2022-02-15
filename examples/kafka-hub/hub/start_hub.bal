@@ -187,18 +187,18 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
     }
 }
 
-isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) {
+isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string subscriberId) {
     do {
         while true {
             kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-            if !isValidConsumer(topicName, groupName) {
-                fail error(string `Consumer with group name ${groupName} or topic ${topicName} is invalid`);
+            if !isValidConsumer(topicName, subscriberId) {
+                fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
             }
             _ = check notifySubscribers(records, clientEp, consumerEp);
         }
     } on fail var e {
         lock {
-            _ = subscribersCache.removeIfHasKey(groupName);
+            _ = subscribersCache.removeIfHasKey(subscriberId);
         }
         log:printError("Error occurred while sending notification to subscriber", err = e.message());
 
@@ -209,14 +209,14 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
     }
 }
 
-isolated function isValidConsumer(string topicName, string groupName) returns boolean {
+isolated function isValidConsumer(string topicName, string subscriberId) returns boolean {
     boolean topicAvailable = true;
     lock {
         topicAvailable = registeredTopicsCache.hasKey(topicName);
     }
     boolean subscriberAvailable = true;
     lock {
-        subscriberAvailable = subscribersCache.hasKey(groupName);
+        subscriberAvailable = subscribersCache.hasKey(subscriberId);
     }
     return topicAvailable && subscriberAvailable;
 }
