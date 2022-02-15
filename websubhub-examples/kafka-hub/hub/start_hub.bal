@@ -59,7 +59,6 @@ function syncRegsisteredTopicsCache() {
         }
     } on fail var e {
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
-
         kafka:Error? result = conn:registeredTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         if result is kafka:Error {
             log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
@@ -79,6 +78,7 @@ function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
             return lastPersistedData;
         }
     }
+    return;
 }
 
 function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
@@ -114,7 +114,6 @@ function syncSubscribersCache() {
         }
     } on fail var e {
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
-
         kafka:Error? result = conn:subscribersConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         if result is kafka:Error {
             log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
@@ -133,7 +132,8 @@ function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|erro
             log:printError("Error occurred while retrieving subscriber-data ", err = lastPersistedData.message());
             return lastPersistedData;
         }
-    } 
+    }
+    return;
 }
 
 function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
@@ -147,9 +147,11 @@ function deSerializeSubscribersMessage(string lastPersistedData) returns websubh
 }
 
 function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
-    string[] groupNames = persistedSubscribers.'map(sub => util:generateGroupName(sub.hubTopic, sub.hubCallback));
+    final readonly & string[] subscriberIds = persistedSubscribers
+        .'map(sub => util:generateSubscriberId(sub.hubTopic, sub.hubCallback))
+        .cloneReadOnly();
     lock {
-        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => groupNames.indexOf('key) is ());
+        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
         foreach var sub in unsubscribedSubscribers {
             _ = subscribersCache.removeIfHasKey(sub);
         }
@@ -159,14 +161,15 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
         string topicName = util:sanitizeTopicName(subscriber.hubTopic);
-        string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
+        string subscriberId = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         boolean subscriberNotAvailable = true;
         lock {
-            subscriberNotAvailable = !subscribersCache.hasKey(groupName);
-            subscribersCache[groupName] = subscriber.cloneReadOnly();
+            subscriberNotAvailable = !subscribersCache.hasKey(subscriberId);
+            subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
+            string consumerGroup = check value:ensureType(subscriber["consumerGroup"]);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, consumerGroup);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -179,23 +182,23 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     cert: "./resources/server.crt"
                 }
             });
-            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName);
+            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, subscriberId);
         }
     }
 }
 
-isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) {
+isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string subscriberId) {
     do {
         while true {
             kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-            if !isValidConsumer(topicName, groupName) {
-                fail error(string `Consumer with group name ${groupName} or topic ${topicName} is invalid`);
+            if !isValidConsumer(topicName, subscriberId) {
+                fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
             }
             _ = check notifySubscribers(records, clientEp, consumerEp);
         }
     } on fail var e {
         lock {
-            _ = subscribersCache.remove(groupName);
+            _ = subscribersCache.removeIfHasKey(subscriberId);
         }
         log:printError("Error occurred while sending notification to subscriber", err = e.message());
 
@@ -206,14 +209,14 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
     }
 }
 
-isolated function isValidConsumer(string topicName, string groupName) returns boolean {
+isolated function isValidConsumer(string topicName, string subscriberId) returns boolean {
     boolean topicAvailable = true;
     lock {
         topicAvailable = registeredTopicsCache.hasKey(topicName);
     }
     boolean subscriberAvailable = true;
     lock {
-        subscriberAvailable = subscribersCache.hasKey(groupName);
+        subscriberAvailable = subscribersCache.hasKey(subscriberId);
     }
     return topicAvailable && subscriberAvailable;
 }
