@@ -65,7 +65,7 @@ isolated function processPersistedData(string persistedData) returns error? {
 }
 
 isolated function processTopicRegistration(json payload) returns error? {
-    websubhub:TopicRegistration registration = check retrieveTopicRegistration(payload);
+    websubhub:TopicRegistration registration = check value:cloneWithType(payload);
     string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
@@ -74,15 +74,8 @@ isolated function processTopicRegistration(json payload) returns error? {
     }
 }
 
-isolated function retrieveTopicRegistration(json payload) returns websubhub:TopicRegistration|error {
-    string topic = check payload.topic;
-    return {
-        topic: topic
-    };
-}
-
 isolated function processTopicDeregistration(json payload) returns error? {
-    websubhub:TopicDeregistration deregistration = check retrieveTopicDeregistration(payload);
+    websubhub:TopicDeregistration deregistration = check value:cloneWithType(payload);
     string topicName = util:sanitizeTopicName(deregistration.topic);
     lock {
         // remove the topic if topic-deregistration event received
@@ -91,19 +84,14 @@ isolated function processTopicDeregistration(json payload) returns error? {
     }
 }
 
-isolated function retrieveTopicDeregistration(json payload) returns websubhub:TopicDeregistration|error {
-    string topic = check payload.topic;
-    return {
-        topic: topic
-    };
-}
-
 isolated function processSubscription(json payload) returns error? {
     websubhub:VerifiedSubscription subscription = check payload.cloneWithType(websubhub:VerifiedSubscription);
     string groupName = util:generateGroupName(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
-        subscribersCache[groupName] = subscription.cloneReadOnly();
+        if !subscribersCache.hasKey(groupName) {
+            subscribersCache[groupName] = subscription.cloneReadOnly();
+        }
         _ = check persist:persistSubscriptions(subscribersCache);
     }
 }
