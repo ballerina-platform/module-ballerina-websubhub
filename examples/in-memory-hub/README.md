@@ -4,14 +4,14 @@
 
 The purpose of this example is to demonstrate how to write a WebSub `hub` with minimum code using ballerina.  
 
-This WebSub `hub` example has been implemented using APIs provided by ballerina WebSubHub package. The forementioned APIs are flexible 
+This WebSub `hub` example has been implemented using APIs provided by ballerina WebSubHub package. The aforementioned APIs are flexible 
 enough so that the `hub` implementation could be backed by different persistence layers such as in-memory, database, message broker etc. This 
-particular implementation is based on in-memory persistencce layer.
+particular implementation is based on in-memory persistence layer.
 
 ## Implementation
 
-// TODO: complete this section
-As mentioned before this examples is based on in-memory persistence layer. 
+Implementation has been done using the APIs provided by ballerina WebSubHub package and as mentioned above it is backed 
+by an in-memory persistence layer.
 
 ## Usage
 
