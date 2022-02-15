@@ -26,8 +26,6 @@ import kafkaHub.config;
 
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
-// stores the consumer group-names for the subscribers who are not available due to network failures
-isolated map<string> unavailableSubscribers = {};
 
 public function main() returns error? {    
     // Initialize the Hub
@@ -149,11 +147,11 @@ function deSerializeSubscribersMessage(string lastPersistedData) returns websubh
 }
 
 function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
-    final readonly & string[] subscriberIds = persistedSubscribers
-        .'map(sub => util:generateSubscriberId(sub.hubTopic, sub.hubCallback))
+    final readonly & string[] groupNames = persistedSubscribers
+        .'map(sub => util:generateGroupName(sub.hubTopic, sub.hubCallback))
         .cloneReadOnly();
     lock {
-        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
+        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => groupNames.indexOf('key) is ());
         foreach var sub in unsubscribedSubscribers {
             _ = subscribersCache.removeIfHasKey(sub);
         }
@@ -163,15 +161,14 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
         string topicName = util:sanitizeTopicName(subscriber.hubTopic);
-        string subscriberId = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
+        string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
         boolean subscriberNotAvailable = true;
         lock {
-            subscriberNotAvailable = !subscribersCache.hasKey(subscriberId);
-            subscribersCache[subscriberId] = subscriber.cloneReadOnly();
+            subscriberNotAvailable = !subscribersCache.hasKey(groupName);
+            subscribersCache[groupName] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            string groupName = retrieveGroupName(subscriberId);
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber.hubTopic, groupName);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(subscriber);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -184,41 +181,23 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     cert: "./resources/server.crt"
                 }
             });
-            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName, subscriberId);
+            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, groupName);
         }
     }
 }
 
-function retrieveGroupName(string subscriberId) returns string {
-    boolean isSubscriberAvailable = false;
-    lock {
-        isSubscriberAvailable = unavailableSubscribers.hasKey(subscriberId);
-    }
-    if isSubscriberAvailable {
-        lock {
-            return unavailableSubscribers.remove(subscriberId);
-        }
-    }
-    return util:generateGroupName(subscriberId);
-}
-
-isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName, string subscriberId) {
+isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string groupName) {
     do {
         while true {
             kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-            if !isValidConsumer(topicName, subscriberId) {
+            if !isValidConsumer(topicName, groupName) {
                 fail error(string `Consumer with group name ${groupName} or topic ${topicName} is invalid`);
             }
             _ = check notifySubscribers(records, clientEp, consumerEp);
         }
     } on fail var e {
-        if e is websubhub:ContentDeliveryError {
-            lock {
-                unavailableSubscribers[subscriberId] = groupName;
-            }
-        }
         lock {
-            _ = subscribersCache.remove(subscriberId);
+            _ = subscribersCache.remove(groupName);
         }
         log:printError("Error occurred while sending notification to subscriber", err = e.message());
 
@@ -229,14 +208,14 @@ isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer
     }
 }
 
-isolated function isValidConsumer(string topicName, string subscriberId) returns boolean {
+isolated function isValidConsumer(string topicName, string groupName) returns boolean {
     boolean topicAvailable = true;
     lock {
         topicAvailable = registeredTopicsCache.hasKey(topicName);
     }
     boolean subscriberAvailable = true;
     lock {
-        subscriberAvailable = subscribersCache.hasKey(subscriberId);
+        subscriberAvailable = subscribersCache.hasKey(groupName);
     }
     return topicAvailable && subscriberAvailable;
 }
