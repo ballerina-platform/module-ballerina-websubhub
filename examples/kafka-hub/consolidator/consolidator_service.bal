@@ -86,11 +86,11 @@ isolated function processTopicDeregistration(json payload) returns error? {
 
 isolated function processSubscription(json payload) returns error? {
     websubhub:VerifiedSubscription subscription = check payload.cloneWithType(websubhub:VerifiedSubscription);
-    string groupName = util:generateGroupName(subscription.hubTopic, subscription.hubCallback);
+    string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
-        if !subscribersCache.hasKey(groupName) {
-            subscribersCache[groupName] = subscription.cloneReadOnly();
+        if !subscribersCache.hasKey(subscriberId) {
+            subscribersCache[subscriberId] = subscription.cloneReadOnly();
         }
         _ = check persist:persistSubscriptions(subscribersCache);
     }
@@ -98,10 +98,10 @@ isolated function processSubscription(json payload) returns error? {
 
 isolated function processUnsubscription(json payload) returns error? {
     websubhub:VerifiedUnsubscription unsubscription = check payload.cloneWithType(websubhub:VerifiedUnsubscription);
-    string groupName = util:generateGroupName(unsubscription.hubTopic, unsubscription.hubCallback);
+    string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
     lock {
         // remove the subscriber if the unsubscription event received
-        _ = subscribersCache.removeIfHasKey(groupName);
+        _ = subscribersCache.removeIfHasKey(subscriberId);
         _ = check persist:persistSubscriptions(subscribersCache);
     }
 }
