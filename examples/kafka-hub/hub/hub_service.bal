@@ -125,10 +125,10 @@ service object {
         if !topicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
-            string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
+            string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
             boolean subscriberAvailable = false;
             lock {
-                subscriberAvailable = subscribersCache.hasKey(groupName);
+                subscriberAvailable = subscribersCache.hasKey(subscriberId);
             }
             if subscriberAvailable {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
@@ -142,6 +142,8 @@ service object {
     # + return - `error` if there is any unexpected error or else `()`
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
         lock {
+            string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
+            message[CONSUMER_GROUP] = consumerGroup;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
@@ -178,9 +180,9 @@ service object {
         if !topicAvailable {
             return error websubhub:UnsubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
-            string groupName = util:generateGroupName(message.hubTopic, message.hubCallback);
+            string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
             lock {
-                subscriberAvailable = subscribersCache.hasKey(groupName);
+                subscriberAvailable = subscribersCache.hasKey(subscriberId);
             }
             if !subscriberAvailable {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
