@@ -44,11 +44,11 @@ public function syncDispatcherState() returns error? {
 
         // update the dispatcher-clients for available topics and start the message consuming for new `topics` 
         foreach string topic in availableTopics {
-            boolean isNewTopic = false;
+            boolean newTopic = false;
             lock {
-                isNewTopic = !dispatcherClients.hasKey(topic);
+                newTopic = !dispatcherClients.hasKey(topic);
             }
-            if isNewTopic {
+            if newTopic {
                 _ = @strand {thread: "any"} start consumeMessages(topic);
             }
 
@@ -61,7 +61,7 @@ public function syncDispatcherState() returns error? {
             }
 
             lock {
-                ClientDetails[] clientDetails = isNewTopic ? [] : retrieveValidClientDetails(subscribers, dispatcherClients.get(topic));
+                ClientDetails[] clientDetails = newTopic ? [] : retrieveValidClientDetails(subscribers, dispatcherClients.get(topic));
                 readonly & websubhub:Subscription[] newSubscribers = retrieveNewSubscribers(subscribers, clientDetails);
                 foreach var subscriber in newSubscribers {
                     websubhub:HubClient clientEp = check new (subscriber);
