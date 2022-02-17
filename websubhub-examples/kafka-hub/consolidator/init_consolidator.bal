@@ -122,7 +122,7 @@ isolated function deSerializeSubscribersMessage(string lastPersistedData) return
 
 isolated function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
     foreach var subscriber in persistedSubscribers {
-        string groupName = util:generateGroupName(subscriber.hubTopic, subscriber.hubCallback);
+        string groupName = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         lock {
             subscribersCache[groupName] = subscriber.cloneReadOnly();
         }

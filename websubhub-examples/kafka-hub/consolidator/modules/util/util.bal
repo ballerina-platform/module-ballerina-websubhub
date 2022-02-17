@@ -31,7 +31,7 @@ public isolated function sanitizeTopicName(string topic) returns string {
 # + topic - The `topic` which subscriber needs to subscribe
 # + callbackUrl - Subscriber callback URL
 # + return - Generated group-name for subscriber
-public isolated function generateGroupName(string topic, string callbackUrl) returns string {
+public isolated function generateSubscriberId(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl;
     return nomalizeString(idValue);
 }
