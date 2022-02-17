@@ -143,7 +143,7 @@ service object {
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
         lock {
             string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
-            message["consumerGroup"] = consumerGroup;
+            message[CONSUMER_GROUP] = consumerGroup;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());

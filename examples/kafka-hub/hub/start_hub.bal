@@ -27,6 +27,8 @@ import kafkaHub.config;
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
+const string CONSUMER_GROUP = "consumerGroup";
+
 public function main() returns error? {    
     // Initialize the Hub
     _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
@@ -168,7 +170,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            string consumerGroup = check value:ensureType(subscriber["consumerGroup"]);
+            string consumerGroup = check value:ensureType(subscriber[CONSUMER_GROUP]);
             kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, consumerGroup);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
