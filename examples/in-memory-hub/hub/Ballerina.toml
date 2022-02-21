@@ -1,0 +1,7 @@
+[package]
+org = "ballerina"
+name = "in_memory_hub"
+version = "1.0.0"
+
+[build-options]
+observabilityIncluded = false
