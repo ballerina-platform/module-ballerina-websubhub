@@ -27,9 +27,8 @@ isolated function startConsolidator() returns error? {
     do {
         while true {
             kafka:ConsumerRecord[] records = check conn:websubEventConsumer->poll(config:POLLING_INTERVAL);
-            if records.length() > 0 {
-                kafka:ConsumerRecord lastRecord = records.pop();
-                string lastPersistedData = check string:fromBytes(lastRecord.value);
+            foreach kafka:ConsumerRecord currentRecord in records {
+                string lastPersistedData = check string:fromBytes(currentRecord.value);
                 error? result = processPersistedData(lastPersistedData);
                 if result is error {
                     log:printError("Error occurred while processing received event ", 'error = result);
