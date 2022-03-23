@@ -32,7 +32,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 5. The hub delivers the identified content to the subscribers of the topic.
 
-#### Using Hub Client
+#### Use `websubhub:HubClient`
 
 * **WebSub HubClient** can be used to distribute the published content to subscribers. The current implementation is based on `Ballerina HTTP Client`.
 
@@ -66,7 +66,7 @@ websubhub:Service hubService = service object {
 };
 ```
 
-#### Using Publisher Client
+#### Use `websubhub:PublisherClient`
 
 * The `PublisherClient` APIs are defined by Ballerina and it has no connection with the WebSub specification. As mentioned earlier, even though the
 WebSub specification extensively discusses the relationship between the subscriber and hub, it does not discuss much the relationship between the publisher and hub.
@@ -83,7 +83,7 @@ json payload = {
 websubhub:Acknowledgement publishResponse = check publisherClient->publishUpdate("http://websubpubtopic.com", payload);
 ```
 
-#### Returning Errors from Remote Methods
+#### Return errors from remote methods
 
 * Remote functions in `websubhub:Service` can return `error` type.
 ```ballerina
@@ -121,15 +121,15 @@ function validateRegistration(websubhub:TopicRegistration message) returns boole
 | onUnsubscriptionValidation | Unsubscription validation failure |
 | onUnsubscriptionIntentVerified | Unsubscription intent verification failure |
  
-## Issues and Projects
+## Issues and projects
 
 Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina Standard Library [parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
 
 This repository only contains the source code for the package.
 
-## Building from the Source
+## Build from the source
 
-### Setting Up the Prerequisites
+### Set up the prerequisites
 
 * Download and install Java SE Development Kit (JDK) version 11 (from one of the following locations).
 
@@ -139,7 +139,7 @@ This repository only contains the source code for the package.
    
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
      
-### Building the Source
+### Build the source
 
 Execute the commands below to build from source.
 
@@ -177,17 +177,17 @@ Execute the commands below to build from source.
     ./gradlew clean build -PpublishToCentral=true
     ```
 
-## Contributing to Ballerina
+## Contribute to Ballerina
 
 As an open source project, Ballerina welcomes contributions from the community.
 
 For more information, go to the [contribution guidelines](https://github.com/ballerina-platform/ballerina-lang/blob/master/CONTRIBUTING.md).
 
-## Code of Conduct
+## Code of conduct
 
 All contributors are encouraged to read the [Ballerina Code of Conduct](https://ballerina.io/code-of-conduct).
 
-## Useful Links
+## Useful links
 
 * For more information, go to the [`websubhub` library](https://lib.ballerina.io/ballerina/websubhub/latest).
 * Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).

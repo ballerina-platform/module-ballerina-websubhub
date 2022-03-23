@@ -25,7 +25,7 @@ verification (by echoing a challenge specified in the request) by the subscriber
 
 5. The hub delivers the identified content to the subscribers of the topic.
 
-#### Using Hub Client
+#### Use `websubhub:HubClient`
 
 * **WebSub HubClient** can be used to distribute the published content to subscribers. The current implementation is based on `Ballerina HTTP Client`.
 
@@ -59,7 +59,7 @@ websubhub:Service hubService = service object {
 };
 ```
 
-#### Using Publisher Client
+#### Use `websubhub:PublisherClient`
 
 * The `PublisherClient` APIs are defined by Ballerina and it has no connection with the WebSub specification. As mentioned earlier, even though the
 WebSub specification extensively discusses the relationship between the subscriber and hub, it does not discuss much the relationship between the publisher and hub.
@@ -76,7 +76,7 @@ json payload = {
 websubhub:Acknowledgement publishResponse = check publisherClient->publishUpdate("http://websubpubtopic.com", payload);
 ```
 
-#### Returning Errors from Remote Methods
+#### Return errors from remote methods
 
 * Remote functions in `websubhub:Service` can return `error` type.
 ```ballerina
