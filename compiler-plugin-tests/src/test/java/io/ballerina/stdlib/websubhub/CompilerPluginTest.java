@@ -374,10 +374,7 @@ public class CompilerPluginTest {
         Package currentPackage = loadPackage("sample_21");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
-                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
-                .collect(Collectors.toList());
-        Assert.assertEquals(errorDiagnostics.size(), 0);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,
