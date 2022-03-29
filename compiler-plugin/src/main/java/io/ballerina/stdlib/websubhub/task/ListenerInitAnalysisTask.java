@@ -55,7 +55,7 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
         SyntaxKind nodeSyntaxKind = node.kind();
         if (nodeSyntaxKind == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
             ExplicitNewExpressionNode expressionNode = (ExplicitNewExpressionNode) node;
-            if (!(expressionNode.typeDescriptor() instanceof QualifiedNameReferenceNode)) {
+            if (!(expressionNode.kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE)) {
                 return;
             }
             QualifiedNameReferenceNode nameRef = (QualifiedNameReferenceNode) expressionNode.typeDescriptor();
