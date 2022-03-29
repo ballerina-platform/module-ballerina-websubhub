@@ -55,6 +55,9 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
         SyntaxKind nodeSyntaxKind = node.kind();
         if (nodeSyntaxKind == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
             ExplicitNewExpressionNode expressionNode = (ExplicitNewExpressionNode) node;
+            if (!(expressionNode.typeDescriptor().kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE)) {
+                return;
+            }
             QualifiedNameReferenceNode nameRef = (QualifiedNameReferenceNode) expressionNode.typeDescriptor();
             Optional<Symbol> symbolOpt = context.semanticModel().symbol(nameRef);
             if (symbolOpt.isPresent() && symbolOpt.get() instanceof TypeReferenceTypeSymbol) {
@@ -72,6 +75,9 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
                 ListenerDeclarationNode parentNode = (ListenerDeclarationNode) expressionNode.parent();
                 Optional<TypeDescriptorNode> parentTypeOpt = parentNode.typeDescriptor();
                 if (parentTypeOpt.isPresent()) {
+                    if (!(parentTypeOpt.get().kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE)) {
+                        return;
+                    }
                     QualifiedNameReferenceNode parentType = (QualifiedNameReferenceNode) parentTypeOpt.get();
                     Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentType);
                     if (parentSymbolOpt.isPresent() && parentSymbolOpt.get() instanceof TypeReferenceTypeSymbol) {

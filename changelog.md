@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- [Compiler plugin crashes when using a new-expr with a user-defined class in the same source](https://github.com/ballerina-platform/ballerina-standard-library/issues/2815)
+
+## [1.2.0] - 2022-01-29
+
 ### Added
 - [WebSub/WebSubHub should support `readonly` parameters for remote methods](https://github.com/ballerina-platform/ballerina-standard-library/issues/2604)
 

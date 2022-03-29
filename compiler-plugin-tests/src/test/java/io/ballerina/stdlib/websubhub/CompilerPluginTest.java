@@ -369,6 +369,14 @@ public class CompilerPluginTest {
                 invalidTypeDesc, "onUnsubscription");
     }
 
+    @Test
+    public void testWithNexExprWithUserDefinedClasses() {
+        Package currentPackage = loadPackage("sample_21");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,
                                                        String typeDesc, String remoteMethodName) {
         DiagnosticInfo info = diagnostic.diagnosticInfo();
