@@ -22,8 +22,8 @@ import ballerina/test;
 listener Listener securedListener = new(9100,
     secureSocket = {
         key: {
-            certFile: "tests/resources/server.crt",
-            keyFile: "tests/resources/server.key"
+            certFile: "tests/resources/public.crt",
+            keyFile: "tests/resources/private.key"
         }
     }
 );
@@ -32,7 +32,7 @@ final http:ListenerJwtAuthHandler handler = new({
     issuer: "wso2",
     audience: "ballerina",
     signatureConfig: {
-        certFile: "tests/resources/server.crt"
+        certFile: "tests/resources/public.crt"
     },
     scopeKey: "scp"
 });
@@ -123,12 +123,12 @@ PublisherClient authEnabledPublisherClient = check new("https://localhost:9100/w
         expTime: 3600,
         signatureConfig: {
             config: {
-                keyFile: "tests/resources/server.key"
+                keyFile: "tests/resources/private.key"
             }
         }
     },
     secureSocket = {
-        cert: "tests/resources/server.crt"
+        cert: "tests/resources/public.crt"
     }
 );
 
@@ -143,12 +143,12 @@ http:Client authEnabledClient = check new("https://localhost:9100/websubhub", {
         expTime: 3600,
         signatureConfig: {
             config: {
-                keyFile: "tests/resources/server.key"
+                keyFile: "tests/resources/private.key"
             }
         }
     },
     secureSocket: {
-        cert: "tests/resources/server.crt"
+        cert: "tests/resources/public.crt"
     }
 });
 
