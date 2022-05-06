@@ -26,7 +26,7 @@ boolean isContentDeliveredWithSsl = false;
 http:ListenerConfiguration subConfigs = {
     secureSocket: {
         key: {
-            path: "tests/resources/ballerinaKeystore.pkcs12",
+            path: "tests/resources/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
@@ -57,7 +57,7 @@ service /subscriber on new http:Listener(9098, subConfigs) {
     webHookConfig: {
         secureSocket: {
             cert: {
-                path: "tests/resources/ballerinaTruststore.pkcs12",
+                path: "tests/resources/ballerinaTruststore.p12",
                 password: "ballerina"
             }
         }
