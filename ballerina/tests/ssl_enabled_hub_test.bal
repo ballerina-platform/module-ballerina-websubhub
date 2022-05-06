@@ -21,7 +21,7 @@ import ballerina/test;
 ListenerConfiguration listenerConfigs = {
     secureSocket: {
         key: {
-            path: "tests/resources/ballerinaKeystore.pkcs12",
+            path: "tests/resources/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
@@ -79,7 +79,7 @@ service /websubhub on hubListener {
 ClientConfiguration httpsConfig = {
     secureSocket: {
         cert: {
-            path: "tests/resources/ballerinaTruststore.pkcs12",
+            path: "tests/resources/ballerinaTruststore.p12",
             password: "ballerina"
         }
     }
