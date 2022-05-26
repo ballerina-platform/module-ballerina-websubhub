@@ -20,7 +20,7 @@ import ballerina/test;
 http:ListenerConfiguration listenerConfiguration = {
     secureSocket: {
         key: {
-            path: "tests/resources/ballerinaKeystore.pkcs12",
+            path: "tests/resources/ballerinaKeystore.p12",
             password: "ballerina"
         }
     }
@@ -43,7 +43,7 @@ service /callback on serviceListener {
 ClientConfiguration hubClientSslConfig = {
     secureSocket: {
         cert: {
-            path: "tests/resources/ballerinaTruststore.pkcs12",
+            path: "tests/resources/ballerinaTruststore.p12",
             password: "ballerina"
         }
     }
