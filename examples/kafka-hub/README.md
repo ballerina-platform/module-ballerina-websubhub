@@ -29,6 +29,12 @@ As mentioned above implementation is based on Kafka message broker. Therefore, t
 
 As you can see the current implementation is relying on two different technologies. An IdP is used to handle any authentication and authorization request. This would be the normal case in any production environment. For the other quality of services such as message persistence, subscription management, etc the implementation depends on Kafka message broker. 
 
+`Event Consolidator` is a supportive service which handles the race-conditions related to `topic` and `subscription` management.
+
+Following diagram depict how the kafka topics are utilized by the `Hub` and the `Event Consolidator`. 
+
+![image](hub_topic_usage.png)
+
 ## Security
 As mentioned above apart from standard SSL/TLS, for authentication and authorization the hub depends on an external IdP. In this case we have used a docker image of WSO2 identity server. OAuth2 is used as the authorization protocol along with JWT tokens.
 
