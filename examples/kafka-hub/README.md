@@ -31,7 +31,7 @@ As you can see the current implementation is relying on two different technologi
 
 `Event Consolidator` is a supportive service which handles the race-conditions related to `topic` and `subscription` management.
 
-Following diagram depict how the kafka topics are utilized by the `Hub` and the `Event Consolidator`. 
+Following diagram depicts how the kafka topics are utilized by the `Hub` and the `Event Consolidator`. 
 
 ![image](hub_topic_usage.png)
 
