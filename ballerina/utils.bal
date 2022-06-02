@@ -129,6 +129,6 @@ isolated function retrieveHttpClient(string url, http:ClientConfiguration config
     if (clientEp is http:Client) {
         return clientEp;
     } else {
-        return error Error("Client initialization failed", clientEp);
+        return error Error("Client initialization failed", clientEp, statusCode = CLIENT_INIT_ERROR);
     }
 }

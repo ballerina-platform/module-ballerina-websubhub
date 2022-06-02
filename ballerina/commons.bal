@@ -53,6 +53,7 @@ const int LISTENER_ATTACH_ERROR = -2;
 const int LISTENER_START_ERROR = -3;
 const int LISTENER_DETACH_ERROR = -4;
 const int LISTENER_STOP_ERROR = -5;
+const int CLIENT_INIT_ERROR = -10;
 
 # Options to compress using Gzip or deflate.
 #
