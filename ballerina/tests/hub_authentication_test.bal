@@ -43,7 +43,7 @@ service /websubhub on securedListener {
                                 returns TopicRegistrationSuccess|TopicRegistrationError {
         string? auth = doAuth(req);
         if (auth is string) {
-            return error TopicRegistrationError(auth);
+            return error TopicRegistrationError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
         log:printDebug("Received topic-registration request ", message = message);
         return TOPIC_REGISTRATION_SUCCESS;
@@ -53,7 +53,7 @@ service /websubhub on securedListener {
                         returns TopicDeregistrationSuccess|TopicDeregistrationError {
         string? auth = doAuth(req);
         if (auth is string) {
-            return error TopicDeregistrationError(auth);
+            return error TopicDeregistrationError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
         log:printDebug("Received topic-deregistration request ", message = message);
         return TOPIC_DEREGISTRATION_SUCCESS;
@@ -63,7 +63,7 @@ service /websubhub on securedListener {
                returns Acknowledgement|UpdateMessageError {
         string? auth = doAuth(req);
         if (auth is string) {
-            return error UpdateMessageError(auth);
+            return error UpdateMessageError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
         log:printDebug("Received content-update request ", message = message);
         return ACKNOWLEDGEMENT;
@@ -73,7 +73,7 @@ service /websubhub on securedListener {
                 returns SubscriptionAccepted|InternalSubscriptionError {
         string? auth = doAuth(req);
         if (auth is string) {
-            return error InternalSubscriptionError(auth);
+            return error InternalSubscriptionError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
         log:printDebug("Received subscription request ", message = message);
         return SUBSCRIPTION_ACCEPTED;
@@ -86,7 +86,7 @@ service /websubhub on securedListener {
                returns UnsubscriptionAccepted|InternalUnsubscriptionError {
         string? auth = doAuth(req);
         if (auth is string) {
-            return error InternalUnsubscriptionError(auth);
+            return error InternalUnsubscriptionError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
         log:printDebug("Received unsubscription request ", message = message);
         return UNSUBSCRIPTION_ACCEPTED;

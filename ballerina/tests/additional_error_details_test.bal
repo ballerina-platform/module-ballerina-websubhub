@@ -26,23 +26,26 @@ Service hubServiceToTestAdditionalErrorDetails = service object {
     isolated remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationError {
         return error TopicRegistrationError("Topic registration failed!",
+                        statusCode = http:STATUS_OK,
                         body = { "hub.additional.details": "Feature is not supported in the hub"});
     }
 
     isolated remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationError {
-        return error TopicDeregistrationError("Topic deregistration failed!");
+        return error TopicDeregistrationError("Topic deregistration failed!", statusCode = http:STATUS_OK);
     }
 
     isolated remote function onUpdateMessage(UpdateMessage msg)
                returns UpdateMessageError {
-        return error UpdateMessageError("Error in accessing content", 
-                     body = { "hub.additiona.details": "Content update failed!"});
+        return error UpdateMessageError("Error in accessing content",
+                    statusCode = http:STATUS_BAD_REQUEST,
+                    body = { "hub.additiona.details": "Content update failed!"});
     }
     
     isolated remote function onSubscription(Subscription msg)
                 returns SubscriptionAccepted|BadSubscriptionError|InternalSubscriptionError {
         SubscriptionAccepted successResult = {
+                statusCode: http:STATUS_ACCEPTED,
                 body: <map<string>>{
                        isSuccess: "true"
                     }
@@ -50,14 +53,14 @@ Service hubServiceToTestAdditionalErrorDetails = service object {
         if (msg.hubTopic == "test") {
             return successResult;
         } else {
-            return error BadSubscriptionError("Bad subscription");
+            return error BadSubscriptionError("Bad subscription", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
 
     isolated remote function onSubscriptionValidation(Subscription msg)
                 returns SubscriptionDeniedError? {
         if (msg.hubTopic != "test") {
-            return error SubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return error SubscriptionDeniedError("Denied subscription for topic 'test1'", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
 
@@ -69,20 +72,21 @@ Service hubServiceToTestAdditionalErrorDetails = service object {
                returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
         if (msg.hubTopic == "test") {
             UnsubscriptionAccepted successResult = {
+                statusCode: http:STATUS_ACCEPTED,
                 body: <map<string>>{
                        isSuccess: "true"
                     }
             };
             return successResult;
         } else {
-            return error BadUnsubscriptionError("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
+            return error BadUnsubscriptionError("Denied unsubscription for topic '" + msg.hubTopic + "'", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
 
     isolated remote function onUnsubscriptionValidation(Unsubscription msg)
                 returns UnsubscriptionDeniedError? {
         if (msg.hubTopic != "test") {
-            return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'", statusCode = http:STATUS_BAD_REQUEST);
         }
         return ();
     }

@@ -26,6 +26,7 @@ Service hubWithHeaderDetails = service object {
                                 returns TopicRegistrationSuccess {
         log:printDebug("Executing topic registration", message = message, headers = headers.getHeaderNames());
         TopicRegistrationSuccess successResult = {
+                statusCode: http:STATUS_OK,
                 body: <map<string>>{
                        isSuccess: "true"
                     }
@@ -36,9 +37,9 @@ Service hubWithHeaderDetails = service object {
     isolated remote function onDeregisterTopic(TopicDeregistration message, http:Headers headers)
                         returns TopicDeregistrationSuccess {
         log:printDebug("Executing topic de-registration", message = message, headers = headers.getHeaderNames());
-        map<string> body = { isDeregisterSuccess: "true" };
         TopicDeregistrationSuccess deregisterResult = {
-            body
+            statusCode: http:STATUS_OK,
+            body: <map<string>> { isDeregisterSuccess: "true" }
         };
         return deregisterResult;
     }

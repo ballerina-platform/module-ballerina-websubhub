@@ -28,46 +28,49 @@ service /websubhub on functionWithArgumentsListener {
                                 returns TopicRegistrationSuccess|TopicRegistrationError {
         if (message.topic == "test") {
             TopicRegistrationSuccess successResult = {
+                statusCode: http:STATUS_OK,
                 body: <map<string>>{
                        isSuccess: "true"
                     }
             };
             return successResult;
         } else {
-            return error TopicRegistrationError("Registration Failed!");
+            return error TopicRegistrationError("Registration Failed!", statusCode = http:STATUS_OK);
         }
     }
 
     isolated remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess|TopicDeregistrationError {
-
-        map<string> body = { isDeregisterSuccess: "true" };
-        TopicDeregistrationSuccess deregisterResult = {
-            body
-        };
         if (message.topic == "test") {
-            return deregisterResult;
+            return {
+                statusCode: http:STATUS_OK,
+                body: <map<string>> {
+                    isDeregisterSuccess: "true"
+                }
+            };
        } else {
-            return error TopicDeregistrationError("Topic Deregistration Failed!");
+            return error TopicDeregistrationError("Topic Deregistration Failed!", statusCode = http:STATUS_OK);
         }
     }
 
     isolated remote function onUpdateMessage(UpdateMessage msg)
                returns Acknowledgement|UpdateMessageError {
-        Acknowledgement ack = {};
         if (msg.hubTopic == "test") {
-            return ack;
-        } else if (!(msg.content is ())) {
-            return ack;
+            return {
+                statusCode: http:STATUS_OK
+            };
+        } else if msg.content !is () {
+            return {
+                statusCode: http:STATUS_OK
+            };
         } else {
-            return error UpdateMessageError("Error in accessing content");
+            return error UpdateMessageError("Error in accessing content", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
     
-    isolated remote function onSubscription(Subscription msg)
-                returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect
-                |BadSubscriptionError|InternalSubscriptionError {
+    isolated remote function onSubscription(Subscription msg) returns SubscriptionAccepted|BadSubscriptionError {
         SubscriptionAccepted successResult = {
+                statusCode: http:STATUS_ACCEPTED,
                 body: <map<string>>{
                        isSuccess: "true"
                     }
@@ -77,14 +80,14 @@ service /websubhub on functionWithArgumentsListener {
         } else if (msg.hubTopic == "test1") {
             return successResult;
         } else {
-            return error BadSubscriptionError("Bad subscription");
+            return error BadSubscriptionError("Bad subscription", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
 
     isolated remote function onSubscriptionValidation(Subscription msg)
                 returns SubscriptionDeniedError? {
         if (msg.hubTopic == "test1") {
-            return error SubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return error SubscriptionDeniedError("Denied subscription for topic 'test1'", statusCode = http:STATUS_BAD_REQUEST);
         }
         return ();
     }
@@ -97,20 +100,21 @@ service /websubhub on functionWithArgumentsListener {
                returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
             UnsubscriptionAccepted successResult = {
+                statusCode: http:STATUS_ACCEPTED,
                 body: <map<string>>{
                        isSuccess: "true"
                     }
             };
             return successResult;
         } else {
-            return error BadUnsubscriptionError("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
+            return error BadUnsubscriptionError("Denied unsubscription for topic '" + msg.hubTopic + "'", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
 
     isolated remote function onUnsubscriptionValidation(Unsubscription msg)
                 returns UnsubscriptionDeniedError? {
         if (msg.hubTopic == "test1") {
-            return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return error UnsubscriptionDeniedError("Denied subscription for topic 'test1'", statusCode = http:STATUS_BAD_REQUEST);
         }
         return ();
     }
