@@ -65,7 +65,7 @@ isolated function retrieveRequestBody(string contentType, http:Request request) 
             return check request.getBinaryPayload();
         }
         _ => {
-            return error Error("Requested content type is not supported");
+            return error Error("Requested content type is not supported", statusCode = http:STATUS_BAD_REQUEST);
         }
     }
 }
