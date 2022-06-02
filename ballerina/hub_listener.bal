@@ -39,7 +39,7 @@ public class Listener {
             if httpListener is http:Listener {
                 self.httpListener = httpListener;
             } else {
-                return error Error("Listener initialization failed", httpListener);
+                return error Error("Listener initialization failed", httpListener, statusCode = LISTENER_INIT_ERROR);
             }
         } else {
             self.httpListener = listenTo;
@@ -78,7 +78,7 @@ public class Listener {
         }
         error? result = self.httpListener.attach(<HttpService> self.httpService, name);
         if (result is error) {
-            return error Error("Error occurred while attaching the service", result);
+            return error Error("Error occurred while attaching the service", result, statusCode = LISTENER_ATTACH_ERROR);
         }
     }
 
@@ -116,7 +116,7 @@ public class Listener {
     public isolated function detach(Service s) returns Error? {
         error? result = self.httpListener.detach(<HttpService> self.httpService);
         if (result is error) {
-            return error Error("Error occurred while detaching the service", result);
+            return error Error("Error occurred while detaching the service", result, statusCode = LISTENER_DETACH_ERROR);
         }
     }
 
@@ -129,7 +129,7 @@ public class Listener {
     public isolated function 'start() returns Error? {
         error? listenerError = self.httpListener.'start();
         if (listenerError is error) {
-            return error Error("Error occurred while starting the service", listenerError);
+            return error Error("Error occurred while starting the service", listenerError, statusCode = LISTENER_START_ERROR);
         }
     }
 
@@ -142,7 +142,7 @@ public class Listener {
     public isolated function gracefulStop() returns Error? {
         error? result = self.httpListener.gracefulStop();
         if (result is error) {
-            return error Error("Error occurred while stopping the service", result);
+            return error Error("Error occurred while stopping the service", result, statusCode = LISTENER_STOP_ERROR);
         }
     }
 
@@ -155,7 +155,7 @@ public class Listener {
     public isolated function immediateStop() returns Error? {
         error? result = self.httpListener.immediateStop();
         if (result is error) {
-            return error Error("Error occurred while stopping the service", result);
+            return error Error("Error occurred while stopping the service", result, statusCode = LISTENER_STOP_ERROR);
         }
     }
 }

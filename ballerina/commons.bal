@@ -48,6 +48,12 @@ const string DEREGISTER_TOPIC_ACTION = "deregister-topic";
 const string CONTENT_PUBLISH_ACTION = "publish-content";
 const string NOTIFY_UPDATE_ACTION = "notify-update";
 
+const int LISTENER_INIT_ERROR = -1;
+const int LISTENER_ATTACH_ERROR = -2;
+const int LISTENER_START_ERROR = -3;
+const int LISTENER_DETACH_ERROR = -4;
+const int LISTENER_STOP_ERROR = -5;
+
 # Options to compress using Gzip or deflate.
 #
 # `AUTO`: When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the
