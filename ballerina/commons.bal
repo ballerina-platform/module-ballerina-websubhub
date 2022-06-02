@@ -104,10 +104,12 @@ final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
 
 # Record to represent the parent type for all the response records.
 # 
+# + statusCode - HTTP status code for the response
 # + mediaType - Content-Type of the request received
 # + headers - Additional request headers received to be included in the request
 # + body - Received request body
 type CommonResponse record {|
+    int statusCode;
     string? mediaType = ();
     map<string|string[]>? headers = ();
     string|byte[]|json|xml|map<string>? body = ();
@@ -271,46 +273,62 @@ public type Acknowledgement record {
 };
 
 # Common response, which could be used for `websubhub:TopicRegistrationSuccess`.
-public final readonly & TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {};
+public final readonly & TopicRegistrationSuccess TOPIC_REGISTRATION_SUCCESS = {
+    statusCode: http:STATUS_OK
+};
 
 # Common response, which could be used for `websubhub:TopicRegistrationError`.
-public final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed");
+public final TopicRegistrationError TOPIC_REGISTRATION_ERROR = error TopicRegistrationError("Topic registration failed", statusCode = http:STATUS_OK);
 
 # Common response, which could be used for `websubhub:TopicDeregistrationSuccess`.
-public final readonly & TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {};
+public final readonly & TopicDeregistrationSuccess TOPIC_DEREGISTRATION_SUCCESS = {
+    statusCode: http:STATUS_OK
+};
 
 # Common response, which could be used for `websubhub:TopicDeregistrationError`.
-public final TopicDeregistrationError TOPIC_DEREGISTRATION_ERROR = error TopicDeregistrationError("Topic deregistration failed!");
+public final TopicDeregistrationError TOPIC_DEREGISTRATION_ERROR = error TopicDeregistrationError("Topic deregistration failed!", statusCode = http:STATUS_OK);
 
 # Common response, which could be used for `websubhub:Acknowledgement`.
-public final readonly & Acknowledgement ACKNOWLEDGEMENT = {};
+public final readonly & Acknowledgement ACKNOWLEDGEMENT = {
+    statusCode: http:STATUS_OK
+};
 
 # Common response, which could be used for `websubhub:UpdateMessageError`.
-public final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError("Error in accessing content");
+public final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError("Error in accessing content", statusCode = http:STATUS_BAD_REQUEST);
 
 # Common response, which could be used for `websubhub:SubscriptionAccepted`.
-public final readonly & SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
+public final readonly & SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {
+    statusCode: http:STATUS_ACCEPTED
+};
 
 # Common response, which could be used for `websubhub:BadSubscriptionError`.
-public final BadSubscriptionError BAD_SUBSCRIPTION_ERROR = error BadSubscriptionError("Bad subscription request");
+public final BadSubscriptionError BAD_SUBSCRIPTION_ERROR = error BadSubscriptionError("Bad subscription request", statusCode = http:STATUS_BAD_REQUEST);
 
 # Common response, which could be used for `websubhub:InternalSubscriptionError`.
-public final InternalSubscriptionError INTERNAL_SUBSCRIPTION_ERROR = error InternalSubscriptionError("Internal error occurred while processing subscription request");
+public final InternalSubscriptionError INTERNAL_SUBSCRIPTION_ERROR = error InternalSubscriptionError(
+    "Internal error occurred while processing subscription request", 
+    statusCode = http:STATUS_INTERNAL_SERVER_ERROR
+);
 
 # Common response, which could be used for `websubhub:SubscriptionDeniedError`.
-public final SubscriptionDeniedError SUBSCRIPTION_DENIED_ERROR = error SubscriptionDeniedError("Subscription denied");
+public final SubscriptionDeniedError SUBSCRIPTION_DENIED_ERROR = error SubscriptionDeniedError("Subscription denied", statusCode = http:STATUS_BAD_REQUEST);
 
 # Common response, which could be used for `websubhub:UnsubscriptionAccepted`.
-public final readonly & UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {};
+public final readonly & UnsubscriptionAccepted UNSUBSCRIPTION_ACCEPTED = {
+    statusCode: http:STATUS_ACCEPTED
+};
 
 # Common response, which could be used for `websubhub:BadUnsubscriptionError`.
-public final BadUnsubscriptionError BAD_UNSUBSCRIPTION_ERROR = error BadUnsubscriptionError("Bad unsubscription request");
+public final BadUnsubscriptionError BAD_UNSUBSCRIPTION_ERROR = error BadUnsubscriptionError("Bad unsubscription request", statusCode = http:STATUS_BAD_REQUEST);
 
 # Common response, which could be used for `websubhub:InternalUnsubscriptionError`.
-public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error InternalUnsubscriptionError("Internal error occurred while processing unsubscription request");
+public final InternalUnsubscriptionError INTERNAL_UNSUBSCRIPTION_ERROR = error InternalUnsubscriptionError(
+    "Internal error occurred while processing unsubscription request", 
+    statusCode = http:STATUS_INTERNAL_SERVER_ERROR
+);
 
 # Common response, which could be used for `websubhub:UnsubscriptionDeniedError`.
-public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied");
+public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error UnsubscriptionDeniedError("Unsubscription denied", statusCode = http:STATUS_BAD_REQUEST);
 
 # Record to represent the client configuration for the HubClient/PublisherClient.
 # 
