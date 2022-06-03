@@ -76,11 +76,11 @@ isolated function processResult(Acknowledgement|error result) returns http:Respo
     if (result is Acknowledgement) {
         response.setTextPayload("hub.mode=accepted", mime:APPLICATION_FORM_URLENCODED);
     } else if (result is UpdateMessageError) {
-        CommonResponse errorDetails = result.detail();
-        updateErrorResponse(response, errorDetails, result.message());
+        var errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
     } else {
-        CommonResponse errorDetails = UPDATE_MESSAGE_ERROR.detail();
-        updateErrorResponse(response, errorDetails, result.message());
+        var errorDetails = UPDATE_MESSAGE_ERROR.detail();
+        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
     }
     return response;
 }
