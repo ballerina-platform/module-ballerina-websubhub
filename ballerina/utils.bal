@@ -61,14 +61,14 @@ isolated function generateQueryString(string callbackUrl, [string, string?][] pa
     return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
 }
 
-isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
-                                      map<string|string[]>? headers, string reason) {
-    updateHubResponse(response, "denied", messageBody, headers, reason);
+isolated function updateErrorResponse(http:Response httpResponse, CommonResponse response, string reason) {
+    httpResponse.statusCode = response.statusCode;
+    updateHubResponse(httpResponse, "denied", response.body, response.headers, reason);
 }
 
-isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
-                                        map<string|string[]>? headers) {
-    updateHubResponse(response, "accepted", messageBody, headers);
+isolated function updateSuccessResponse(http:Response httpResponse, CommonResponse response) {
+    httpResponse.statusCode = response.statusCode;
+    updateHubResponse(httpResponse, "accepted", response.body, response.headers);
 }
 
 isolated function updateHubResponse(http:Response response, string hubMode, 
