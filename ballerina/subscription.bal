@@ -119,7 +119,7 @@ isolated function validateSubscription(boolean isRemoteMethodAvailable, Subscrip
         return adaptor.callOnSubscriptionValidationMethod(message, headers);
     } else {
         if !message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://") {
-            return error SubscriptionDeniedError("Invalid hub.callback param in the request.");
+            return error SubscriptionDeniedError("Invalid hub.callback param in the request.", statusCode = http:STATUS_NOT_ACCEPTABLE);
         }
     }
 }
@@ -206,7 +206,7 @@ isolated function validateUnsubscription(boolean isRemoteMethodAvailable, Unsubs
         return adaptor.callOnUnsubscriptionValidationMethod(message, headers);
     } else {
         if !message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://") {
-            return error SubscriptionDeniedError("Invalid hub.callback param in the request.");
+            return error SubscriptionDeniedError("Invalid hub.callback param in the request.", statusCode = http:STATUS_NOT_ACCEPTABLE);
         }
     }
 }

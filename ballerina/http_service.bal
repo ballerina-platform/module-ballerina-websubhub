@@ -194,6 +194,7 @@ isolated function handleResult(http:Caller caller, http:Response|error result) r
 isolated function respondToRequest(http:Caller caller, http:Response response) returns Error? {
     http:ListenerError? responseError = caller->respond(response);
     if responseError is http:ListenerError {
-        return error Error("Error occurred while responding to the request ", responseError);
+        return error Error(
+            "Error occurred while responding to the request ", responseError, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
     }
 }
