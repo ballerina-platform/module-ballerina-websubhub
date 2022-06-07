@@ -21,7 +21,6 @@ import ballerina/io;
 listener http:Listener httpListener = new http:Listener(10012);
 
 service /websubhub on new websubhub:Listener(httpListener) {
-
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
         if (message.topic == "test") {
@@ -34,14 +33,10 @@ service /websubhub on new websubhub:Listener(httpListener) {
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
 
-        map<string> body = { isDeregisterSuccess: "true" };
-        websubhub:TopicDeregistrationSuccess deregisterResult = {
-            body
-        };
         if (message.topic == "test") {
-            return deregisterResult;
-       } else {
-            return error websubhub:TopicDeregistrationError("Topic Deregistration Failed!");
+            return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
+        } else {
+            return websubhub:TOPIC_DEREGISTRATION_ERROR;
         }
     }
 
@@ -53,24 +48,19 @@ service /websubhub on new websubhub:Listener(httpListener) {
     isolated remote function onSubscription(websubhub:Subscription msg)
                 returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|websubhub:SubscriptionTemporaryRedirect
                 |websubhub:BadSubscriptionError|websubhub:InternalSubscriptionError|error {
-        websubhub:SubscriptionAccepted successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
         if (msg.hubTopic == "test") {
-            return successResult;
+            return websubhub:SUBSCRIPTION_ACCEPTED;
         } else if (msg.hubTopic == "test1") {
-            return successResult;
+            return websubhub:SUBSCRIPTION_ACCEPTED;
         } else {
-            return error websubhub:BadSubscriptionError("Bad subscription");
+            return websubhub:BAD_SUBSCRIPTION_ERROR;
         }
     }
 
     isolated remote function onSubscriptionValidation(websubhub:Subscription msg)
                 returns websubhub:SubscriptionDeniedError|error? {
         if (msg.hubTopic == "test1") {
-            return error websubhub:SubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return websubhub:SUBSCRIPTION_DENIED_ERROR;
         }
         return ();
     }
@@ -82,21 +72,16 @@ service /websubhub on new websubhub:Listener(httpListener) {
     isolated remote function onUnsubscription(websubhub:Unsubscription msg)
                returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|websubhub:InternalUnsubscriptionError|error {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
-            websubhub:UnsubscriptionAccepted successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
-            return successResult;
+            return websubhub:UNSUBSCRIPTION_ACCEPTED;
         } else {
-            return error websubhub:BadUnsubscriptionError("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
+            return websubhub:BAD_UNSUBSCRIPTION_ERROR;
         }
     }
 
     isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
                 returns websubhub:UnsubscriptionDeniedError|error? {
         if (msg.hubTopic == "test1") {
-            return error websubhub:UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return websubhub:UNSUBSCRIPTION_DENIED_ERROR;
         }
         return ();
     }

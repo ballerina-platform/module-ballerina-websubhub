@@ -20,68 +20,51 @@ import ballerina/io;
 listener websubhub:Listener functionWithArgumentsListener = new(9090);
 
 service /websubhub on functionWithArgumentsListener {
-
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
         if (message.topic == "test") {
-            websubhub:TopicRegistrationSuccess successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
-            return successResult;
+            return websubhub:TOPIC_REGISTRATION_SUCCESS;
         } else {
-            return error websubhub:TopicRegistrationError("Registration Failed!");
+            return websubhub:TOPIC_REGISTRATION_ERROR;
         }
     }
 
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
-
-        map<string> body = { isDeregisterSuccess: "true" };
-        websubhub:TopicDeregistrationSuccess deregisterResult = {
-            body
-        };
         if (message.topic == "test") {
-            return deregisterResult;
-       } else {
-            return error websubhub:TopicDeregistrationError("Topic Deregistration Failed!");
+            return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
+        } else {
+            return websubhub:TOPIC_DEREGISTRATION_ERROR;
         }
     }
 
     isolated remote function onUpdateMessage(websubhub:UpdateMessage msg)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
-        websubhub:Acknowledgement ack = {};
         if (msg.hubTopic == "test") {
-            return ack;
+            return websubhub:ACKNOWLEDGEMENT;
         } else if (!(msg.content is ())) {
-            return ack;
+            return websubhub:ACKNOWLEDGEMENT;
         } else {
-            return error websubhub:UpdateMessageError("Error in accessing content");
+            return websubhub:UPDATE_MESSAGE_ERROR;
         }
     }
     
     isolated remote function onSubscription(websubhub:Subscription msg)
                 returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|websubhub:SubscriptionTemporaryRedirect
                 |websubhub:BadSubscriptionError|websubhub:InternalSubscriptionError {
-        websubhub:SubscriptionAccepted successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
         if (msg.hubTopic == "test") {
-            return successResult;
+            return websubhub:SUBSCRIPTION_ACCEPTED;
         } else if (msg.hubTopic == "test1") {
-            return successResult;
+            return websubhub:SUBSCRIPTION_ACCEPTED;
         } else {
-            return error websubhub:BadSubscriptionError("Bad subscription");
+            return websubhub:BAD_SUBSCRIPTION_ERROR;
         }
     }
 
     isolated remote function onSubscriptionValidation(websubhub:Subscription msg)
                 returns websubhub:SubscriptionDeniedError? {
         if (msg.hubTopic == "test1") {
-            return error websubhub:SubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return websubhub:SUBSCRIPTION_DENIED_ERROR;
         }
         return ();
     }
@@ -93,21 +76,16 @@ service /websubhub on functionWithArgumentsListener {
     isolated remote function onUnsubscription(websubhub:Unsubscription msg)
                returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|websubhub:InternalUnsubscriptionError {
         if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
-            websubhub:UnsubscriptionAccepted successResult = {
-                body: <map<string>>{
-                       isSuccess: "true"
-                    }
-            };
-            return successResult;
+            return websubhub:UNSUBSCRIPTION_ACCEPTED;
         } else {
-            return error websubhub:BadUnsubscriptionError("Denied unsubscription for topic '" + <string> msg.hubTopic + "'");
+            return websubhub:BAD_UNSUBSCRIPTION_ERROR;
         }
     }
 
     isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
                 returns websubhub:UnsubscriptionDeniedError? {
         if (msg.hubTopic == "test1") {
-            return error websubhub:UnsubscriptionDeniedError("Denied subscription for topic 'test1'");
+            return websubhub:UNSUBSCRIPTION_DENIED_ERROR;
         }
         return ();
     }
