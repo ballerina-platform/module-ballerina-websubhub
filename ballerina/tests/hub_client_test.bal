@@ -47,6 +47,14 @@ service /callback on new http:Listener(9094) {
         return caller->respond(res);
     }
 
+    isolated resource function post contentError(http:Caller caller, http:Request req) returns error? {
+        io:println("Hub Content Distribution message received [SUB-ERROR] : ", req.getTextPayload());
+        http:Response res = new ();
+        res.statusCode = http:STATUS_BAD_REQUEST;
+        res.setTextPayload("Bad payload");
+        return caller->respond(res);
+    }
+
     resource function post retrySuccess(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [RETRY_SUCCESS] : ", req.getTextPayload());
         incrementSuccessCount();
@@ -166,6 +174,25 @@ isolated function testSubscriptionDeleted() returns error? {
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     string  expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
     if (publishResponse is SubscriptionDeletedError) {
+        CommonResponse errorDetails = publishResponse.detail();
+        test:assertEquals(errorDetails.statusCode, http:STATUS_GONE);
+        test:assertEquals(publishResponse.message(), expectedResponse);
+    } else {
+       test:assertFail("Subscription deleted verification failed.");
+    }    
+}
+
+@test:Config {
+}
+isolated function testSubscriberError() returns error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/contentError");
+    HubClient hubClientEP = check new(subscriptionMsg);
+    var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
+    string  expectedResponse = "Error occurred distributing updated content";
+    if (publishResponse is ContentDeliveryError) {
+        CommonResponse errorDetails = publishResponse.detail();
+        test:assertEquals(errorDetails.statusCode, http:STATUS_BAD_REQUEST);
+        test:assertEquals(errorDetails?.body, "Bad payload");
         test:assertEquals(publishResponse.message(), expectedResponse);
     } else {
        test:assertFail("Subscription deleted verification failed.");

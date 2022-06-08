@@ -153,8 +153,8 @@ isolated function generateSignature(string 'key, json|xml|byte[] payload) return
 
 isolated function processSubscriberResponse(http:Response response, string topic) returns ContentDistributionSuccess|SubscriptionDeletedError|ContentDeliveryError {
     int status = response.statusCode;
+    string & readonly responseContentType = response.getContentType();
     if isSuccessStatusCode(status) {
-        string & readonly responseContentType = response.getContentType();
         map<string|string[]> responseHeaders = retrieveResponseHeaders(response);
         if responseContentType.trim().length() > 1 {
             return {
@@ -174,10 +174,8 @@ isolated function processSubscriberResponse(http:Response response, string topic
         string errorMsg = string `Subscription to topic [${topic}] is terminated by the subscriber`;
         return error SubscriptionDeletedError(errorMsg, statusCode = status);
     } else {
-        var result = response.getTextPayload();
-        string textPayload = result is string ? result : "";
-        string errorMsg = string `Error occurred distributing updated content: ${textPayload}`;
-        return error ContentDeliveryError(errorMsg, statusCode = status);
+        string errorMsg = "Error occurred distributing updated content";
+        return error ContentDeliveryError(errorMsg, body = retrieveResponseBody(response, responseContentType), statusCode = status);
     }
 }
 
