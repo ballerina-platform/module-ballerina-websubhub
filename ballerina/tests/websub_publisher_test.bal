@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/io;
+import ballerina/http;
 import ballerina/test;
 
 listener Listener testListener = new(9092);
@@ -39,15 +40,11 @@ service /websubhub on testListener {
         }
     }
 
-    isolated remote function onUpdateMessage(UpdateMessage msg)
-               returns Acknowledgement|UpdateMessageError {
-        if (msg.hubTopic == "test") {
-            return ACKNOWLEDGEMENT;
-        } else if (!(msg.content is ())) {
-            return ACKNOWLEDGEMENT;
-        } else {
+    isolated remote function onUpdateMessage(UpdateMessage msg) returns Acknowledgement|UpdateMessageError {
+        if msg.hubTopic != "test" {
             return UPDATE_MESSAGE_ERROR;
         }
+        return ACKNOWLEDGEMENT;
     }
     
     isolated remote function onSubscriptionIntentVerified(VerifiedSubscription msg) {
@@ -118,6 +115,17 @@ public function testPublisherNotifyEvenSuccess() {
 }
 
 @test:Config{}
+public function testPublisherNotifyEventFailure() {
+    Acknowledgement|UpdateMessageError response = websubHubClientEP->notifyUpdate("test1");
+    if response is UpdateMessageError {
+        CommonResponse details = response.detail();
+        test:assertEquals(details.statusCode, http:STATUS_BAD_REQUEST);
+    } else {
+        test:assertFail("Event notify success for errorneous scenario");
+    }
+}
+
+@test:Config{}
 public function testPublisherPubishEventSuccess() {
     map<string> params = { event: "event"};
     Acknowledgement|UpdateMessageError response = websubHubClientEP->publishUpdate("test", params);
@@ -126,5 +134,17 @@ public function testPublisherPubishEventSuccess() {
     } else {
         io:println(response);
         test:assertFail("Event publish failed");
+    }
+}
+
+@test:Config{}
+public function testPublisherPubishEventFailure() {
+    map<string> params = { event: "event"};
+    Acknowledgement|UpdateMessageError response = websubHubClientEP->publishUpdate("test1", params);
+    if response is UpdateMessageError {
+        CommonResponse details = response.detail();
+        test:assertEquals(details.statusCode, http:STATUS_BAD_REQUEST);
+    } else {
+        test:assertFail("Event publish success for errorneous scenario");
     }
 }
