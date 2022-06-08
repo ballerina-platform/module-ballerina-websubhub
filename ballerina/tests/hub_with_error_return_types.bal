@@ -119,5 +119,5 @@ function testPublishContentFailureWithErrorReturnTypes() returns error? {
     http:Request request = new;
     request.setTextPayload("hub.mode=publish&hub.topic=test1", "application/x-www-form-urlencoded");
     http:Response response = check hubWithErrorReturnTypesClient->post("/", request);
-    test:assertEquals(response.statusCode, 400);
+    test:assertEquals(response.statusCode, 200);
 }

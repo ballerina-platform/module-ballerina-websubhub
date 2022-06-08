@@ -313,7 +313,7 @@ public final readonly & Acknowledgement ACKNOWLEDGEMENT = {};
 
 # Common response, which could be used for `websubhub:UpdateMessageError`.
 public final UpdateMessageError UPDATE_MESSAGE_ERROR = error UpdateMessageError(
-    "Error in accessing content", statusCode = http:STATUS_BAD_REQUEST);
+    "Error in accessing content", statusCode = http:STATUS_OK);
 
 # Common response, which could be used for `websubhub:SubscriptionAccepted`.
 public final readonly & SubscriptionAccepted SUBSCRIPTION_ACCEPTED = {};
