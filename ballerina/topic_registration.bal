@@ -25,7 +25,7 @@ isolated function processTopicRegistration(http:Headers headers, map<string> par
     TopicRegistrationSuccess|error result = adaptor.callRegisterMethod(msg, headers);
     http:Response response = new;
     if result is TopicRegistrationSuccess {
-        updateSuccessResponse(response, result["body"], result["headers"]);
+        updateSuccessResponse(response, result.statusCode, result["body"], result["headers"]);
     } else {
         CommonResponse errorDetails = result is TopicRegistrationError ? result.detail() : TOPIC_REGISTRATION_ERROR.detail();
         updateErrorResponse(response, errorDetails, result.message());
@@ -42,7 +42,7 @@ isolated function processTopicDeregistration(http:Headers headers, map<string> p
     TopicDeregistrationSuccess|error result = adaptor.callDeregisterMethod(msg, headers);
     http:Response response = new;
     if result is TopicDeregistrationSuccess {
-        updateSuccessResponse(response, result["body"], result["headers"]);
+        updateSuccessResponse(response, result.statusCode, result["body"], result["headers"]);
     } else {
         CommonResponse errorDetails = result is TopicDeregistrationError ? result.detail() : TOPIC_DEREGISTRATION_ERROR.detail();
         updateErrorResponse(response, errorDetails, result.message());

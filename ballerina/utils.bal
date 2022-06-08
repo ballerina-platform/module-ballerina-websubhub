@@ -66,9 +66,10 @@ isolated function updateErrorResponse(http:Response httpResponse, CommonResponse
     updateHubResponse(httpResponse, "denied", originalResponse?.body, originalResponse?.headers, reason);
 }
 
-isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
+isolated function updateSuccessResponse(http:Response httpResponse, int statusCode, anydata? messageBody, 
                                         map<string|string[]>? headers) {
-    updateHubResponse(response, "accepted", messageBody, headers);
+    httpResponse.statusCode = statusCode;
+    updateHubResponse(httpResponse, "accepted", messageBody, headers);
 }
 
 isolated function updateHubResponse(http:Response response, string hubMode, 
