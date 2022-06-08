@@ -72,15 +72,15 @@ isolated function retrieveRequestBody(string contentType, http:Request request) 
 
 isolated function processResult(Acknowledgement|error result) returns http:Response {
     http:Response response = new;
-    response.statusCode = http:STATUS_OK;
     if (result is Acknowledgement) {
+        response.statusCode = http:STATUS_OK;
         response.setTextPayload("hub.mode=accepted", mime:APPLICATION_FORM_URLENCODED);
     } else if (result is UpdateMessageError) {
-        var errorDetails = result.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        CommonResponse errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails, result.message());
     } else {
-        var errorDetails = UPDATE_MESSAGE_ERROR.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        CommonResponse errorDetails = UPDATE_MESSAGE_ERROR.detail();
+        updateErrorResponse(response, errorDetails, result.message());
     }
     return response;
 }
