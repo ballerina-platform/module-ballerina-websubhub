@@ -115,7 +115,7 @@ final StatusPermanentRedirect STATUS_PERMANENT_REDIRECT = new;
 # + mediaType - Content-Type of the request received
 # + headers - Additional request headers received to be included in the request
 # + body - Received request body
-type CommonResponse record {|
+public type CommonResponse record {|
     int statusCode;
     string? mediaType = ();
     map<string|string[]>? headers = ();
