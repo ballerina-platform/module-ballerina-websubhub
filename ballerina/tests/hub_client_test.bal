@@ -189,13 +189,13 @@ isolated function testSubscriberError() returns error? {
     HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     string  expectedResponse = "Error occurred distributing updated content";
-    if (publishResponse is ContentDeliveryError) {
+    if publishResponse is ContentDeliveryError {
         CommonResponse errorDetails = publishResponse.detail();
         test:assertEquals(errorDetails.statusCode, http:STATUS_BAD_REQUEST);
         test:assertEquals(errorDetails?.body, "Bad payload");
         test:assertEquals(publishResponse.message(), expectedResponse);
     } else {
-       test:assertFail("Subscription deleted verification failed.");
+       test:assertFail("Verification failed for content delivery failure.");
     }    
 }
 
