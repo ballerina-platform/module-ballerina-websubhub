@@ -72,9 +72,8 @@ isolated function retrieveRequestBody(string contentType, http:Request request) 
 
 isolated function processResult(Acknowledgement|error result) returns http:Response {
     http:Response response = new;
-    if (result is Acknowledgement) {
-        response.statusCode = http:STATUS_OK;
-        response.setTextPayload("hub.mode=accepted", mime:APPLICATION_FORM_URLENCODED);
+    if result is Acknowledgement {
+        updateSuccessResponse(response, result.statusCode, result?.body, result?.headers);
     } else {
         CommonResponse errorDetails = result is UpdateMessageError ? result.detail(): UPDATE_MESSAGE_ERROR.detail();
         updateErrorResponse(response, errorDetails, result.message());
