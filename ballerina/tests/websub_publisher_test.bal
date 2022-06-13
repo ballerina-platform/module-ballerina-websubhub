@@ -122,7 +122,7 @@ public function testPublisherRegisterFailure() {
         test:assertEquals(details?.body, expectedBody);
         test:assertEquals(details?.headers["header2"], "value2");
     } else {
-        test:assertFail("Topic registration passed for errorneous scenario");
+        test:assertFail("Topic registration passed for erroneous scenario");
     }
 }
 
@@ -175,7 +175,7 @@ public function testPublisherNotifyEventFailure() {
         test:assertEquals(details?.body, expectedBody);
         test:assertEquals(details?.headers["header2"], "value2");
     } else {
-        test:assertFail("Event notify success for errorneous scenario");
+        test:assertFail("Event notify success for erroneous scenario");
     }
 }
 
@@ -203,6 +203,6 @@ public function testPublisherPubishEventFailure() {
         test:assertEquals(details?.body, expectedBody);
         test:assertEquals(details?.headers["header2"], "value2");
     } else {
-        test:assertFail("Event publish success for errorneous scenario");
+        test:assertFail("Event publish success for erroneous scenario");
     }
 }
