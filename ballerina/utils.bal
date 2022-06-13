@@ -61,14 +61,15 @@ isolated function generateQueryString(string callbackUrl, [string, string?][] pa
     return (strings:includes(callbackUrl, ("?")) ? "&" : "?") + strings:'join("&", ...keyValPairs);
 }
 
-isolated function updateErrorResponse(http:Response response, anydata? messageBody, 
-                                      map<string|string[]>? headers, string reason) {
-    updateHubResponse(response, "denied", messageBody, headers, reason);
+isolated function updateErrorResponse(http:Response httpResponse, CommonResponse originalResponse, string reason) {
+    httpResponse.statusCode = originalResponse.statusCode;
+    updateHubResponse(httpResponse, "denied", originalResponse?.body, originalResponse?.headers, reason);
 }
 
-isolated function updateSuccessResponse(http:Response response, anydata? messageBody, 
+isolated function updateSuccessResponse(http:Response httpResponse, int statusCode, anydata? messageBody, 
                                         map<string|string[]>? headers) {
-    updateHubResponse(response, "accepted", messageBody, headers);
+    httpResponse.statusCode = statusCode;
+    updateHubResponse(httpResponse, "accepted", messageBody, headers);
 }
 
 isolated function updateHubResponse(http:Response response, string hubMode, 
@@ -129,6 +130,6 @@ isolated function retrieveHttpClient(string url, http:ClientConfiguration config
     if (clientEp is http:Client) {
         return clientEp;
     } else {
-        return error Error("Client initialization failed", clientEp);
+        return error Error("Client initialization failed", clientEp, statusCode = CLIENT_INIT_ERROR);
     }
 }

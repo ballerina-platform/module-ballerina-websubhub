@@ -49,12 +49,14 @@ public client class PublisherClient {
         if registrationResponse is http:Response {
             TopicRegistrationSuccess|error clientResponse = handleResponse(registrationResponse, topic, REGISTER_TOPIC_ACTION);
             if clientResponse is error {
-                return error TopicRegistrationError(clientResponse.message(), clientResponse);
+                return error TopicRegistrationError(clientResponse.message(), 
+                    clientResponse, statusCode = registrationResponse.statusCode);
             } else {
                 return clientResponse;
             }
         } else {
-            return error TopicRegistrationError(string `"Error sending topic registration request for topic [${topic}]`, registrationResponse);
+            return error TopicRegistrationError(string `"Error sending topic registration request for topic [${topic}]`, 
+                registrationResponse, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -71,12 +73,14 @@ public client class PublisherClient {
         if deregistrationResponse is http:Response {
             TopicDeregistrationSuccess|error clientResponse = handleResponse(deregistrationResponse, topic, DEREGISTER_TOPIC_ACTION);
             if clientResponse is error {
-                return error TopicDeregistrationError(clientResponse.message(), clientResponse);
+                return error TopicDeregistrationError(clientResponse.message(), 
+                    clientResponse, statusCode = deregistrationResponse.statusCode);
             } else {
                 return clientResponse;
             }
         } else {
-            return error TopicDeregistrationError(string `Error sending topic deregistration request for topic [${topic}]`, deregistrationResponse);
+            return error TopicDeregistrationError(string `Error sending topic deregistration request for topic [${topic}]`, 
+                deregistrationResponse, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -104,7 +108,7 @@ public client class PublisherClient {
             error? setContent = contentUpdateRequest.setContentType(contentType);
             if setContent is error {
                 string errorMsg = string `Invalid content type is set, found ${contentType}`;
-                return error UpdateMessageError(errorMsg, setContent);
+                return error UpdateMessageError(errorMsg, setContent, statusCode = http:STATUS_BAD_REQUEST);
              }
         }
         string queryParams = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
@@ -112,12 +116,14 @@ public client class PublisherClient {
         if contentPublishResponse is http:Response {
             Acknowledgement|error clientResponse = handleResponse(contentPublishResponse, topic, CONTENT_PUBLISH_ACTION);
             if clientResponse is error {
-                return error UpdateMessageError(clientResponse.message(), clientResponse);
+                return error UpdateMessageError(clientResponse.message(), 
+                    clientResponse, statusCode = contentPublishResponse.statusCode);
             } else {
                 return clientResponse;
             }
         } else {
-            return error UpdateMessageError(string `Publish failed for topic [${topic}]`, contentPublishResponse);
+            return error UpdateMessageError(string `Publish failed for topic [${topic}]`, 
+                contentPublishResponse, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -137,12 +143,14 @@ public client class PublisherClient {
         if notifyResponse is http:Response {
             Acknowledgement|error clientResponse = handleResponse(notifyResponse, topic, NOTIFY_UPDATE_ACTION);
             if clientResponse is error {
-                return error UpdateMessageError(clientResponse.message(), clientResponse);
+                return error UpdateMessageError(clientResponse.message(), 
+                    clientResponse, statusCode = notifyResponse.statusCode);
             } else {
                 return clientResponse;
             }
         } else {
-            return error UpdateMessageError(string `Update availability notification failed for topic [${topic}]`, notifyResponse);
+            return error UpdateMessageError(string `Update availability notification failed for topic [${topic}]`, 
+                notifyResponse, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }
@@ -157,6 +165,7 @@ isolated function handleResponse(http:Response response, string topic, string ac
         map<string>? params = getFormData(responsePayload);
         if params[HUB_MODE] == MODE_ACCEPTED {
             CommonResponse successResult = {
+                statusCode: response.statusCode,
                 headers: getHeaders(response),
                 body: params
             };

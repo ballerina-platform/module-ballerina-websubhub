@@ -78,7 +78,8 @@ public client class HubClient {
         request.setPayload(payload);
         error? result = request.setContentType(contentType);
         if (result is error) {
-            return error Error("Error occurred while setting content type", result);
+            return error ContentDeliveryError(
+                "Error occurred while setting content type", result, statusCode = http:STATUS_BAD_REQUEST);
         }
         request.setHeader(LINK, self.hubLinks);
         string? secret = self.secret;
@@ -87,7 +88,8 @@ public client class HubClient {
             if hash is byte[] {
                 request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
             } else {
-                return error Error("Error retrieving content signature", hash);
+                return error ContentDeliveryError(
+                    "Error retrieving content signature", hash, statusCode = http:STATUS_BAD_REQUEST);
             }
         }
         http:Response|error response = self.httpClient->post("/", request);
@@ -95,7 +97,7 @@ public client class HubClient {
             return processSubscriberResponse(response, self.topic);
         } else {
             string errorMsg = string `Content distribution failed for topic [${self.topic}]`;
-            return error ContentDeliveryError(errorMsg);
+            return error ContentDeliveryError(errorMsg, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }
@@ -151,29 +153,29 @@ isolated function generateSignature(string 'key, json|xml|byte[] payload) return
 
 isolated function processSubscriberResponse(http:Response response, string topic) returns ContentDistributionSuccess|SubscriptionDeletedError|ContentDeliveryError {
     int status = response.statusCode;
+    string & readonly responseContentType = response.getContentType();
     if isSuccessStatusCode(status) {
-        string & readonly responseContentType = response.getContentType();
         map<string|string[]> responseHeaders = retrieveResponseHeaders(response);
         if responseContentType.trim().length() > 1 {
             return {
+                statusCode: status,
                 headers: responseHeaders,
                 mediaType: responseContentType,
                 body: retrieveResponseBody(response, responseContentType)
             };
         } else {
             return {
+                statusCode: status,
                 headers: responseHeaders
             };
         }
     } else if status == http:STATUS_GONE {
         // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
         string errorMsg = string `Subscription to topic [${topic}] is terminated by the subscriber`;
-        return error SubscriptionDeletedError(errorMsg);
+        return error SubscriptionDeletedError(errorMsg, statusCode = status);
     } else {
-        var result = response.getTextPayload();
-        string textPayload = result is string ? result : "";
-        string errorMsg = string `Error occurred distributing updated content: ${textPayload}`;
-        return error ContentDeliveryError(errorMsg);
+        string errorMsg = "Error occurred distributing updated content";
+        return error ContentDeliveryError(errorMsg, body = retrieveResponseBody(response, responseContentType), statusCode = status);
     }
 }
 

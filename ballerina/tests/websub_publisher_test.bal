@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/io;
+import ballerina/http;
 import ballerina/test;
 
 listener Listener testListener = new(9092);
@@ -39,15 +40,11 @@ service /websubhub on testListener {
         }
     }
 
-    isolated remote function onUpdateMessage(UpdateMessage msg)
-               returns Acknowledgement|UpdateMessageError {
-        if (msg.hubTopic == "test") {
-            return ACKNOWLEDGEMENT;
-        } else if (!(msg.content is ())) {
-            return ACKNOWLEDGEMENT;
-        } else {
+    isolated remote function onUpdateMessage(UpdateMessage msg) returns Acknowledgement|UpdateMessageError {
+        if msg.hubTopic != "test" {
             return UPDATE_MESSAGE_ERROR;
         }
+        return ACKNOWLEDGEMENT;
     }
     
     isolated remote function onSubscriptionIntentVerified(VerifiedSubscription msg) {
@@ -62,14 +59,9 @@ service /websubhub on testListener {
 PublisherClient websubHubClientEP = check new ("http://localhost:9092/websubhub");
 
 @test:Config{}
-public function testPublisherRegisterSuccess() {
-    TopicRegistrationSuccess|TopicRegistrationError registrationResponse =
-                    websubHubClientEP->registerTopic("test");
-    if (registrationResponse is TopicRegistrationSuccess) {
-        io:println(registrationResponse);
-    } else {
-        test:assertFail("Topic registration failed");
-    }
+public function testPublisherRegisterSuccess() returns error? {
+    TopicRegistrationSuccess registrationResponse = check websubHubClientEP->registerTopic("test");
+    test:assertEquals(registrationResponse.statusCode, http:STATUS_OK);
 }
 
 @test:Config{}
@@ -77,21 +69,17 @@ public function testPublisherRegisterFailure() {
     TopicRegistrationSuccess|TopicRegistrationError registrationResponse =
                     websubHubClientEP->registerTopic("test1");
     if (registrationResponse is TopicRegistrationError) {
-        io:println(registrationResponse);
+        CommonResponse details = registrationResponse.detail();
+        test:assertEquals(details.statusCode, http:STATUS_OK);
     } else {
-        test:assertFail("Topic registration passed");
+        test:assertFail("Topic registration passed for error scenario");
     }
 }
 
 @test:Config{}
-public function testPublisherDeregisterSuccess() {
-    TopicDeregistrationSuccess|TopicDeregistrationError deRegistrationResponse =
-                    websubHubClientEP->deregisterTopic("test");
-    if (deRegistrationResponse is TopicDeregistrationSuccess) {
-        io:println(deRegistrationResponse);
-    } else {
-        test:assertFail("Topic registration failed");
-    }
+public function testPublisherDeregisterSuccess() returns error? {
+    TopicDeregistrationSuccess deRegistrationResponse = check websubHubClientEP->deregisterTopic("test");
+    test:assertEquals(deRegistrationResponse.statusCode, http:STATUS_OK);
 }
 
 
@@ -100,31 +88,45 @@ public function testPublisherDeregisterFailure() {
     TopicDeregistrationSuccess|TopicDeregistrationError deRegistrationResponse =
                     websubHubClientEP->deregisterTopic("test1");
     if (deRegistrationResponse is TopicDeregistrationError) {
-        io:println(deRegistrationResponse);
+        CommonResponse details = deRegistrationResponse.detail();
+        test:assertEquals(details.statusCode, http:STATUS_OK);
     } else {
-        test:assertFail("Topic registration passed");
+        test:assertFail("Topic registration passed for error scenario");
     }
 }
 
 @test:Config{}
-public function testPublisherNotifyEvenSuccess() {
-    Acknowledgement|UpdateMessageError response = websubHubClientEP->notifyUpdate("test");
-    if (response is Acknowledgement) {
-        io:println(response);
+public function testPublisherNotifyEvenSuccess() returns error? {
+    Acknowledgement response = check websubHubClientEP->notifyUpdate("test");
+    test:assertEquals(response.statusCode, http:STATUS_OK);
+}
+
+@test:Config{}
+public function testPublisherNotifyEventFailure() {
+    Acknowledgement|UpdateMessageError response = websubHubClientEP->notifyUpdate("test1");
+    if response is UpdateMessageError {
+        CommonResponse details = response.detail();
+        test:assertEquals(details.statusCode, http:STATUS_OK);
     } else {
-        io:println(response);
-        test:assertFail("Event notify failed");
+        test:assertFail("Event notify success for errorneous scenario");
     }
 }
 
 @test:Config{}
-public function testPublisherPubishEventSuccess() {
+public function testPublisherPubishEventSuccess() returns error? {
     map<string> params = { event: "event"};
-    Acknowledgement|UpdateMessageError response = websubHubClientEP->publishUpdate("test", params);
-    if (response is Acknowledgement) {
-        io:println(response);
+    Acknowledgement response = check websubHubClientEP->publishUpdate("test", params);
+    test:assertEquals(response.statusCode, http:STATUS_OK);
+}
+
+@test:Config{}
+public function testPublisherPubishEventFailure() {
+    map<string> params = { event: "event"};
+    Acknowledgement|UpdateMessageError response = websubHubClientEP->publishUpdate("test1", params);
+    if response is UpdateMessageError {
+        CommonResponse details = response.detail();
+        test:assertEquals(details.statusCode, http:STATUS_OK);
     } else {
-        io:println(response);
-        test:assertFail("Event publish failed");
+        test:assertFail("Event publish success for errorneous scenario");
     }
 }

@@ -67,14 +67,12 @@ isolated function processOnSubscriptionResult(SubscriptionAccepted|error result)
         response.statusCode = http:STATUS_ACCEPTED;
         return response;
     } else if result is BadSubscriptionError {
-        response.statusCode = http:STATUS_BAD_REQUEST;
-        var errorDetails = result.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        CommonResponse errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails, result.message());
         return response;
     } else {
-        response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-        var errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        CommonResponse errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
+        updateErrorResponse(response, errorDetails, result.message());
         return response;
     }
 }
@@ -119,7 +117,7 @@ isolated function validateSubscription(boolean isRemoteMethodAvailable, Subscrip
         return adaptor.callOnSubscriptionValidationMethod(message, headers);
     } else {
         if !message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://") {
-            return error SubscriptionDeniedError("Invalid hub.callback param in the request.");
+            return error SubscriptionDeniedError("Invalid hub.callback param in the request.", statusCode = http:STATUS_NOT_ACCEPTABLE);
         }
     }
 }
@@ -157,14 +155,12 @@ isolated function processOnUnsubscriptionResult(UnsubscriptionAccepted|error res
         response.statusCode = http:STATUS_ACCEPTED;
         return response;
     } else if result is BadUnsubscriptionError {
-        response.statusCode = http:STATUS_BAD_REQUEST;
-        var errorDetails = result.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        CommonResponse errorDetails = result.detail();
+        updateErrorResponse(response, errorDetails, result.message());
         return response;
     } else {
-        response.statusCode = http:STATUS_INTERNAL_SERVER_ERROR;
-        var errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_UNSUBSCRIPTION_ERROR.detail();
-        updateErrorResponse(response, errorDetails["body"], errorDetails["headers"], result.message());
+        CommonResponse errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_UNSUBSCRIPTION_ERROR.detail();
+        updateErrorResponse(response, errorDetails, result.message());
         return response;
     }
 }
@@ -206,7 +202,7 @@ isolated function validateUnsubscription(boolean isRemoteMethodAvailable, Unsubs
         return adaptor.callOnUnsubscriptionValidationMethod(message, headers);
     } else {
         if !message.hubCallback.startsWith("http://") && !message.hubCallback.startsWith("https://") {
-            return error SubscriptionDeniedError("Invalid hub.callback param in the request.");
+            return error SubscriptionDeniedError("Invalid hub.callback param in the request.", statusCode = http:STATUS_NOT_ACCEPTABLE);
         }
     }
 }

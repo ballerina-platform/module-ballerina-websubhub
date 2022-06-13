@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [Add `statusCode` field for `CommonResponse`](https://github.com/ballerina-platform/ballerina-standard-library/issues/2879)
+
+## [1.3.0] - 2022-05-30
+
 ### Fixed
 - [Compiler plugin crashes when using a new-expr with a user-defined class in the same source](https://github.com/ballerina-platform/ballerina-standard-library/issues/2815)
 
