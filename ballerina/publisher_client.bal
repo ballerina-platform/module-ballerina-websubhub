@@ -47,10 +47,11 @@ public client class PublisherClient {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_REGISTER, topic);
         http:Response|error registrationResponse = self.httpClient->post("", request);
         if registrationResponse is http:Response {
-            TopicRegistrationSuccess|error clientResponse = handleResponse(registrationResponse, topic, REGISTER_TOPIC_ACTION);
-            if clientResponse is error {
+            TopicRegistrationSuccess|Error clientResponse = handleResponse(registrationResponse, topic, REGISTER_TOPIC_ACTION);
+            if clientResponse is Error {
+                CommonResponse errorDetails = clientResponse.detail();
                 return error TopicRegistrationError(clientResponse.message(), 
-                    clientResponse, statusCode = registrationResponse.statusCode);
+                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -71,10 +72,11 @@ public client class PublisherClient {
         http:Request request = buildTopicRegistrationChangeRequest(MODE_DEREGISTER, topic);
         http:Response|error deregistrationResponse = self.httpClient->post("", request);
         if deregistrationResponse is http:Response {
-            TopicDeregistrationSuccess|error clientResponse = handleResponse(deregistrationResponse, topic, DEREGISTER_TOPIC_ACTION);
-            if clientResponse is error {
+            TopicDeregistrationSuccess|Error clientResponse = handleResponse(deregistrationResponse, topic, DEREGISTER_TOPIC_ACTION);
+            if clientResponse is Error {
+                CommonResponse errorDetails = clientResponse.detail();
                 return error TopicDeregistrationError(clientResponse.message(), 
-                    clientResponse, statusCode = deregistrationResponse.statusCode);
+                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -114,10 +116,11 @@ public client class PublisherClient {
         string queryParams = string `${HUB_MODE}=${MODE_PUBLISH}&${HUB_TOPIC}=${topic}`;
         http:Response|error contentPublishResponse = self.httpClient->post(string `?${queryParams}`, contentUpdateRequest);
         if contentPublishResponse is http:Response {
-            Acknowledgement|error clientResponse = handleResponse(contentPublishResponse, topic, CONTENT_PUBLISH_ACTION);
-            if clientResponse is error {
+            Acknowledgement|Error clientResponse = handleResponse(contentPublishResponse, topic, CONTENT_PUBLISH_ACTION);
+            if clientResponse is Error {
+                CommonResponse errorDetails = clientResponse.detail();
                 return error UpdateMessageError(clientResponse.message(), 
-                    clientResponse, statusCode = contentPublishResponse.statusCode);
+                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -141,10 +144,11 @@ public client class PublisherClient {
         notifyUpdateRequest.setHeader(BALLERINA_PUBLISH_HEADER, EVENT_NOTIFY);
         http:Response|error notifyResponse = self.httpClient->post("", notifyUpdateRequest);
         if notifyResponse is http:Response {
-            Acknowledgement|error clientResponse = handleResponse(notifyResponse, topic, NOTIFY_UPDATE_ACTION);
-            if clientResponse is error {
+            Acknowledgement|Error clientResponse = handleResponse(notifyResponse, topic, NOTIFY_UPDATE_ACTION);
+            if clientResponse is Error {
+                CommonResponse errorDetails = clientResponse.detail();
                 return error UpdateMessageError(clientResponse.message(), 
-                    clientResponse, statusCode = notifyResponse.statusCode);
+                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -155,26 +159,27 @@ public client class PublisherClient {
     }
 }
 
-isolated function handleResponse(http:Response response, string topic, string action) returns CommonResponse|error {
+isolated function handleResponse(http:Response response, string topic, string action) returns CommonResponse|Error {
     string|http:ClientError result = response.getTextPayload();
     string responsePayload = result is string ? result : result.message();
-    if response.statusCode != http:STATUS_OK {
-        string errorMsg = string `Error occurred while executing ${action} action for topic [${topic}], Status code : ${response.statusCode}, payload : ${responsePayload}`;
-        return error(errorMsg);
+    map<string> responseBody = getFormData(responsePayload);
+    map<string|string[]> responseHeaders = getHeaders(response);
+    int statusCode = response.statusCode;
+    if statusCode != http:STATUS_OK {
+        string errorMsg = string `Error occurred while executing ${action} action for topic [${topic}]`;
+        return error Error(errorMsg, statusCode = statusCode, body = responseBody, headers = responseHeaders);
     } else {
-        map<string>? params = getFormData(responsePayload);
-        if params[HUB_MODE] == MODE_ACCEPTED {
-            CommonResponse successResult = {
-                statusCode: response.statusCode,
-                headers: getHeaders(response),
-                body: params
+        if responseBody[HUB_MODE] == MODE_ACCEPTED {
+            return {
+                statusCode: statusCode,
+                body: responseBody,
+                headers: responseHeaders
             };
-            return successResult;
         } else {
-            string? failureReason = params[HUB_REASON];
-            string nmm = string `Unknown error occurred while executing ${action} action for topic [${topic}]`;
-            string errorMsg = failureReason is string ? failureReason : nmm;
-            return error(errorMsg);
+            string? failureReason = responseBody[HUB_REASON];
+            string constructedErrorMsg = string `Unknown error occurred while executing ${action} action for topic [${topic}]`;
+            string errorMsg = failureReason is string ? failureReason : constructedErrorMsg;
+            return error Error(errorMsg, statusCode = statusCode, body = responseBody, headers = responseHeaders);
         }
     }
 }
@@ -188,11 +193,9 @@ isolated function buildTopicRegistrationChangeRequest(string mode, string topic)
 
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
-
     if payload == "" {
         return parameters;
     }
-
     string[] entries = regex:split(payload, "&");
     int entryIndex = 0;
     while (entryIndex < entries.length()) {
@@ -214,7 +217,6 @@ isolated function getFormData(string payload) returns map<string> {
 
 isolated function getHeaders(http:Response response) returns map<string|string[]> {
     string[] headerNames = response.getHeaderNames();
-
     map<string|string[]> headers = {};
     foreach string header in headerNames {
         string[]|error responseHeaders = response.getHeaders(header);
