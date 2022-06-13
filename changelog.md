@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [Add `statusCode` field for `CommonResponse`](https://github.com/ballerina-platform/ballerina-standard-library/issues/2879)
 
+### Fixed
+- [Error responses are not descriptive in `websubhub:PublisherClient`](https://github.com/ballerina-platform/ballerina-standard-library/issues/2919)
+
 ## [1.3.0] - 2022-05-30
 
 ### Fixed
