@@ -17,6 +17,7 @@
 import ballerina/lang.'string as strings;
 import ballerina/url;
 import ballerina/http;
+import ballerina/mime;
 import ballerina/regex;
 
 isolated function retrieveQueryParameter(map<string|string[]> params, string 'key) returns string|error {
@@ -63,27 +64,23 @@ isolated function generateQueryString(string callbackUrl, [string, string?][] pa
 
 isolated function updateErrorResponse(http:Response httpResponse, CommonResponse originalResponse, string reason) {
     httpResponse.statusCode = originalResponse.statusCode;
-    updateHubResponse(httpResponse, "denied", originalResponse?.body, originalResponse?.headers, reason);
+    updateHubResponse(httpResponse, MODE_DENIED, originalResponse?.body, originalResponse?.headers, reason);
 }
 
 isolated function updateSuccessResponse(http:Response httpResponse, int statusCode, anydata? messageBody, 
                                         map<string|string[]>? headers) {
     httpResponse.statusCode = statusCode;
-    updateHubResponse(httpResponse, "accepted", messageBody, headers);
+    updateHubResponse(httpResponse, MODE_ACCEPTED, messageBody, headers);
 }
 
 isolated function updateHubResponse(http:Response response, string hubMode, 
                                     anydata? messageBody, map<string|string[]>? headers, 
                                     string? reason = ()) {
-    response.setHeader("Content-type","application/x-www-form-urlencoded");
-
     string payload = generateResponsePayload(hubMode, messageBody, reason);
-
-    response.setTextPayload(payload);
-
-    if (headers is map<string|string[]>) {
+    response.setTextPayload(payload, mime:APPLICATION_FORM_URLENCODED);
+    if headers is map<string|string[]> {
         foreach var [header, value] in headers.entries() {
-            if (value is string) {
+            if value is string {
                 response.setHeader(header, value);
             } else {
                 foreach var valueElement in value {
@@ -95,9 +92,9 @@ isolated function updateHubResponse(http:Response response, string hubMode,
 }
 
 isolated function generateResponsePayload(string hubMode, anydata? messageBody, string? reason) returns string {
-    string payload = "hub.mode=" + hubMode;
-    payload += reason is string ? "&hub.reason=" + reason : "";
-    if (messageBody is map<string> && messageBody.length() > 0) {
+    string payload = string `${HUB_MODE}=${hubMode}`;
+    payload += reason is string ? string `&${HUB_REASON}=${reason}` : "";
+    if messageBody is map<string> && messageBody.length() > 0 {
         payload += "&" + retrieveTextPayloadForFormUrlEncodedMessage(messageBody);
     }
     return payload;
