@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [Error responses are not descriptive in `websubhub:PublisherClient`](https://github.com/ballerina-platform/ballerina-standard-library/issues/2919)
+- [`websubhub:CommonResponse` is not properly getting populated for responses](https://github.com/ballerina-platform/ballerina-standard-library/issues/2878)
 
 ## [1.3.0] - 2022-05-30
 
