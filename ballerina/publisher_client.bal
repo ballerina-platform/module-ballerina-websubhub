@@ -49,8 +49,8 @@ public client class PublisherClient {
             TopicRegistrationSuccess|Error clientResponse = handleResponse(registrationResponse, topic, REGISTER_TOPIC_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error TopicRegistrationError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error TopicRegistrationError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -74,8 +74,8 @@ public client class PublisherClient {
             TopicDeregistrationSuccess|Error clientResponse = handleResponse(deregistrationResponse, topic, DEREGISTER_TOPIC_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error TopicDeregistrationError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error TopicDeregistrationError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -118,8 +118,8 @@ public client class PublisherClient {
             Acknowledgement|Error clientResponse = handleResponse(contentPublishResponse, topic, CONTENT_PUBLISH_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error UpdateMessageError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error UpdateMessageError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -146,8 +146,8 @@ public client class PublisherClient {
             Acknowledgement|Error clientResponse = handleResponse(notifyResponse, topic, NOTIFY_UPDATE_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error UpdateMessageError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error UpdateMessageError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -159,6 +159,7 @@ public client class PublisherClient {
 }
 
 isolated function handleResponse(http:Response response, string topic, string action) returns CommonResponse|Error {
+    string responsePayloadType = response.getContentType();
     string|http:ClientError result = response.getTextPayload();
     string responsePayload = result is string ? result : result.message();
     map<string> responseBody = getFormData(responsePayload);
@@ -166,11 +167,12 @@ isolated function handleResponse(http:Response response, string topic, string ac
     int statusCode = response.statusCode;
     if statusCode != http:STATUS_OK {
         string errorMsg = string `Error occurred while executing ${action} action for topic [${topic}]`;
-        return error Error(errorMsg, statusCode = statusCode, body = responseBody, headers = responseHeaders);
+        return error Error(errorMsg, statusCode = statusCode, mediaType = responsePayloadType, body = responseBody, headers = responseHeaders);
     } else {
         if responseBody[HUB_MODE] == MODE_ACCEPTED {
             return {
                 statusCode: statusCode,
+                mediaType: responsePayloadType,
                 body: responseBody,
                 headers: responseHeaders
             };
@@ -178,7 +180,7 @@ isolated function handleResponse(http:Response response, string topic, string ac
             string? failureReason = responseBody[HUB_REASON];
             string constructedErrorMsg = string `Unknown error occurred while executing ${action} action for topic [${topic}]`;
             string errorMsg = failureReason is string ? failureReason : constructedErrorMsg;
-            return error Error(errorMsg, statusCode = statusCode, body = responseBody, headers = responseHeaders);
+            return error Error(errorMsg, statusCode = statusCode, mediaType = responsePayloadType, body = responseBody, headers = responseHeaders);
         }
     }
 }
