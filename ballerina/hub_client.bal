@@ -154,7 +154,7 @@ isolated function generateSignature(string 'key, json|xml|byte[] payload) return
 isolated function processSubscriberResponse(http:Response response, string topic) returns ContentDistributionSuccess|SubscriptionDeletedError|ContentDeliveryError {
     int status = response.statusCode;
     string & readonly responseContentType = response.getContentType();
-    map<string|string[]> responseHeaders = retrieveResponseHeaders(response);
+    map<string|string[]> responseHeaders = getHeaders(response);
     string|byte[]|json|xml|map<string>? responsePayload = retrieveResponseBody(response, responseContentType);
     if isSuccessStatusCode(status) {
         return <ContentDistributionSuccess>{
@@ -173,21 +173,6 @@ isolated function processSubscriberResponse(http:Response response, string topic
         return error ContentDeliveryError(errorMsg, 
             statusCode = status, mediaType = responseContentType, body = responsePayload, headers = responseHeaders);
     }
-}
-
-isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]> {
-    map<string|string[]> responseHeaders = {};
-    foreach var headerName in subscriberResponse.getHeaderNames() {
-        string[]|error retrievedValue = subscriberResponse.getHeaders(headerName);
-        if retrievedValue is string[] {
-            if retrievedValue.length() == 1 {
-                responseHeaders[headerName] = retrievedValue[0];
-            } else {
-                responseHeaders[headerName] = retrievedValue;
-            }
-        }
-    }
-    return responseHeaders;
 }
 
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>? {

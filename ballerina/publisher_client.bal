@@ -187,20 +187,7 @@ isolated function handleResponse(http:Response response, string topic, string ac
 
 isolated function buildTopicRegistrationChangeRequest(string mode, string topic) returns http:Request {
     http:Request request = new;
-    request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
+    request.setTextPayload(string `${HUB_MODE}=${mode}&${HUB_TOPIC}=${topic}`);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
     return request;
-}
-
-isolated function getHeaders(http:Response response) returns map<string|string[]> {
-    string[] headerNames = response.getHeaderNames();
-    map<string|string[]> headers = {};
-    foreach string header in headerNames {
-        string[]|error responseHeaders = response.getHeaders(header);
-        if responseHeaders is string[] {
-            headers[header] = responseHeaders.length() == 1 ? responseHeaders[0] : responseHeaders;
-        }
-        // Not possible to throw header not found
-    }
-    return headers;
 }

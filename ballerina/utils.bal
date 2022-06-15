@@ -110,6 +110,18 @@ isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messag
     return payload;
 }
 
+isolated function getHeaders(http:Response response) returns map<string|string[]> {
+    map<string|string[]> responseHeaders = {};
+    foreach string header in response.getHeaderNames() {
+        string[]|error headers = response.getHeaders(header);
+        if headers is string[] {
+            responseHeaders[header] = headers.length() == 1 ? headers[0] : headers;
+        }
+        // Not possible to throw header not found
+    }
+    return responseHeaders;
+}
+
 isolated function getFormData(string payload) returns map<string> {
     map<string> parameters = {};
     if payload == "" {

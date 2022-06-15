@@ -286,7 +286,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error?
         }
     }
 
-    map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(response);
+    map<string|string[]> retrievedResponseHeaders = getHeaders(response);
     test:assertTrue(retrievedResponseHeaders.length() > 0);
     boolean isSuccess = check hasAllHeaders(retrievedResponseHeaders);
     test:assertTrue(isSuccess);
@@ -298,7 +298,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error?
 function testResponseHeaderRetrievalWithApiCall() returns error? {
     http:Request request = new;
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addHeaders", request);
-    map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(retrievedResponse);
+    map<string|string[]> retrievedResponseHeaders = getHeaders(retrievedResponse);
     test:assertTrue(retrievedResponseHeaders.length() > 0);
     boolean isSuccess = check hasAllHeaders(retrievedResponseHeaders);
     test:assertTrue(isSuccess);
