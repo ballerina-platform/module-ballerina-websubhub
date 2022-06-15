@@ -16,6 +16,7 @@
 
 import ballerina/io;
 import ballerina/http;
+import ballerina/mime;
 import ballerina/test;
 
 const string CONTENT_DELIVERY_SUCCESS = "Content Delivery Success";
@@ -40,10 +41,33 @@ service /callback on new http:Listener(9094) {
         return caller->respond("Content Delivery Success");
     }
 
+    isolated resource function post successUrlEncoded(http:Caller caller, http:Request req) returns error? {
+        io:println("Hub Content Distribution message received : ", req.getTextPayload());
+        http:Response res = new;
+        res.setTextPayload("status=success", mime:APPLICATION_FORM_URLENCODED);
+        return caller->respond(res);
+    }
+
     isolated resource function post deleted(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received [SUB-TERMINATE] : ", req.getTextPayload());
         http:Response res = new ();
         res.statusCode = http:STATUS_GONE;
+        return caller->respond(res);
+    }
+
+    isolated resource function post deletedUrlEncoded(http:Caller caller, http:Request req) returns error? {
+        io:println("Hub Content Distribution message received [SUB-TERMINATE] : ", req.getTextPayload());
+        http:Response res = new;
+        res.statusCode = http:STATUS_GONE;
+        res.setTextPayload("status=deleted", mime:APPLICATION_FORM_URLENCODED);
+        return caller->respond(res);
+    }
+
+    isolated resource function post contentErrorUrlEncoded(http:Caller caller, http:Request req) returns error? {
+        io:println("Hub Content Distribution message received [SUB-ERROR] : ", req.getTextPayload());
+        http:Response res = new;
+        res.statusCode = http:STATUS_BAD_REQUEST;
+        res.setTextPayload("status=failure", mime:APPLICATION_FORM_URLENCODED);
         return caller->respond(res);
     }
 
@@ -99,6 +123,7 @@ function testTextContentDelivery() returns error? {
     ContentDistributionMessage msg = {content: "This is sample content delivery"};
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);
     test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:TEXT_PLAIN);
     test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
@@ -112,6 +137,7 @@ function testJsonContentDelivery() returns error? {
     ContentDistributionMessage msg = {content: publishedContent};
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
     test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:TEXT_PLAIN);
     test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
@@ -125,6 +151,7 @@ function testXmlContentDelivery() returns error? {
     ContentDistributionMessage msg = {content: publishedContent};
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
     test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:TEXT_PLAIN);
     test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
@@ -135,6 +162,7 @@ function testByteArrayContentDelivery() returns error? {
     ContentDistributionMessage msg = {content: publishedContent};
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
     test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:TEXT_PLAIN);
     test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);   
 }
 
@@ -146,11 +174,12 @@ function testUrlEncodedContentDelivery() returns error? {
         "query2": "value2"
     };
     ContentDistributionMessage msg = {
-        contentType: "application/x-www-form-urlencoded",
+        contentType: mime:APPLICATION_FORM_URLENCODED,
         content: publishedContent
     };
     ContentDistributionSuccess publishResponse = check contentDeliveryClient->notifyContentDistribution(msg);   
     test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:TEXT_PLAIN);
     test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
 }
 
@@ -168,14 +197,43 @@ isolated function testContentDeliveryWithNoResponse() returns error? {
 
 @test:Config {
 }
+function testTextContentDeliveryWithFormUrlEncodedResponse() returns error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/successUrlEncoded");
+    HubClient hubClientEP = check new(subscriptionMsg);
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+    ContentDistributionSuccess publishResponse = check hubClientEP->notifyContentDistribution(msg);
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:APPLICATION_FORM_URLENCODED);
+    test:assertEquals(publishResponse?.body, {"status": "success"});
+}
+
+@test:Config {
+}
 isolated function testSubscriptionDeleted() returns error? {
     Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deleted");
     HubClient hubClientEP = check new(subscriptionMsg);
     var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
     string  expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
-    if (publishResponse is SubscriptionDeletedError) {
+    if publishResponse is SubscriptionDeletedError {
         CommonResponse errorDetails = publishResponse.detail();
         test:assertEquals(errorDetails.statusCode, http:STATUS_GONE);
+        test:assertEquals(publishResponse.message(), expectedResponse);
+    } else {
+       test:assertFail("Subscription deleted verification failed.");
+    }    
+}
+
+@test:Config {
+}
+isolated function testSubscriptionDeletedWithFormUrlEncodedResponse() returns error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/deletedUrlEncoded");
+    HubClient hubClientEP = check new(subscriptionMsg);
+    var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
+    string  expectedResponse = "Subscription to topic [https://topic.com] is terminated by the subscriber";
+    if publishResponse is SubscriptionDeletedError {
+        CommonResponse errorDetails = publishResponse.detail();
+        test:assertEquals(errorDetails.statusCode, http:STATUS_GONE);
+        test:assertEquals(errorDetails?.body, {"status": "deleted"});
         test:assertEquals(publishResponse.message(), expectedResponse);
     } else {
        test:assertFail("Subscription deleted verification failed.");
@@ -193,6 +251,23 @@ isolated function testSubscriberError() returns error? {
         CommonResponse errorDetails = publishResponse.detail();
         test:assertEquals(errorDetails.statusCode, http:STATUS_BAD_REQUEST);
         test:assertEquals(errorDetails?.body, "Bad payload");
+        test:assertEquals(publishResponse.message(), expectedResponse);
+    } else {
+       test:assertFail("Verification failed for content delivery failure.");
+    }    
+}
+
+@test:Config {
+}
+isolated function testSubscriberErrorWithFormUrlEncodedResponse() returns error? {
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/contentErrorUrlEncoded");
+    HubClient hubClientEP = check new(subscriptionMsg);
+    var publishResponse = hubClientEP->notifyContentDistribution({content: "This is sample content delivery"});
+    string  expectedResponse = "Error occurred distributing updated content";
+    if publishResponse is ContentDeliveryError {
+        CommonResponse errorDetails = publishResponse.detail();
+        test:assertEquals(errorDetails.statusCode, http:STATUS_BAD_REQUEST);
+        test:assertEquals(errorDetails?.body, {"status": "failure"});
         test:assertEquals(publishResponse.message(), expectedResponse);
     } else {
        test:assertFail("Verification failed for content delivery failure.");
