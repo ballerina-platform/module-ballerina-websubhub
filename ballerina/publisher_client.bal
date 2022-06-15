@@ -16,7 +16,6 @@
 
 import ballerina/http;
 import ballerina/mime;
-import ballerina/regex;
 
 # The HTTP based client for WebSub topic registration and deregistration, and notifying the hub of new updates.
 public client class PublisherClient {
@@ -189,30 +188,6 @@ isolated function buildTopicRegistrationChangeRequest(string mode, string topic)
     request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
     return request;
-}
-
-isolated function getFormData(string payload) returns map<string> {
-    map<string> parameters = {};
-    if payload == "" {
-        return parameters;
-    }
-    string[] entries = regex:split(payload, "&");
-    int entryIndex = 0;
-    while (entryIndex < entries.length()) {
-        int? index = entries[entryIndex].indexOf("=");
-        if index is int && index != -1 {
-            string name = entries[entryIndex].substring(0, index);
-            name = name.trim();
-            int size = entries[entryIndex].length();
-            string value = entries[entryIndex].substring(index + 1, size);
-            value = value.trim();
-            if value != "" {
-                parameters[name] = value;
-            }
-        }
-        entryIndex = entryIndex + 1;
-    }
-    return parameters;
 }
 
 isolated function getHeaders(http:Response response) returns map<string|string[]> {

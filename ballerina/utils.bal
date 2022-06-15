@@ -110,16 +110,26 @@ isolated function retrieveTextPayloadForFormUrlEncodedMessage(map<string> messag
     return payload;
 }
 
-isolated function retrieveResponseBodyForFormUrlEncodedMessage(string payload) returns map<string> {
-    map<string> responsePayload = {};
+isolated function getFormData(string payload) returns map<string> {
+    map<string> parameters = {};
+    if payload == "" {
+        return parameters;
+    }
     string[] queryParams = regex:split(payload, "&");
-    foreach var query in queryParams {
-        string[] keyValueEntry = regex:split(query, "=");
-        if (keyValueEntry.length() == 2) {
-            responsePayload[keyValueEntry[0]] = keyValueEntry[1];
+    foreach string query in queryParams {
+        int? index = query.indexOf("=");
+        if index is int && index != -1 {
+            string name = query.substring(0, index);
+            name = name.trim();
+            int size = query.length();
+            string value = query.substring(index + 1, size);
+            value = value.trim();
+            if value != "" {
+                parameters[name] = value;
+            }
         }
     }
-    return responsePayload;
+    return parameters;
 }
 
 isolated function retrieveHttpClient(string url, http:ClientConfiguration config) returns http:Client|Error {

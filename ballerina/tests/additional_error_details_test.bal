@@ -17,7 +17,6 @@
 import ballerina/log;
 import ballerina/http;
 import ballerina/test;
-import ballerina/regex;
 
 listener Listener hubListenerToAdditionalErrorDetails = new(9093);
 
@@ -114,7 +113,7 @@ function testRegistrationFailureErrorDetails() returns error? {
     http:Response response = check errorDetailsTestClientEp->post("/", request);
     test:assertEquals(response.statusCode, 200);
     string payload = check response.getTextPayload();
-    map<string> responseBody = decodeResponseBody(payload);
+    map<string> responseBody = getFormData(payload);
     test:assertEquals(responseBody["hub.mode"], "denied");
     test:assertEquals(responseBody["hub.reason"], "Topic registration failed!");
     test:assertEquals(responseBody["hub.additional.details"], "Feature is not supported in the hub");
@@ -130,7 +129,7 @@ function testDeregistrationFailureErrorDetails() returns error? {
     http:Response response = check errorDetailsTestClientEp->post("/", request);
     test:assertEquals(response.statusCode, 200);
     string payload = check response.getTextPayload();
-    map<string> responseBody = decodeResponseBody(payload);
+    map<string> responseBody = getFormData(payload);
     test:assertEquals(responseBody["hub.mode"], "denied");
     test:assertEquals(responseBody["hub.reason"], "Topic deregistration failed!");
 }
@@ -145,22 +144,7 @@ function testUpdateMessageErrorDetails() returns error? {
     http:Response response = check errorDetailsTestClientEp->post("/", request);
     test:assertEquals(response.statusCode, 200);
     string payload = check response.getTextPayload();
-    map<string> responseBody = decodeResponseBody(payload);
+    map<string> responseBody = getFormData(payload);
     test:assertEquals(responseBody["hub.mode"], "denied");
     test:assertEquals(responseBody["hub.reason"], "Error in accessing content"); 
 }
-
-isolated function decodeResponseBody(string payload) returns map<string> {
-    map<string> body = {};
-    if (payload.length() > 0) {
-        string[] splittedPayload = regex:split(payload, "&");
-        foreach string bodyPart in splittedPayload {
-            string[] responseComponent =  regex:split(bodyPart, "=");
-            if (responseComponent.length() == 2) {
-                body[responseComponent[0]] = responseComponent[1];
-            }
-        }
-        return body;
-    }
-    return body;
-} 

@@ -219,7 +219,7 @@ isolated function retrieveResponseBody(http:Response subscriberResponse, string 
         mime:APPLICATION_FORM_URLENCODED => {
             var content = subscriberResponse.getTextPayload();
             if (content is string) {
-                return retrieveResponseBodyForFormUrlEncodedMessage(content);
+                return getFormData(content);
             } 
         }
         _ => {}
