@@ -16,7 +16,6 @@
 
 import ballerina/http;
 import ballerina/mime;
-import ballerina/regex;
 
 # The HTTP based client for WebSub topic registration and deregistration, and notifying the hub of new updates.
 public client class PublisherClient {
@@ -50,8 +49,8 @@ public client class PublisherClient {
             TopicRegistrationSuccess|Error clientResponse = handleResponse(registrationResponse, topic, REGISTER_TOPIC_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error TopicRegistrationError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error TopicRegistrationError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -75,8 +74,8 @@ public client class PublisherClient {
             TopicDeregistrationSuccess|Error clientResponse = handleResponse(deregistrationResponse, topic, DEREGISTER_TOPIC_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error TopicDeregistrationError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error TopicDeregistrationError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -119,8 +118,8 @@ public client class PublisherClient {
             Acknowledgement|Error clientResponse = handleResponse(contentPublishResponse, topic, CONTENT_PUBLISH_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error UpdateMessageError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error UpdateMessageError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -147,8 +146,8 @@ public client class PublisherClient {
             Acknowledgement|Error clientResponse = handleResponse(notifyResponse, topic, NOTIFY_UPDATE_ACTION);
             if clientResponse is Error {
                 CommonResponse errorDetails = clientResponse.detail();
-                return error UpdateMessageError(clientResponse.message(), 
-                    clientResponse, statusCode = errorDetails.statusCode, body = errorDetails?.body, headers = errorDetails?.headers);
+                return error UpdateMessageError(clientResponse.message(), clientResponse, 
+                    statusCode = errorDetails.statusCode, mediaType = errorDetails?.mediaType, body = errorDetails?.body, headers = errorDetails?.headers);
             } else {
                 return clientResponse;
             }
@@ -160,6 +159,7 @@ public client class PublisherClient {
 }
 
 isolated function handleResponse(http:Response response, string topic, string action) returns CommonResponse|Error {
+    string responsePayloadType = response.getContentType();
     string|http:ClientError result = response.getTextPayload();
     string responsePayload = result is string ? result : result.message();
     map<string> responseBody = getFormData(responsePayload);
@@ -167,11 +167,12 @@ isolated function handleResponse(http:Response response, string topic, string ac
     int statusCode = response.statusCode;
     if statusCode != http:STATUS_OK {
         string errorMsg = string `Error occurred while executing ${action} action for topic [${topic}]`;
-        return error Error(errorMsg, statusCode = statusCode, body = responseBody, headers = responseHeaders);
+        return error Error(errorMsg, statusCode = statusCode, mediaType = responsePayloadType, body = responseBody, headers = responseHeaders);
     } else {
         if responseBody[HUB_MODE] == MODE_ACCEPTED {
             return {
                 statusCode: statusCode,
+                mediaType: responsePayloadType,
                 body: responseBody,
                 headers: responseHeaders
             };
@@ -179,51 +180,14 @@ isolated function handleResponse(http:Response response, string topic, string ac
             string? failureReason = responseBody[HUB_REASON];
             string constructedErrorMsg = string `Unknown error occurred while executing ${action} action for topic [${topic}]`;
             string errorMsg = failureReason is string ? failureReason : constructedErrorMsg;
-            return error Error(errorMsg, statusCode = statusCode, body = responseBody, headers = responseHeaders);
+            return error Error(errorMsg, statusCode = statusCode, mediaType = responsePayloadType, body = responseBody, headers = responseHeaders);
         }
     }
 }
 
 isolated function buildTopicRegistrationChangeRequest(string mode, string topic) returns http:Request {
     http:Request request = new;
-    request.setTextPayload(HUB_MODE + "=" + mode + "&" + HUB_TOPIC + "=" + topic);
+    request.setTextPayload(string `${HUB_MODE}=${mode}&${HUB_TOPIC}=${topic}`);
     request.setHeader(CONTENT_TYPE, mime:APPLICATION_FORM_URLENCODED);
     return request;
-}
-
-isolated function getFormData(string payload) returns map<string> {
-    map<string> parameters = {};
-    if payload == "" {
-        return parameters;
-    }
-    string[] entries = regex:split(payload, "&");
-    int entryIndex = 0;
-    while (entryIndex < entries.length()) {
-        int? index = entries[entryIndex].indexOf("=");
-        if index is int && index != -1 {
-            string name = entries[entryIndex].substring(0, index);
-            name = name.trim();
-            int size = entries[entryIndex].length();
-            string value = entries[entryIndex].substring(index + 1, size);
-            value = value.trim();
-            if value != "" {
-                parameters[name] = value;
-            }
-        }
-        entryIndex = entryIndex + 1;
-    }
-    return parameters;
-}
-
-isolated function getHeaders(http:Response response) returns map<string|string[]> {
-    string[] headerNames = response.getHeaderNames();
-    map<string|string[]> headers = {};
-    foreach string header in headerNames {
-        string[]|error responseHeaders = response.getHeaders(header);
-        if responseHeaders is string[] {
-            headers[header] = responseHeaders.length() == 1 ? responseHeaders[0] : responseHeaders;
-        }
-        // Not possible to throw header not found
-    }
-    return headers;
 }

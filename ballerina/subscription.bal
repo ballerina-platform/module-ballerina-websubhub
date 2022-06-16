@@ -64,7 +64,7 @@ isolated function processSubscription(Subscription message, http:Headers headers
 isolated function processOnSubscriptionResult(SubscriptionAccepted|error result) returns http:Response|Redirect {
     http:Response response = new;
     if result is SubscriptionAccepted {
-        response.statusCode = http:STATUS_ACCEPTED;
+        updateSuccessResponse(response, result.statusCode, result?.body, result?.headers);
         return response;
     } else if result is BadSubscriptionError {
         CommonResponse errorDetails = result.detail();
@@ -152,7 +152,7 @@ isolated function processUnsubscription(Unsubscription message, http:Headers hea
 isolated function processOnUnsubscriptionResult(UnsubscriptionAccepted|error result) returns http:Response {
     http:Response response = new;
     if result is UnsubscriptionAccepted {
-        response.statusCode = http:STATUS_ACCEPTED;
+        updateSuccessResponse(response, result.statusCode, result?.body, result?.headers);
         return response;
     } else if result is BadUnsubscriptionError {
         CommonResponse errorDetails = result.detail();

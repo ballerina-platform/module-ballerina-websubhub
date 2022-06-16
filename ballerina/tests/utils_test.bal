@@ -286,7 +286,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error?
         }
     }
 
-    map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(response);
+    map<string|string[]> retrievedResponseHeaders = getHeaders(response);
     test:assertTrue(retrievedResponseHeaders.length() > 0);
     boolean isSuccess = check hasAllHeaders(retrievedResponseHeaders);
     test:assertTrue(isSuccess);
@@ -298,7 +298,7 @@ function testResponseHeaderRetrievalWithManuallyCreatingHeaders() returns error?
 function testResponseHeaderRetrievalWithApiCall() returns error? {
     http:Request request = new;
     http:Response retrievedResponse = check headerRetrievalTestingClient->post("/addHeaders", request);
-    map<string|string[]> retrievedResponseHeaders = retrieveResponseHeaders(retrievedResponse);
+    map<string|string[]> retrievedResponseHeaders = getHeaders(retrievedResponse);
     test:assertTrue(retrievedResponseHeaders.length() > 0);
     boolean isSuccess = check hasAllHeaders(retrievedResponseHeaders);
     test:assertTrue(isSuccess);
@@ -412,7 +412,7 @@ isolated function testFormUrlEncodedResponseBodyRetrievalFromQuery() returns err
         "query2": "value2",
         "query3": "value3"
     };
-    map<string> generatedResponseBody = retrieveResponseBodyForFormUrlEncodedMessage("query1=value1&query2=value2&query3=value3");
+    map<string> generatedResponseBody = getFormData("query1=value1&query2=value2&query3=value3");
     test:assertEquals(generatedResponseBody.length(), message.length());
     foreach string 'key in message.keys() {
         _ = generatedResponseBody.remove('key);

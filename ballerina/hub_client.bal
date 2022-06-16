@@ -154,44 +154,25 @@ isolated function generateSignature(string 'key, json|xml|byte[] payload) return
 isolated function processSubscriberResponse(http:Response response, string topic) returns ContentDistributionSuccess|SubscriptionDeletedError|ContentDeliveryError {
     int status = response.statusCode;
     string & readonly responseContentType = response.getContentType();
+    map<string|string[]> responseHeaders = getHeaders(response);
+    string|byte[]|json|xml|map<string>? responsePayload = retrieveResponseBody(response, responseContentType);
     if isSuccessStatusCode(status) {
-        map<string|string[]> responseHeaders = retrieveResponseHeaders(response);
-        if responseContentType.trim().length() > 1 {
-            return {
-                statusCode: status,
-                headers: responseHeaders,
-                mediaType: responseContentType,
-                body: retrieveResponseBody(response, responseContentType)
-            };
-        } else {
-            return {
-                statusCode: status,
-                headers: responseHeaders
-            };
-        }
+        return <ContentDistributionSuccess>{
+            statusCode: status,
+            headers: responseHeaders,
+            mediaType: responseContentType,
+            body: responsePayload
+        };
     } else if status == http:STATUS_GONE {
         // HTTP 410 is used to communicate that subscriber no longer need to continue the subscription
         string errorMsg = string `Subscription to topic [${topic}] is terminated by the subscriber`;
-        return error SubscriptionDeletedError(errorMsg, statusCode = status);
+        return error SubscriptionDeletedError(errorMsg, 
+            statusCode = status, mediaType = responseContentType, body = responsePayload, headers = responseHeaders);
     } else {
         string errorMsg = "Error occurred distributing updated content";
-        return error ContentDeliveryError(errorMsg, body = retrieveResponseBody(response, responseContentType), statusCode = status);
+        return error ContentDeliveryError(errorMsg, 
+            statusCode = status, mediaType = responseContentType, body = responsePayload, headers = responseHeaders);
     }
-}
-
-isolated function retrieveResponseHeaders(http:Response subscriberResponse) returns map<string|string[]> {
-    map<string|string[]> responseHeaders = {};
-    foreach var headerName in subscriberResponse.getHeaderNames() {
-        string[]|error retrievedValue = subscriberResponse.getHeaders(headerName);
-        if retrievedValue is string[] {
-            if retrievedValue.length() == 1 {
-                responseHeaders[headerName] = retrievedValue[0];
-            } else {
-                responseHeaders[headerName] = retrievedValue;
-            }
-        }
-    }
-    return responseHeaders;
 }
 
 isolated function retrieveResponseBody(http:Response subscriberResponse, string contentType) returns string|byte[]|json|xml|map<string>? {
@@ -223,7 +204,7 @@ isolated function retrieveResponseBody(http:Response subscriberResponse, string 
         mime:APPLICATION_FORM_URLENCODED => {
             var content = subscriberResponse.getTextPayload();
             if (content is string) {
-                return retrieveResponseBodyForFormUrlEncodedMessage(content);
+                return getFormData(content);
             } 
         }
         _ => {}
