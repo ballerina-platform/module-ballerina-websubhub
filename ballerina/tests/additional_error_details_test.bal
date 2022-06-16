@@ -148,3 +148,4 @@ function testUpdateMessageErrorDetails() returns error? {
     test:assertEquals(responseBody["hub.mode"], "denied");
     test:assertEquals(responseBody["hub.reason"], "Error in accessing content"); 
 }
+
