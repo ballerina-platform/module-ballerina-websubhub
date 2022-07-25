@@ -12,5 +12,5 @@ distribution = "2201.2.0"
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "websubhub-native"
-version = "1.4.0-SNAPSHOT"
+version = "1.4.0"
 path = "../native/build/libs/websubhub-native-1.4.0-SNAPSHOT.jar"
