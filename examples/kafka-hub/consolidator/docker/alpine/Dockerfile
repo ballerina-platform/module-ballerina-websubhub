@@ -77,7 +77,4 @@ ENV JAVA_OPTS="-Djava.util.prefs.systemRoot=${USER_HOME}/.java -Djava.util.prefs
     WORKING_DIRECTORY=${WEBSUBHUB_HOME} \
     WEBSUBHUB_HOME=${WEBSUBHUB_HOME}
 
-# expose ports
-EXPOSE 9090
-
 CMD java -jar ${JAR_FILE_PATH}
