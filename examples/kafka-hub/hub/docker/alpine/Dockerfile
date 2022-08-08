@@ -1,24 +1,16 @@
-# syntax = docker/dockerfile:1.0-experimental
 # ------------------------------------------------------------------------
 #
-# Copyright 2022 WSO2, Inc. (http://wso2.com)
+# Copyright (c) 2022, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License
+# This software is the property of WSO2 Inc. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained
+# herein in any form is strictly forbidden, unless permitted by WSO2
+# expressly. You may not alter or remove any copyright or other notice from
+# copies of this content.
 #
 # ------------------------------------------------------------------------
 
-# ACR image tag: adoptopenjdk/openjdk11:jre-11.0.16_8-alpine
-ARG BASE_IMAGE_DIGEST="sha256:409b76ab70e60ca49fb974171fc40a44fffe6da89591ce80835d33ddb801b4c1"
+ARG BASE_IMAGE_DIGEST
 FROM adoptopenjdk/openjdk11@${BASE_IMAGE_DIGEST}
 LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
 
@@ -30,7 +22,6 @@ ARG USER_GROUP=wso2
 ARG USER_GROUP_ID=10001
 ARG USER_HOME=/home/${USER}
 # build arguments for WSO2 product installation
-ARG WEBSUBHUB_HOME=${USER_HOME}/kafkaHub
 ARG JAR_FILE_PATH=kafkaHub.jar
 
 
@@ -60,21 +51,12 @@ RUN \
 COPY --chown=${USER}:${USER_GROUP} ${JAR_FILE_PATH} ${USER_HOME}/
 COPY --chown=${USER}:${USER_GROUP} Config.toml ${USER_HOME}/Config.toml
 
-# install required packages
-RUN \
-    apk update \
-    && DEBIAN_FRONTEND=noninteractive apk add --no-cache \
-        wget \
-        jq \
-        curl
-
 # set the user and work directory
 USER ${USER_ID}
-WORKDIR ${WEBSUBHUB_HOME}
+WORKDIR ${USER_HOME}
 
 # set environment variables
 ENV JAVA_OPTS="-Djava.util.prefs.systemRoot=${USER_HOME}/.java -Djava.util.prefs.userRoot=${USER_HOME}/.java/.userPrefs" \
-    WORKING_DIRECTORY=${WEBSUBHUB_HOME} \
-    WEBSUBHUB_HOME=${WEBSUBHUB_HOME}
-
+    WORKING_DIRECTORY=${USER_HOME}
+ 
 CMD java -jar ${JAR_FILE_PATH}
