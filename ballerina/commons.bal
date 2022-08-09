@@ -358,7 +358,7 @@ public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error Unsub
 # + secureSocket - SSL/TLS related options
 # + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
 public type ClientConfiguration record {|
-    string httpVersion = HTTP_1_1;
+    http:HttpVersion httpVersion = HTTP_1_1;
     http:ClientHttp1Settings http1Settings = {};
     http:ClientHttp2Settings http2Settings = {};
     decimal timeout = 60;
