@@ -49,7 +49,6 @@ RUN \
 
 # copy init script to user home
 COPY --chown=${USER}:${USER_GROUP} ${JAR_FILE_PATH} ${USER_HOME}/
-COPY --chown=${USER}:${USER_GROUP} Config.toml ${USER_HOME}/Config.toml
 
 # set the user and work directory
 USER ${USER_ID}
