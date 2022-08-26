@@ -54,10 +54,8 @@ public function main() returns error? {
 function syncRegsisteredTopicsCache() {
     do {
         while true {
-            websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
-            if persistedTopics is websubhub:TopicRegistration[] {
-                refreshTopicCache(persistedTopics);
-            }
+            websubhub:TopicRegistration[] persistedTopics = check getPersistedTopics();
+            refreshTopicCache(persistedTopics);
         }
     } on fail var e {
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
@@ -68,29 +66,18 @@ function syncRegsisteredTopicsCache() {
     }
 }
 
-function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
+function getPersistedTopics() returns websubhub:TopicRegistration[]|error {
+    kafka:TopicPartition partitionInfo = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
+    };
+    _ = check conn:registeredTopicsConsumer->assign([partitionInfo]);
+    ConsolidatedTopicsConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeTopicsMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving topic-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
+        ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
+        return lastRecord.value;
     }
-    return;
-}
-
-function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
-    websubhub:TopicRegistration[] currentTopics = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
-        currentTopics.push(topic);
-    }
-    return currentTopics;
+    return [];
 }
 
 function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
@@ -108,11 +95,9 @@ function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
 function syncSubscribersCache() {
     do {
         while true {
-            websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
-            if persistedSubscribers is websubhub:VerifiedSubscription[] {
-                refreshSubscribersCache(persistedSubscribers);
-                check startMissingSubscribers(persistedSubscribers);
-            }
+            websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
+            refreshSubscribersCache(persistedSubscribers);
+            check startMissingSubscribers(persistedSubscribers);
         }
     } on fail var e {
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
@@ -123,29 +108,18 @@ function syncSubscribersCache() {
     }  
 }
 
-function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
+function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
+    kafka:TopicPartition partitionInfo = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
+    };
+    _ = check conn:subscribersConsumer->assign([partitionInfo]);
+    ConsolidatedSubscribersConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeSubscribersMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving subscriber-data ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
+        ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
+        return lastRecord.value;
     }
-    return;
-}
-
-function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
-    websubhub:VerifiedSubscription[] currentSubscriptions = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
-        currentSubscriptions.push(subscription);
-    }
-    return currentSubscriptions;
+    return [];
 }
 
 function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
@@ -192,7 +166,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
 isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string subscriberId) {
     do {
         while true {
-            kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            UpdateMessageConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
             if !isValidConsumer(topicName, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
             }
@@ -223,29 +197,16 @@ isolated function isValidConsumer(string topicName, string subscriberId) returns
     return topicAvailable && subscriberAvailable;
 }
 
-isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
-    foreach var kafkaRecord in records {
-        var message = deSerializeKafkaRecord(kafkaRecord);
-        if (message is websubhub:ContentDistributionMessage) {
-            var response = clientEp->notifyContentDistribution(message);
-            if (response is error) {
-                return response;
-            } else {
-                _ = check consumerEp->commit();
-            }
-        } else {
-            log:printError("Error occurred while retrieving message data", err = message.message());
+isolated function notifySubscribers(UpdateMessageConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
+    foreach UpdateMessageConsumerRecord kafkaRecord in records {
+        websubhub:ContentDistributionMessage message = {
+            content: kafkaRecord.value,
+            contentType: mime:APPLICATION_JSON
+        };
+        websubhub:ContentDistributionSuccess|error response = clientEp->notifyContentDistribution(message);
+        if response is error {
+            return response;
         }
+        _ = check consumerEp->commit();
     }
-}
-
-isolated function deSerializeKafkaRecord(kafka:ConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
-    byte[] content = kafkaRecord.value;
-    string message = check string:fromBytes(content);
-    json payload =  check value:fromJsonString(message);
-    websubhub:ContentDistributionMessage distributionMsg = {
-        content: payload,
-        contentType: mime:APPLICATION_JSON
-    };
-    return distributionMsg;
 }

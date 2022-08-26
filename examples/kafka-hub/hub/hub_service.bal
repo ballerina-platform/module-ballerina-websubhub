@@ -225,7 +225,8 @@ service object {
             topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
         if topicAvailable {
-            error? errorResponse = persist:addUpdateMessage(topicName, msg);
+            // TODO: Fix the topic/partition retrieval logic
+            error? errorResponse = persist:addUpdateMessage(topicName, 0, msg);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
             } else if errorResponse is error {
