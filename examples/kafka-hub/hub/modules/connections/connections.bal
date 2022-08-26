@@ -21,34 +21,52 @@ import kafkaHub.config;
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "state-persist",
     acks: "1",
-    retryCount: 3
+    retryCount: 3,
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:EVENT_HUB_CONNECTION_STRING
+    }
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: "consolidated-websub-subscribers-group-" + config:CONSTRUCTED_SERVER_ID,
-    offsetReset: "earliest"
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:EVENT_HUB_CONNECTION_STRING
+    }
 };
 public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     groupId: "consolidated--websub-topics-group-" + config:CONSTRUCTED_SERVER_ID,
-    offsetReset: "earliest"
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:EVENT_HUB_CONNECTION_STRING
+    }
 };
 public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 
 # Creates a `kafka:Consumer` for a subscriber.
 # 
-# + topicName - The kafka-topic to which the consumer should subscribe
 # + groupName - The consumer group name
 # + return - `kafka:Consumer` if succcessful or else `error`
-public isolated function createMessageConsumer(string topicName, string groupName) returns kafka:Consumer|error {
+public isolated function createMessageConsumer(string groupName) returns kafka:Consumer|error {
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
-        topics: [topicName],
-        autoCommit: false
+        autoCommit: false,
+        securityProtocol: kafka:PROTOCOL_SASL_SSL,
+        auth: {
+            username: "$ConnectionString",
+            password: config:EVENT_HUB_CONNECTION_STRING
+        }
     };
-    return check new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
+    return new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
 }
