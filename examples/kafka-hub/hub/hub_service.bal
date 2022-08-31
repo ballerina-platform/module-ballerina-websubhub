@@ -17,6 +17,7 @@
 import ballerina/websubhub;
 import ballerina/log;
 import ballerina/http;
+// import ballerina/lang.value;
 import kafkaHub.security;
 import kafkaHub.persistence as persist;
 import kafkaHub.config;
@@ -220,12 +221,13 @@ service object {
 
     isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
         string topicName = util:sanitizeTopicName(msg.hubTopic);
-        boolean topicAvailable = false;
+        websubhub:TopicRegistration? currentTopic = ();
         lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
+            currentTopic = registeredTopicsCache[topicName].cloneReadOnly();
         }
-        if topicAvailable {
-            // TODO: Fix the topic/partition retrieval logic
+        if currentTopic is websubhub:TopicRegistration {
+            // string eventHubName = check value:ensureType(currentTopic[EVENT_HUB_NAME]);
+            // int eventHubPartition = check value:ensureType(currentTopic[EVENT_HUB_PARTITION]);
             error? errorResponse = persist:addUpdateMessage(topicName, 0, msg);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;

@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import kafkaHub.util;
-
 # Flag to check whether to enable/disable security
 public configurable boolean SECURITY_ON = true;
 
@@ -68,5 +66,3 @@ public configurable int NUMBER_OF_PARTITIONS = ?;
 public configurable string[] CONSUMER_GROUPS = ?;
 
 public configurable string[] EVENT_HUBS = ?;
-
-public final string CONSTRUCTED_SERVER_ID = string `${SERVER_ID}-${util:generateRandomString()}`;

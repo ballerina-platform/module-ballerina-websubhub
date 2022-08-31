@@ -21,6 +21,7 @@ import ballerinax/kafka;
 import ballerina/lang.value;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
+import kafkaHub.types;
 import ballerina/mime;
 import kafkaHub.config;
 
@@ -28,6 +29,8 @@ isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string CONSUMER_GROUP = "consumerGroup";
+const string EVENT_HUB_NAME = "eventHubName";
+const string EVENT_HUB_PARTITION = "eventHubPartition";
 
 public function main() returns error? {    
     // Initialize the Hub
@@ -72,9 +75,9 @@ function getPersistedTopics() returns websubhub:TopicRegistration[]|error {
         partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
     };
     _ = check conn:registeredTopicsConsumer->assign([partitionInfo]);
-    ConsolidatedTopicsConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
+    types:ConsolidatedTopicsConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
+        types:ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
         return lastRecord.value;
     }
     return [];
@@ -114,9 +117,9 @@ function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|erro
         partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
     };
     _ = check conn:subscribersConsumer->assign([partitionInfo]);
-    ConsolidatedSubscribersConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
+    types:ConsolidatedSubscribersConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
+        types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
         return lastRecord.value;
     }
     return [];
@@ -145,7 +148,10 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
         }
         if subscriberNotAvailable {
             string consumerGroup = check value:ensureType(subscriber[CONSUMER_GROUP]);
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, consumerGroup);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroup);
+            string eventHubName = check value:ensureType(subscriber[EVENT_HUB_NAME]);
+            int eventHubPartition = check value:ensureType(subscriber[EVENT_HUB_PARTITION]);
+            _ = check consumerEp->assign([{topic: eventHubName, partition: eventHubPartition}]);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -166,7 +172,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
 isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string subscriberId) {
     do {
         while true {
-            UpdateMessageConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            types:UpdateMessageConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
             if !isValidConsumer(topicName, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
             }
@@ -197,8 +203,8 @@ isolated function isValidConsumer(string topicName, string subscriberId) returns
     return topicAvailable && subscriberAvailable;
 }
 
-isolated function notifySubscribers(UpdateMessageConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
-    foreach UpdateMessageConsumerRecord kafkaRecord in records {
+isolated function notifySubscribers(types:UpdateMessageConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
+    foreach types:UpdateMessageConsumerRecord kafkaRecord in records {
         websubhub:ContentDistributionMessage message = {
             content: kafkaRecord.value,
             contentType: mime:APPLICATION_JSON
