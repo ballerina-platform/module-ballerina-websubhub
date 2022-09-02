@@ -27,9 +27,14 @@ public type EventHubConsumerGroup record {|
     string consumerGroup;
 |};
 
+public type TopicRegistration record {
+    *websubhub:TopicRegistration;
+    EventHubPartition partitionMapping;
+};
+
 public type ConsolidatedTopicsConsumerRecord record {|
     *kafka:AnydataConsumerRecord;
-    websubhub:TopicRegistration[] value;
+    TopicRegistration[] value;
 |};
 
 public type ConsolidatedSubscribersConsumerRecord record {|
@@ -41,11 +46,3 @@ public type UpdateMessageConsumerRecord record {|
     *kafka:AnydataConsumerRecord;
     json value;
 |};
-
-public type TopicRegistration record {
-    *websubhub:TopicRegistration;
-};
-
-public type TopicDeregistration record {
-    *websubhub:TopicDeregistration;
-};

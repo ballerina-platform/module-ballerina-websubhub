@@ -25,12 +25,11 @@ import kafkaHub.types;
 import ballerina/mime;
 import kafkaHub.config;
 
-isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
+isolated map<types:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
+const string PARTITION_MAPPING = "partitionMapping";
 const string CONSUMER_GROUP = "consumerGroup";
-const string EVENT_HUB_NAME = "eventHubName";
-const string EVENT_HUB_PARTITION = "eventHubPartition";
 
 public function main() returns error? {    
     // Initialize the Hub
@@ -57,8 +56,8 @@ public function main() returns error? {
 function syncRegsisteredTopicsCache() {
     do {
         while true {
-            websubhub:TopicRegistration[] persistedTopics = check getPersistedTopics();
-            refreshTopicCache(persistedTopics);
+            types:TopicRegistration[] persistedTopics = check getPersistedTopics();
+            check refreshTopicCache(persistedTopics);
         }
     } on fail var e {
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
@@ -69,7 +68,7 @@ function syncRegsisteredTopicsCache() {
     }
 }
 
-function getPersistedTopics() returns websubhub:TopicRegistration[]|error {
+function getPersistedTopics() returns types:TopicRegistration[]|error {
     kafka:TopicPartition partitionInfo = {
         topic: config:SYSTEM_INFO_HUB,
         partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
@@ -83,14 +82,24 @@ function getPersistedTopics() returns websubhub:TopicRegistration[]|error {
     return [];
 }
 
-function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
+function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns error? {
+    final readonly & string[] topicNames = persistedTopics
+        .'map(topicReg => util:sanitizeTopicName(topicReg.topic))
+        .cloneReadOnly();
     lock {
-        registeredTopicsCache.removeAll();
+        string[] unregisteredTopics = registeredTopicsCache.keys().filter('key => topicNames.indexOf('key) is ());
+        foreach string topic in unregisteredTopics {
+            types:TopicRegistration unregisteredTopic = registeredTopicsCache.remove(topic);
+            _ = util:removePartitionAssignment(unregisteredTopic.partitionMapping);
+        }
     }
-    foreach var topic in persistedTopics.cloneReadOnly() {
+    foreach types:TopicRegistration topic in persistedTopics.cloneReadOnly() {
         string topicName = util:sanitizeTopicName(topic.topic);
         lock {
-            registeredTopicsCache[topicName] = topic.cloneReadOnly();
+            if !registeredTopicsCache.hasKey(topicName) {
+                registeredTopicsCache[topicName] = topic;
+                check util:updateNextPartition(topic.partitionMapping);
+            } 
         }
     }
 }
@@ -99,7 +108,7 @@ function syncSubscribersCache() {
     do {
         while true {
             websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
-            refreshSubscribersCache(persistedSubscribers);
+            check refreshSubscribersCache(persistedSubscribers);
             check startMissingSubscribers(persistedSubscribers);
         }
     } on fail var e {
@@ -125,14 +134,16 @@ function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|erro
     return [];
 }
 
-function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
+function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     final readonly & string[] subscriberIds = persistedSubscribers
         .'map(sub => util:generateSubscriberId(sub.hubTopic, sub.hubCallback))
         .cloneReadOnly();
     lock {
         string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
         foreach var sub in unsubscribedSubscribers {
-            _ = subscribersCache.removeIfHasKey(sub);
+            websubhub:VerifiedSubscription subscriber = subscribersCache.remove(sub);
+            readonly & types:EventHubConsumerGroup consumerGroupMapping = check value:ensureType(subscriber[CONSUMER_GROUP]);
+            _ = util:removeConsumerGroupAssignment(consumerGroupMapping);
         }
     }
 }
@@ -147,11 +158,9 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            string consumerGroup = check value:ensureType(subscriber[CONSUMER_GROUP]);
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroup);
-            string eventHubName = check value:ensureType(subscriber[EVENT_HUB_NAME]);
-            int eventHubPartition = check value:ensureType(subscriber[EVENT_HUB_PARTITION]);
-            _ = check consumerEp->assign([{topic: eventHubName, partition: eventHubPartition}]);
+            types:EventHubConsumerGroup consumerGroupMapping = check value:ensureType(subscriber[CONSUMER_GROUP]);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroupMapping.consumerGroup);
+            _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,

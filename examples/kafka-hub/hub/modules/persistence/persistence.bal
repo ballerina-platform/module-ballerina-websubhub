@@ -17,9 +17,10 @@
 import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
+import kafkaHub.types;
 import ballerina/lang.value;
 
-public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
+public isolated function addRegsiteredTopic(types:TopicRegistration message) returns error? {
     check updateTopicDetails(message);
 }
 
@@ -27,7 +28,7 @@ public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration mes
     check updateTopicDetails(message);
 }
 
-isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
+isolated function updateTopicDetails(types:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
     json jsonData = message.toJson();
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:REGISTERED_WEBSUB_TOPICS_PARTITION, jsonData);
 }
