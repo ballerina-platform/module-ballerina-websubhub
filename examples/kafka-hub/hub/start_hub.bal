@@ -36,6 +36,8 @@ public function main() returns error? {
     // Dispatch `hub` restart event to topics/subscriptions
     _ = check persist:persistRestartEventForTopics({});
     _ = check persist:persistRestartEventForSubscriptions({});
+
+    _ = check assignPartitionsToSystemConsumers();
     
     // Initialize the Hub
     _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
@@ -58,6 +60,22 @@ public function main() returns error? {
     check hubListener.'start();
 }
 
+function assignPartitionsToSystemConsumers() returns error? {
+    // assign relevant partitions to consolidated-topics consumer
+    kafka:TopicPartition consolidatedTopicsPartition = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
+    };
+    _ = check conn:registeredTopicsConsumer->assign([consolidatedTopicsPartition]);
+
+    // assign relevant partitions to consolidated-subscribers consumer
+    kafka:TopicPartition consolidatedSubscribersPartition = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
+    };
+    _ = check conn:subscribersConsumer->assign([consolidatedSubscribersPartition]);
+}
+
 function syncRegsisteredTopicsCache() {
     do {
         while true {
@@ -74,11 +92,6 @@ function syncRegsisteredTopicsCache() {
 }
 
 function getPersistedTopics() returns types:TopicRegistration[]|error {
-    kafka:TopicPartition partitionInfo = {
-        topic: config:SYSTEM_INFO_HUB,
-        partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
-    };
-    _ = check conn:registeredTopicsConsumer->assign([partitionInfo]);
     types:ConsolidatedTopicsConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         types:ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
@@ -126,11 +139,6 @@ function syncSubscribersCache() {
 }
 
 function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
-    kafka:TopicPartition partitionInfo = {
-        topic: config:SYSTEM_INFO_HUB,
-        partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
-    };
-    _ = check conn:subscribersConsumer->assign([partitionInfo]);
     types:ConsolidatedSubscribersConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
