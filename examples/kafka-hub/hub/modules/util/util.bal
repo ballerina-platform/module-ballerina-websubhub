@@ -15,9 +15,6 @@
 // under the License.
 
 import ballerina/regex;
-import ballerina/random;
-import ballerina/time;
-import ballerina/lang.'string as strings;
 
 # Sanitizes the name of the `topic` by replacing special characters with `_`.
 # 
@@ -37,44 +34,10 @@ public isolated function generateSubscriberId(string topic, string callbackUrl) 
     return nomalizeString(idValue);
 }
 
-# Generates a group name for the kafka-consumer.
-# 
-# + topic - The `topic` which subscriber needs to subscribe
-# + callbackUrl - Subscriber callback URL
-# + return - Generated consumer group name the subscriber
-public isolated function generateGroupName(string topic, string callbackUrl) returns string {
-    string idValue = topic + ":::" + callbackUrl + ":::" + time:monotonicNow().toBalString();
-    return nomalizeString(idValue);
-}
-
 # Normalizes a `string` by replacing special characters with `_`.
 # 
 # + baseString - `string` to be normalized
 # + return - Normalized `string`
 isolated function nomalizeString(string baseString) returns string {
     return regex:replaceAll(baseString, "[^a-zA-Z0-9]", "_");
-}
-
-# Generates a random `string` of 10 characters
-# 
-# + return - The generated `string`
-public isolated function generateRandomString() returns string {
-    int[] codePoints = [];
-    int leftLimit = 48; // numeral '0'
-    int rightLimit = 122; // letter 'z'
-    int iterator = 0;
-    while iterator < 10 {
-        int|error randomInt = random:createIntInRange(leftLimit, rightLimit);
-        if randomInt is error {
-            break;
-        } else {
-            // character literals from 48 - 57 are numbers | 65 - 90 are capital letters | 97 - 122 are simple letters
-            if (randomInt <= 57 || randomInt >= 65) && (randomInt <= 90 || randomInt >= 97) {
-                codePoints.push(randomInt);
-                iterator += 1;
-            }
-        }
-    }
-    string|error generatedValue = strings:fromCodePointInts(codePoints);
-    return generatedValue is string ? generatedValue : "";
 }

@@ -21,6 +21,7 @@ import ballerinax/kafka;
 import ballerina/lang.value;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
+import kafkaHub.persistence as persist;
 import kafkaHub.types;
 import ballerina/mime;
 import kafkaHub.config;
@@ -32,6 +33,10 @@ const string PARTITION_MAPPING = "partitionMapping";
 const string CONSUMER_GROUP = "consumerGroup";
 
 public function main() returns error? {    
+    // Dispatch `hub` restart event to topics/subscriptions
+    _ = check persist:persistRestartEventForTopics({});
+    _ = check persist:persistRestartEventForSubscriptions({});
+    
     // Initialize the Hub
     _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
     _ = @strand { thread: "any" } start syncSubscribersCache();

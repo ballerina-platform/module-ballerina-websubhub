@@ -32,6 +32,10 @@ public type TopicRegistration record {
     EventHubPartition partitionMapping;
 };
 
+public type HubRestartEvent record {|
+    string hubMode = "restart";
+|};
+
 public type ConsolidatedTopicsConsumerRecord record {|
     *kafka:AnydataConsumerRecord;
     TopicRegistration[] value;

@@ -28,7 +28,11 @@ public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration mes
     check updateTopicDetails(message);
 }
 
-isolated function updateTopicDetails(types:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
+public isolated function persistRestartEventForTopics(types:HubRestartEvent message) returns error? {
+    check updateTopicDetails(message);
+}
+
+isolated function updateTopicDetails(types:TopicRegistration|websubhub:TopicDeregistration|types:HubRestartEvent message) returns error? {
     json jsonData = message.toJson();
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:REGISTERED_WEBSUB_TOPICS_PARTITION, jsonData);
 }
@@ -41,7 +45,11 @@ public isolated function removeSubscription(websubhub:VerifiedUnsubscription mes
     check updateSubscriptionDetails(message); 
 }
 
-isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+public isolated function persistRestartEventForSubscriptions(types:HubRestartEvent message) returns error? {
+    check updateSubscriptionDetails(message); 
+}
+
+isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription|types:HubRestartEvent message) returns error? {
     json jsonData = message.toJson();
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:WEBSUB_SUBSCRIBERS_PARTITION, jsonData); 
 }

@@ -16,9 +16,6 @@
 
 import ballerinax/kafka;
 import kafkaHub.config;
-import kafkaHub.util;
-
-string CONSTRUCTED_SERVER_ID = string `${config:SERVER_ID}-${util:generateRandomString()}`;
 
 // Producer which persist the current in-memory state of the Hub 
 kafka:ProducerConfiguration statePersistConfig = {
@@ -35,7 +32,7 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTS
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
-    groupId: "consolidated-websub-subscribers-group-" + CONSTRUCTED_SERVER_ID,
+    groupId: string `consolidated-websub-subscribers-group-${config:SERVER_ID}`,
     offsetReset: "earliest",
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
@@ -47,7 +44,7 @@ public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTST
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
-    groupId: "consolidated--websub-topics-group-" + CONSTRUCTED_SERVER_ID,
+    groupId: string `consolidated--websub-topics-group-${config:SERVER_ID}`,
     offsetReset: "earliest",
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
