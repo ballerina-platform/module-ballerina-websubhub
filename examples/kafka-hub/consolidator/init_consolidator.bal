@@ -16,33 +16,53 @@
 
 import ballerinax/kafka;
 import ballerina/websubhub;
-import ballerina/lang.value;
 import ballerina/log;
 import consolidatorService.config;
+import consolidatorService.types;
 import consolidatorService.util;
 import consolidatorService.connections as conn;
 
-isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
+isolated map<types:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 public function main() returns error? {
+    _ = check assignPartitionsToSystemConsumers();
     // Initialize consolidator-service state
     syncRegsisteredTopicsCache();
     _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
     syncSubscribersCache();
     _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
     log:printInfo("Starting Event Consolidator Service");
-
     // start the consolidator-service
     check startConsolidator();
 }
 
+function assignPartitionsToSystemConsumers() returns error? {
+    // assign relevant partitions to consolidated-topics consumer
+    kafka:TopicPartition consolidatedTopicsPartition = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
+    };
+    _ = check conn:consolidatedTopicsConsumer->assign([consolidatedTopicsPartition]);
+
+    // assign relevant partitions to consolidated-subscribers consumer
+    kafka:TopicPartition consolidatedSubscribersPartition = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
+    };
+    _ = check conn:consolidatedSubscriberConsumer->assign([consolidatedSubscribersPartition]);
+
+    kafka:TopicPartition[] websubEventsPartitions = [
+        { topic: config:SYSTEM_INFO_HUB, partition: config:REGISTERED_WEBSUB_TOPICS_PARTITION },
+        { topic: config:SYSTEM_INFO_HUB, partition: config:WEBSUB_SUBSCRIBERS_PARTITION }
+    ];
+    _ = check conn:websubEventConsumer->assign(websubEventsPartitions);
+}
+
 isolated function syncRegsisteredTopicsCache() {
     do {
-        websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
-        if persistedTopics is websubhub:TopicRegistration[] {
-            refreshTopicCache(persistedTopics);
-        }
+        types:TopicRegistration[] persistedTopics = check getPersistedTopics();
+        refreshTopicCache(persistedTopics);
     } on fail var e {
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
         kafka:Error? result = conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
@@ -52,32 +72,16 @@ isolated function syncRegsisteredTopicsCache() {
     }
 }
 
-isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:consolidatedTopicsConsumer->poll(config:POLLING_INTERVAL);
+isolated function getPersistedTopics() returns types:TopicRegistration[]|error {
+    types:ConsolidatedTopicsConsumerRecord[] records = check conn:consolidatedTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeTopicsMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving topic-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
+        types:ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
+        return lastRecord.value;
     }
-    return;
+    return [];
 }
 
-isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
-    websubhub:TopicRegistration[] currentTopics = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
-        currentTopics.push(topic);
-    }
-    return currentTopics;
-}
-
-isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
+isolated function refreshTopicCache(types:TopicRegistration[] persistedTopics) {
     foreach var topic in persistedTopics.cloneReadOnly() {
         string topicName = util:sanitizeTopicName(topic.topic);
         lock {
@@ -88,10 +92,8 @@ isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopic
 
 isolated function syncSubscribersCache() {
     do {
-        websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
-        if persistedSubscribers is websubhub:VerifiedSubscription[] {
-            refreshSubscribersCache(persistedSubscribers);
-        }
+        websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
+        refreshSubscribersCache(persistedSubscribers);
     } on fail var e {
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
         kafka:Error? result = conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
@@ -101,29 +103,13 @@ isolated function syncSubscribersCache() {
     } 
 }
 
-isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
+isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
+    types:ConsolidatedSubscribersConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeSubscribersMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving consolidated-subscriber-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
+        types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
+        return lastRecord.value;
     }
-    return;
-}
-
-isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
-    websubhub:VerifiedSubscription[] currentSubscriptions = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
-        currentSubscriptions.push(subscription);
-    }
-    return currentSubscriptions;
+    return [];
 }
 
 isolated function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {

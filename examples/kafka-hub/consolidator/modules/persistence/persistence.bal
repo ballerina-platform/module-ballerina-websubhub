@@ -17,14 +17,15 @@
 import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.connections as conn;
+import consolidatorService.types;
 
-public isolated function persistTopicRegistrations(map<websubhub:TopicRegistration> registeredTopicsCache) returns error? {
-    websubhub:TopicRegistration[] availableTopics = [];
+public isolated function persistTopicRegistrations(map<types:TopicRegistration> registeredTopicsCache) returns error? {
+    types:TopicRegistration[] availableTopics = [];
     foreach var topic in registeredTopicsCache {
         availableTopics.push(topic);
     }
     json[] jsonData = <json[]> availableTopics.toJson();
-    check produceKafkaMessage(config:CONSOLIDATED_WEBSUB_TOPICS_TOPIC, jsonData);
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION, jsonData);
 }
 
 public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription> subscribersCache) returns error? {
@@ -33,11 +34,11 @@ public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription
         availableSubscriptions.push(subscriber);
     }
     json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC, jsonData);
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION, jsonData);
 }
 
-isolated function produceKafkaMessage(string topicName, json payload) returns error? {
+isolated function produceKafkaMessage(string topicName, int partition, json payload) returns error? {
     byte[] serializedContent = payload.toJsonString().toBytes();
-    check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
+    check conn:statePersistProducer->send({ topic: topicName, partition: partition, value: serializedContent });
     check conn:statePersistProducer->'flush();
 }

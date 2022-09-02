@@ -14,22 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerinax/kafka;
 import ballerina/websubhub;
-import ballerina/lang.value;
 import ballerina/log;
 import consolidatorService.config;
 import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
+import consolidatorService.types;
 
 isolated function startConsolidator() returns error? {
     do {
         while true {
-            kafka:ConsumerRecord[] records = check conn:websubEventConsumer->poll(config:POLLING_INTERVAL);
-            foreach kafka:ConsumerRecord currentRecord in records {
-                string lastPersistedData = check string:fromBytes(currentRecord.value);
-                error? result = processPersistedData(lastPersistedData);
+            types:EventConsumerRecord[] records = check conn:websubEventConsumer->poll(config:POLLING_INTERVAL);
+            foreach types:EventConsumerRecord currentRecord in records {
+                error? result = processPersistedData(currentRecord.value);
                 if result is error {
                     log:printError("Error occurred while processing received event ", 'error = result);
                 }
@@ -41,30 +39,31 @@ isolated function startConsolidator() returns error? {
     }
 }
 
-isolated function processPersistedData(string persistedData) returns error? {
-    json payload = check value:fromJsonString(persistedData);
-    string hubMode = check payload.hubMode;
-    match hubMode {
+isolated function processPersistedData(types:WebSubEvent event) returns error? {
+    match event.hubMode {
         "register" => {
-            check processTopicRegistration(payload);
+            check processTopicRegistration(event);
         }
         "deregister" => {
-            check processTopicDeregistration(payload);
+            check processTopicDeregistration(event);
         }
         "subscribe" => {
-            check processSubscription(payload);
+            check processSubscription(event);
         }
         "unsubscribe" => {
-            check processUnsubscription(payload);
+            check processUnsubscription(event);
+        }
+        "restart" => {
+            check processRestartEvent();
         }
         _ => {
-            return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
+            return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${event.hubMode}]`);
         }
     }
 }
 
-isolated function processTopicRegistration(json payload) returns error? {
-    websubhub:TopicRegistration registration = check value:cloneWithType(payload);
+isolated function processTopicRegistration(types:WebSubEvent payload) returns error? {
+    types:TopicRegistration registration = check payload.ensureType();
     string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
@@ -73,8 +72,8 @@ isolated function processTopicRegistration(json payload) returns error? {
     }
 }
 
-isolated function processTopicDeregistration(json payload) returns error? {
-    websubhub:TopicDeregistration deregistration = check value:cloneWithType(payload);
+isolated function processTopicDeregistration(types:WebSubEvent payload) returns error? {
+    websubhub:TopicDeregistration deregistration = check payload.ensureType();
     string topicName = util:sanitizeTopicName(deregistration.topic);
     lock {
         // remove the topic if topic-deregistration event received
@@ -83,8 +82,8 @@ isolated function processTopicDeregistration(json payload) returns error? {
     }
 }
 
-isolated function processSubscription(json payload) returns error? {
-    websubhub:VerifiedSubscription subscription = check payload.cloneWithType(websubhub:VerifiedSubscription);
+isolated function processSubscription(types:WebSubEvent payload) returns error? {
+    websubhub:VerifiedSubscription subscription = check payload.ensureType();
     string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
@@ -95,12 +94,21 @@ isolated function processSubscription(json payload) returns error? {
     }
 }
 
-isolated function processUnsubscription(json payload) returns error? {
-    websubhub:VerifiedUnsubscription unsubscription = check payload.cloneWithType(websubhub:VerifiedUnsubscription);
+isolated function processUnsubscription(types:WebSubEvent payload) returns error? {
+    websubhub:VerifiedUnsubscription unsubscription = check payload.ensureType();
     string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
     lock {
         // remove the subscriber if the unsubscription event received
         _ = subscribersCache.removeIfHasKey(subscriberId);
+        _ = check persist:persistSubscriptions(subscribersCache);
+    }
+}
+
+isolated function processRestartEvent() returns error? {
+    lock {
+        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
+    }
+    lock {
         _ = check persist:persistSubscriptions(subscribersCache);
     }
 }
