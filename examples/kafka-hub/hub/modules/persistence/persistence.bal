@@ -28,11 +28,7 @@ public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration mes
     check updateTopicDetails(message);
 }
 
-public isolated function persistRestartEventForTopics(types:HubRestartEvent message) returns error? {
-    check updateTopicDetails(message);
-}
-
-isolated function updateTopicDetails(types:TopicRegistration|websubhub:TopicDeregistration|types:HubRestartEvent message) returns error? {
+isolated function updateTopicDetails(types:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
     json jsonData = message.toJson();
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:REGISTERED_WEBSUB_TOPICS_PARTITION, jsonData);
 }
@@ -45,13 +41,15 @@ public isolated function removeSubscription(websubhub:VerifiedUnsubscription mes
     check updateSubscriptionDetails(message); 
 }
 
-public isolated function persistRestartEventForSubscriptions(types:HubRestartEvent message) returns error? {
-    check updateSubscriptionDetails(message); 
-}
-
-isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription|types:HubRestartEvent message) returns error? {
+isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
     json jsonData = message.toJson();
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:WEBSUB_SUBSCRIBERS_PARTITION, jsonData); 
+}
+
+public isolated function persistRestartEvent() returns error? {
+    types:HubRestartEvent message = {};
+    json jsonData = message.toJson();
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:SYSTEM_EVENTS_PARTITION, jsonData);
 }
 
 public isolated function addUpdateMessage(string topicName, int partition, websubhub:UpdateMessage message) returns error? {

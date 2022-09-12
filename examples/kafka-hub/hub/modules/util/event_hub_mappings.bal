@@ -17,6 +17,7 @@
 import ballerina/lang.value;
 import kafkaHub.config;
 import kafkaHub.types;
+import ballerina/log;
 
 // todo: find a way to persist removed assignments
 isolated types:EventHubPartition[] removedPartitionAssignments = [];
@@ -37,15 +38,15 @@ public isolated function getNextPartition() returns types:EventHubPartition|erro
     lock {
         if nextPartition is types:EventHubPartition {
             types:EventHubPartition currentPointer = check value:ensureType(nextPartition);
-            readonly & types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
-            nextPartition = check retrieveNextEventHubPartitionPointer(nextPointer);
+            types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
+            nextPartition = check retrieveNextEventHubPartitionPointer(nextPointer.cloneReadOnly());
             return currentPointer.cloneReadOnly();
         }
         return error("Could not find a valid partition");
     }
 }
 
-isolated function retrieveNextEventHubPartitionPointer(types:EventHubPartition eventHubPartition) returns types:EventHubPartition|int|error {
+isolated function retrieveNextEventHubPartitionPointer(readonly & types:EventHubPartition eventHubPartition) returns types:EventHubPartition|int|error {
     string currentEventHub = eventHubPartition.eventHub;
     int currentPartitionId = eventHubPartition.partition;
     if currentPartitionId >= config:NUMBER_OF_PARTITIONS - 1 {
@@ -93,9 +94,13 @@ public isolated function updateNextPartition(readonly & types:EventHubPartition 
 # Updates the removed partition assignments.
 #
 # + removedAssignment - Removed partition assignment
-public isolated function removePartitionAssignment(types:EventHubPartition removedAssignment) {
+public isolated function removePartitionAssignment(readonly & types:EventHubPartition removedAssignment) {
     lock {
-        removedPartitionAssignments.push(removedAssignment.cloneReadOnly());
+        boolean isPartitionAssignmentUnavailable = removedPartitionAssignments
+            .every(assignment => assignment.eventHub != removedAssignment.eventHub && assignment.partition != removedAssignment.partition);
+        if isPartitionAssignmentUnavailable {
+            removedPartitionAssignments.push(removedAssignment);
+        }
     }
 }
 
@@ -103,8 +108,8 @@ public isolated function removePartitionAssignment(types:EventHubPartition remov
 isolated map<types:EventHubConsumerGroup[]> removedConsumerGroupAssignments = {};
 isolated map<types:EventHubConsumerGroup|int> nextConsumerGroupAssignment = initConsumerGroupAssignment();
 
-isolated function initConsumerGroupAssignment() returns map<types:EventHubConsumerGroup> {
-    map<types:EventHubConsumerGroup> assignments = {};
+isolated function initConsumerGroupAssignment() returns map<types:EventHubConsumerGroup|int> {
+    map<types:EventHubConsumerGroup|int> assignments = {};
     foreach string eventHub in config:EVENT_HUBS {
         foreach int partitionId in 0..<config:NUMBER_OF_PARTITIONS {
             string eventHubPartitionId = string `${eventHub}_${partitionId}`;
@@ -132,10 +137,12 @@ public isolated function getNextConsumerGroup(types:EventHubPartition eventHubPa
     }
     lock {
         types:EventHubConsumerGroup|int currentConsumerGroup = nextConsumerGroupAssignment.get(partitionAssignmentKey);
+        log:printInfo("Found next consumer-group mapping", pointer = currentConsumerGroup);
         if currentConsumerGroup is int {
             return error ("Could not find a valid consumer-group");
         }
         nextConsumerGroupAssignment[partitionAssignmentKey] = check retrieveNextConsumerGroupPointer(currentConsumerGroup);
+        log:printInfo("Updated next consumer-group mapping", pointer = nextConsumerGroupAssignment[partitionAssignmentKey]);
         return currentConsumerGroup.cloneReadOnly();
     }
 }
@@ -182,7 +189,11 @@ public isolated function removeConsumerGroupAssignment(readonly & types:EventHub
     string partitionAssignmentKey = string `${consumerGroup.eventHub}_${consumerGroup.partition}`;
     lock {
         if removedConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            removedConsumerGroupAssignments.get(partitionAssignmentKey).push(consumerGroup);
+            boolean isConsumerGroupMappingUnavailable = removedConsumerGroupAssignments.get(partitionAssignmentKey)
+                        .every(cg => cg.consumerGroup != consumerGroup.consumerGroup);
+            if isConsumerGroupMappingUnavailable {
+                removedConsumerGroupAssignments.get(partitionAssignmentKey).push(consumerGroup);
+            }
             return;
         }
         types:EventHubConsumerGroup[] consumerGroups = [consumerGroup];

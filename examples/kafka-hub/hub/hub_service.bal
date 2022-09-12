@@ -17,7 +17,6 @@
 import ballerina/websubhub;
 import ballerina/log;
 import ballerina/http;
-import ballerina/lang.value;
 import kafkaHub.security;
 import kafkaHub.persistence as persist;
 import kafkaHub.config;
@@ -34,13 +33,7 @@ http:Service healthCheckService = service object {
     }
 };
 
-websubhub:Service hubService = @websubhub:ServiceConfig { 
-    webHookConfig: {
-        secureSocket: {
-            cert: "./resources/server.crt"
-        }
-    }
-}
+websubhub:Service hubService = @websubhub:ServiceConfig {}
 service object {
 
     # Registers a `topic` in the hub.
@@ -86,7 +79,7 @@ service object {
     # + headers - `http:Headers` of the original `http:Request`
     # + return - `websubhub:TopicDeregistrationSuccess` if topic deregistration is successful, `websubhub:TopicDeregistrationError`
     #            if topic deregistration failed or `error` if there is any unexpected error
-    isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message, http:Headers headers)
+    isolated remote function onDeregisterTopic(readonly & websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
         if config:SECURITY_ON {
             check security:authorize(headers, ["deregister_topic"]);
@@ -95,13 +88,13 @@ service object {
         return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
     }
 
-    isolated function deregisterTopic(websubhub:TopicRegistration message) returns websubhub:TopicDeregistrationError? {
+    isolated function deregisterTopic(readonly & websubhub:TopicDeregistration message) returns websubhub:TopicDeregistrationError? {
         string topicName = util:sanitizeTopicName(message.topic);
         lock {
             if !registeredTopicsCache.hasKey(topicName) {
                 return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
             }
-            error? persistingResult = persist:removeRegsiteredTopic(message.cloneReadOnly());
+            error? persistingResult = persist:removeRegsiteredTopic(message);
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-deregistration ", err = persistingResult.message());
             }
@@ -129,22 +122,21 @@ service object {
     isolated remote function onSubscriptionValidation(websubhub:Subscription message)
                 returns websubhub:SubscriptionDeniedError? {
         string topicName = util:sanitizeTopicName(message.hubTopic);
-        types:TopicRegistration? registeredTopic = ();
+        boolean topicAvailable = false;
+        boolean subscriberAvailable = false;
         lock {
-            registeredTopic = registeredTopicsCache[topicName].cloneReadOnly();
+            topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if registeredTopic is () {
+        if !topicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
-            boolean subscriberAvailable = false;
             lock {
                 subscriberAvailable = subscribersCache.hasKey(subscriberId);
             }
             if subscriberAvailable {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
             }
-            message[PARTITION_MAPPING] = registeredTopic.partitionMapping;
         }
     }
 
@@ -154,9 +146,11 @@ service object {
     # + return - `error` if there is any unexpected error or else `()`
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
         lock {
-            types:EventHubPartition partitionMapping = check value:ensureType(message.remove(PARTITION_MAPPING));
+            types:EventHubPartition partitionMapping = retrieveTopicPartitionMapping(message);
             types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
-            message[CONSUMER_GROUP] = consumerGroupMapping;
+            message[EVENT_HUB_NAME] = consumerGroupMapping.eventHub;
+            message[EVENT_HUB_PARTITION] = consumerGroupMapping.partition;
+            message[CONSUMER_GROUP] = consumerGroupMapping.consumerGroup;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
@@ -253,4 +247,12 @@ service object {
         }
     }
 };
+
+isolated function retrieveTopicPartitionMapping(websubhub:VerifiedSubscription message) returns types:EventHubPartition {
+    string topicName = util:sanitizeTopicName(message.hubTopic);
+    lock {
+        types:TopicRegistration topicRegistration = registeredTopicsCache.get(topicName);
+        return topicRegistration.partitionMapping.cloneReadOnly();
+    }
+}
 
