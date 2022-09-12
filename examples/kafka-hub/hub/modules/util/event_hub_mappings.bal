@@ -17,7 +17,6 @@
 import ballerina/lang.value;
 import kafkaHub.config;
 import kafkaHub.types;
-import ballerina/log;
 
 // todo: find a way to persist removed assignments
 isolated types:EventHubPartition[] removedPartitionAssignments = [];
@@ -123,6 +122,24 @@ isolated function initConsumerGroupAssignment() returns map<types:EventHubConsum
     return assignments;
 }
 
+# Returns the availablity of a consumer-group for a given EventHub partition.
+#
+# + eventHubPartition - EventHub partition for which needs a consumer-group
+# + return - Returns `true` if a consumer group is available or else `false`
+public isolated function isConsumerGroupAvailable(types:EventHubPartition eventHubPartition) returns boolean {
+    string partitionAssignmentKey = string `${eventHubPartition.eventHub}_${eventHubPartition.partition}`;
+    lock {
+        if removedConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
+            types:EventHubConsumerGroup[] availableConsumerGroups = removedConsumerGroupAssignments.get(partitionAssignmentKey);
+            return availableConsumerGroups.length() > 0;
+        }
+    }
+    lock {
+        types:EventHubConsumerGroup|int currentConsumerGroup = nextConsumerGroupAssignment.get(partitionAssignmentKey);
+        return currentConsumerGroup is types:EventHubConsumerGroup;
+    }
+}
+
 # Retrieves the next available consumer-group mapping for partition in an event hub.
 #
 # + eventHubPartition - Requested partition details
@@ -131,8 +148,8 @@ public isolated function getNextConsumerGroup(types:EventHubPartition eventHubPa
     string partitionAssignmentKey = string `${eventHubPartition.eventHub}_${eventHubPartition.partition}`;
     lock {
         if removedConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            types:EventHubConsumerGroup[] availablePartitions = removedConsumerGroupAssignments.get(partitionAssignmentKey);
-            return availablePartitions.pop().cloneReadOnly();
+            types:EventHubConsumerGroup[] availableConsumerGroups = removedConsumerGroupAssignments.get(partitionAssignmentKey);
+            return availableConsumerGroups.pop().cloneReadOnly();
         }
     }
     lock {

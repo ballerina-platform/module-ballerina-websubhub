@@ -122,20 +122,25 @@ service object {
     isolated remote function onSubscriptionValidation(websubhub:Subscription message)
                 returns websubhub:SubscriptionDeniedError? {
         string topicName = util:sanitizeTopicName(message.hubTopic);
-        boolean topicAvailable = false;
-        boolean subscriberAvailable = false;
+        types:TopicRegistration? topicRegistration = ();
         lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicRegistration = registeredTopicsCache.get(topicName).cloneReadOnly();
         }
-        if !topicAvailable {
+        if topicRegistration is () {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
+            boolean subscriberAvailable = false;
             lock {
                 subscriberAvailable = subscribersCache.hasKey(subscriberId);
             }
             if subscriberAvailable {
                 return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
+            }
+            types:EventHubPartition partitionMapping = topicRegistration.partitionMapping;
+            boolean isConsumerGroupAvailable = util:isConsumerGroupAvailable(partitionMapping); 
+            if !isConsumerGroupAvailable {
+                return error websubhub:SubscriptionDeniedError("System configured subscriber limit exceeded");
             }
         }
     }
