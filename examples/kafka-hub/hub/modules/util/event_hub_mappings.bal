@@ -137,12 +137,10 @@ public isolated function getNextConsumerGroup(types:EventHubPartition eventHubPa
     }
     lock {
         types:EventHubConsumerGroup|int currentConsumerGroup = nextConsumerGroupAssignment.get(partitionAssignmentKey);
-        log:printInfo("Found next consumer-group mapping", pointer = currentConsumerGroup);
         if currentConsumerGroup is int {
             return error ("Could not find a valid consumer-group");
         }
         nextConsumerGroupAssignment[partitionAssignmentKey] = check retrieveNextConsumerGroupPointer(currentConsumerGroup);
-        log:printInfo("Updated next consumer-group mapping", pointer = nextConsumerGroupAssignment[partitionAssignmentKey]);
         return currentConsumerGroup.cloneReadOnly();
     }
 }

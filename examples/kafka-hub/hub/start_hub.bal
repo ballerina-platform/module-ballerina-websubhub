@@ -172,11 +172,9 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            log:printInfo("Subscriber not available", sub = subscriber);
             string eventHubName = check subscriber[EVENT_HUB_NAME].ensureType();
             int eventHubPartition = check subscriber[EVENT_HUB_PARTITION].ensureType();
             string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
-            log:printInfo("Found the consumer-group mapping", cg = consumerGroup, eh = eventHubName, p = eventHubPartition);
             kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroup);
             _ = check consumerEp->assign([{topic: eventHubName, partition: eventHubPartition}]);
             websubhub:HubClient hubClientEp = check new (subscriber, {
