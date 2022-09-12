@@ -54,7 +54,8 @@ function assignPartitionsToSystemConsumers() returns error? {
 
     kafka:TopicPartition[] websubEventsPartitions = [
         { topic: config:SYSTEM_INFO_HUB, partition: config:REGISTERED_WEBSUB_TOPICS_PARTITION },
-        { topic: config:SYSTEM_INFO_HUB, partition: config:WEBSUB_SUBSCRIBERS_PARTITION }
+        { topic: config:SYSTEM_INFO_HUB, partition: config:WEBSUB_SUBSCRIBERS_PARTITION },
+        { topic: config:SYSTEM_INFO_HUB, partition: config:SYSTEM_EVENTS_PARTITION }
     ];
     _ = check conn:websubEventConsumer->assign(websubEventsPartitions);
 }

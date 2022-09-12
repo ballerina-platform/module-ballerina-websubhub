@@ -35,6 +35,9 @@ public configurable int WEBSUB_SUBSCRIBERS_PARTITION = 2;
 # Partitions in `system-info` EventHub which is stores consolidated websub subscribers for this server
 public configurable int CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION = 3;
 
+# Partitions in `system-info` EventHub which will get notified for system events
+public configurable int SYSTEM_EVENTS_PARTITION = 4;
+
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;
 

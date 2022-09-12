@@ -35,11 +35,7 @@ public type ConsolidatedSubscribersConsumerRecord record {|
     websubhub:VerifiedSubscription[] value;
 |};
 
-public type WebSubEvent TopicRegistration|websubhub:TopicDeregistration|websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription|HubRestartEvent;
-
 public type EventConsumerRecord record {|
     *kafka:AnydataConsumerRecord;
-    WebSubEvent value;
+    json value;
 |};
-
-

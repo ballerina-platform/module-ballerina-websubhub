@@ -21,47 +21,47 @@ import consolidatorService.config;
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "consolidated-state-persist",
     acks: "1",
-    retryCount: 3,
-    securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    auth: {
-        username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
-    }
+    retryCount: 3
+    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    // auth: {
+    //     username: "$ConnectionString",
+    //     password: config:EVENT_HUB_CONNECTION_STRING
+    // }
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 // Consumer which reads the consolidated topic details
 kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
     groupId: string `consolidated--websub-topics-group`,
-    offsetReset: "earliest",
-    securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    auth: {
-        username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
-    }
+    offsetReset: "earliest"
+    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    // auth: {
+    //     username: "$ConnectionString",
+    //     password: config:EVENT_HUB_CONNECTION_STRING
+    // }
 };
 public final kafka:Consumer consolidatedTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedTopicsConsumerConfig);
 
 // Consumer which reads the consolidated subscriber details
 kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
     groupId: "consolidated-websub-subscribers-group",
-    offsetReset: "earliest",
-    securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    auth: {
-        username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
-    }
+    offsetReset: "earliest"
+    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    // auth: {
+    //     username: "$ConnectionString",
+    //     password: config:EVENT_HUB_CONNECTION_STRING
+    // }
 };
 public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedSubscriberConsumerConfig);
 
 // Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
 kafka:ConsumerConfiguration websubEventConsumerConfig = {
     groupId: "state-update-group",
-    offsetReset: "earliest",
-    securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    auth: {
-        username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
-    }
+    offsetReset: "earliest"
+    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    // auth: {
+    //     username: "$ConnectionString",
+    //     password: config:EVENT_HUB_CONNECTION_STRING
+    // }
 };
 public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);

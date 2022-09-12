@@ -34,12 +34,14 @@ isolated function startConsolidator() returns error? {
             }
         }
     } on fail var e {
+        log:printError("Error occurred while consuming records", 'error = e);
         _ = check conn:websubEventConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
         return e;
     }
 }
 
-isolated function processPersistedData(types:WebSubEvent event) returns error? {
+isolated function processPersistedData(json event) returns error? {
+    string hubMode = check event.hubMode;
     match event.hubMode {
         "register" => {
             check processTopicRegistration(event);
@@ -57,13 +59,13 @@ isolated function processPersistedData(types:WebSubEvent event) returns error? {
             check processRestartEvent();
         }
         _ => {
-            return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${event.hubMode}]`);
+            return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
         }
     }
 }
 
-isolated function processTopicRegistration(types:WebSubEvent payload) returns error? {
-    types:TopicRegistration registration = check payload.ensureType();
+isolated function processTopicRegistration(json payload) returns error? {
+    types:TopicRegistration registration = check payload.fromJsonWithType();
     string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
@@ -72,8 +74,8 @@ isolated function processTopicRegistration(types:WebSubEvent payload) returns er
     }
 }
 
-isolated function processTopicDeregistration(types:WebSubEvent payload) returns error? {
-    websubhub:TopicDeregistration deregistration = check payload.ensureType();
+isolated function processTopicDeregistration(json payload) returns error? {
+    websubhub:TopicDeregistration deregistration = check payload.fromJsonWithType();
     string topicName = util:sanitizeTopicName(deregistration.topic);
     lock {
         // remove the topic if topic-deregistration event received
@@ -82,8 +84,8 @@ isolated function processTopicDeregistration(types:WebSubEvent payload) returns 
     }
 }
 
-isolated function processSubscription(types:WebSubEvent payload) returns error? {
-    websubhub:VerifiedSubscription subscription = check payload.ensureType();
+isolated function processSubscription(json payload) returns error? {
+    websubhub:VerifiedSubscription subscription = check payload.fromJsonWithType();
     string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
@@ -94,8 +96,8 @@ isolated function processSubscription(types:WebSubEvent payload) returns error? 
     }
 }
 
-isolated function processUnsubscription(types:WebSubEvent payload) returns error? {
-    websubhub:VerifiedUnsubscription unsubscription = check payload.ensureType();
+isolated function processUnsubscription(json payload) returns error? {
+    websubhub:VerifiedUnsubscription unsubscription = check payload.fromJsonWithType();
     string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
     lock {
         // remove the subscriber if the unsubscription event received
