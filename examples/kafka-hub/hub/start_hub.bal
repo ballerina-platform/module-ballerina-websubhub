@@ -172,11 +172,14 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            string eventHubName = check subscriber[EVENT_HUB_NAME].ensureType();
-            int eventHubPartition = check subscriber[EVENT_HUB_PARTITION].ensureType();
-            string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroup);
-            _ = check consumerEp->assign([{topic: eventHubName, partition: eventHubPartition}]);
+            readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+                eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
+                partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
+                consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
+            };
+            _ = check util:updateNextConsumerGroup(consumerGroupMapping);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroupMapping.consumerGroup);
+            _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -184,10 +187,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     backOffFactor: 2.0,
                     maxWaitInterval: 20
                 },
-                timeout: config:MESSAGE_DELIVERY_TIMEOUT,
-                secureSocket: {
-                    cert: "./resources/server.crt"
-                }
+                timeout: config:MESSAGE_DELIVERY_TIMEOUT
             });
             _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, subscriberId);
         }
