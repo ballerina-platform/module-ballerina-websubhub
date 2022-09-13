@@ -51,6 +51,6 @@ MESSAGE_DELIVERY_TIMEOUT = 10.0
 # System Configurations Related to Azure Event Hub
 NUMBER_OF_PARTITIONS = 5
 
-CONSUMER_GROUPS = ["cg-1"]
+CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
 
 EVENT_HUBS = ["test-hub-1"]
