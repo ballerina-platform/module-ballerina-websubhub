@@ -21,36 +21,36 @@ import kafkaHub.config;
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "state-persist",
     acks: "1",
-    retryCount: 3
-    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    // auth: {
-    //     username: "$ConnectionString",
-    //     password: config:EVENT_HUB_CONNECTION_STRING
-    // }
+    retryCount: 3,
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:EVENT_HUB_CONNECTION_STRING
+    }
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
     groupId: string `consolidated-websub-subscribers-group-${config:SERVER_ID}`,
-    offsetReset: "earliest"
-    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    // auth: {
-    //     username: "$ConnectionString",
-    //     password: config:EVENT_HUB_CONNECTION_STRING
-    // }
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:EVENT_HUB_CONNECTION_STRING
+    }
 };
 public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     groupId: string `consolidated--websub-topics-group-${config:SERVER_ID}`,
-    offsetReset: "earliest"
-    // securityProtocol: kafka:PROTOCOL_SASL_SSL,
-    // auth: {
-    //     username: "$ConnectionString",
-    //     password: config:EVENT_HUB_CONNECTION_STRING
-    // }
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:EVENT_HUB_CONNECTION_STRING
+    }
 };
 public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
 
@@ -61,12 +61,12 @@ public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_B
 public isolated function createMessageConsumer(string groupName) returns kafka:Consumer|error {
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
-        autoCommit: false
-        // securityProtocol: kafka:PROTOCOL_SASL_SSL,
-        // auth: {
-        //     username: "$ConnectionString",
-        //     password: config:EVENT_HUB_CONNECTION_STRING
-        // }
+        autoCommit: false,
+        securityProtocol: kafka:PROTOCOL_SASL_SSL,
+        auth: {
+            username: "$ConnectionString",
+            password: config:EVENT_HUB_CONNECTION_STRING
+        }
     };
     return new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
 }
