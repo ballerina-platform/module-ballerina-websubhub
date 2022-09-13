@@ -18,7 +18,6 @@ import ballerina/lang.value;
 import kafkaHub.config;
 import kafkaHub.types;
 
-// todo: find a way to persist removed assignments
 isolated types:EventHubPartition[] removedPartitionAssignments = [];
 isolated types:EventHubPartition|int nextPartition = {
     eventHub: config:EVENT_HUBS[0],
@@ -103,7 +102,6 @@ public isolated function removePartitionAssignment(readonly & types:EventHubPart
     }
 }
 
-// todo: find a way to persist removed assignments
 isolated map<types:EventHubConsumerGroup[]> removedConsumerGroupAssignments = {};
 isolated map<types:EventHubConsumerGroup|int> nextConsumerGroupAssignment = initConsumerGroupAssignment();
 
