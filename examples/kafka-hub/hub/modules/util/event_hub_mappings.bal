@@ -102,7 +102,7 @@ public isolated function removePartitionAssignment(readonly & types:EventHubPart
     }
 }
 
-isolated map<types:EventHubConsumerGroup[]> removedConsumerGroupAssignments = {};
+isolated map<types:EventHubConsumerGroup[]> vacantConsumerGroupAssignments = {};
 isolated map<types:EventHubConsumerGroup|int> nextConsumerGroupAssignment = initConsumerGroupAssignment();
 
 isolated function initConsumerGroupAssignment() returns map<types:EventHubConsumerGroup|int> {
@@ -127,8 +127,8 @@ isolated function initConsumerGroupAssignment() returns map<types:EventHubConsum
 public isolated function isConsumerGroupAvailable(types:EventHubPartition eventHubPartition) returns boolean {
     string partitionAssignmentKey = string `${eventHubPartition.eventHub}_${eventHubPartition.partition}`;
     lock {
-        if removedConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            types:EventHubConsumerGroup[] availableConsumerGroups = removedConsumerGroupAssignments.get(partitionAssignmentKey);
+        if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
+            types:EventHubConsumerGroup[] availableConsumerGroups = vacantConsumerGroupAssignments.get(partitionAssignmentKey);
             return availableConsumerGroups.length() > 0;
         }
     }
@@ -145,8 +145,8 @@ public isolated function isConsumerGroupAvailable(types:EventHubPartition eventH
 public isolated function getNextConsumerGroup(types:EventHubPartition eventHubPartition) returns types:EventHubConsumerGroup|error {
     string partitionAssignmentKey = string `${eventHubPartition.eventHub}_${eventHubPartition.partition}`;
     lock {
-        if removedConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            types:EventHubConsumerGroup[] availableConsumerGroups = removedConsumerGroupAssignments.get(partitionAssignmentKey);
+        if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
+            types:EventHubConsumerGroup[] availableConsumerGroups = vacantConsumerGroupAssignments.get(partitionAssignmentKey);
             return availableConsumerGroups.pop().cloneReadOnly();
         }
     }
@@ -201,15 +201,15 @@ public isolated function updateNextConsumerGroup(readonly & types:EventHubConsum
 public isolated function removeConsumerGroupAssignment(readonly & types:EventHubConsumerGroup consumerGroup) {
     string partitionAssignmentKey = string `${consumerGroup.eventHub}_${consumerGroup.partition}`;
     lock {
-        if removedConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            boolean isConsumerGroupMappingUnavailable = removedConsumerGroupAssignments.get(partitionAssignmentKey)
+        if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
+            boolean isConsumerGroupMappingUnavailable = vacantConsumerGroupAssignments.get(partitionAssignmentKey)
                         .every(cg => cg.consumerGroup != consumerGroup.consumerGroup);
             if isConsumerGroupMappingUnavailable {
-                removedConsumerGroupAssignments.get(partitionAssignmentKey).push(consumerGroup);
+                vacantConsumerGroupAssignments.get(partitionAssignmentKey).push(consumerGroup);
             }
             return;
         }
         types:EventHubConsumerGroup[] consumerGroups = [consumerGroup];
-        removedConsumerGroupAssignments[partitionAssignmentKey] = consumerGroups;
+        vacantConsumerGroupAssignments[partitionAssignmentKey] = consumerGroups;
     }
 }
