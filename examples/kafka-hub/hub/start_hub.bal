@@ -18,31 +18,33 @@ import ballerina/log;
 import ballerina/http;
 import ballerina/websubhub;
 import ballerinax/kafka;
-import ballerina/lang.value;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
+import kafkaHub.persistence as persist;
+import kafkaHub.types;
 import ballerina/mime;
 import kafkaHub.config;
 
-isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
+isolated map<types:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
+const string PARTITION_MAPPING = "partitionMapping";
+const string EVENT_HUB_NAME = "eventHubName";
+const string EVENT_HUB_PARTITION = "eventHubPartition";
 const string CONSUMER_GROUP = "consumerGroup";
 
 public function main() returns error? {    
+    // Dispatch `hub` restart event to topics/subscriptions
+    _ = check persist:persistRestartEvent();
+    // Assign EventHub partitions to system-consumers
+    _ = check assignPartitionsToSystemConsumers();
+    
     // Initialize the Hub
     _ = @strand { thread: "any" } start syncRegsisteredTopicsCache();
     _ = @strand { thread: "any" } start syncSubscribersCache();
     
     // Start the HealthCheck Service
-    http:Listener httpListener = check new (config:HUB_PORT, 
-        secureSocket = {
-            key: {
-                certFile: "./resources/server.crt",
-                keyFile: "./resources/server.key"
-            }
-        }
-    );
+    http:Listener httpListener = check new (config:HUB_PORT);
     check httpListener.attach(healthCheckService, "/health");
 
     // Start the Hub
@@ -51,13 +53,27 @@ public function main() returns error? {
     check hubListener.'start();
 }
 
+function assignPartitionsToSystemConsumers() returns error? {
+    // assign relevant partitions to consolidated-topics consumer
+    kafka:TopicPartition consolidatedTopicsPartition = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
+    };
+    _ = check conn:registeredTopicsConsumer->assign([consolidatedTopicsPartition]);
+
+    // assign relevant partitions to consolidated-subscribers consumer
+    kafka:TopicPartition consolidatedSubscribersPartition = {
+        topic: config:SYSTEM_INFO_HUB,
+        partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
+    };
+    _ = check conn:subscribersConsumer->assign([consolidatedSubscribersPartition]);
+}
+
 function syncRegsisteredTopicsCache() {
     do {
         while true {
-            websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
-            if persistedTopics is websubhub:TopicRegistration[] {
-                refreshTopicCache(persistedTopics);
-            }
+            types:TopicRegistration[] persistedTopics = check getPersistedTopics();
+            check refreshTopicCache(persistedTopics);
         }
     } on fail var e {
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
@@ -68,39 +84,35 @@ function syncRegsisteredTopicsCache() {
     }
 }
 
-function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
+function getPersistedTopics() returns types:TopicRegistration[]|error {
+    types:ConsolidatedTopicsConsumerRecord[] records = check conn:registeredTopicsConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeTopicsMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving topic-details ", err = lastPersistedData.message());
-            return lastPersistedData;
+        types:ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
+        return lastRecord.value;
+    }
+    return [];
+}
+
+function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns error? {
+    final readonly & string[] topicNames = persistedTopics
+        .'map(topicReg => util:sanitizeTopicName(topicReg.topic))
+        .cloneReadOnly();
+    lock {
+        if topicNames.length() != 0 {
+            string[] unregisteredTopics = registeredTopicsCache.keys().filter('key => topicNames.indexOf('key) is ());
+            foreach string topic in unregisteredTopics {
+                types:TopicRegistration unregisteredTopic = registeredTopicsCache.remove(topic);
+                _ = util:removePartitionAssignment(unregisteredTopic.partitionMapping.cloneReadOnly());
+            }
         }
     }
-    return;
-}
-
-function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
-    websubhub:TopicRegistration[] currentTopics = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
-        currentTopics.push(topic);
-    }
-    return currentTopics;
-}
-
-function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
-    lock {
-        registeredTopicsCache.removeAll();
-    }
-    foreach var topic in persistedTopics.cloneReadOnly() {
+    foreach types:TopicRegistration topic in persistedTopics.cloneReadOnly() {
         string topicName = util:sanitizeTopicName(topic.topic);
         lock {
-            registeredTopicsCache[topicName] = topic.cloneReadOnly();
+            if !registeredTopicsCache.hasKey(topicName) {
+                registeredTopicsCache[topicName] = topic;
+                check util:updateNextPartition(topic.partitionMapping);
+            } 
         }
     }
 }
@@ -108,11 +120,9 @@ function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
 function syncSubscribersCache() {
     do {
         while true {
-            websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
-            if persistedSubscribers is websubhub:VerifiedSubscription[] {
-                refreshSubscribersCache(persistedSubscribers);
-                check startMissingSubscribers(persistedSubscribers);
-            }
+            websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
+            check refreshSubscribersCache(persistedSubscribers);
+            check startMissingSubscribers(persistedSubscribers);
         }
     } on fail var e {
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
@@ -123,39 +133,31 @@ function syncSubscribersCache() {
     }  
 }
 
-function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
+function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
+    types:ConsolidatedSubscribersConsumerRecord[] records = check conn:subscribersConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeSubscribersMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving subscriber-data ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
+        types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
+        return lastRecord.value;
     }
-    return;
+    return [];
 }
 
-function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
-    websubhub:VerifiedSubscription[] currentSubscriptions = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
-        currentSubscriptions.push(subscription);
-    }
-    return currentSubscriptions;
-}
-
-function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
+function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     final readonly & string[] subscriberIds = persistedSubscribers
         .'map(sub => util:generateSubscriberId(sub.hubTopic, sub.hubCallback))
         .cloneReadOnly();
     lock {
-        string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
-        foreach var sub in unsubscribedSubscribers {
-            _ = subscribersCache.removeIfHasKey(sub);
+        if subscriberIds.length() != 0 {
+            string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
+            foreach var sub in unsubscribedSubscribers {
+                websubhub:VerifiedSubscription subscriber = subscribersCache.remove(sub);
+                readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+                    eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
+                    partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
+                    consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
+                };
+                _ = util:removeConsumerGroupAssignment(consumerGroupMapping);
+            }
         }
     }
 }
@@ -170,8 +172,14 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
-            string consumerGroup = check value:ensureType(subscriber[CONSUMER_GROUP]);
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, consumerGroup);
+            readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+                eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
+                partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
+                consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
+            };
+            _ = check util:updateNextConsumerGroup(consumerGroupMapping);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroupMapping.consumerGroup);
+            _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {
                     interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -179,10 +187,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                     backOffFactor: 2.0,
                     maxWaitInterval: 20
                 },
-                timeout: config:MESSAGE_DELIVERY_TIMEOUT,
-                secureSocket: {
-                    cert: "./resources/server.crt"
-                }
+                timeout: config:MESSAGE_DELIVERY_TIMEOUT
             });
             _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, subscriberId);
         }
@@ -192,7 +197,7 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
 isolated function pollForNewUpdates(websubhub:HubClient clientEp, kafka:Consumer consumerEp, string topicName, string subscriberId) {
     do {
         while true {
-            kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            types:UpdateMessageConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
             if !isValidConsumer(topicName, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
             }
@@ -223,29 +228,16 @@ isolated function isValidConsumer(string topicName, string subscriberId) returns
     return topicAvailable && subscriberAvailable;
 }
 
-isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
-    foreach var kafkaRecord in records {
-        var message = deSerializeKafkaRecord(kafkaRecord);
-        if (message is websubhub:ContentDistributionMessage) {
-            var response = clientEp->notifyContentDistribution(message);
-            if (response is error) {
-                return response;
-            } else {
-                _ = check consumerEp->commit();
-            }
-        } else {
-            log:printError("Error occurred while retrieving message data", err = message.message());
+isolated function notifySubscribers(types:UpdateMessageConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
+    foreach types:UpdateMessageConsumerRecord kafkaRecord in records {
+        websubhub:ContentDistributionMessage message = {
+            content: kafkaRecord.value,
+            contentType: mime:APPLICATION_JSON
+        };
+        websubhub:ContentDistributionSuccess|error response = clientEp->notifyContentDistribution(message);
+        if response is error {
+            return response;
         }
+        _ = check consumerEp->commit();
     }
-}
-
-isolated function deSerializeKafkaRecord(kafka:ConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
-    byte[] content = kafkaRecord.value;
-    string message = check string:fromBytes(content);
-    json payload =  check value:fromJsonString(message);
-    websubhub:ContentDistributionMessage distributionMsg = {
-        content: payload,
-        contentType: mime:APPLICATION_JSON
-    };
-    return distributionMsg;
 }

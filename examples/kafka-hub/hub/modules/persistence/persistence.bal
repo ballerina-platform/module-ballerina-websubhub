@@ -17,8 +17,10 @@
 import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
+import kafkaHub.types;
+import ballerina/lang.value;
 
-public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
+public isolated function addRegsiteredTopic(types:TopicRegistration message) returns error? {
     check updateTopicDetails(message);
 }
 
@@ -26,9 +28,9 @@ public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration mes
     check updateTopicDetails(message);
 }
 
-isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
+isolated function updateTopicDetails(types:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
     json jsonData = message.toJson();
-    check produceKafkaMessage(config:REGISTERED_WEBSUB_TOPICS_TOPIC, jsonData);
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:REGISTERED_WEBSUB_TOPICS_PARTITION, jsonData);
 }
 
 public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
@@ -41,16 +43,22 @@ public isolated function removeSubscription(websubhub:VerifiedUnsubscription mes
 
 isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
     json jsonData = message.toJson();
-    check produceKafkaMessage(config:WEBSUB_SUBSCRIBERS_TOPIC, jsonData); 
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:WEBSUB_SUBSCRIBERS_PARTITION, jsonData); 
 }
 
-public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {
-    json payload = <json>message.content;
-    check produceKafkaMessage(topicName, payload);
+public isolated function persistRestartEvent() returns error? {
+    types:HubRestartEvent message = {};
+    json jsonData = message.toJson();
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:SYSTEM_EVENTS_PARTITION, jsonData);
 }
 
-isolated function produceKafkaMessage(string topicName, json payload) returns error? {
+public isolated function addUpdateMessage(string topicName, int partition, websubhub:UpdateMessage message) returns error? {
+    json payload = check value:ensureType(message.content);
+    check produceKafkaMessage(topicName, partition, payload);
+}
+
+isolated function produceKafkaMessage(string topicName, int partition, json payload) returns error? {
     byte[] serializedContent = payload.toJsonString().toBytes();
-    check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
+    check conn:statePersistProducer->send({ topic: topicName, partition: partition, value: serializedContent });
     check conn:statePersistProducer->'flush();
 }

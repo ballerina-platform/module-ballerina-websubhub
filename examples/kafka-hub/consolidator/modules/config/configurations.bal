@@ -14,29 +14,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import consolidatorService.util;
-
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
-# Kafka topic which will get notified for websub topic registration/deregistration
-# All the hubs must be pointed to the same Kafka topic to notify websub topic registration/deregistration
-public configurable string REGISTERED_WEBSUB_TOPICS_TOPIC = "registered-websub-topics";
+# Azure Event Hub connection-string
+public configurable string EVENT_HUB_CONNECTION_STRING = ?;
 
-# Kafka topic which stores consolidated websub topics for the hub
-public configurable string CONSOLIDATED_WEBSUB_TOPICS_TOPIC = "consolidated-websub-topics";
+# Azure Event Hub related to the system-information
+public configurable string SYSTEM_INFO_HUB = "system-info";
 
-# Kafka topic which will get notified for websub subscription/unsubscription
-# All the hubs must be pointed to the same Kafka topic to notify websub subscription/unsubscription
-public configurable string WEBSUB_SUBSCRIBERS_TOPIC = "registered-websub-subscribers";
+# Partitions in `system-info` EventHub which will get notified for websub topic registration/deregistration
+public configurable int REGISTERED_WEBSUB_TOPICS_PARTITION = 0;
 
-# Kafka topic which is stores consolidated websub subscribers for this server
-public configurable string CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC = "consolidated-websub-subscribers";
+# Partitions in `system-info` EventHub which stores consolidated websub topics for the hub
+public configurable int CONSOLIDATED_WEBSUB_TOPICS_PARTITION = 1;
+
+# Partitions in `system-info` EventHub which will get notified for websub subscription/unsubscription
+public configurable int WEBSUB_SUBSCRIBERS_PARTITION = 2;
+
+# Partitions in `system-info` EventHub which is stores consolidated websub subscribers for this server
+public configurable int CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION = 3;
+
+# Partitions in `system-info` EventHub which will get notified for system events
+public configurable int SYSTEM_EVENTS_PARTITION = 4;
 
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;
 
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
-
-public final string CONSTRUCTED_CONSUMER_ID = util:generateRandomString();

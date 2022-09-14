@@ -2,19 +2,29 @@
 # IP and Port of the Kafka bootstrap node
 KAFKA_BOOTSTRAP_NODE = "localhost:9092"
 
-# Kafka topic which will get notified for websub topic registration/deregistration
-# All the hubs must be pointed to the same Kafka topic to notify websub topic registration/deregistration
-REGISTERED_WEBSUB_TOPICS_TOPIC = "registered-websub-topics"
+# Azure Event Hub namespace connection
+KAFKA_BOOTSTRAP_NODE = "localhost:9092"
 
-# Kafka topic which stores consolidated websub topics for the hub
-CONSOLIDATED_WEBSUB_TOPICS_TOPIC = "consolidated-websub-topics"
+# Azure Event Hub connection-string
+EVENT_HUB_CONNECTION_STRING = "test-connection"
 
-# Kafka topic which will get notified for websub subscription/unsubscription
-# All the hubs must be pointed to the same Kafka topic to notify websub subscription/unsubscription
-WEBSUB_SUBSCRIBERS_TOPIC = "registered-websub-subscribers"
+# Azure Event Hub related to the system-information
+SYSTEM_INFO_HUB = "system-info"
 
-# Kafka topic which is stores consolidated websub subscribers for this server
-CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC = "consolidated-websub-subscribers"
+# Partitions in `system-info` EventHub which will get notified for websub topic registration/deregistration
+REGISTERED_WEBSUB_TOPICS_PARTITION = 0
+
+# Partitions in `system-info` EventHub which stores consolidated websub topics for the hub
+CONSOLIDATED_WEBSUB_TOPICS_PARTITION = 1
+
+# Partitions in `system-info` EventHub which will get notified for websub subscription/unsubscription
+WEBSUB_SUBSCRIBERS_PARTITION = 2
+
+# Partitions in `system-info` EventHub which is stores consolidated websub subscribers for this server
+CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION = 3
+
+# Partitions in `system-info` EventHub which will get notified for system events
+SYSTEM_EVENTS_PARTITION = 4
 
 # The interval in which Kafka consumers wait for new messages
 POLLING_INTERVAL = 10.0
