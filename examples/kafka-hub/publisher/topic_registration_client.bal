@@ -18,7 +18,20 @@ import ballerina/websubhub;
 import ballerina/io;
 
 public function main() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new("http://localhost:9000/hub");
-    var registrationResponse = websubHubClientEP->registerTopic("test");
+    websubhub:PublisherClient websubHubClientEP = check new ("http://localhost:9000/hub",
+        auth = {
+            issuer: "ballerina",
+            audience: ["asgardeo"],
+            signatureConfig: {
+                config: {
+                    keyFile: "../_resources/server.key"
+                }
+            },
+            customClaims: {
+                "orgName": "orgA"
+            }
+        }
+    );
+    var registrationResponse = websubHubClientEP->registerTopic("orgA-test");
     io:println("Receieved topic registration result : ", registrationResponse);
 }

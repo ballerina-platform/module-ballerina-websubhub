@@ -18,8 +18,21 @@ import ballerina/websubhub;
 import ballerina/io;
 
 public function main() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new("http://localhost:9000/hub");
+    websubhub:PublisherClient websubHubClientEP = check new ("http://localhost:9000/hub",
+        auth = {
+            issuer: "ballerina",
+            audience: ["asgardeo"],
+            signatureConfig: {
+                config: {
+                    keyFile: "../_resources/server.key"
+                }
+            },
+            customClaims: {
+                "orgName": "orgA"
+            }
+        }
+    );
     json params = { event: "event"};
-    var response = websubHubClientEP->publishUpdate("test", params);
+    var response = websubHubClientEP->publishUpdate("orgA-test", params);
     io:println("Receieved content-publish result : ", response);
 }
