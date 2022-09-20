@@ -38,14 +38,14 @@ public isolated function authorize(http:Headers headers, string hubTopic) return
     if authHeader is string {
         jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
         if auth is jwt:Payload {
-            string authScope = regex:split(hubTopic, " ")[0];
+            string authScope = regex:split(hubTopic, "-")[0];
             http:Forbidden? forbiddenError = handler.authorize(auth, authScope);
             if forbiddenError is http:Forbidden {
-                log:printError("Forbidden Error received - Authentication credentials invalid");
+                log:printError("Forbidden Error received - Authentication credentials invalid", details = forbiddenError.toBalString());
                 return error("Not authorized");
             }
         } else {
-            log:printError("Unauthorized Error received - Authentication credentials invalid");
+            log:printError("Unauthorized Error received - Authentication credentials invalid", detailt = auth.toBalString());
             return error("Not authorized");
         }
     } else {
