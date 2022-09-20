@@ -45,7 +45,7 @@ public isolated function authorize(http:Headers headers, string hubTopic) return
                 return error("Not authorized");
             }
         } else {
-            log:printError("Unauthorized Error received - Authentication credentials invalid", detailt = auth.toBalString());
+            log:printError("Unauthorized Error received - Authentication credentials invalid", details = auth.toBalString());
             return error("Not authorized");
         }
     } else {
