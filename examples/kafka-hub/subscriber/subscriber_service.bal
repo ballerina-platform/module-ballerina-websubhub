@@ -20,7 +20,21 @@ import ballerina/log;
 listener websub:Listener securedSubscriber = new(9100);
 
 @websub:SubscriberServiceConfig { 
-    target: ["http://localhost:9000/hub", "test"]
+    target: ["http://localhost:9000/hub", "orgA-test"],
+    httpConfig: {
+        auth: {
+            issuer: "ballerina",
+            audience: ["asgardeo"],
+            signatureConfig: {
+                config: {
+                    keyFile: "../_resources/server.key"
+                }
+            },
+            customClaims: {
+                "orgName": "orgA"
+            }
+        }
+    }
 } 
 service /JuApTOXq19 on securedSubscriber {
     remote function onSubscriptionValidationDenied(websub:SubscriptionDeniedError msg) returns websub:Acknowledgement? {
