@@ -17,38 +17,30 @@
 import ballerina/log;
 import ballerina/http;
 import ballerina/jwt;
+import ballerina/regex;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: "https://localhost:9443/oauth2/token",
-    audience: "ballerina",
+    issuer: "ballerina",
+    audience: ["asgardeo", "choreo"],
     signatureConfig: {
-        jwksConfig: {
-            url: "https://localhost:9443/oauth2/jwks",
-            clientConfig: {
-                secureSocket: {
-                    cert: {
-                        path: "./resources/client-truststore.jks",
-                        password: "wso2carbon"
-                    }
-                }
-            }
-        }
+        certFile: "./resources/server.crt"
     },
-    scopeKey: "scope"
+    scopeKey: "orgName"
 });
 
 # Checks for authorization for the current request.
 # 
 # + headers - `http:Headers` for the current request
-# + authScopes - Requested auth-scopes to access the current resource
+# + hubTopic - WebSub `topic` related to the request
 # + return - `error` if there is any authorization error or else `()`
-public isolated function authorize(http:Headers headers, string[] authScopes) returns error? {
+public isolated function authorize(http:Headers headers, string hubTopic) returns error? {
     string|http:HeaderNotFoundError authHeader = headers.getHeader(http:AUTH_HEADER);
-    if (authHeader is string) {
+    if authHeader is string {
         jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
-        if (auth is jwt:Payload) {
-            http:Forbidden? forbiddenError = handler.authorize(auth, authScopes);
-            if (forbiddenError is http:Forbidden) {
+        if auth is jwt:Payload {
+            string authScope = regex:split(hubTopic, " ")[0];
+            http:Forbidden? forbiddenError = handler.authorize(auth, authScope);
+            if forbiddenError is http:Forbidden {
                 log:printError("Forbidden Error received - Authentication credentials invalid");
                 return error("Not authorized");
             }

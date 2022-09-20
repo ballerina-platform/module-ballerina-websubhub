@@ -45,7 +45,7 @@ service object {
     isolated remote function onRegisterTopic(readonly & websubhub:TopicRegistration message, http:Headers headers)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
         if config:SECURITY_ON {
-            check security:authorize(headers, ["register_topic"]);
+            check security:authorize(headers, message.topic);
         }
         check self.registerTopic(message);
         return websubhub:TOPIC_REGISTRATION_SUCCESS;
@@ -82,7 +82,7 @@ service object {
     isolated remote function onDeregisterTopic(readonly & websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
         if config:SECURITY_ON {
-            check security:authorize(headers, ["deregister_topic"]);
+            check security:authorize(headers, message.topic);
         }
         check self.deregisterTopic(message);
         return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
@@ -110,7 +110,7 @@ service object {
     isolated remote function onSubscription(websubhub:Subscription message, http:Headers headers)
                 returns websubhub:SubscriptionAccepted|websubhub:BadSubscriptionError|error {
         if config:SECURITY_ON {
-            check security:authorize(headers, ["subscribe"]);
+            check security:authorize(headers, message.hubTopic);
         }
         return websubhub:SUBSCRIPTION_ACCEPTED;
     }
@@ -172,7 +172,7 @@ service object {
     isolated remote function onUnsubscription(websubhub:Unsubscription message, http:Headers headers)
                returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|error {
         if config:SECURITY_ON {
-            check security:authorize(headers, ["subscribe"]);
+            check security:authorize(headers, message.hubTopic);
         }
         return websubhub:UNSUBSCRIPTION_ACCEPTED;
     }
@@ -224,7 +224,7 @@ service object {
     isolated remote function onUpdateMessage(websubhub:UpdateMessage message, http:Headers headers)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {  
         if config:SECURITY_ON {
-            check security:authorize(headers, ["update_content"]);
+            check security:authorize(headers, message.hubTopic);
         }
         check self.updateMessage(message);
         return websubhub:ACKNOWLEDGEMENT;
