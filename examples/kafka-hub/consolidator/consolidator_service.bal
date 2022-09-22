@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websubhub;
 import ballerina/log;
+import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.util;
 import consolidatorService.connections as conn;
