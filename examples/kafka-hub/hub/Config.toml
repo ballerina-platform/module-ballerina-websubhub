@@ -54,3 +54,6 @@ NUMBER_OF_PARTITIONS = 5
 CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
 
 EVENT_HUBS = ["test-hub-1"]
+
+[ballerina.http.accessLogConfig] 
+console = true
