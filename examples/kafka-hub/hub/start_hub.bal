@@ -51,6 +51,10 @@ public function main() returns error? {
     websubhub:Listener hubListener = check new (httpListener);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
+
+    lock {
+        startupCompleted = true;
+    }
 }
 
 function assignPartitionsToSystemConsumers() returns error? {
