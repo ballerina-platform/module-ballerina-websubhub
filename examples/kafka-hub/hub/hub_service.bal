@@ -34,12 +34,12 @@ isolated function isStartupCompleted() returns boolean {
 http:Service healthCheckService = service object {
     resource function get rediness() returns http:Ok|http:ServiceUnavailable {
         if isStartupCompleted() {
-            return <http:Ok> {};
+            return http:OK;
         }
-        return <http:ServiceUnavailable> {};
+        return http:SERVICE_UNAVAILABLE;
     }
     
-    resource function get liveness() returns http:Ok => {};
+    resource function get liveness() returns http:Ok => http:OK;
 };
 
 websubhub:Service hubService = @websubhub:ServiceConfig {}
