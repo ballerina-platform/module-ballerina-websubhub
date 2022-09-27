@@ -27,10 +27,10 @@ isolated function isStartupCompleted() returns boolean {
 service /health on new http:Listener(10001) {
     resource function get rediness() returns http:Ok|http:ServiceUnavailable {
         if isStartupCompleted() {
-            return <http:Ok> {};
+            return http:OK;
         }
-        return <http:ServiceUnavailable> {};
+        return http:SERVICE_UNAVAILABLE;
     }
-
-    resource function get liveness() returns http:Ok => {};
+    
+    resource function get liveness() returns http:Ok => http:OK;
 }
