@@ -6,3 +6,6 @@ TOPIC = "test-topic"
 
 # WebSub `subscriber` callback URL
 CALLBACK_URL = "http://localhost:9090/subscriber"
+
+# File where the results are saved
+RESULTS_FILE_PATH = "results.csv"
