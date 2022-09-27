@@ -23,14 +23,23 @@ import kafkaHub.config;
 import kafkaHub.types;
 import kafkaHub.util;
 
-http:Service healthCheckService = service object {
-    resource function get . () returns http:Ok {
-        return {
-            body: {
-                "status": "active"
-            }
-        };
+isolated boolean startupCompleted = false;
+
+isolated function isStartupCompleted() returns boolean {
+    lock {
+        return startupCompleted;
     }
+}
+
+http:Service healthCheckService = service object {
+    resource function get rediness() returns http:Ok|http:ServiceUnavailable {
+        if isStartupCompleted() {
+            return http:OK;
+        }
+        return http:SERVICE_UNAVAILABLE;
+    }
+    
+    resource function get liveness() returns http:Ok => http:OK;
 };
 
 websubhub:Service hubService = @websubhub:ServiceConfig {}

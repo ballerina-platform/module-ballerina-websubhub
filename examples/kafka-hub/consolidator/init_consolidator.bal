@@ -35,6 +35,9 @@ public function main() returns error? {
     log:printInfo("Starting Event Consolidator Service");
     // start the consolidator-service
     check startConsolidator();
+    lock {
+        startupCompleted = true;
+    }
 }
 
 function assignPartitionsToSystemConsumers() returns error? {
