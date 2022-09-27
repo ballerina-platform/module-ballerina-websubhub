@@ -1,0 +1,8 @@
+# WebSub `hub` URL
+HUB = "http://localhost:9000/hub"
+
+# WebSub `topic`
+TOPIC = "test-topic"
+
+# WebSub `subscriber` callback URL
+CALLBACK_URL = "http://localhost:9090/subscriber"
