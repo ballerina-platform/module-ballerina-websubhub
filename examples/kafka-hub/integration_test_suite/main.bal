@@ -47,23 +47,24 @@ public function main() returns error? {
     if subscriptionStatus is error {
         subStatus = "failed";
     } else {
-        runtime:sleep(60);
+        runtime:sleep(90);
         subStatus = isSubscriptionSuccessful() ? "successful" : "failed";
     }
     any[] subscriptionResult = ["SUBSCRIPTION", 1, 1, subStatus];
     testResults.push(subscriptionResult);
 
     int successfulContentPublishCount = publishContent(publisherClientEp);
+    runtime:sleep(90);
     STATUS contentPublishStatus = getReceivedNotificationCount() == successfulContentPublishCount ? "successful" : "failed";
     any[] contentPublishResults = ["CONTENT_PUBLISH", messages.length(), getReceivedNotificationCount(), contentPublishStatus];
     testResults.push(contentPublishResults);
 
-    error? unsubscriptionStatus = subscribe(websubListener, subscriberService);
+    error? unsubscriptionStatus = unsubscribe(websubListener);
     STATUS unubStatus = "successful";
     if unsubscriptionStatus is error {
         unubStatus = "failed";
     } else {
-        runtime:sleep(60);
+        runtime:sleep(90);
         unubStatus = isUnsubscriptionSuccessful() ? "successful" : "failed";
     }
     any[] unsubscriptionResult = ["UNSUBSCRIPTION", 1, 1, unubStatus];
