@@ -66,14 +66,14 @@ public function main() returns error? {
     testResults.push(contentPublishResults);
 
     error? unsubscriptionStatus = unsubscribe(websubListener);
-    STATUS unubStatus = SUCCESSFUL;
+    STATUS unSubStatus = SUCCESSFUL;
     if unsubscriptionStatus is error {
-        unubStatus = FAILED;
+        unSubStatus = FAILED;
     } else {
         runtime:sleep(90);
-        unubStatus = isUnsubscriptionSuccessful() ? SUCCESSFUL : FAILED;
+        unSubStatus = isUnsubscriptionSuccessful() ? SUCCESSFUL : FAILED;
     }
-    TEST_RESULT unsubscriptionResult = ["UNSUBSCRIPTION", 1, 1, unubStatus];
+    TEST_RESULT unsubscriptionResult = ["UNSUBSCRIPTION", 1, 1, unSubStatus];
     testResults.push(unsubscriptionResult);
 
     websubhub:TopicDeregistrationSuccess|error deRegistrationResponse = deregisterTopic(publisherClientEp);
