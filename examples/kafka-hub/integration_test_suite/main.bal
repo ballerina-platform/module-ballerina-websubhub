@@ -25,53 +25,59 @@ configurable string HUB = ?;
 configurable string TOPIC = ?;
 configurable string CALLBACK_URL = ?;
 configurable string RESULTS_FILE_PATH = ?;
-final string SECRET = "test123$";
 
+final string SECRET = "test123$";
 final websub:Listener websubListener = check new (9090);
 final readonly & json[] messages = [ADD_NEW_USER_MESSAGE, LOGIN_SUCCESS_MESSAGE];
-
-type STATUS "successful" | "failed" | "partial";
 final string[] & readonly documentationCsvHeaders = ["Label", "Sent Count", "Received Count", "Status"];
+
+enum STATUS {
+    SUCCESSFUL,
+    FAILED,
+    PARTIAL
+}
+
+type TEST_RESULT [string, int, int, STATUS];
 
 public function main() returns error? {
     _ = check initializeTests();
-    any[][] testResults = [];
+    TEST_RESULT[] testResults = [];
 
     websubhub:PublisherClient publisherClientEp = check new(HUB);
     websubhub:TopicRegistrationSuccess|error registrationResponse = registerTopic(publisherClientEp);
-    any[] topicRegResult = ["TOPIC_REGISTRATION", 1, 1, registrationResponse is error ? "failed" : "successful"];
+    TEST_RESULT topicRegResult = ["TOPIC_REGISTRATION", 1, 1, registrationResponse is error ? FAILED : SUCCESSFUL];
     testResults.push(topicRegResult);
 
     error? subscriptionStatus = subscribe(websubListener, subscriberService);
-    STATUS subStatus = "successful";
+    STATUS subStatus = SUCCESSFUL;
     if subscriptionStatus is error {
-        subStatus = "failed";
+        subStatus = FAILED;
     } else {
         runtime:sleep(90);
-        subStatus = isSubscriptionSuccessful() ? "successful" : "failed";
+        subStatus = isSubscriptionSuccessful() ? SUCCESSFUL : FAILED;
     }
-    any[] subscriptionResult = ["SUBSCRIPTION", 1, 1, subStatus];
+    TEST_RESULT subscriptionResult = ["SUBSCRIPTION", 1, 1, subStatus];
     testResults.push(subscriptionResult);
 
     int successfulContentPublishCount = publishContent(publisherClientEp);
     runtime:sleep(90);
-    STATUS contentPublishStatus = getReceivedNotificationCount() == successfulContentPublishCount ? "successful" : "failed";
-    any[] contentPublishResults = ["CONTENT_PUBLISH", messages.length(), getReceivedNotificationCount(), contentPublishStatus];
+    STATUS contentPublishStatus = getReceivedNotificationCount() == successfulContentPublishCount ? SUCCESSFUL : FAILED;
+    TEST_RESULT contentPublishResults = ["CONTENT_PUBLISH", messages.length(), getReceivedNotificationCount(), contentPublishStatus];
     testResults.push(contentPublishResults);
 
     error? unsubscriptionStatus = unsubscribe(websubListener);
-    STATUS unubStatus = "successful";
+    STATUS unubStatus = SUCCESSFUL;
     if unsubscriptionStatus is error {
-        unubStatus = "failed";
+        unubStatus = FAILED;
     } else {
         runtime:sleep(90);
-        unubStatus = isUnsubscriptionSuccessful() ? "successful" : "failed";
+        unubStatus = isUnsubscriptionSuccessful() ? SUCCESSFUL : FAILED;
     }
-    any[] unsubscriptionResult = ["UNSUBSCRIPTION", 1, 1, unubStatus];
+    TEST_RESULT unsubscriptionResult = ["UNSUBSCRIPTION", 1, 1, unubStatus];
     testResults.push(unsubscriptionResult);
 
     websubhub:TopicDeregistrationSuccess|error deRegistrationResponse = deregisterTopic(publisherClientEp);
-    any[] topicDeRegResult = ["TOPIC_DEREGISTRATION", 1, 1, deRegistrationResponse is error ? "failed" : "successful"];
+    TEST_RESULT topicDeRegResult = ["TOPIC_DEREGISTRATION", 1, 1, deRegistrationResponse is error ? FAILED : SUCCESSFUL];
     testResults.push(topicDeRegResult);
 
     return writeResultsToCsv(testResults, RESULTS_FILE_PATH);
