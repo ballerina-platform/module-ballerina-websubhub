@@ -20,12 +20,7 @@ import ballerina/jwt;
 import ballerina/regex;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: "ballerina",
-    audience: ["asgardeo", "choreo"],
-    signatureConfig: {
-        certFile: "./resources/server.crt"
-    },
-    scopeKey: "orgName"
+    scopeKey: "organization"
 });
 
 # Checks for authorization for the current request.
