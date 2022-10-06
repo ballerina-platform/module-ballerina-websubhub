@@ -188,7 +188,7 @@ public isolated function updateNextConsumerGroup(readonly & types:EventHubConsum
             return;
         }
         int currentConsumerGroupIdx = check value:ensureType(config:CONSUMER_GROUPS.indexOf(currentConsumerGroup.consumerGroup));
-        if currentConsumerGroupIdx < consumerGroupIdx {
+        if currentConsumerGroupIdx <= consumerGroupIdx {
             nextConsumerGroupAssignment[partitionAssignmentKey] = check retrieveNextConsumerGroupPointer(consumerGroup);
             return;
         }
