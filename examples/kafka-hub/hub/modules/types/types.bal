@@ -24,7 +24,7 @@ public type NameSpaceConfiguration record {|
 |};
 
 public type EventHubPartition record {|
-    string namespaceId = "";
+    string namespaceId;
     string eventHub;
     int partition;
 |};
