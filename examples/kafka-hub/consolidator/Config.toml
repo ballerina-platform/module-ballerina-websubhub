@@ -1,7 +1,4 @@
 [consolidatorService.config]
-# IP and Port of the Kafka bootstrap node
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
-
 # Azure Event Hub namespace connection
 KAFKA_BOOTSTRAP_NODE = "localhost:9092"
 
