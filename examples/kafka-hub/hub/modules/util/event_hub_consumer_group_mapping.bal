@@ -82,7 +82,7 @@ public isolated function getNextConsumerGroup(types:EventHubPartition eventHubPa
 
 isolated function retrieveNextConsumerGroupPointer(types:EventHubConsumerGroup consumerGroup) returns types:EventHubConsumerGroup|error? {
     int currentConsumerGroupIdx = check value:ensureType(config:CONSUMER_GROUPS.indexOf(consumerGroup.consumerGroup));
-    // if there is no consumer-group entry available, return `-1`
+    // if there is no consumer-group entry available, return `nil`
     if currentConsumerGroupIdx >= config:CONSUMER_GROUPS.length() - 1 {
         return;
     }

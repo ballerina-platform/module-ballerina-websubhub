@@ -20,6 +20,7 @@ import kafkaHub.types;
 
 isolated types:EventHubPartition[] vacantPartitionAssignments = [];
 isolated types:EventHubPartition? nextPartition = {
+    namespaceId: config:AVAILABLE_NAMESPACE_IDS[0],
     eventHub: config:EVENT_HUBS[0],
     partition: 0
 };
@@ -44,21 +45,37 @@ public isolated function getNextPartition() returns types:EventHubPartition|erro
 }
 
 isolated function retrieveNextEventHubPartitionPointer(readonly & types:EventHubPartition eventHubPartition) returns types:EventHubPartition|error? {
+    string currentNamespace = eventHubPartition.namespaceId;
     string currentEventHub = eventHubPartition.eventHub;
     int currentPartitionId = eventHubPartition.partition;
+    // check whether current partition number is greater than the last partition number
     if currentPartitionId >= config:NUMBER_OF_PARTITIONS - 1 {
         int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(currentEventHub));
-        // if there is no event-hub partition entry available, return `-1`
-        if currentEventHubIdx == config:EVENT_HUBS.length() - 1 {
-            return;
+        // if the current event-hub is not the last event-hub for the current namespace, use the next event-hub
+        if currentEventHubIdx < config:EVENT_HUBS.length() - 1 {
+            string nextEventHub = config:EVENT_HUBS[currentEventHubIdx + 1];
+            return {
+                namespaceId: currentNamespace,
+                eventHub: nextEventHub,
+                partition: 0
+            };
         }
-        string nextEventHub = config:EVENT_HUBS[currentEventHubIdx + 1];
+        int currentNamespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(currentNamespace));
+        // if there is no namespace entry available, return `nil`
+        if currentNamespaceIdx >= config:AVAILABLE_NAMESPACE_IDS.length() - 1 {
+            return;
+        } 
+        // if there are available namespace entries, use the next available namespace
+        string nextNamespace = config:AVAILABLE_NAMESPACE_IDS[currentNamespaceIdx + 1];
         return {
-            eventHub: nextEventHub,
+            namespaceId: nextNamespace,
+            eventHub: config:EVENT_HUBS[0],
             partition: 0
         };
     } else {
+        // if the partition number is lesser than the last partition number, use the next partition
         return {
+            namespaceId: currentNamespace,
             eventHub: currentEventHub,
             partition: currentPartitionId + 1
         };
@@ -70,6 +87,7 @@ isolated function retrieveNextEventHubPartitionPointer(readonly & types:EventHub
 # + partitionDetails - Provided partition mapping
 # + return - Returns `error` if there is an exception while updating the partition information
 public isolated function updateNextPartition(readonly & types:EventHubPartition partitionDetails) returns error? {
+    int namespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(partitionDetails.namespaceId));
     int eventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(partitionDetails.eventHub));
     lock {
         if nextPartition is () {
@@ -77,14 +95,24 @@ public isolated function updateNextPartition(readonly & types:EventHubPartition 
             return;
         }
         types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
-        string currentEventHub = nextPointer.eventHub;
-        int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(currentEventHub));
+        int currentNamespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(nextPointer.namespaceId));
+        if namespaceIdx > currentNamespaceIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(nextPointer.eventHub));
         if eventHubIdx > currentEventHubIdx {
             nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
             return;
         }
-        if eventHubIdx == currentEventHubIdx && partitionDetails.partition >= nextPointer.partition {
+        if namespaceIdx == currentNamespaceIdx && eventHubIdx >= currentEventHubIdx {
             nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        int partition = partitionDetails.partition;
+        if namespaceIdx == currentNamespaceIdx && eventHubIdx == currentEventHubIdx && partition >= nextPointer.partition {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
         }
     }
 }
