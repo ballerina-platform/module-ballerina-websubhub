@@ -29,6 +29,7 @@ isolated map<types:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string PARTITION_MAPPING = "partitionMapping";
+const string NAMESPACE_ID = "namespaceId";
 const string EVENT_HUB_NAME = "eventHubName";
 const string EVENT_HUB_PARTITION = "eventHubPartition";
 const string CONSUMER_GROUP = "consumerGroup";
@@ -156,6 +157,7 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
             foreach var sub in unsubscribedSubscribers {
                 websubhub:VerifiedSubscription subscriber = subscribersCache.remove(sub);
                 readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+                    namespaceId: check subscriber[NAMESPACE_ID].ensureType(), 
                     eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
                     partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
                     consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
@@ -176,13 +178,16 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
             subscribersCache[subscriberId] = subscriber.cloneReadOnly();
         }
         if subscriberNotAvailable {
+            string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
+            string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
             readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+                namespaceId: namespaceId,
                 eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
                 partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
-                consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
+                consumerGroup: consumerGroup
             };
             _ = check util:updateNextConsumerGroup(consumerGroupMapping);
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(consumerGroupMapping.consumerGroup);
+            kafka:Consumer consumerEp = check conn:createMessageConsumer(namespaceId, consumerGroup);
             _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
             websubhub:HubClient hubClientEp = check new (subscriber, {
                 retryConfig: {

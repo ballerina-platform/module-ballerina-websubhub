@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerinax/kafka;
 import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
@@ -52,13 +53,14 @@ public isolated function persistRestartEvent() returns error? {
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:SYSTEM_EVENTS_PARTITION, jsonData);
 }
 
-public isolated function addUpdateMessage(string topicName, int partition, websubhub:UpdateMessage message) returns error? {
+public isolated function addUpdateMessage(string namespaceId, string topicName, int partition, websubhub:UpdateMessage message) returns error? {
     json payload = check value:ensureType(message.content);
-    check produceKafkaMessage(topicName, partition, payload);
+    kafka:Producer producerEp = conn:getKafkaProducer(namespaceId);
+    check produceKafkaMessage(topicName, partition, payload, producerEp);
 }
 
-isolated function produceKafkaMessage(string topicName, int partition, json payload) returns error? {
+isolated function produceKafkaMessage(string topicName, int partition, json payload, kafka:Producer producerEp = conn:statePersistProducer) returns error? {
     byte[] serializedContent = payload.toJsonString().toBytes();
-    check conn:statePersistProducer->send({ topic: topicName, partition: partition, value: serializedContent });
-    check conn:statePersistProducer->'flush();
+    check producerEp->send({ topic: topicName, partition: partition, value: serializedContent });
+    check producerEp->'flush();
 }

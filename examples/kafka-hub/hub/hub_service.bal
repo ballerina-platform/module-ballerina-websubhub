@@ -162,6 +162,7 @@ service object {
         lock {
             types:EventHubPartition partitionMapping = retrieveTopicPartitionMapping(message);
             types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
+            message[NAMESPACE_ID] = consumerGroupMapping.namespaceId;
             message[EVENT_HUB_NAME] = consumerGroupMapping.eventHub;
             message[EVENT_HUB_PARTITION] = consumerGroupMapping.partition;
             message[CONSUMER_GROUP] = consumerGroupMapping.consumerGroup;
@@ -249,7 +250,7 @@ service object {
             // string eventHubName = check value:ensureType(currentTopic[EVENT_HUB_NAME]);
             // int eventHubPartition = check value:ensureType(currentTopic[EVENT_HUB_PARTITION]);
             types:EventHubPartition partitionMapping = currentTopic.partitionMapping;
-            error? errorResponse = persist:addUpdateMessage(partitionMapping.eventHub, partitionMapping.partition, msg);
+            error? errorResponse = persist:addUpdateMessage(partitionMapping.namespaceId, partitionMapping.eventHub, partitionMapping.partition, msg);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
             } else if errorResponse is error {
