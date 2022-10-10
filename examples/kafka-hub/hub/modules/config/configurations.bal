@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import kafkaHub.types;
 
 # Flag to check whether to enable/disable security
@@ -66,12 +67,19 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # System Configurations Related to Azure Event Hub
-public configurable types:NameSpaceConfiguration[] NAMESPACES = ?;
-
 public configurable string[] EVENT_HUBS = ?;
 
 public configurable int NUMBER_OF_PARTITIONS = ?;
 
 public configurable string[] CONSUMER_GROUPS = ?;
 
+public configurable string NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json";
+
+public final readonly & types:NameSpaceConfiguration[] NAMESPACES = check retrieveNamespaceConfig().cloneReadOnly();
+
 public final readonly & string[] AVAILABLE_NAMESPACE_IDS = NAMESPACES.'map(ns => ns.namespaceId).cloneReadOnly();
+
+isolated function retrieveNamespaceConfig() returns types:NameSpaceConfiguration[]|error {
+    json namespaceConfig = check io:fileReadJson(NAMESPACE_CONFIG_FILE);
+    return namespaceConfig.fromJsonWithType();
+}

@@ -55,10 +55,7 @@ NUMBER_OF_PARTITIONS = 5
 
 CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
 
-[[kafkaHub.config.NAMESPACES]]
-namespaceId = "namespace-1"
-namespace = "localhost:9092"
-connectionString = "namespace-1-connection"
+NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json"
 
 [ballerina.http.accessLogConfig] 
 console = true
