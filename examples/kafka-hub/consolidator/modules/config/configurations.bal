@@ -15,10 +15,10 @@
 // under the License.
 
 # IP and Port of the Kafka bootstrap node
-public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
+public configurable string SYSTEM_INFOR_NAMESPACE = "localhost:9092";
 
 # Azure Event Hub connection-string
-public configurable string EVENT_HUB_CONNECTION_STRING = ?;
+public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = ?;
 
 # Azure Event Hub related to the system-information
 public configurable string SYSTEM_INFO_HUB = "system-info";

@@ -1,9 +1,9 @@
 [consolidatorService.config]
 # Azure Event Hub namespace connection
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+SYSTEM_INFOR_NAMESPACE = "localhost:9092"
 
 # Azure Event Hub connection-string
-EVENT_HUB_CONNECTION_STRING = "test-connection"
+SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = "test-connection"
 
 # Azure Event Hub related to the system-information
 SYSTEM_INFO_HUB = "system-info"

@@ -21,8 +21,8 @@ import kafkaHub.types;
 isolated map<types:EventHubConsumerGroup[]> vacantConsumerGroupAssignments = {};
 isolated map<types:EventHubConsumerGroup?> nextConsumerGroupAssignment = initConsumerGroupAssignment();
 
-isolated function initConsumerGroupAssignment() returns map<types:EventHubConsumerGroup> {
-    map<types:EventHubConsumerGroup> assignments = {};
+isolated function initConsumerGroupAssignment() returns map<types:EventHubConsumerGroup?> {
+    map<types:EventHubConsumerGroup?> assignments = {};
     foreach string namespaceId in config:AVAILABLE_NAMESPACE_IDS {
         foreach string eventHub in config:EVENT_HUBS {
             foreach int partitionId in 0 ..< config:NUMBER_OF_PARTITIONS {

@@ -7,10 +7,10 @@ SECURITY_ON = false
 SERVER_ID = "server-1"
 
 # Azure Event Hub namespace connection
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+SYSTEM_INFOR_NAMESPACE = "localhost:9092"
 
 # Azure Event Hub connection-string
-EVENT_HUB_CONNECTION_STRING = "test-connection"
+SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = "test-connection"
 
 # Azure Event Hub related to the system-information
 SYSTEM_INFO_HUB = "system-info"
@@ -49,15 +49,16 @@ MESSAGE_DELIVERY_COUNT = 3
 MESSAGE_DELIVERY_TIMEOUT = 10.0
 
 # System Configurations Related to Azure Event Hub
-NAMESPACES = [
-    { namespaceId: "namespace_1", namespace: "localhost:9092", connectionString: "test-connection" }
-]
-
 EVENT_HUBS = ["test-hub-1"]
 
 NUMBER_OF_PARTITIONS = 5
 
 CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
+
+[[kafkaHub.config.NAMESPACES]]
+namespaceId = "namespace-1"
+namespace = "localhost:9092"
+connectionString = "namespace-1-connection"
 
 [ballerina.http.accessLogConfig] 
 console = true

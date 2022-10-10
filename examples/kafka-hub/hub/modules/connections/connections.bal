@@ -26,10 +26,10 @@ kafka:ProducerConfiguration statePersistConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
+public final kafka:Producer statePersistProducer = check new (config:SYSTEM_INFO_NAMESPACE, statePersistConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration subscribersConsumerConfig = {
@@ -38,10 +38,10 @@ kafka:ConsumerConfiguration subscribersConsumerConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
+public final kafka:Consumer subscribersConsumer = check new (config:SYSTEM_INFO_NAMESPACE, subscribersConsumerConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
@@ -50,10 +50,10 @@ kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
+public final kafka:Consumer registeredTopicsConsumer = check new (config:SYSTEM_INFO_NAMESPACE, registeredTopicsConsumerConfig);
 
 # Creates a `kafka:Consumer` for a subscriber.
 # 
@@ -89,7 +89,7 @@ isolated function initProducer() returns map<kafka:Producer>|error {
                 password: namespaceConfig.connectionString
             }
         };
-        kafka:Producer producer = check new (config:KAFKA_BOOTSTRAP_NODE, producerConfig);
+        kafka:Producer producer = check new (namespaceConfig.namespace, producerConfig);
         producers[namespaceConfig.namespaceId] = producer;
     }
     return producers;
