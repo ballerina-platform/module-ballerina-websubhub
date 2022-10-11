@@ -1,6 +1,6 @@
 [consolidatorService.config]
 # Azure Event Hub namespace connection
-SYSTEM_INFOR_NAMESPACE = "localhost:9092"
+SYSTEM_INFO_NAMESPACE = "localhost:9092"
 
 # Azure Event Hub connection-string
 SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = "test-connection"

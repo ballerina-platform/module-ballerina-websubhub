@@ -28,7 +28,7 @@ kafka:ProducerConfiguration statePersistConfig = {
         password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Producer statePersistProducer = check new (config:SYSTEM_INFOR_NAMESPACE, statePersistConfig);
+public final kafka:Producer statePersistProducer = check new (config:SYSTEM_INFO_NAMESPACE, statePersistConfig);
 
 // Consumer which reads the consolidated topic details
 kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
@@ -40,7 +40,7 @@ kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
         password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer consolidatedTopicsConsumer = check new (config:SYSTEM_INFOR_NAMESPACE, consolidatedTopicsConsumerConfig);
+public final kafka:Consumer consolidatedTopicsConsumer = check new (config:SYSTEM_INFO_NAMESPACE, consolidatedTopicsConsumerConfig);
 
 // Consumer which reads the consolidated subscriber details
 kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
@@ -52,7 +52,7 @@ kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
         password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:SYSTEM_INFOR_NAMESPACE, consolidatedSubscriberConsumerConfig);
+public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:SYSTEM_INFO_NAMESPACE, consolidatedSubscriberConsumerConfig);
 
 // Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
 kafka:ConsumerConfiguration websubEventConsumerConfig = {
@@ -64,4 +64,4 @@ kafka:ConsumerConfiguration websubEventConsumerConfig = {
         password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer websubEventConsumer = check new (config:SYSTEM_INFOR_NAMESPACE, websubEventConsumerConfig);
+public final kafka:Consumer websubEventConsumer = check new (config:SYSTEM_INFO_NAMESPACE, websubEventConsumerConfig);
