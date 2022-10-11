@@ -25,10 +25,10 @@ kafka:ProducerConfiguration statePersistConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
+public final kafka:Producer statePersistProducer = check new (config:SYSTEM_INFOR_NAMESPACE, statePersistConfig);
 
 // Consumer which reads the consolidated topic details
 kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
@@ -37,10 +37,10 @@ kafka:ConsumerConfiguration consolidatedTopicsConsumerConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer consolidatedTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedTopicsConsumerConfig);
+public final kafka:Consumer consolidatedTopicsConsumer = check new (config:SYSTEM_INFOR_NAMESPACE, consolidatedTopicsConsumerConfig);
 
 // Consumer which reads the consolidated subscriber details
 kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
@@ -49,10 +49,10 @@ kafka:ConsumerConfiguration consolidatedSubscriberConsumerConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, consolidatedSubscriberConsumerConfig);
+public final kafka:Consumer consolidatedSubscriberConsumer = check new (config:SYSTEM_INFOR_NAMESPACE, consolidatedSubscriberConsumerConfig);
 
 // Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
 kafka:ConsumerConfiguration websubEventConsumerConfig = {
@@ -61,7 +61,7 @@ kafka:ConsumerConfiguration websubEventConsumerConfig = {
     securityProtocol: kafka:PROTOCOL_SASL_SSL,
     auth: {
         username: "$ConnectionString",
-        password: config:EVENT_HUB_CONNECTION_STRING
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
     }
 };
-public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);
+public final kafka:Consumer websubEventConsumer = check new (config:SYSTEM_INFOR_NAMESPACE, websubEventConsumerConfig);

@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import kafkaHub.types;
+
 # Flag to check whether to enable/disable security
 public configurable boolean SECURITY_ON = true;
 
@@ -22,10 +24,10 @@ public configurable boolean SECURITY_ON = true;
 public configurable string SERVER_ID = "server-1";
 
 # IP and Port of the Kafka bootstrap node
-public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
+public configurable string SYSTEM_INFO_NAMESPACE = "localhost:9092";
 
 # Azure Event Hub connection-string
-public configurable string EVENT_HUB_CONNECTION_STRING = ?;
+public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = ?;
 
 # Azure Event Hub related to the system-information
 public configurable string SYSTEM_INFO_HUB = "system-info";
@@ -64,8 +66,12 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # System Configurations Related to Azure Event Hub
+public configurable types:NameSpaceConfiguration[] NAMESPACES = ?;
+
+public configurable string[] EVENT_HUBS = ?;
+
 public configurable int NUMBER_OF_PARTITIONS = ?;
 
 public configurable string[] CONSUMER_GROUPS = ?;
 
-public configurable string[] EVENT_HUBS = ?;
+public final readonly & string[] AVAILABLE_NAMESPACE_IDS = NAMESPACES.'map(ns => ns.namespaceId).cloneReadOnly();
