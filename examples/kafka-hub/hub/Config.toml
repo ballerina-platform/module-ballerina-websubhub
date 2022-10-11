@@ -7,7 +7,7 @@ SECURITY_ON = false
 SERVER_ID = "server-1"
 
 # Azure Event Hub namespace connection
-SYSTEM_INFOR_NAMESPACE = "localhost:9092"
+SYSTEM_INFO_NAMESPACE = "localhost:9092"
 
 # Azure Event Hub connection-string
 SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = "test-connection"
@@ -55,10 +55,7 @@ NUMBER_OF_PARTITIONS = 5
 
 CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
 
-[[kafkaHub.config.NAMESPACES]]
-namespaceId = "namespace-1"
-namespace = "localhost:9092"
-connectionString = "namespace-1-connection"
+NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json"
 
 [ballerina.http.accessLogConfig] 
 console = true
