@@ -5,8 +5,8 @@ SYSTEM_INFO_NAMESPACE = "localhost:9092"
 # Azure Event Hub connection-string
 SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = "test-connection"
 
-# Azure Event Hub related to the system-information
-SYSTEM_INFO_HUB = "system-info"
+# Path to the file containing the system-info EventHub connection-string
+SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = "./resources/system-info"
 
 # Partitions in `system-info` EventHub which will get notified for websub topic registration/deregistration
 REGISTERED_WEBSUB_TOPICS_PARTITION = 0

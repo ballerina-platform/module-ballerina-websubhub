@@ -2,6 +2,6 @@
     {
         "namespaceId": "namespace-1",
         "namespace": "localhost:9092",
-        "connectionString": "test-connection"
+        "connectionStringFile": "./resources/namespace-1"
     }
 ]
