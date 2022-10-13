@@ -79,6 +79,16 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
+        string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
+        string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
+        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+            namespaceId: namespaceId,
+            eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
+            partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
+            consumerGroup: consumerGroup
+        };
+        // update the consumer-group mapping to identify the next available consumer-group
+        _ = check util:updateNextConsumerGroup(consumerGroupMapping);
         string serverId = check subscriber[SERVER_ID].ensureType();
         // if the subscription does not belong to this `hub` instance do not start the consumer
         if serverId != config:SERVER_ID {
@@ -96,15 +106,6 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
         if subscriberAvailable {
             continue;
         }
-        string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
-        string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
-        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
-            namespaceId: namespaceId,
-            eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
-            partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
-            consumerGroup: consumerGroup
-        };
-        _ = check util:updateNextConsumerGroup(consumerGroupMapping);
         kafka:Consumer consumerEp = check conn:createMessageConsumer(namespaceId, consumerGroup);
         _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
         websubhub:HubClient hubClientEp = check new (subscriber, {
