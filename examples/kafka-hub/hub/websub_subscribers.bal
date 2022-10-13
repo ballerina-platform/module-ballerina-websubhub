@@ -89,11 +89,6 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
         };
         // update the consumer-group mapping to identify the next available consumer-group
         _ = check util:updateNextConsumerGroup(consumerGroupMapping);
-        string serverId = check subscriber[SERVER_ID].ensureType();
-        // if the subscription does not belong to this `hub` instance do not start the consumer
-        if serverId != config:SERVER_ID {
-            continue;
-        }
         string subscriberId = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         boolean subscriberAvailable = true;
         lock {
@@ -102,8 +97,10 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
                 subscriberAvailable = false;
             }
         }
-        // if the subscription already exists in the `hub` instance do not start the consumer
-        if subscriberAvailable {
+        string serverId = check subscriber[SERVER_ID].ensureType();
+        // if the subscription already exists in the `hub` instance, or the given subscription
+        // does not belong to the `hub` instance do not start the consumer
+        if subscriberAvailable || serverId != config:SERVER_ID {
             continue;
         }
         kafka:Consumer consumerEp = check conn:createMessageConsumer(namespaceId, consumerGroup);
