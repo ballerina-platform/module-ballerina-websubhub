@@ -2,9 +2,6 @@
 # Azure Event Hub namespace connection
 SYSTEM_INFO_NAMESPACE = "localhost:9092"
 
-# Azure Event Hub connection-string
-SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = "test-connection"
-
 # Path to the file containing the system-info EventHub connection-string
 SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = "./resources/system-info"
 
