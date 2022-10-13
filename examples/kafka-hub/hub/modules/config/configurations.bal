@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import kafkaHub.types;
 
 # Flag to check whether to enable/disable security
@@ -26,8 +27,11 @@ public configurable string SERVER_ID = "server-1";
 # IP and Port of the Kafka bootstrap node
 public configurable string SYSTEM_INFO_NAMESPACE = "localhost:9092";
 
-# Azure Event Hub connection-string
-public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = ?;
+# Path to the file containing the system-info EventHub connection-string
+public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = ?;
+
+# system-inf EventHub connection-string
+public final string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = check io:fileReadString(SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE);
 
 # Azure Event Hub related to the system-information
 public configurable string SYSTEM_INFO_HUB = "system-info";
@@ -66,12 +70,30 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # System Configurations Related to Azure Event Hub
-public configurable types:NameSpaceConfiguration[] NAMESPACES = ?;
-
 public configurable string[] EVENT_HUBS = ?;
 
 public configurable int NUMBER_OF_PARTITIONS = ?;
 
 public configurable string[] CONSUMER_GROUPS = ?;
 
+public configurable string NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json";
+
+public final readonly & types:NameSpaceConfiguration[] NAMESPACES = check retrieveNamespaceConfig().cloneReadOnly();
+
 public final readonly & string[] AVAILABLE_NAMESPACE_IDS = NAMESPACES.'map(ns => ns.namespaceId).cloneReadOnly();
+
+isolated function retrieveNamespaceConfig() returns types:NameSpaceConfiguration[]|error {
+    json configs = check io:fileReadJson(NAMESPACE_CONFIG_FILE);
+    record {|
+        string namespaceId;
+        string namespace;
+        string connectionStringFile;
+    |}[] namespaceConfigs = check configs.fromJsonWithType();
+    return namespaceConfigs.'map(
+        config => {
+            namespaceId: config.namespaceId,
+            namespace: config.namespace,
+            connectionString: check io:fileReadString(config.connectionStringFile)
+        }
+    );
+}

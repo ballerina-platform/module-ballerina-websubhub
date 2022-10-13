@@ -14,11 +14,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# IP and Port of the Kafka bootstrap node
-public configurable string SYSTEM_INFOR_NAMESPACE = "localhost:9092";
+import ballerina/io;
 
-# Azure Event Hub connection-string
-public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = ?;
+# IP and Port of the Kafka bootstrap node
+public configurable string SYSTEM_INFO_NAMESPACE = "localhost:9092";
+
+# Path to the file containing the system-info EventHub connection-string
+public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = ?;
+
+# system-inf EventHub connection-string
+public final string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = check io:fileReadString(SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE);
 
 # Azure Event Hub related to the system-information
 public configurable string SYSTEM_INFO_HUB = "system-info";
