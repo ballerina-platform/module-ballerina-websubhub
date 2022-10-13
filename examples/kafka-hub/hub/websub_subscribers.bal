@@ -29,6 +29,7 @@ const string NAMESPACE_ID = "namespaceId";
 const string EVENT_HUB_NAME = "eventHubName";
 const string EVENT_HUB_PARTITION = "eventHubPartition";
 const string CONSUMER_GROUP = "consumerGroup";
+const string SERVER_ID = "SERVER_ID";
 
 function syncSubscribersCache() {
     do {
@@ -78,36 +79,45 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
-        string topicName = util:sanitizeTopicName(subscriber.hubTopic);
+        string serverId = check subscriber[SERVER_ID].ensureType();
+        // if the subscription does not belong to this `hub` instance do not start the consumer
+        if serverId != config:SERVER_ID {
+            continue;
+        }
         string subscriberId = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
-        boolean subscriberNotAvailable = true;
+        boolean subscriberAvailable = true;
         lock {
-            subscriberNotAvailable = !subscribersCache.hasKey(subscriberId);
-            subscribersCache[subscriberId] = subscriber.cloneReadOnly();
+            if !subscribersCache.hasKey(subscriberId) {
+                subscribersCache[subscriberId] = subscriber.cloneReadOnly();
+                subscriberAvailable = false;
+            }
         }
-        if subscriberNotAvailable {
-            string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
-            string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
-            readonly & types:EventHubConsumerGroup consumerGroupMapping = {
-                namespaceId: namespaceId,
-                eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
-                partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
-                consumerGroup: consumerGroup
-            };
-            _ = check util:updateNextConsumerGroup(consumerGroupMapping);
-            kafka:Consumer consumerEp = check conn:createMessageConsumer(namespaceId, consumerGroup);
-            _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
-            websubhub:HubClient hubClientEp = check new (subscriber, {
-                retryConfig: {
-                    interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
-                    count: config:MESSAGE_DELIVERY_COUNT,
-                    backOffFactor: 2.0,
-                    maxWaitInterval: 20
-                },
-                timeout: config:MESSAGE_DELIVERY_TIMEOUT
-            });
-            _ = @strand { thread: "any" } start pollForNewUpdates(hubClientEp, consumerEp, topicName, subscriberId);
+        // if the subscription already exists in the `hub` instance do not start the consumer
+        if subscriberAvailable {
+            continue;
         }
+        string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
+        string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
+        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+            namespaceId: namespaceId,
+            eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
+            partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
+            consumerGroup: consumerGroup
+        };
+        _ = check util:updateNextConsumerGroup(consumerGroupMapping);
+        kafka:Consumer consumerEp = check conn:createMessageConsumer(namespaceId, consumerGroup);
+        _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
+        websubhub:HubClient hubClientEp = check new (subscriber, {
+            retryConfig: {
+                interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
+                count: config:MESSAGE_DELIVERY_COUNT,
+                backOffFactor: 2.0,
+                maxWaitInterval: 20
+            },
+            timeout: config:MESSAGE_DELIVERY_TIMEOUT
+        });
+        string topicName = util:sanitizeTopicName(subscriber.hubTopic);
+        _ = @strand {thread: "any"} start pollForNewUpdates(hubClientEp, consumerEp, topicName, subscriberId);
     }
 }
 

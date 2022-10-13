@@ -2,10 +2,6 @@
 # Flag to check whether to enable/disable security
 SECURITY_ON = false
 
-# Server ID is is used to uniquely identify each server 
-# Each server must have a unique ID
-SERVER_ID = "server-1"
-
 # Azure Event Hub namespace connection
 SYSTEM_INFO_NAMESPACE = "localhost:9092"
 
