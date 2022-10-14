@@ -159,6 +159,6 @@ isolated function notifySubscribers(types:UpdateMessageConsumerRecord[] records,
         if response is error {
             return response;
         }
-        _ = check consumerEp->commit();
     }
+    return consumerEp->'commit();
 }

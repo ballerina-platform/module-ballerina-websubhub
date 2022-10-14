@@ -51,12 +51,12 @@ function assignPartitionsToSystemConsumers() returns error? {
         topic: config:SYSTEM_INFO_HUB,
         partition: config:CONSOLIDATED_WEBSUB_TOPICS_PARTITION
     };
-    _ = check conn:registeredTopicsConsumer->assign([consolidatedTopicsPartition]);
+    check conn:registeredTopicsConsumer->assign([consolidatedTopicsPartition]);
 
     // assign relevant partitions to consolidated-subscribers consumer
     kafka:TopicPartition consolidatedSubscribersPartition = {
         topic: config:SYSTEM_INFO_HUB,
         partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
     };
-    _ = check conn:subscribersConsumer->assign([consolidatedSubscribersPartition]);
+    check conn:subscribersConsumer->assign([consolidatedSubscribersPartition]);
 }
