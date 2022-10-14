@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [API Docs Updated](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
+
+## [1.4.0] - 2022-09-08
+
 ### Added
 - [Add `statusCode` field for `CommonResponse`](https://github.com/ballerina-platform/ballerina-standard-library/issues/2879)
 
