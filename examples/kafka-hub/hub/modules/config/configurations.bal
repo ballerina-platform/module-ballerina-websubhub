@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/io;
+import ballerina/os;
 import kafkaHub.types;
 
 # Flag to check whether to enable/disable security
@@ -22,7 +23,8 @@ public configurable boolean SECURITY_ON = true;
 
 # Server ID is is used to uniquely identify each server 
 # Each server must have a unique ID
-public configurable string SERVER_ID = "server-1";
+# `SERVER_ID` value is retrieved from an environment variable.
+public final string SERVER_ID = os:getEnv("SERVER_ID");
 
 # IP and Port of the Kafka bootstrap node
 public configurable string SYSTEM_INFO_NAMESPACE = "localhost:9092";
