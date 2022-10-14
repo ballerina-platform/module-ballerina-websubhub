@@ -17,7 +17,14 @@
 import ballerina/websubhub;
 import ballerinax/kafka;
 
+public type NameSpaceConfiguration record {|
+    string namespaceId;
+    string namespace;
+    string connectionString;
+|};
+
 public type EventHubPartition record {|
+    string namespaceId;
     string eventHub;
     int partition;
 |};
