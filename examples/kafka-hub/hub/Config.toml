@@ -1,6 +1,6 @@
 [kafkaHub.config]
 # Flag to check whether to enable/disable security
-SECURITY_ON = false
+SECURITY_ON = true
 
 # Server ID is is used to uniquely identify each server 
 # Each server must have a unique ID
