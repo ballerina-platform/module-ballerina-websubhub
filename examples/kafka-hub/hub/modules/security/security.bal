@@ -38,16 +38,15 @@ public isolated function authorize(http:Headers headers, string hubTopic) return
     jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
     if auth is jwt:Payload {
         string authScope = regex:split(hubTopic, "-")[0];
-        map<string>|error organizationInfo = auth[SCOPE_KEY].ensureType();
+        record {
+            string 'handle;
+            string uuid;
+        }|error organizationInfo = retrieveOrgInfo(auth);
         if organizationInfo is error {
-            log:printError("Auth scopes not found for key 'organization'");
-            return error("Could not find the required scopes, hence not authorized");
+            log:printError("Auth scopes not found for key 'organization'", 'error = organizationInfo);
+            return error("Could not find the required scopes, hence not authorized", organizationInfo.cause());
         }
-        string? orgName = organizationInfo[HANDLE];
-        if orgName is () {
-            log:printError("Could not find the required field 'handle' in provided auth scope");
-            return error("Could not find the required scopes, hence not authorized");
-        }
+        string orgName = organizationInfo.'handle;
         if orgName != authScope {
             return error("Authentication credentials invalid, hence not authorized");
         }
@@ -55,4 +54,12 @@ public isolated function authorize(http:Headers headers, string hubTopic) return
         log:printError("Unauthorized Error received - Authentication credentials invalid", details = auth.toBalString());
         return error("Not authorized");
     }
+}
+
+isolated function retrieveOrgInfo(jwt:Payload payload) returns record {string 'handle; string uuid;}|error {
+    json|error scopeDetails = payload[SCOPE_KEY].ensureType();
+    if scopeDetails is error {
+        return error ("Could not find the required scopes, hence not authorized", scopeDetails.cause());
+    }
+    return scopeDetails.fromJsonWithType();
 }
