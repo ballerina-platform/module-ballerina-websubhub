@@ -127,7 +127,7 @@ docker run -p 9000:9000 -d ballerina/kafka:v1
 
 * Copy the `Config.toml` which you could find in the project root directory.
 
-* Change the `SERVER_ID` and `HUB_PORT`.
+* Change the `HUB_PORT`.
 
 * Go into that location and run the following command.
 ```

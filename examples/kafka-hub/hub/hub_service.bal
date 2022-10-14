@@ -160,6 +160,7 @@ service object {
             message[EVENT_HUB_NAME] = consumerGroupMapping.eventHub;
             message[EVENT_HUB_PARTITION] = consumerGroupMapping.partition;
             message[CONSUMER_GROUP] = consumerGroupMapping.consumerGroup;
+            message[SERVER_ID] = config:SERVER_ID;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
