@@ -53,9 +53,6 @@ service object {
     #            if topic registration failed or `error` if there is any unexpected error
     isolated remote function onRegisterTopic(readonly & websubhub:TopicRegistration message, http:Headers headers)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
-        if config:SECURITY_ON {
-            check security:authorize(headers, message.topic);
-        }
         check self.registerTopic(message);
         return websubhub:TOPIC_REGISTRATION_SUCCESS;
     }
@@ -90,9 +87,6 @@ service object {
     #            if topic deregistration failed or `error` if there is any unexpected error
     isolated remote function onDeregisterTopic(readonly & websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
-        if config:SECURITY_ON {
-            check security:authorize(headers, message.topic);
-        }
         check self.deregisterTopic(message);
         return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
     }
@@ -234,9 +228,6 @@ service object {
     #            if publish content failed or `error` if there is any unexpected error
     isolated remote function onUpdateMessage(websubhub:UpdateMessage message, http:Headers headers)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {  
-        if config:SECURITY_ON {
-            check security:authorize(headers, message.hubTopic);
-        }
         check self.updateMessage(message);
         return websubhub:ACKNOWLEDGEMENT;
     }

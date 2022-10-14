@@ -19,14 +19,10 @@ import ballerina/http;
 import ballerina/jwt;
 import ballerina/regex;
 
-final http:ListenerJwtAuthHandler handler = new({
-    issuer: "ballerina",
-    audience: ["asgardeo", "choreo"],
-    signatureConfig: {
-        certFile: "./resources/server.crt"
-    },
-    scopeKey: "orgName"
-});
+const SCOPE_KEY = "organization";
+const HANDLE = "handle";
+
+final http:ListenerJwtAuthHandler handler = new({});
 
 # Checks for authorization for the current request.
 # 
@@ -35,21 +31,35 @@ final http:ListenerJwtAuthHandler handler = new({
 # + return - `error` if there is any authorization error or else `()`
 public isolated function authorize(http:Headers headers, string hubTopic) returns error? {
     string|http:HeaderNotFoundError authHeader = headers.getHeader(http:AUTH_HEADER);
-    if authHeader is string {
-        jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
-        if auth is jwt:Payload {
-            string authScope = regex:split(hubTopic, "-")[0];
-            http:Forbidden? forbiddenError = handler.authorize(auth, authScope);
-            if forbiddenError is http:Forbidden {
-                log:printError("Forbidden Error received - Authentication credentials invalid", details = forbiddenError.toBalString());
-                return error("Not authorized");
-            }
-        } else {
-            log:printError("Unauthorized Error received - Authentication credentials invalid", details = auth.toBalString());
-            return error("Not authorized");
-        }
-    } else {
+    if authHeader is http:HeaderNotFoundError {
         log:printError("Authorization header not found");
         return error("Not authorized");
     }
+    jwt:Payload|http:Unauthorized auth = handler.authenticate(authHeader);
+    if auth is jwt:Payload {
+        string authScope = regex:split(hubTopic, "-")[0];
+        record {
+            string 'handle;
+            string uuid;
+        }|error organizationInfo = retrieveOrgInfo(auth);
+        if organizationInfo is error {
+            log:printError("Auth scopes not found for key 'organization'", 'error = organizationInfo);
+            return error("Could not find the required scopes, hence not authorized", organizationInfo.cause());
+        }
+        string orgName = organizationInfo.'handle;
+        if orgName != authScope {
+            return error("Authentication credentials invalid, hence not authorized");
+        }
+    } else {
+        log:printError("Unauthorized Error received - Authentication credentials invalid", details = auth.toBalString());
+        return error("Not authorized");
+    }
+}
+
+isolated function retrieveOrgInfo(jwt:Payload payload) returns record {string 'handle; string uuid;}|error {
+    json|error scopeDetails = payload[SCOPE_KEY].ensureType();
+    if scopeDetails is error {
+        return error ("Could not find the required scopes, hence not authorized", scopeDetails.cause());
+    }
+    return scopeDetails.fromJsonWithType();
 }
