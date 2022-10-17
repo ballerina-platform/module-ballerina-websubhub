@@ -42,8 +42,9 @@ public function main() returns error? {
     check httpListener.'start();
 
     log:printInfo("Starting Event Consolidator Service");
-    // start the consolidator-service
+    // start the consolidator-services
     _ = @strand { thread: "any" } start startWebSubEventConsolidator();
+    _ = @strand { thread: "any" } start startEventHubMappingsConsolidator();
     lock {
         startupCompleted = true;
     }

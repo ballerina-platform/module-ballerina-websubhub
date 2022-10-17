@@ -37,6 +37,16 @@ public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION, jsonData);
 }
 
+public isolated function persistEventHubPartitionMappings(types:EventHubPartition[] vacantPartitions) returns error? {
+    json[] jsonData = <json[]> vacantPartitions.toJson();
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_VACANT_EVENT_HUB_MAPPINGS_PARTITION, jsonData);
+}
+
+public isolated function persistConsumerGroupMappings(types:EventHubConsumerGroup[] vacantConsumerGroups) returns error? {
+    json[] jsonData = <json[]> vacantConsumerGroups.toJson();
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_VACANT_EVENT_HUB_MAPPINGS_PARTITION, jsonData);
+}
+
 isolated function produceKafkaMessage(string topicName, int partition, json payload) returns error? {
     byte[] serializedContent = payload.toJsonString().toBytes();
     check conn:statePersistProducer->send({ topic: topicName, partition: partition, value: serializedContent });

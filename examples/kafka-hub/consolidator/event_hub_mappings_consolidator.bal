@@ -20,6 +20,8 @@ import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 import consolidatorService.types;
 
+const string EVENT_MODE_ADD = "add";
+
 isolated function startEventHubMappingsConsolidator() returns error? {
     do {
         while true {
@@ -48,11 +50,73 @@ isolated function processPersistedEventHubMappingsData(types:VacantMapping event
 }
 
 isolated function processConsumerGroupMapping(types:EventHubConsumerGroup payload, string mode) returns error? {
-    // todo: implement this method properly
+    final string consumerGroupMappingKey = getConsumerGroupMappingKey(payload);
+    if mode is EVENT_MODE_ADD {
+        lock {
+            boolean mappingNotAvailable = vacantEventHubConsumerGroups
+                .every(mapping => consumerGroupMappingKey != getConsumerGroupMappingKey(mapping));
+            if mappingNotAvailable {
+                vacantEventHubConsumerGroups.push(payload.cloneReadOnly());
+            }
+        }
+    } else {
+        [int, types:EventHubConsumerGroup][] availableMappings = getAvailableConsumerGroupMappings(consumerGroupMappingKey);
+        if availableMappings.length() > 0 {
+            [int, types:EventHubConsumerGroup] [idx, _] = availableMappings[0];
+            lock {
+                _ = vacantEventHubConsumerGroups.remove(idx);
+            }   
+        }
+    }
+    lock {
+        _ = check persist:persistConsumerGroupMappings(vacantEventHubConsumerGroups);
+    }
+}
+
+isolated function getAvailableConsumerGroupMappings(string consumerGroupMappingKey) returns [int, types:EventHubConsumerGroup][] {
+    lock {
+        return vacantEventHubConsumerGroups.enumerate()
+            .filter(entry => consumerGroupMappingKey == getConsumerGroupMappingKey(entry[1]))
+            .cloneReadOnly();
+    }
+}
+
+isolated function getConsumerGroupMappingKey(types:EventHubConsumerGroup consumerGroupMapping) returns string {
+    return string `${consumerGroupMapping.namespaceId}_${consumerGroupMapping.eventHub}_${consumerGroupMapping.partition}_${consumerGroupMapping.consumerGroup}`;
 }
 
 isolated function processEventHubPartitionMapping(types:EventHubPartition payload, string mode) returns error? {
-    // todo: implement this method properly
+    final string partitionMappingKey = getPartitionMappingKey(payload);
+    if mode is EVENT_MODE_ADD {
+        lock {
+            boolean mappingNotAvailable = vacantEventHubPartitions.every(mapping => partitionMappingKey != getPartitionMappingKey(mapping));
+            if mappingNotAvailable {
+                vacantEventHubPartitions.push(payload.cloneReadOnly());
+            }
+        }
+    } else {
+        [int, types:EventHubPartition][] availableMappings = getAvailablePartitionMappings(partitionMappingKey);
+        if availableMappings.length() > 0 {
+            [int, types:EventHubPartition] [idx, _] = availableMappings[0];
+            lock {
+                _ = vacantEventHubPartitions.remove(idx);
+            }
+        }
+    }
+    lock {
+        _ = check persist:persistEventHubPartitionMappings(vacantEventHubPartitions);
+    }
 }
 
+isolated function getAvailablePartitionMappings(string partitionMappingKey) returns [int, types:EventHubPartition][] {
+    lock {
+        return vacantEventHubPartitions.enumerate()
+            .filter(entry => partitionMappingKey == getPartitionMappingKey(entry[1]))
+            .cloneReadOnly();
+    }
+}
+
+isolated function getPartitionMappingKey(types:EventHubPartition partitionMapping) returns string {
+    return string `${partitionMapping.namespaceId}_${partitionMapping.eventHub}_${partitionMapping.partition}`;
+}
 
