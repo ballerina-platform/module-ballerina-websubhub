@@ -117,15 +117,16 @@ public isolated function updateNextPartition(readonly & types:EventHubPartition 
     }
 }
 
-# Updates the removed partition assignments.
+# Updates the vacant event-hub partition mappings.
 #
-# + removedAssignment - Removed partition assignment
-public isolated function removePartitionAssignment(readonly & types:EventHubPartition removedAssignment) {
+# + persistedVacantPartitions - Persisted vacant event-hub partition mappings
+public isolated function refreshVacantPartitionAssignments(types:EventHubPartition[] persistedVacantPartitions) {
     lock {
-        boolean isPartitionAssignmentUnavailable = vacantPartitionAssignments
-            .every(assignment => assignment.eventHub != removedAssignment.eventHub && assignment.partition != removedAssignment.partition);
-        if isPartitionAssignmentUnavailable {
-            vacantPartitionAssignments.push(removedAssignment);
+        _ = vacantPartitionAssignments.removeAll();
+    }
+    foreach types:EventHubPartition removedAssignment in persistedVacantPartitions {
+        lock {
+            vacantPartitionAssignments.push(removedAssignment.cloneReadOnly());
         }
     }
 }

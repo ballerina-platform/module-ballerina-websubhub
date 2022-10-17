@@ -119,21 +119,32 @@ public isolated function updateNextConsumerGroup(readonly & types:EventHubConsum
     }
 }
 
-# Updates the removed partition assignments.
+# Updates the vacant event-hub consumer-group mappings.
 #
-# + consumerGroup - Removed consumer-group assignment
-public isolated function removeConsumerGroupAssignment(readonly & types:EventHubConsumerGroup consumerGroup) {
-    string partitionAssignmentKey = string `${consumerGroup.namespaceId}_${consumerGroup.eventHub}_${consumerGroup.partition}`;
-    lock {
-        if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            boolean isConsumerGroupMappingUnavailable = vacantConsumerGroupAssignments.get(partitionAssignmentKey)
-                        .every(cg => cg.consumerGroup != consumerGroup.consumerGroup);
-            if isConsumerGroupMappingUnavailable {
-                vacantConsumerGroupAssignments.get(partitionAssignmentKey).push(consumerGroup);
-            }
-            return;
+# + persistedVacantConsumerGroups - Persisted vacant event-hub consumer-group mappings
+public isolated function refreshVacantConsumerGroupAssignments(types:EventHubConsumerGroup[] persistedVacantConsumerGroups) {
+    map<types:EventHubConsumerGroup[]> updatedVacantConsumerGroups = constructGrouping(persistedVacantConsumerGroups);
+    foreach var ['key, value] in updatedVacantConsumerGroups.entries() {
+        lock {
+            vacantConsumerGroupAssignments['key] = value.cloneReadOnly(); 
         }
-        types:EventHubConsumerGroup[] consumerGroups = [consumerGroup];
-        vacantConsumerGroupAssignments[partitionAssignmentKey] = consumerGroups;
+    } 
+}
+
+isolated function constructGrouping(types:EventHubConsumerGroup[] consumerGroupsAssignments) returns map<types:EventHubConsumerGroup[]> {
+    map<types:EventHubConsumerGroup[]> grouping = {};
+    foreach types:EventHubConsumerGroup mapping in consumerGroupsAssignments {
+        string partitionAssignmentKey = string `${mapping.namespaceId}_${mapping.eventHub}_${mapping.partition}`;
+        final string consumerGroup = mapping.consumerGroup;
+        if grouping.hasKey(partitionAssignmentKey) {
+            boolean isConsumerGroupMappingUnavailable = grouping.get(partitionAssignmentKey)
+                        .every(cg => cg.consumerGroup != consumerGroup);
+            if isConsumerGroupMappingUnavailable {
+                grouping.get(partitionAssignmentKey).push(mapping);
+            } else {
+                grouping[partitionAssignmentKey] = [mapping];
+            }
+        }
     }
+    return grouping;
 }

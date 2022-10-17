@@ -43,7 +43,7 @@ kafka:ConsumerConfiguration subscribersConsumerConfig = {
 };
 public final kafka:Consumer subscribersConsumer = check new (config:SYSTEM_INFO_NAMESPACE, subscribersConsumerConfig);
 
-// Consumer which reads the persisted subscriber details
+// Consumer which reads the persisted topic details
 kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     groupId: string `consolidated--websub-topics-group-${config:SERVER_ID}`,
     offsetReset: "earliest",
@@ -54,6 +54,30 @@ kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
     }
 };
 public final kafka:Consumer registeredTopicsConsumer = check new (config:SYSTEM_INFO_NAMESPACE, registeredTopicsConsumerConfig);
+
+// Consumer which reads the persisted vacant event-hub mapping details
+kafka:ConsumerConfiguration eventHubMappingsConsumerConfig = {
+    groupId: string `consolidated-event-hub-mappings-group-${config:SERVER_ID}`,
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
+    }
+};
+public final kafka:Consumer eventHubMappingsConsumer = check new (config:SYSTEM_INFO_NAMESPACE, eventHubMappingsConsumerConfig);
+
+// Consumer which reads the persisted vacant consumer-group mapping details
+kafka:ConsumerConfiguration consumerGroupMappingsConsumerConfig = {
+    groupId: string `consolidated-consumer-group-mappings-group-${config:SERVER_ID}`,
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
+    }
+};
+public final kafka:Consumer consumerGroupsMappingsConsumer = check new (config:SYSTEM_INFO_NAMESPACE, consumerGroupMappingsConsumerConfig);
 
 # Creates a `kafka:Consumer` for a subscriber.
 # 

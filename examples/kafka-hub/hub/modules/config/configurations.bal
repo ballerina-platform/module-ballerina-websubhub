@@ -53,6 +53,18 @@ public configurable int CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION = 3;
 # Partitions in `system-info` EventHub which will get notified for system events
 public configurable int SYSTEM_EVENTS_PARTITION = 4;
 
+# Partitions in `system-info` EventHub which stores vacant event-hub mappings
+public configurable int VACANT_EVENT_HUB_MAPPINGS_PARTITION = 5;
+
+# Partitions in `system-info` EventHub which is stores consolidated vacant event-hub mappings
+public configurable int CONSOLIDATED_VACANT_EVENT_HUB_MAPPINGS_PARTITION = 6;
+
+# Partitions in `system-info` EventHub which stores vacant event-hub consumer-group mappings
+public configurable int VACANT_EVENT_HUB_CONSUMER_GROUP_MAPPINGS_PARTITION = 7;
+
+# Partitions in `system-info` EventHub which is stores consolidated vacant event-hub consumer-group mappings
+public configurable int CONSOLIDATED_VACANT_EVENT_HUB_CONSUMER_GROUP__MAPPINGS_PARTITION = 8;
+
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;
 

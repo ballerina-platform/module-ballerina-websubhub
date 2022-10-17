@@ -19,6 +19,7 @@ import ballerinax/kafka;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
 import kafkaHub.types;
+import kafkaHub.persistence as persist;
 import kafkaHub.config;
 
 isolated map<types:TopicRegistration> registeredTopicsCache = {};
@@ -56,7 +57,7 @@ function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns er
             string[] unregisteredTopics = registeredTopicsCache.keys().filter('key => topicNames.indexOf('key) is ());
             foreach string topic in unregisteredTopics {
                 types:TopicRegistration unregisteredTopic = registeredTopicsCache.remove(topic);
-                _ = util:removePartitionAssignment(unregisteredTopic.partitionMapping.cloneReadOnly());
+                _ = check persist:addVacantEventHubMapping(unregisteredTopic.partitionMapping.cloneReadOnly());
             }
         }
     }

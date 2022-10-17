@@ -76,6 +76,10 @@ service object {
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
             }
+            error? vacantMappingUpdateResult = persist:removeVacantEventHubMapping(assignedPartition);
+            if vacantMappingUpdateResult is error {
+                log:printError("Error occurred while updating vacant-mappins", err = vacantMappingUpdateResult.message());
+            }
         }
     }
 
@@ -164,6 +168,10 @@ service object {
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
+            }
+            error? vacantMappingUpdateResult = persist:removeVacantEventHubConsumerGroupMapping(consumerGroupMapping);
+            if vacantMappingUpdateResult is error {
+                log:printError("Error occurred while updating vacant-mappings", err = vacantMappingUpdateResult.message());
             }
         }
     }

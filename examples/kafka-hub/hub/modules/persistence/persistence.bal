@@ -53,6 +53,27 @@ public isolated function persistRestartEvent() returns error? {
     check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:SYSTEM_EVENTS_PARTITION, jsonData);
 }
 
+public isolated function addVacantEventHubMapping(types:EventHubPartition mapping) returns error? {
+    check updateVacantMappings({mode: "add", mapping: mapping}, config:VACANT_EVENT_HUB_MAPPINGS_PARTITION);
+}
+
+public isolated function removeVacantEventHubMapping(types:EventHubPartition mapping) returns error? {
+    check updateVacantMappings({mode: "remove", mapping: mapping}, config:VACANT_EVENT_HUB_MAPPINGS_PARTITION);
+}
+
+public isolated function addVacantEventHubConsumerGroupMapping(types:EventHubConsumerGroup mapping) returns error? {
+    check updateVacantMappings({mode: "add", mapping: mapping}, config:VACANT_EVENT_HUB_CONSUMER_GROUP_MAPPINGS_PARTITION);
+}
+
+public isolated function removeVacantEventHubConsumerGroupMapping(types:EventHubConsumerGroup mapping) returns error? {
+    check updateVacantMappings({mode: "remove", mapping: mapping}, config:VACANT_EVENT_HUB_CONSUMER_GROUP_MAPPINGS_PARTITION);
+}
+
+public isolated function updateVacantMappings(types:VacantMapping message, int partition) returns error? {
+    json jsonData = message.toJson();
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:VACANT_EVENT_HUB_MAPPINGS_PARTITION, jsonData);
+}
+
 public isolated function addUpdateMessage(string namespaceId, string topicName, int partition, websubhub:UpdateMessage message) returns error? {
     json payload = check value:ensureType(message.content);
     kafka:Producer producerEp = conn:getKafkaProducer(namespaceId);

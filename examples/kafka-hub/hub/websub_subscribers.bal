@@ -21,6 +21,7 @@ import kafkaHub.util;
 import kafkaHub.connections as conn;
 import kafkaHub.types;
 import ballerina/mime;
+import kafkaHub.persistence as persist;
 import kafkaHub.config;
 
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
@@ -71,7 +72,7 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
                     partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
                     consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
                 };
-                _ = util:removeConsumerGroupAssignment(consumerGroupMapping);
+                _ = check persist:addVacantEventHubConsumerGroupMapping(consumerGroupMapping);
             }
         }
     }

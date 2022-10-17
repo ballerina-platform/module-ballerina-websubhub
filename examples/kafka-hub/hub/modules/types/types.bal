@@ -34,6 +34,21 @@ public type EventHubConsumerGroup record {|
     string consumerGroup;
 |};
 
+public type VacantMapping record {|
+    string mode;
+    EventHubPartition|EventHubConsumerGroup mapping;
+|};
+
+public type VacantEventHubPartitions record {|
+    *kafka:AnydataConsumerRecord;
+    EventHubPartition[] value;
+|};
+
+public type VacantConsumerGroups record {|
+    *kafka:AnydataConsumerRecord;
+    EventHubConsumerGroup[] value;
+|};
+
 public type TopicRegistration record {
     *websubhub:TopicRegistration;
     EventHubPartition partitionMapping;
