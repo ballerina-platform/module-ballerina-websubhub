@@ -44,7 +44,7 @@ public isolated function persistEventHubPartitionMappings(types:EventHubPartitio
 
 public isolated function persistConsumerGroupMappings(types:EventHubConsumerGroup[] vacantConsumerGroups) returns error? {
     json[] jsonData = <json[]> vacantConsumerGroups.toJson();
-    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_VACANT_EVENT_HUB_MAPPINGS_PARTITION, jsonData);
+    check produceKafkaMessage(config:SYSTEM_INFO_HUB, config:CONSOLIDATED_VACANT_EVENT_HUB_CONSUMER_GROUP__MAPPINGS_PARTITION, jsonData);
 }
 
 isolated function produceKafkaMessage(string topicName, int partition, json payload) returns error? {
