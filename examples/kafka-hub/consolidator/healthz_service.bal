@@ -24,7 +24,7 @@ isolated function isStartupCompleted() returns boolean {
     }
 }
 
-service /health on new http:Listener(10001) {
+http:Service healthCheckService = service object {
     resource function get rediness() returns http:Ok|http:ServiceUnavailable {
         if isStartupCompleted() {
             return http:OK;
@@ -33,4 +33,4 @@ service /health on new http:Listener(10001) {
     }
     
     resource function get liveness() returns http:Ok => http:OK;
-}
+};
