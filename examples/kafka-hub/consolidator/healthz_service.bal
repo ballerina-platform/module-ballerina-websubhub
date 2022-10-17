@@ -25,7 +25,7 @@ isolated function isStartupCompleted() returns boolean {
 }
 
 http:Service healthCheckService = service object {
-    resource function get rediness() returns http:Ok|http:ServiceUnavailable {
+    resource function get readiness() returns http:Ok|http:ServiceUnavailable {
         if isStartupCompleted() {
             return http:OK;
         }
