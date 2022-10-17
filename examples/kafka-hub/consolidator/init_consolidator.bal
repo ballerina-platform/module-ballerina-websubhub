@@ -24,6 +24,8 @@ import consolidatorService.connections as conn;
 
 isolated map<types:TopicRegistration> registeredTopicsCache = {};
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
+isolated types:EventHubPartition[] vacantEventHubPartitions = [];
+isolated types:EventHubConsumerGroup[] vacantEventHubConsumerGroups = [];
 
 public function main() returns error? {
     _ = check assignPartitionsToSystemConsumers();
@@ -34,7 +36,7 @@ public function main() returns error? {
     _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
     log:printInfo("Starting Event Consolidator Service");
     // start the consolidator-service
-    check startConsolidator();
+    check startWebSubEventConsolidator();
     lock {
         startupCompleted = true;
     }
@@ -61,6 +63,12 @@ function assignPartitionsToSystemConsumers() returns error? {
         { topic: config:SYSTEM_INFO_HUB, partition: config:SYSTEM_EVENTS_PARTITION }
     ];
     _ = check conn:websubEventConsumer->assign(websubEventsPartitions);
+
+    kafka:TopicPartition[] eventHubMappingsPartitions = [
+        { topic: config:SYSTEM_INFO_HUB, partition: config:VACANT_EVENT_HUB_MAPPINGS_PARTITION },
+        { topic: config:SYSTEM_INFO_HUB, partition: config:VACANT_EVENT_HUB_CONSUMER_GROUP_MAPPINGS_PARTITION }
+    ];
+    _ = check conn:eventHubMappingsConsumer->assign(eventHubMappingsPartitions);
 }
 
 isolated function syncRegsisteredTopicsCache() {

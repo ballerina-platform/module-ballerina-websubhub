@@ -65,3 +65,15 @@ kafka:ConsumerConfiguration websubEventConsumerConfig = {
     }
 };
 public final kafka:Consumer websubEventConsumer = check new (config:SYSTEM_INFO_NAMESPACE, websubEventConsumerConfig);
+
+// Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
+kafka:ConsumerConfiguration eventHubMappingsConsumerConfig = {
+    groupId: "state-update-group",
+    offsetReset: "earliest",
+    securityProtocol: kafka:PROTOCOL_SASL_SSL,
+    auth: {
+        username: "$ConnectionString",
+        password: config:SYSTEM_INFO_NAMESPACE_CONNECTION_STRING
+    }
+};
+public final kafka:Consumer eventHubMappingsConsumer = check new (config:SYSTEM_INFO_NAMESPACE, eventHubMappingsConsumerConfig);

@@ -1,6 +1,6 @@
-// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -22,12 +22,12 @@ import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 import consolidatorService.types;
 
-isolated function startConsolidator() returns error? {
+isolated function startWebSubEventConsolidator() returns error? {
     do {
         while true {
             types:EventConsumerRecord[] records = check conn:websubEventConsumer->poll(config:POLLING_INTERVAL);
             foreach types:EventConsumerRecord currentRecord in records {
-                error? result = processPersistedData(currentRecord.value);
+                error? result = processPersistedWebSubEventData(currentRecord.value);
                 if result is error {
                     log:printError("Error occurred while processing received event ", 'error = result);
                 }
@@ -40,7 +40,7 @@ isolated function startConsolidator() returns error? {
     }
 }
 
-isolated function processPersistedData(json event) returns error? {
+isolated function processPersistedWebSubEventData(json event) returns error? {
     string hubMode = check event.hubMode;
     match event.hubMode {
         "register" => {
