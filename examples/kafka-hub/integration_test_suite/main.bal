@@ -1,6 +1,6 @@
-// Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,7 +16,6 @@
 
 import ballerina/file;
 import ballerina/io;
-import ballerina/lang.runtime;
 import ballerina/log;
 import ballerina/websub;
 import ballerina/websubhub;
@@ -45,41 +44,22 @@ public function main() returns error? {
 
     websubhub:PublisherClient publisherClientEp = check new(HUB);
     websubhub:TopicRegistrationSuccess|error registrationResponse = registerTopic(publisherClientEp);
-    TEST_RESULT topicRegResult = ["TOPIC_REGISTRATION", 1, 1, registrationResponse is error ? FAILED : SUCCESSFUL];
-    testResults.push(topicRegResult);
+    // todo: update test results here
 
-    error? subscriptionStatus = subscribe(websubListener, subscriberService);
+    error? subscriptionStatus = subscribe(websubListener);
     STATUS subStatus = SUCCESSFUL;
     if subscriptionStatus is error {
         subStatus = FAILED;
-    } else {
-        runtime:sleep(90);
-        subStatus = isSubscriptionSuccessful() ? SUCCESSFUL : FAILED;
     }
-    TEST_RESULT subscriptionResult = ["SUBSCRIPTION", 1, 1, subStatus];
-    testResults.push(subscriptionResult);
+    // todo: update test results here
 
     int successfulContentPublishCount = publishContent(publisherClientEp);
-    runtime:sleep(90);
-    STATUS contentPublishStatus = getReceivedNotificationCount() == successfulContentPublishCount ? SUCCESSFUL : FAILED;
-    TEST_RESULT contentPublishResults = ["CONTENT_PUBLISH", messages.length(), getReceivedNotificationCount(), contentPublishStatus];
-    testResults.push(contentPublishResults);
-
-    error? unsubscriptionStatus = unsubscribe(websubListener);
-    STATUS unSubStatus = SUCCESSFUL;
-    if unsubscriptionStatus is error {
-        unSubStatus = FAILED;
-    } else {
-        runtime:sleep(90);
-        unSubStatus = isUnsubscriptionSuccessful() ? SUCCESSFUL : FAILED;
-    }
-    TEST_RESULT unsubscriptionResult = ["UNSUBSCRIPTION", 1, 1, unSubStatus];
-    testResults.push(unsubscriptionResult);
+    // todo: update test results here
 
     websubhub:TopicDeregistrationSuccess|error deRegistrationResponse = deregisterTopic(publisherClientEp);
-    TEST_RESULT topicDeRegResult = ["TOPIC_DEREGISTRATION", 1, 1, deRegistrationResponse is error ? FAILED : SUCCESSFUL];
-    testResults.push(topicDeRegResult);
-
+    // todo: update test results here
+    
+    _ = check websubListener.gracefulStop();
     return writeResultsToCsv(testResults, RESULTS_FILE_PATH);
 }
 
@@ -94,12 +74,15 @@ isolated function registerTopic(websubhub:PublisherClient publisherClientEp) ret
     return publisherClientEp->registerTopic(TOPIC);
 }
 
-isolated function subscribe(websub:Listener websubListener, websub:SubscriberService subscriberService) returns error? {
+isolated function subscribe(websub:Listener websubListener) returns error? {
     websub:SubscriberServiceConfiguration config = {
         target: [HUB, TOPIC],
         callback: CALLBACK_URL,
         secret: SECRET,
         unsubscribeOnShutdown: true
+    };
+    websub:SubscriberService subscriberService = service object {
+        remote function onEventNotification(websub:ContentDistributionMessage event) {}
     };
     check websubListener.attachWithConfig(subscriberService, config);
     return websubListener.'start();
@@ -108,17 +91,14 @@ isolated function subscribe(websub:Listener websubListener, websub:SubscriberSer
 isolated function publishContent(websubhub:PublisherClient publisherClientEp) returns int {
     int sentCount = 0;
     foreach json message in messages {
-        sentCount += 1;
         var publishResponse = publisherClientEp->publishUpdate(TOPIC, message);
         if publishResponse is websubhub:UpdateMessageError {
             log:printWarn("Error occurred while publishing content");
+        } else {
+            sentCount += 1;
         }
     }
     return sentCount;
-}
-
-isolated function unsubscribe(websub:Listener websubListener) returns error? {
-    return websubListener.gracefulStop();
 }
 
 isolated function deregisterTopic(websubhub:PublisherClient publisherClientEp) returns websubhub:TopicDeregistrationSuccess|error {
