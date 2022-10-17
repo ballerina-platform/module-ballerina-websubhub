@@ -60,3 +60,6 @@ public configurable decimal POLLING_INTERVAL = 10;
 
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
+
+# The port that is used to start the health-probe for consolidator
+public configurable int HEALTH_PROBE_PORT = 10001;

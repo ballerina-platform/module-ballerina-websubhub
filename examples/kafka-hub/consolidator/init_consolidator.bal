@@ -20,6 +20,7 @@ import ballerina/log;
 import consolidatorService.config;
 import consolidatorService.types;
 import consolidatorService.util;
+import ballerina/http;
 import consolidatorService.connections as conn;
 
 isolated map<types:TopicRegistration> registeredTopicsCache = {};
@@ -34,9 +35,15 @@ public function main() returns error? {
     _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
     syncSubscribersCache();
     _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+    
+    // Start the HealthCheck Service
+    http:Listener httpListener = check new (config:HEALTH_PROBE_PORT);
+    check httpListener.attach(healthCheckService, "/health");
+    check httpListener.'start();
+
     log:printInfo("Starting Event Consolidator Service");
     // start the consolidator-service
-    check startWebSubEventConsolidator();
+    _ = @strand { thread: "any" } start startWebSubEventConsolidator();
     lock {
         startupCompleted = true;
     }
