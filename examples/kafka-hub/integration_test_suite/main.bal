@@ -16,6 +16,7 @@
 
 import ballerina/file;
 import ballerina/io;
+import ballerina/lang.runtime;
 import ballerina/websubhub;
 
 configurable string HUB = ?;
@@ -44,6 +45,7 @@ public function main() returns error? {
         failedScenarios += 1;
     }
 
+    runtime:sleep(90);
     error? publishResponse = publishContent(publisherClientEp);
     if publishResponse is error {
         failedScenarios += 1;
