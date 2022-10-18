@@ -16,7 +16,6 @@
 
 import ballerina/file;
 import ballerina/io;
-import ballerina/websub;
 import ballerina/websubhub;
 
 configurable string HUB = ?;
@@ -24,7 +23,6 @@ configurable string TOPIC = ?;
 configurable string RESULTS_FILE_PATH = ?;
 
 final string SECRET = "test123$";
-final websub:Listener websubListener = check new (9090);
 final readonly & json[] messages = [ADD_NEW_USER_MESSAGE, LOGIN_SUCCESS_MESSAGE];
 final string[] & readonly documentationCsvHeaders = ["Label", "# Test Scenarios", "Success %", "Status"];
 
@@ -56,7 +54,6 @@ public function main() returns error? {
         failedScenarios += 1;
     }
     
-    _ = check websubListener.gracefulStop();
     STATUS testStatus = failedScenarios == 0 ? SUCCESSFUL : TOTAL_SCENARIOS == failedScenarios ? FAILED : PARTIAL;
     any[] results = ["Azure WebSubHub", TOTAL_SCENARIOS, <float>(TOTAL_SCENARIOS - failedScenarios)/<float>TOTAL_SCENARIOS, testStatus];
     return writeResultsToCsv(RESULTS_FILE_PATH, results);
