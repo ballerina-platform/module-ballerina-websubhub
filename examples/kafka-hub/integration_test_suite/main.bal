@@ -16,7 +16,6 @@
 
 import ballerina/file;
 import ballerina/io;
-import ballerina/log;
 import ballerina/websub;
 import ballerina/websubhub;
 
@@ -28,7 +27,7 @@ configurable string RESULTS_FILE_PATH = ?;
 final string SECRET = "test123$";
 final websub:Listener websubListener = check new (9090);
 final readonly & json[] messages = [ADD_NEW_USER_MESSAGE, LOGIN_SUCCESS_MESSAGE];
-final string[] & readonly documentationCsvHeaders = ["Label", "Sent Count", "Received Count", "Status"];
+final string[] & readonly documentationCsvHeaders = ["Label", "# Test Scenarios", "Success %", "Status"];
 
 enum STATUS {
     SUCCESSFUL,
@@ -37,30 +36,38 @@ enum STATUS {
 }
 
 type TEST_RESULT [string, int, int, STATUS];
+const int TOTAL_SCENARIOS = 4;
 
 public function main() returns error? {
     _ = check initializeTests();
-    TEST_RESULT[] testResults = [];
-
+    int failedScenarios = 0;
+    
     websubhub:PublisherClient publisherClientEp = check new(HUB);
     websubhub:TopicRegistrationSuccess|error registrationResponse = registerTopic(publisherClientEp);
-    // todo: update test results here
+    if registrationResponse is error {
+        failedScenarios += 1;
+    }
 
     error? subscriptionStatus = subscribe(websubListener);
-    STATUS subStatus = SUCCESSFUL;
     if subscriptionStatus is error {
-        subStatus = FAILED;
+        failedScenarios += 1;
     }
     // todo: update test results here
 
-    int successfulContentPublishCount = publishContent(publisherClientEp);
-    // todo: update test results here
+    error? publishResponse = publishContent(publisherClientEp);
+    if publishResponse is error {
+        failedScenarios += 1;
+    }
 
     websubhub:TopicDeregistrationSuccess|error deRegistrationResponse = deregisterTopic(publisherClientEp);
-    // todo: update test results here
+    if deRegistrationResponse is error {
+        failedScenarios += 1;
+    }
     
     _ = check websubListener.gracefulStop();
-    return writeResultsToCsv(testResults, RESULTS_FILE_PATH);
+    STATUS testStatus = failedScenarios == 0 ? SUCCESSFUL : TOTAL_SCENARIOS == failedScenarios ? FAILED : PARTIAL;
+    any[] results = ["Azure WebSubHub", TOTAL_SCENARIOS, <float>(TOTAL_SCENARIOS - failedScenarios)/<float>TOTAL_SCENARIOS, testStatus];
+    return writeResultsToCsv(RESULTS_FILE_PATH, results);
 }
 
 function initializeTests() returns error? {
@@ -77,7 +84,6 @@ isolated function registerTopic(websubhub:PublisherClient publisherClientEp) ret
 isolated function subscribe(websub:Listener websubListener) returns error? {
     websub:SubscriberServiceConfiguration config = {
         target: [HUB, TOPIC],
-        callback: CALLBACK_URL,
         secret: SECRET,
         unsubscribeOnShutdown: true
     };
@@ -88,31 +94,22 @@ isolated function subscribe(websub:Listener websubListener) returns error? {
     return websubListener.'start();
 }
 
-isolated function publishContent(websubhub:PublisherClient publisherClientEp) returns int {
-    int sentCount = 0;
+isolated function publishContent(websubhub:PublisherClient publisherClientEp) returns error? {
     foreach json message in messages {
-        var publishResponse = publisherClientEp->publishUpdate(TOPIC, message);
-        if publishResponse is websubhub:UpdateMessageError {
-            log:printWarn("Error occurred while publishing content");
-        } else {
-            sentCount += 1;
-        }
+        _ = check publisherClientEp->publishUpdate(TOPIC, message);
     }
-    return sentCount;
 }
 
 isolated function deregisterTopic(websubhub:PublisherClient publisherClientEp) returns websubhub:TopicDeregistrationSuccess|error {
     return publisherClientEp->deregisterTopic(TOPIC);
 }
 
-isolated function writeResultsToCsv(any[][] results, string output_path) returns error? {
-    string[][] final_results = [];
-    foreach any[] resultLine in results {
-        string[] constructedResultLine = [];
-        foreach var result in resultLine {
-            constructedResultLine.push(result.toString());
-        }
-        final_results.push(constructedResultLine);
+function writeResultsToCsv(string output_path, any[] results) returns error? {
+    string[][] summary_data = check io:fileReadCsv(output_path);
+    string[] final_results = [];
+    foreach var result in results {
+        final_results.push(result.toString());
     }
-    check io:fileWriteCsv(output_path, final_results, io:APPEND);
+    summary_data.push(final_results);
+    check io:fileWriteCsv(output_path, summary_data);
 }
