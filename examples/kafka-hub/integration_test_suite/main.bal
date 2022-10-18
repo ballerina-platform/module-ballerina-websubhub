@@ -21,7 +21,6 @@ import ballerina/websubhub;
 
 configurable string HUB = ?;
 configurable string TOPIC = ?;
-configurable string CALLBACK_URL = ?;
 configurable string RESULTS_FILE_PATH = ?;
 
 final string SECRET = "test123$";
