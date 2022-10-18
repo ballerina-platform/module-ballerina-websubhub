@@ -1,16 +1,12 @@
 [kafkaHub.config]
 # Flag to check whether to enable/disable security
-SECURITY_ON = false
-
-# Server ID is is used to uniquely identify each server 
-# Each server must have a unique ID
-SERVER_ID = "server-1"
+SECURITY_ON = true
 
 # Azure Event Hub namespace connection
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+SYSTEM_INFO_NAMESPACE = "localhost:9092"
 
-# Azure Event Hub connection-string
-EVENT_HUB_CONNECTION_STRING = "test-connection"
+# Path to the file containing the system-info EventHub connection-string
+SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = "./resources/system-info"
 
 # Azure Event Hub related to the system-information
 SYSTEM_INFO_HUB = "system-info"
@@ -58,11 +54,13 @@ MESSAGE_DELIVERY_COUNT = 3
 MESSAGE_DELIVERY_TIMEOUT = 10.0
 
 # System Configurations Related to Azure Event Hub
+EVENT_HUBS = ["test-hub-1"]
+
 NUMBER_OF_PARTITIONS = 5
 
 CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
 
-EVENT_HUBS = ["test-hub-1"]
+NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json"
 
 [ballerina.http.accessLogConfig] 
 console = true

@@ -14,11 +14,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# IP and Port of the Kafka bootstrap node
-public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
+import ballerina/io;
 
-# Azure Event Hub connection-string
-public configurable string EVENT_HUB_CONNECTION_STRING = ?;
+# IP and Port of the Kafka bootstrap node
+public configurable string SYSTEM_INFO_NAMESPACE = "localhost:9092";
+
+# Path to the file containing the system-info EventHub connection-string
+public configurable string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = ?;
+
+# system-inf EventHub connection-string
+public final string SYSTEM_INFO_NAMESPACE_CONNECTION_STRING = check io:fileReadString(SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE);
 
 # Azure Event Hub related to the system-information
 public configurable string SYSTEM_INFO_HUB = "system-info";
@@ -43,3 +48,6 @@ public configurable decimal POLLING_INTERVAL = 10;
 
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
+
+# The port that is used to start the health-probe for consolidator
+public configurable int HEALTH_PROBE_PORT = 10001;

@@ -1,12 +1,9 @@
 [consolidatorService.config]
 # Azure Event Hub namespace connection
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+SYSTEM_INFO_NAMESPACE = "localhost:9092"
 
-# Azure Event Hub connection-string
-EVENT_HUB_CONNECTION_STRING = "test-connection"
-
-# Azure Event Hub related to the system-information
-SYSTEM_INFO_HUB = "system-info"
+# Path to the file containing the system-info EventHub connection-string
+SYSTEM_INFO_NAMESPACE_CONNECTION_STRING_FILE = "./resources/system-info"
 
 # Partitions in `system-info` EventHub which will get notified for websub topic registration/deregistration
 REGISTERED_WEBSUB_TOPICS_PARTITION = 0
@@ -28,3 +25,6 @@ POLLING_INTERVAL = 10.0
 
 # The period in which Kafka close method waits to complete
 GRACEFUL_CLOSE_PERIOD = 5.0
+
+# The port that is used to start the health-probe for consolidator
+HEALTH_PROBE_PORT = 10001

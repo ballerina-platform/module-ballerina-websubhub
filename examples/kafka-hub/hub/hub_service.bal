@@ -32,7 +32,7 @@ isolated function isStartupCompleted() returns boolean {
 }
 
 http:Service healthCheckService = service object {
-    resource function get rediness() returns http:Ok|http:ServiceUnavailable {
+    resource function get readiness() returns http:Ok|http:ServiceUnavailable {
         if isStartupCompleted() {
             return http:OK;
         }
@@ -53,9 +53,6 @@ service object {
     #            if topic registration failed or `error` if there is any unexpected error
     isolated remote function onRegisterTopic(readonly & websubhub:TopicRegistration message, http:Headers headers)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError|error {
-        if config:SECURITY_ON {
-            check security:authorize(headers, message.topic);
-        }
         check self.registerTopic(message);
         return websubhub:TOPIC_REGISTRATION_SUCCESS;
     }
@@ -90,9 +87,6 @@ service object {
     #            if topic deregistration failed or `error` if there is any unexpected error
     isolated remote function onDeregisterTopic(readonly & websubhub:TopicDeregistration message, http:Headers headers)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError|error {
-        if config:SECURITY_ON {
-            check security:authorize(headers, message.topic);
-        }
         check self.deregisterTopic(message);
         return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
     }
@@ -162,9 +156,11 @@ service object {
         lock {
             types:EventHubPartition partitionMapping = retrieveTopicPartitionMapping(message);
             types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
+            message[NAMESPACE_ID] = consumerGroupMapping.namespaceId;
             message[EVENT_HUB_NAME] = consumerGroupMapping.eventHub;
             message[EVENT_HUB_PARTITION] = consumerGroupMapping.partition;
             message[CONSUMER_GROUP] = consumerGroupMapping.consumerGroup;
+            message[SERVER_ID] = config:SERVER_ID;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
@@ -232,9 +228,6 @@ service object {
     #            if publish content failed or `error` if there is any unexpected error
     isolated remote function onUpdateMessage(websubhub:UpdateMessage message, http:Headers headers)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError|error {  
-        if config:SECURITY_ON {
-            check security:authorize(headers, message.hubTopic);
-        }
         check self.updateMessage(message);
         return websubhub:ACKNOWLEDGEMENT;
     }
@@ -249,7 +242,7 @@ service object {
             // string eventHubName = check value:ensureType(currentTopic[EVENT_HUB_NAME]);
             // int eventHubPartition = check value:ensureType(currentTopic[EVENT_HUB_PARTITION]);
             types:EventHubPartition partitionMapping = currentTopic.partitionMapping;
-            error? errorResponse = persist:addUpdateMessage(partitionMapping.eventHub, partitionMapping.partition, msg);
+            error? errorResponse = persist:addUpdateMessage(partitionMapping.namespaceId, partitionMapping.eventHub, partitionMapping.partition, msg);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
             } else if errorResponse is error {
