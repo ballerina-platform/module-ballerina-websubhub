@@ -35,7 +35,7 @@ enum STATUS {
 }
 
 type TEST_RESULT [string, int, int, STATUS];
-const int TOTAL_SCENARIOS = 4;
+const int TOTAL_SCENARIOS = 3;
 
 public function main() returns error? {
     _ = check initializeTests();
@@ -46,12 +46,6 @@ public function main() returns error? {
     if registrationResponse is error {
         failedScenarios += 1;
     }
-
-    error? subscriptionStatus = subscribe(websubListener);
-    if subscriptionStatus is error {
-        failedScenarios += 1;
-    }
-    // todo: update test results here
 
     error? publishResponse = publishContent(publisherClientEp);
     if publishResponse is error {
@@ -78,19 +72,6 @@ function initializeTests() returns error? {
 
 isolated function registerTopic(websubhub:PublisherClient publisherClientEp) returns websubhub:TopicRegistrationSuccess|error {
     return publisherClientEp->registerTopic(TOPIC);
-}
-
-isolated function subscribe(websub:Listener websubListener) returns error? {
-    websub:SubscriberServiceConfiguration config = {
-        target: [HUB, TOPIC],
-        secret: SECRET,
-        unsubscribeOnShutdown: true
-    };
-    websub:SubscriberService subscriberService = service object {
-        remote function onEventNotification(websub:ContentDistributionMessage event) {}
-    };
-    check websubListener.attachWithConfig(subscriberService, config);
-    return websubListener.'start();
 }
 
 isolated function publishContent(websubhub:PublisherClient publisherClientEp) returns error? {
