@@ -34,7 +34,6 @@ enum STATUS {
     PARTIAL
 }
 
-type TEST_RESULT [string, int, int, STATUS];
 const int TOTAL_SCENARIOS = 3;
 
 public function main() returns error? {
@@ -84,12 +83,12 @@ isolated function deregisterTopic(websubhub:PublisherClient publisherClientEp) r
     return publisherClientEp->deregisterTopic(TOPIC);
 }
 
-function writeResultsToCsv(string output_path, any[] results) returns error? {
-    string[][] summary_data = check io:fileReadCsv(output_path);
-    string[] final_results = [];
+function writeResultsToCsv(string outputPath, any[] results) returns error? {
+    string[][] summaryData = check io:fileReadCsv(outputPath);
+    string[] finalResults = [];
     foreach var result in results {
-        final_results.push(result.toString());
+        finalResults.push(result.toString());
     }
-    summary_data.push(final_results);
-    check io:fileWriteCsv(output_path, summary_data);
+    summaryData.push(finalResults);
+    check io:fileWriteCsv(outputPath, summaryData);
 }
