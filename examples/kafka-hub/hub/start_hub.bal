@@ -32,7 +32,15 @@ public function main() returns error? {
     _ = @strand { thread: "any" } start syncSubscribersCache();
     
     // Start the HealthCheck Service
-    http:Listener httpListener = check new (config:HUB_PORT);
+    http:Listener httpListener = check new (config:HUB_PORT,
+        host = config:HOST, 
+        secureSocket = {
+            key: {
+                certFile: config:SSL_CERT_PATH,
+                keyFile: config:SSL_KEY_PATH
+            }
+        }
+    );
     check httpListener.attach(healthCheckService, "/health");
 
     // Start the Hub
