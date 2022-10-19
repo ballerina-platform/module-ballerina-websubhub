@@ -62,6 +62,9 @@ public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 # The port that is used to start the hub
 public configurable int HUB_PORT = 9000;
 
+# The clear text port that is used to start the hub
+public configurable int HUB_PORT_CLEAR_TEXT = 9001;
+
 # The host-name of the server
 public configurable string HOST = "localhost";
 

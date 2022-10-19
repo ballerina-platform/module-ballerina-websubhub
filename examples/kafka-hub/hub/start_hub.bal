@@ -32,7 +32,7 @@ public function main() returns error? {
     _ = @strand { thread: "any" } start syncSubscribersCache();
     
     // Start the HealthCheck Service
-    http:Listener httpListener = check new (config:HUB_PORT,
+    http:Listener httpsListener = check new (config:HUB_PORT,
         host = config:HOST, 
         secureSocket = {
             key: {
@@ -41,12 +41,13 @@ public function main() returns error? {
             }
         }
     );
-    check httpListener.attach(healthCheckService, "/health");
-
+    check httpsListener.attach(healthCheckService, "/health");
     // Start the Hub
-    websubhub:Listener hubListener = check new (httpListener);
+    websubhub:Listener hubListener = check new (httpsListener);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
+
+    check initClearTextHubListener();
 
     lock {
         startupCompleted = true;
@@ -67,4 +68,16 @@ function assignPartitionsToSystemConsumers() returns error? {
         partition: config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_PARTITION
     };
     check conn:subscribersConsumer->assign([consolidatedSubscribersPartition]);
+}
+
+function initClearTextHubListener() returns error? {
+    http:Listener httpListener = check new (config:HUB_PORT_CLEAR_TEXT,
+        host = config:HOST
+    );
+
+    check httpListener.attach(healthCheckService, "/health");
+
+    websubhub:Listener clearTextHubListener = check new (httpListener);
+    check clearTextHubListener.attach(hubService, "hub");
+    check clearTextHubListener.'start();
 }
