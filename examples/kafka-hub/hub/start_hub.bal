@@ -33,11 +33,10 @@ public function main() returns error? {
     
     // Start the HealthCheck Service
     http:Listener httpListener = check new (config:HUB_PORT,
-        host = config:HOST, 
         secureSocket = {
             key: {
-                certFile: config:SSL_CERT_PATH,
-                keyFile: config:SSL_KEY_PATH
+                path: config:SSL_KEYSTORE_PATH,
+                password: ""
             }
         }
     );
