@@ -44,6 +44,9 @@ SSL_CERT_PATH = "./resources/server.crt"
 # SSL key file path
 SSL_KEY_PATH = "./resources/server.key"
 
+# Public cert used to verify the provided JWT
+JWT_SIGNATURE_VALIDATOR_CERT = "./resources/server.key"
+
 # The period between retry requests
 MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
 
