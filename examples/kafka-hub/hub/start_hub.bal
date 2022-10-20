@@ -36,7 +36,7 @@ public function main() returns error? {
         secureSocket = {
             key: {
                 path: config:SSL_KEYSTORE_PATH,
-                password: ""
+                password: config:SSL_KEYSTORE_PASSWORD
             }
         }
     );

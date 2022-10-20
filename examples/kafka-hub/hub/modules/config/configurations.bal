@@ -65,6 +65,9 @@ public configurable int HUB_PORT = 9000;
 # SSL keystore file path
 public configurable string SSL_KEYSTORE_PATH = "./resources/keystore.p12";
 
+# SSL keystore password
+public configurable string SSL_KEYSTORE_PASSWORD = "password";
+
 # The period between retry requests
 public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;
 
