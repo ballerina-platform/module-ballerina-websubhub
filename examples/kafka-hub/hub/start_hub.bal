@@ -19,6 +19,7 @@ import ballerina/websubhub;
 import ballerinax/kafka;
 import kafkaHub.connections as conn;
 import kafkaHub.persistence as persist;
+import ballerina/io;
 import kafkaHub.config;
 
 public function main() returns error? {    
@@ -36,7 +37,7 @@ public function main() returns error? {
         secureSocket = {
             key: {
                 path: config:SSL_KEYSTORE_PATH,
-                password: config:SSL_KEYSTORE_PASSWORD
+                password: check io:fileReadString(config:KEYSTORE_PASSWORD_FILE)
             }
         }
     );

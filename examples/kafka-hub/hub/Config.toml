@@ -38,8 +38,8 @@ HUB_PORT = 9000
 # SSL keystore file path
 SSL_KEYSTORE_PATH = "./resources/keystore.p12"
 
-# SSL keystore password
-SSL_KEYSTORE_PASSWORD = "password"
+# SSL keystore password file
+KEYSTORE_PASSWORD_FILE = "./resources/keystore-password"
 
 # The period between retry requests
 MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
