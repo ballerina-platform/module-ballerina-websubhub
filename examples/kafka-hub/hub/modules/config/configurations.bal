@@ -62,14 +62,11 @@ public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 # The port that is used to start the hub
 public configurable int HUB_PORT = 9000;
 
-# The host-name of the server
-public configurable string HOST = "localhost";
+# SSL keystore file path
+public configurable string SSL_KEYSTORE_PATH = "./resources/keystore.p12";
 
-# SSL certificate file path
-public configurable string SSL_CERT_PATH = "./resources/server.crt";
-
-# SSL key file path
-public configurable string SSL_KEY_PATH = "./resources/server.key";
+# SSL keystore password
+public configurable string KEYSTORE_PASSWORD_FILE = "./resources/keystore-password";
 
 # JWKS endpoint to validate the JWT
 public configurable string JWT_JWKS_ENDPOINT = "https://sts.preview-dv.choreo.dev/oauth2/jwks";
