@@ -71,8 +71,8 @@ public configurable string SSL_CERT_PATH = "./resources/server.crt";
 # SSL key file path
 public configurable string SSL_KEY_PATH = "./resources/server.key";
 
-# Public cert used to verify the provided JWT
-public configurable string JWT_SIGNATURE_VALIDATOR_CERT = "./resources/server.key";
+# JWKS endpoint to validate the JWT
+public configurable string JWT_JWKS_ENDPOINT = "https://sts.preview-dv.choreo.dev/oauth2/jwks";
 
 # The period between retry requests
 public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;

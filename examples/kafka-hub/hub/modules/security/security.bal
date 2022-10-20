@@ -25,7 +25,9 @@ const HANDLE = "handle";
 
 final http:ListenerJwtAuthHandler handler = new({
     signatureConfig: {
-        certFile: config:JWT_SIGNATURE_VALIDATOR_CERT
+        jwksConfig: {
+            url: config:JWT_JWKS_ENDPOINT
+        }
     }
 });
 
