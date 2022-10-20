@@ -35,14 +35,11 @@ GRACEFUL_CLOSE_PERIOD = 5.0
 # The port that is used to start the hub
 HUB_PORT = 9000
 
-# The host-name of the server
-HOST = "localhost"
+# SSL keystore file path
+SSL_KEYSTORE_PATH = "./resources/keystore.p12"
 
-# SSL certificate file path
-SSL_CERT_PATH = "./resources/server.crt"
-
-# SSL key file path
-SSL_KEY_PATH = "./resources/server.key"
+# SSL keystore password file
+KEYSTORE_PASSWORD_FILE = "./resources/keystore-password"
 
 # The period between retry requests
 MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0

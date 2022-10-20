@@ -19,6 +19,7 @@ import ballerina/websubhub;
 import ballerinax/kafka;
 import kafkaHub.connections as conn;
 import kafkaHub.persistence as persist;
+import ballerina/io;
 import kafkaHub.config;
 
 public function main() returns error? {    
@@ -33,11 +34,10 @@ public function main() returns error? {
     
     // Start the HealthCheck Service
     http:Listener httpListener = check new (config:HUB_PORT,
-        host = config:HOST, 
         secureSocket = {
             key: {
-                certFile: config:SSL_CERT_PATH,
-                keyFile: config:SSL_KEY_PATH
+                path: config:SSL_KEYSTORE_PATH,
+                password: check io:fileReadString(config:KEYSTORE_PASSWORD_FILE)
             }
         }
     );
