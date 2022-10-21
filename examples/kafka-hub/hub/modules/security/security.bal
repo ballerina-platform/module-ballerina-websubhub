@@ -17,12 +17,19 @@
 import ballerina/log;
 import ballerina/http;
 import ballerina/jwt;
+import kafkaHub.config;
 import ballerina/regex;
 
 const SCOPE_KEY = "organization";
 const HANDLE = "handle";
 
-final http:ListenerJwtAuthHandler handler = new({});
+final http:ListenerJwtAuthHandler handler = new({
+    signatureConfig: {
+        jwksConfig: {
+            url: config:JWT_JWKS_ENDPOINT
+        }
+    }
+});
 
 # Checks for authorization for the current request.
 # 

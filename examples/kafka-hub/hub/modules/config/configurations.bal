@@ -68,6 +68,9 @@ public configurable string SSL_KEYSTORE_PATH = "./resources/keystore.p12";
 # SSL keystore password
 public configurable string KEYSTORE_PASSWORD_FILE = "./resources/keystore-password";
 
+# JWKS endpoint to validate the JWT
+public configurable string JWT_JWKS_ENDPOINT = "https://sts.preview-dv.choreo.dev/oauth2/jwks";
+
 # The period between retry requests
 public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;
 

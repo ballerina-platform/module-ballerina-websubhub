@@ -41,6 +41,9 @@ SSL_KEYSTORE_PATH = "./resources/keystore.p12"
 # SSL keystore password file
 KEYSTORE_PASSWORD_FILE = "./resources/keystore-password"
 
+# Public cert used to verify the provided JWT
+JWT_JWKS_ENDPOINT = "https://sts.preview-dv.choreo.dev/oauth2/jwks"
+
 # The period between retry requests
 MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
 
