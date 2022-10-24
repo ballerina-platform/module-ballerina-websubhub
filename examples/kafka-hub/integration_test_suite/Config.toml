@@ -1,9 +1,6 @@
 # WebSub `hub` URL
 HUB = {HUB_URL}
 
-## SSL certification for secure connection
-SSL_CERT_PATH = {SSL_CERT_PATH}
-
 # WebSub `topic`
 TOPIC = "test-topic"
 

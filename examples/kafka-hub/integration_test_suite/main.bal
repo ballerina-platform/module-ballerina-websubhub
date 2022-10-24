@@ -20,7 +20,6 @@ import ballerina/lang.runtime;
 import ballerina/websubhub;
 
 configurable string HUB = ?;
-configurable string SSL_CERT_PATH = ?;
 configurable string TOPIC = ?;
 configurable string RESULTS_FILE_PATH = ?;
 
@@ -40,11 +39,7 @@ public function main() returns error? {
     _ = check initializeTests();
     int failedScenarios = 0;
     
-    websubhub:PublisherClient publisherClientEp = check new(HUB, 
-        secureSocket = {
-            cert: SSL_CERT_PATH
-        } 
-    );
+    websubhub:PublisherClient publisherClientEp = check new(HUB);
     websubhub:TopicRegistrationSuccess|error registrationResponse = registerTopic(publisherClientEp);
     if registrationResponse is error {
         failedScenarios += 1;
