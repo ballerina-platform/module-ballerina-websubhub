@@ -1,8 +1,8 @@
 # WebSub `hub` URL
-HUB = {HUB_URL}
+HUB = "{HUB_URL}"
 
 # WebSub `topic`
 TOPIC = "test-topic"
 
 # File where the results are saved
-RESULTS_FILE_PATH = {RESULTS_FILE_PATH}
+RESULTS_FILE_PATH = "{RESULTS_FILE_PATH}"
