@@ -17,6 +17,7 @@
 import ballerina/file;
 import ballerina/io;
 import ballerina/lang.runtime;
+import ballerina/log;
 import ballerina/websubhub;
 
 configurable string HUB = ?;
@@ -42,17 +43,20 @@ public function main() returns error? {
     websubhub:PublisherClient publisherClientEp = check new(HUB);
     websubhub:TopicRegistrationSuccess|error registrationResponse = registerTopic(publisherClientEp);
     if registrationResponse is error {
+        log:printError("Error occurred while registering the topic", 'error = registrationResponse);
         failedScenarios += 1;
     }
 
     runtime:sleep(90);
     error? publishResponse = publishContent(publisherClientEp);
     if publishResponse is error {
+        log:printError("Error occurred while publishing content", 'error = publishResponse);
         failedScenarios += 1;
     }
 
-    websubhub:TopicDeregistrationSuccess|error deRegistrationResponse = deregisterTopic(publisherClientEp);
-    if deRegistrationResponse is error {
+    websubhub:TopicDeregistrationSuccess|error deregistrationResponse = deregisterTopic(publisherClientEp);
+    if deregistrationResponse is error {
+        log:printError("Error occurred while de-registering the topic", 'error = deregistrationResponse);
         failedScenarios += 1;
     }
     
