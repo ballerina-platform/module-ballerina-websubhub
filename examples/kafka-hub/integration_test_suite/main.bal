@@ -61,7 +61,8 @@ public function main() returns error? {
     }
     
     STATUS testStatus = failedScenarios == 0 ? SUCCESSFUL : TOTAL_SCENARIOS == failedScenarios ? FAILED : PARTIAL;
-    any[] results = ["Azure WebSubHub", TOTAL_SCENARIOS, <float>(TOTAL_SCENARIOS - failedScenarios)/<float>TOTAL_SCENARIOS, testStatus];
+    float successRate = (<float>(TOTAL_SCENARIOS - failedScenarios)/<float>TOTAL_SCENARIOS) * 100.0;
+    any[] results = ["Azure WebSubHub", TOTAL_SCENARIOS, successRate, testStatus];
     return writeResultsToCsv(RESULTS_FILE_PATH, results);
 }
 
