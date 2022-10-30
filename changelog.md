@@ -6,11 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [API Docs Updated](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
+
+## [1.4.1] - 2022-10-30
+
 ### Fixed
 - [`websubhub:HubClient` appends unwanted `/` to the service-path](https://github.com/ballerina-platform/ballerina-standard-library/issues/3564)
 
-### Changed
-- [API Docs Updated](https://github.com/ballerina-platform/ballerina-standard-library/issues/3463)
 
 ## [1.4.0] - 2022-09-08
 
