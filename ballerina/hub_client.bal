@@ -92,7 +92,7 @@ public client class HubClient {
                     "Error retrieving content signature", hash, statusCode = http:STATUS_BAD_REQUEST);
             }
         }
-        http:Response|error response = self.httpClient->post("/", request);
+        http:Response|error response = self.httpClient->post("", request);
         if response is http:Response {
             return processSubscriberResponse(response, self.topic);
         } else {

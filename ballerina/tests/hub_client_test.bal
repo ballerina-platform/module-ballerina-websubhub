@@ -35,7 +35,9 @@ isolated function retrieveSuccessCount() returns int {
     }
 }
 
-service /callback on new http:Listener(9094) {
+listener http:Listener hubClientTestListener = check new (9094);
+
+service /callback on hubClientTestListener {
     isolated resource function post success(http:Caller caller, http:Request req) returns error? {
         io:println("Hub Content Distribution message received : ", req.getTextPayload());
         return caller->respond("Content Delivery Success");
@@ -104,6 +106,13 @@ service /callback on new http:Listener(9094) {
     }
 }
 
+service / on hubClientTestListener {
+    isolated resource function post .(http:Caller caller, http:Request req) returns error? {
+        io:println("Hub Content Distribution message received : ", req.getTextPayload());
+        return caller->respond("Content Delivery Success");
+    }
+}
+
 isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscription {
     return {
         hub: "https://hub.com", 
@@ -116,6 +125,18 @@ isolated function retrieveSubscriptionMsg(string callbackUrl) returns Subscripti
 
 Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094/callback/success");
 HubClient contentDeliveryClient = check new(subscriptionMsg);
+
+@test:Config {
+}
+function testContentDeliverySuccessWithRootPath() returns error? {
+    ContentDistributionMessage msg = {content: "This is sample content delivery"};
+    Subscription subscriptionMsg = retrieveSubscriptionMsg("http://localhost:9094");
+    HubClient hubClientEp = check new (subscriptionMsg);
+    ContentDistributionSuccess publishResponse = check hubClientEp->notifyContentDistribution(msg);
+    test:assertEquals(publishResponse.status.code, 200);
+    test:assertEquals(publishResponse?.mediaType, mime:TEXT_PLAIN);
+    test:assertEquals(publishResponse.body, CONTENT_DELIVERY_SUCCESS);
+}
 
 @test:Config {
 }
