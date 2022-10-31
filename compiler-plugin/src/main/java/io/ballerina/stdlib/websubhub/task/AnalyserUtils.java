@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * {@code ValidatorUtils} contains utility functions required for {@code websubhub:Service} validation.
+ * {@code AnalyserUtils} contains utility functions required for {@code websubhub:Service} validation.
  */
 public final class AnalyserUtils {
     public static void updateContext(SyntaxNodeAnalysisContext context, WebSubHubDiagnosticCodes errorCode,
@@ -52,27 +52,27 @@ public final class AnalyserUtils {
     }
 
     public static boolean isWebSubHubListener(TypeSymbol listenerType) {
-        if (listenerType.getName().isEmpty() || !Constants.LISTENER_IDENTIFIER.equals(listenerType.getName().get())) {
-            return false;
-        }
         if (listenerType.typeKind() == TypeDescKind.UNION) {
             return ((UnionTypeSymbol) listenerType).memberTypeDescriptors().stream()
                     .filter(typeDescriptor -> typeDescriptor instanceof TypeReferenceTypeSymbol)
                     .map(typeReferenceTypeSymbol -> (TypeReferenceTypeSymbol) typeReferenceTypeSymbol)
-                    .anyMatch(typeReferenceTypeSymbol ->
-                            typeReferenceTypeSymbol.getModule().isPresent()
-                                    && isWebSubHub(typeReferenceTypeSymbol.getModule().get()
-                            ));
+                    .anyMatch(AnalyserUtils::isWebSubListenerType);
         }
         if (listenerType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            Optional<ModuleSymbol> moduleOpt = ((TypeReferenceTypeSymbol) listenerType).typeDescriptor().getModule();
-            return moduleOpt.isPresent() && isWebSubHub(moduleOpt.get());
+            return isWebSubListenerType((TypeReferenceTypeSymbol) listenerType);
         }
         if (listenerType.typeKind() == TypeDescKind.OBJECT) {
             Optional<ModuleSymbol> moduleOpt = listenerType.getModule();
             return moduleOpt.isPresent() && isWebSubHub(moduleOpt.get());
         }
         return false;
+    }
+
+    private static boolean isWebSubListenerType(TypeReferenceTypeSymbol typeSymbol) {
+        if (typeSymbol.getName().isEmpty() || !Constants.LISTENER_IDENTIFIER.equals(typeSymbol.getName().get())) {
+            return false;
+        }
+        return typeSymbol.getModule().isPresent() && isWebSubHub(typeSymbol.getModule().get());
     }
 
     public static boolean isWebSubHub(ModuleSymbol moduleSymbol) {
