@@ -56,10 +56,10 @@ public final class AnalyserUtils {
             return ((UnionTypeSymbol) listenerType).memberTypeDescriptors().stream()
                     .filter(typeDescriptor -> typeDescriptor instanceof TypeReferenceTypeSymbol)
                     .map(typeReferenceTypeSymbol -> (TypeReferenceTypeSymbol) typeReferenceTypeSymbol)
-                    .anyMatch(AnalyserUtils::isWebSubListenerType);
+                    .anyMatch(AnalyserUtils::isWebSubHubListenerType);
         }
         if (listenerType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
-            return isWebSubListenerType((TypeReferenceTypeSymbol) listenerType);
+            return isWebSubHubListenerType((TypeReferenceTypeSymbol) listenerType);
         }
         if (listenerType.typeKind() == TypeDescKind.OBJECT) {
             Optional<ModuleSymbol> moduleOpt = listenerType.getModule();
@@ -68,7 +68,7 @@ public final class AnalyserUtils {
         return false;
     }
 
-    private static boolean isWebSubListenerType(TypeReferenceTypeSymbol typeSymbol) {
+    private static boolean isWebSubHubListenerType(TypeReferenceTypeSymbol typeSymbol) {
         if (typeSymbol.getName().isEmpty() || !Constants.LISTENER_IDENTIFIER.equals(typeSymbol.getName().get())) {
             return false;
         }
