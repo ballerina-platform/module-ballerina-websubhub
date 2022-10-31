@@ -52,6 +52,9 @@ public final class AnalyserUtils {
     }
 
     public static boolean isWebSubHubListener(TypeSymbol listenerType) {
+        if (listenerType.getName().isEmpty() || !Constants.LISTENER_IDENTIFIER.equals(listenerType.getName().get())) {
+            return false;
+        }
         if (listenerType.typeKind() == TypeDescKind.UNION) {
             return ((UnionTypeSymbol) listenerType).memberTypeDescriptors().stream()
                     .filter(typeDescriptor -> typeDescriptor instanceof TypeReferenceTypeSymbol)
@@ -61,17 +64,14 @@ public final class AnalyserUtils {
                                     && isWebSubHub(typeReferenceTypeSymbol.getModule().get()
                             ));
         }
-
         if (listenerType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
             Optional<ModuleSymbol> moduleOpt = ((TypeReferenceTypeSymbol) listenerType).typeDescriptor().getModule();
             return moduleOpt.isPresent() && isWebSubHub(moduleOpt.get());
         }
-
         if (listenerType.typeKind() == TypeDescKind.OBJECT) {
             Optional<ModuleSymbol> moduleOpt = listenerType.getModule();
             return moduleOpt.isPresent() && isWebSubHub(moduleOpt.get());
         }
-
         return false;
     }
 
