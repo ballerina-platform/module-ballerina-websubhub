@@ -19,25 +19,23 @@
 package io.ballerina.stdlib.websubhub.task;
 
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ListenerDeclarationNode;
-import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeLocation;
 import io.ballerina.compiler.syntax.tree.ParenthesizedArgList;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
-import io.ballerina.compiler.syntax.tree.RestArgumentNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.stdlib.websubhub.Constants;
 import io.ballerina.stdlib.websubhub.WebSubHubDiagnosticCodes;
 
 import java.util.Optional;
@@ -55,67 +53,78 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
         SyntaxKind nodeSyntaxKind = node.kind();
         if (nodeSyntaxKind == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
             ExplicitNewExpressionNode expressionNode = (ExplicitNewExpressionNode) node;
-            if (!(expressionNode.typeDescriptor().kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE)) {
-                return;
-            }
-            QualifiedNameReferenceNode nameRef = (QualifiedNameReferenceNode) expressionNode.typeDescriptor();
-            Optional<Symbol> symbolOpt = context.semanticModel().symbol(nameRef);
-            if (symbolOpt.isPresent() && symbolOpt.get() instanceof TypeReferenceTypeSymbol) {
-                TypeSymbol typeDescriptor = ((TypeReferenceTypeSymbol) symbolOpt.get()).typeDescriptor();
-                String identifier = typeDescriptor.getName().orElse("");
-                if (Constants.LISTENER_IDENTIFIER.equals(identifier) && isWebSubHubListener(typeDescriptor)) {
-                    SeparatedNodeList<FunctionArgumentNode> functionArgs = expressionNode
-                            .parenthesizedArgList().arguments();
-                    verifyListenerArgType(context, expressionNode.location(), functionArgs);
-                }
-            }
+            validateExplicitNewListener(context, expressionNode);
         } else if (nodeSyntaxKind == SyntaxKind.IMPLICIT_NEW_EXPRESSION) {
             ImplicitNewExpressionNode expressionNode = (ImplicitNewExpressionNode) node;
-            if (expressionNode.parent() instanceof ListenerDeclarationNode) {
-                ListenerDeclarationNode parentNode = (ListenerDeclarationNode) expressionNode.parent();
-                Optional<TypeDescriptorNode> parentTypeOpt = parentNode.typeDescriptor();
-                if (parentTypeOpt.isPresent()) {
-                    if (!(parentTypeOpt.get().kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE)) {
-                        return;
-                    }
-                    QualifiedNameReferenceNode parentType = (QualifiedNameReferenceNode) parentTypeOpt.get();
-                    Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentType);
-                    if (parentSymbolOpt.isPresent() && parentSymbolOpt.get() instanceof TypeReferenceTypeSymbol) {
-                        TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) parentSymbolOpt.get()).typeDescriptor();
-                        if (isWebSubHubListener(typeSymbol)) {
-                            Optional<ParenthesizedArgList> argListOpt = expressionNode.parenthesizedArgList();
-                            if (argListOpt.isPresent()) {
-                                SeparatedNodeList<FunctionArgumentNode> functionArgs = argListOpt.get().arguments();
-                                verifyListenerArgType(context, expressionNode.location(), functionArgs);
-                            }
-                        }
+            validateImplicitNewListener(context, expressionNode);
+        }
+    }
+
+    private void validateExplicitNewListener(SyntaxNodeAnalysisContext context, ExplicitNewExpressionNode node) {
+        TypeDescriptorNode typeDescriptor = node.typeDescriptor();
+        if (context.semanticModel().symbol(typeDescriptor).isEmpty()) {
+            return;
+        }
+        Symbol listenerSymbol = context.semanticModel().symbol(typeDescriptor).get();
+        if (listenerSymbol.kind() != SymbolKind.TYPE) {
+            return;
+        }
+        TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) listenerSymbol).typeDescriptor();
+        if (!isWebSubHubListener(typeSymbol)) {
+            return;
+        }
+        SeparatedNodeList<FunctionArgumentNode> functionArgs = node.parenthesizedArgList().arguments();
+        verifyListenerArgType(context, node.location(), functionArgs);
+    }
+
+    private void validateImplicitNewListener(SyntaxNodeAnalysisContext context, ImplicitNewExpressionNode node) {
+        Optional<ListenerDeclarationNode> listenerDeclNodeOpt = getImplicitListenerDeclNode(node);
+        if (listenerDeclNodeOpt.isEmpty()) {
+            return;
+        }
+        ListenerDeclarationNode parentNode = listenerDeclNodeOpt.get();
+        Optional<TypeDescriptorNode> parentTypeOpt = parentNode.typeDescriptor();
+        if (parentTypeOpt.isPresent()) {
+            if (!(parentTypeOpt.get().kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE)) {
+                return;
+            }
+            QualifiedNameReferenceNode parentType = (QualifiedNameReferenceNode) parentTypeOpt.get();
+            Optional<Symbol> parentSymbolOpt = context.semanticModel().symbol(parentType);
+            if (parentSymbolOpt.isPresent() && parentSymbolOpt.get() instanceof TypeReferenceTypeSymbol) {
+                TypeSymbol typeSymbol = ((TypeReferenceTypeSymbol) parentSymbolOpt.get()).typeDescriptor();
+                if (isWebSubHubListener(typeSymbol)) {
+                    Optional<ParenthesizedArgList> argListOpt = node.parenthesizedArgList();
+                    if (argListOpt.isPresent()) {
+                        SeparatedNodeList<FunctionArgumentNode> functionArgs = argListOpt.get().arguments();
+                        verifyListenerArgType(context, node.location(), functionArgs);
                     }
                 }
             }
         }
+    }
+
+    private Optional<ListenerDeclarationNode> getImplicitListenerDeclNode(ImplicitNewExpressionNode node) {
+        if (node.parent().kind() == SyntaxKind.LISTENER_DECLARATION) {
+            return Optional.of((ListenerDeclarationNode) node.parent());
+        } else if (node.parent().kind() == SyntaxKind.CHECK_EXPRESSION) {
+            if (node.parent().parent().kind() == SyntaxKind.LISTENER_DECLARATION) {
+                return Optional.of((ListenerDeclarationNode) node.parent().parent());
+            }
+        }
+        return Optional.empty();
     }
 
     private void verifyListenerArgType(SyntaxNodeAnalysisContext context, NodeLocation location,
                                        SeparatedNodeList<FunctionArgumentNode> functionArgs) {
         // two args are valid only if the first arg is numeric (i.e, port and config)
-        if (functionArgs.size() == 2) {
-            Optional<SyntaxKind> firstArgSyntaxKindOpt = getArgSyntaxKind(functionArgs.get(0));
-            if (firstArgSyntaxKindOpt.isPresent() && firstArgSyntaxKindOpt.get() != SyntaxKind.NUMERIC_LITERAL) {
+        if (functionArgs.size() > 1) {
+            PositionalArgumentNode firstArg = (PositionalArgumentNode) functionArgs.get(0);
+            FunctionArgumentNode secondArg = functionArgs.get(1);
+            SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
+            if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
                 WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_101;
-                updateContext(context, errorCode, location);
+                updateContext(context, errorCode, secondArg.location());
             }
         }
-    }
-
-    private Optional<SyntaxKind> getArgSyntaxKind(FunctionArgumentNode argument) {
-        SyntaxKind syntaxKind = null;
-        if (argument instanceof PositionalArgumentNode) {
-            syntaxKind = ((PositionalArgumentNode) argument).expression().kind();
-        } else if (argument instanceof NamedArgumentNode) {
-            syntaxKind = ((NamedArgumentNode) argument).expression().kind();
-        } else if (argument instanceof RestArgumentNode) {
-            syntaxKind = ((RestArgumentNode) argument).expression().kind();
-        }
-        return Optional.ofNullable(syntaxKind);
     }
 }
