@@ -12,7 +12,7 @@ on:
         default: 'websubhub-perf-cluster-test'
         required: false
   schedule:
-    - cron: '30 7 * * *'
+    - cron: '30 18 * * *'
 
 jobs:
   invokeLoadTests:
