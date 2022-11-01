@@ -69,9 +69,10 @@ service /websubhub on functionWithArgumentsListener {
         return;
     }
 
-    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) {}
+    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) {
+    }
 
-    isolated remote function onUnsubscription(websubhub:Unsubscription message) 
+    isolated remote function onUnsubscription(websubhub:Unsubscription message)
                 returns websubhub:UnsubscriptionAccepted {
         return websubhub:UNSUBSCRIPTION_ACCEPTED;
     }
@@ -84,5 +85,6 @@ service /websubhub on functionWithArgumentsListener {
         return;
     }
 
-    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg){}
+    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg) {
+    }
 }
