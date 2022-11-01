@@ -377,6 +377,22 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test
+    public void testCompilerPluginForListenerImplicitInitWithCheckExpr() {
+        Package currentPackage = loadPackage("sample_22");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .collect(Collectors.toList());
+        Assert.assertEquals(errorDiagnostics.size(), 1);
+        Diagnostic diagnostic = (Diagnostic) errorDiagnostics.toArray()[0];
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_101;
+        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
+        Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
+        Assert.assertEquals(diagnostic.message(), expectedCode.getDescription());
+    }
     private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,
                                                        String typeDesc, String remoteMethodName) {
         DiagnosticInfo info = diagnostic.diagnosticInfo();
