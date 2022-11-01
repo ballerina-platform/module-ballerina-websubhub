@@ -27,10 +27,12 @@ listener websubhub:Listener functionWithArgumentsListener = check new(httpListen
     }
 });
 
+final readonly & string[] TOPICS = ["test", "test1"];
+
 service /websubhub on functionWithArgumentsListener {
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
-        if message.topic == "test" {
+        if TOPICS.indexOf(message.topic) is () {
             return websubhub:TOPIC_REGISTRATION_SUCCESS;
         } else {
             return websubhub:TOPIC_REGISTRATION_ERROR;
@@ -39,58 +41,44 @@ service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
-        if message.topic == "test" {
+        if TOPICS.indexOf(message.topic) !is () {
             return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
        } else {
             return websubhub:TOPIC_DEREGISTRATION_ERROR;
         }
     }
 
-    isolated remote function onUpdateMessage(websubhub:UpdateMessage msg)
+    isolated remote function onUpdateMessage(websubhub:UpdateMessage message)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
-        if msg.hubTopic == "test" {
-            return websubhub:ACKNOWLEDGEMENT;
-        } else if msg.content !is () {
+        if TOPICS.indexOf(message.hubTopic) !is () {
             return websubhub:ACKNOWLEDGEMENT;
         } else {
             return websubhub:UPDATE_MESSAGE_ERROR;
         }
     }
     
-    isolated remote function onSubscription(websubhub:Subscription msg)
-                returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|websubhub:SubscriptionTemporaryRedirect
-                |websubhub:BadSubscriptionError|websubhub:InternalSubscriptionError {
-        if msg.hubTopic == "test" {
-            return websubhub:SUBSCRIPTION_ACCEPTED;
-        } else if msg.hubTopic == "test1" {
-            return websubhub:SUBSCRIPTION_ACCEPTED;
-        } else {
-            return websubhub:BAD_SUBSCRIPTION_ERROR;
-        }
+    isolated remote function onSubscription(websubhub:Subscription message) returns websubhub:SubscriptionAccepted {
+        return websubhub:SUBSCRIPTION_ACCEPTED;
     }
 
-    isolated remote function onSubscriptionValidation(websubhub:Subscription msg)
+    isolated remote function onSubscriptionValidation(websubhub:Subscription message)
                 returns websubhub:SubscriptionDeniedError? {
-        if msg.hubTopic == "test1" {
+        if TOPICS.indexOf(message.hubTopic) is () {
             return websubhub:SUBSCRIPTION_DENIED_ERROR;
         }
         return;
     }
 
-    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) {}
+    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) {}
 
-    isolated remote function onUnsubscription(websubhub:Unsubscription msg)
-               returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|websubhub:InternalUnsubscriptionError {
-        if msg.hubTopic == "test" || msg.hubTopic == "test1" {
-            return websubhub:UNSUBSCRIPTION_ACCEPTED;
-        } else {
-            return websubhub:BAD_UNSUBSCRIPTION_ERROR;
-        }
+    isolated remote function onUnsubscription(websubhub:Unsubscription message) 
+                returns websubhub:UnsubscriptionAccepted {
+        return websubhub:UNSUBSCRIPTION_ACCEPTED;
     }
 
-    isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
+    isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription message)
                 returns websubhub:UnsubscriptionDeniedError? {
-        if msg.hubTopic == "test1" {
+        if TOPICS.indexOf(message.hubTopic) !is () {
             return websubhub:UNSUBSCRIPTION_DENIED_ERROR;
         }
         return;
