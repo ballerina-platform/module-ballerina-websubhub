@@ -16,7 +16,6 @@
 
 import ballerina/websubhub;
 import ballerina/http;
-import ballerina/io;
 
 listener http:Listener httpListener = new http:Listener(10012);
 listener websubhub:Listener functionWithArgumentsListener = check new(httpListener, {
@@ -31,7 +30,7 @@ listener websubhub:Listener functionWithArgumentsListener = check new(httpListen
 service /websubhub on functionWithArgumentsListener {
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
-        if (message.topic == "test") {
+        if message.topic == "test" {
             return websubhub:TOPIC_REGISTRATION_SUCCESS;
         } else {
             return websubhub:TOPIC_REGISTRATION_ERROR;
@@ -40,7 +39,7 @@ service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onDeregisterTopic(websubhub:TopicDeregistration message)
                         returns websubhub:TopicDeregistrationSuccess|websubhub:TopicDeregistrationError {
-        if (message.topic == "test") {
+        if message.topic == "test" {
             return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
        } else {
             return websubhub:TOPIC_DEREGISTRATION_ERROR;
@@ -49,9 +48,9 @@ service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onUpdateMessage(websubhub:UpdateMessage msg)
                returns websubhub:Acknowledgement|websubhub:UpdateMessageError {
-        if (msg.hubTopic == "test") {
+        if msg.hubTopic == "test" {
             return websubhub:ACKNOWLEDGEMENT;
-        } else if (!(msg.content is ())) {
+        } else if msg.content !is () {
             return websubhub:ACKNOWLEDGEMENT;
         } else {
             return websubhub:UPDATE_MESSAGE_ERROR;
@@ -61,9 +60,9 @@ service /websubhub on functionWithArgumentsListener {
     isolated remote function onSubscription(websubhub:Subscription msg)
                 returns websubhub:SubscriptionAccepted|websubhub:SubscriptionPermanentRedirect|websubhub:SubscriptionTemporaryRedirect
                 |websubhub:BadSubscriptionError|websubhub:InternalSubscriptionError {
-        if (msg.hubTopic == "test") {
+        if msg.hubTopic == "test" {
             return websubhub:SUBSCRIPTION_ACCEPTED;
-        } else if (msg.hubTopic == "test1") {
+        } else if msg.hubTopic == "test1" {
             return websubhub:SUBSCRIPTION_ACCEPTED;
         } else {
             return websubhub:BAD_SUBSCRIPTION_ERROR;
@@ -72,19 +71,17 @@ service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onSubscriptionValidation(websubhub:Subscription msg)
                 returns websubhub:SubscriptionDeniedError? {
-        if (msg.hubTopic == "test1") {
+        if msg.hubTopic == "test1" {
             return websubhub:SUBSCRIPTION_DENIED_ERROR;
         }
-        return ();
+        return;
     }
 
-    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) {
-        io:println("Subscription Intent verified invoked!");
-    }
+    isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription msg) {}
 
     isolated remote function onUnsubscription(websubhub:Unsubscription msg)
                returns websubhub:UnsubscriptionAccepted|websubhub:BadUnsubscriptionError|websubhub:InternalUnsubscriptionError {
-        if (msg.hubTopic == "test" || msg.hubTopic == "test1" ) {
+        if msg.hubTopic == "test" || msg.hubTopic == "test1" {
             return websubhub:UNSUBSCRIPTION_ACCEPTED;
         } else {
             return websubhub:BAD_UNSUBSCRIPTION_ERROR;
@@ -93,13 +90,11 @@ service /websubhub on functionWithArgumentsListener {
 
     isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription msg)
                 returns websubhub:UnsubscriptionDeniedError? {
-        if (msg.hubTopic == "test1") {
+        if msg.hubTopic == "test1" {
             return websubhub:UNSUBSCRIPTION_DENIED_ERROR;
         }
-        return ();
+        return;
     }
 
-    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg){
-        io:println("Unsubscription Intent verified invoked!");
-    }
+    isolated remote function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription msg){}
 }
