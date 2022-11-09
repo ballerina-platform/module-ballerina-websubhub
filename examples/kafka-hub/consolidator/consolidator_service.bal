@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/log;
+import ballerina/time;
 import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.util;
@@ -66,6 +67,8 @@ isolated function processPersistedData(json event) returns error? {
 
 isolated function processTopicRegistration(json payload) returns error? {
     types:TopicRegistration registration = check payload.fromJsonWithType();
+    [int, decimal] [timeInMillis, _] = time:utcNow();
+    registration["CONSOLIDATED_TIME"] = timeInMillis;
     string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
