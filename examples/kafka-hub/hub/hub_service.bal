@@ -17,6 +17,7 @@
 import ballerina/websubhub;
 import ballerina/log;
 import ballerina/http;
+import ballerina/time;
 import kafkaHub.security;
 import kafkaHub.persistence as persist;
 import kafkaHub.config;
@@ -72,6 +73,9 @@ service object {
                 hubMode: message.hubMode,
                 partitionMapping: assignedPartition
             };
+            topicRegistration[SERVER_ID] = config:SERVER_ID;
+            [int, decimal] [timeInMillis, _] = time:utcNow();
+            topicRegistration["CREATED_TIME"] = timeInMillis;
             error? persistingResult = persist:addRegsiteredTopic(topicRegistration);
             if persistingResult is error {
                 log:printError("Error occurred while persisting the topic-registration ", err = persistingResult.message());
