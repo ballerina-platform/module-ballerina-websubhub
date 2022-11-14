@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/log;
-import ballerina/time;
 import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.util;
@@ -67,12 +66,14 @@ isolated function processPersistedData(json event) returns error? {
 
 isolated function processTopicRegistration(json payload) returns error? {
     types:TopicRegistration registration = check payload.fromJsonWithType();
-    [int, decimal] [timeInMillis, _] = time:utcNow();
-    registration["CONSOLIDATED_TIME"] = timeInMillis;
+    types:EventHubPartition partitionMapping = check util:getNextPartition();
+    registration.partitionMapping = partitionMapping;
     string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
-        registeredTopicsCache[topicName] = registration.cloneReadOnly();
+        if !registeredTopicsCache.hasKey(topicName) {
+            registeredTopicsCache[topicName] = registration.cloneReadOnly();
+        }
         _ = check persist:persistTopicRegistrations(registeredTopicsCache);
     }
 }
@@ -80,15 +81,27 @@ isolated function processTopicRegistration(json payload) returns error? {
 isolated function processTopicDeregistration(json payload) returns error? {
     websubhub:TopicDeregistration deregistration = check payload.fromJsonWithType();
     string topicName = util:sanitizeTopicName(deregistration.topic);
+    types:TopicRegistration? topicRegistration = removeTopicRegistration(topicName);
+    if topicRegistration is types:TopicRegistration {
+        types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();
+        util:updateVacantPartitionAssignment(partitionMapping.cloneReadOnly());
+    }
     lock {
-        // remove the topic if topic-deregistration event received
-        _ = registeredTopicsCache.removeIfHasKey(topicName);
         _ = check persist:persistTopicRegistrations(registeredTopicsCache);
     }
 }
 
+isolated function removeTopicRegistration(string topicName) returns types:TopicRegistration? {
+    lock {
+        return registeredTopicsCache.removeIfHasKey(topicName).cloneReadOnly();
+    }
+}
+
 isolated function processSubscription(json payload) returns error? {
-    websubhub:VerifiedSubscription subscription = check payload.fromJsonWithType();
+    types:VerifiedSubscription subscription = check payload.fromJsonWithType();
+    types:EventHubPartition partitionMapping = check retrieveTopicPartitionMapping(subscription);
+    types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
+    subscription.consumerGroupMapping = consumerGroupMapping;
     string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
@@ -99,13 +112,31 @@ isolated function processSubscription(json payload) returns error? {
     }
 }
 
+isolated function retrieveTopicPartitionMapping(types:VerifiedSubscription message) returns types:EventHubPartition|error {
+    string topicName = util:sanitizeTopicName(message.hubTopic);
+    lock {
+        types:TopicRegistration topicRegistration = registeredTopicsCache.get(topicName);
+        types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();
+        return partitionMapping.cloneReadOnly();
+    }
+}
+
 isolated function processUnsubscription(json payload) returns error? {
     websubhub:VerifiedUnsubscription unsubscription = check payload.fromJsonWithType();
     string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
+    types:VerifiedSubscription? subscription = removeSubscription(subscriberId);
+    if subscription is types:VerifiedSubscription {
+        types:EventHubConsumerGroup consumerGroupMapping = check subscription?.consumerGroupMapping.ensureType();
+        util:updateVacantConsumerGroupAssignment(consumerGroupMapping.cloneReadOnly());
+    }
     lock {
-        // remove the subscriber if the unsubscription event received
-        _ = subscribersCache.removeIfHasKey(subscriberId);
         _ = check persist:persistSubscriptions(subscribersCache);
+    }
+}
+
+isolated function removeSubscription(string subscriberId) returns types:VerifiedSubscription? {
+    lock {
+        return subscribersCache.removeIfHasKey(subscriberId).cloneReadOnly();
     }
 }
 

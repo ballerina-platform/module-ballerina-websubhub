@@ -24,7 +24,7 @@ import ballerina/http;
 import consolidatorService.connections as conn;
 
 isolated map<types:TopicRegistration> registeredTopicsCache = {};
-isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
+isolated map<types:VerifiedSubscription> subscribersCache = {};
 
 public function main() returns error? {
     _ = check assignPartitionsToSystemConsumers();

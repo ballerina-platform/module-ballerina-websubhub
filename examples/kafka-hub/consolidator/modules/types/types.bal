@@ -17,8 +17,25 @@
 import ballerina/websubhub;
 import ballerinax/kafka;
 
+public type EventHubPartition record {|
+    string namespaceId;
+    string eventHub;
+    int partition;
+|};
+
+public type EventHubConsumerGroup record {|
+    *EventHubPartition;
+    string consumerGroup;
+|};
+
 public type TopicRegistration record {
     *websubhub:TopicRegistration;
+    EventHubPartition partitionMapping?;
+};
+
+public type VerifiedSubscription record {
+    *websubhub:VerifiedSubscription;
+    EventHubConsumerGroup consumerGroupMapping?;
 };
 
 public type HubRestartEvent record {|
