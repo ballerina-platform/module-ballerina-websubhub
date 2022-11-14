@@ -22,6 +22,8 @@ import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 import consolidatorService.types;
 
+const string SERVER_ID = "SERVER_ID";
+
 isolated function startConsolidator() returns error? {
     do {
         while true {
@@ -65,14 +67,17 @@ isolated function processPersistedData(json event) returns error? {
 }
 
 isolated function processTopicRegistration(json payload) returns error? {
-    types:TopicRegistration registration = check payload.fromJsonWithType();
-    types:EventHubPartition partitionMapping = check util:getNextPartition();
-    registration.partitionMapping = partitionMapping;
+    websubhub:TopicRegistration registration = check payload.fromJsonWithType();
+    readonly & types:EventHubPartition partitionMapping = check util:getNextPartition().cloneReadOnly();
     string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
         if !registeredTopicsCache.hasKey(topicName) {
-            registeredTopicsCache[topicName] = registration.cloneReadOnly();
+            registeredTopicsCache[topicName] = {
+                topic: registration.topic,
+                hubMode: registration.hubMode,
+                partitionMapping: partitionMapping
+            };
         }
         _ = check persist:persistTopicRegistrations(registeredTopicsCache);
     }
@@ -83,8 +88,7 @@ isolated function processTopicDeregistration(json payload) returns error? {
     string topicName = util:sanitizeTopicName(deregistration.topic);
     types:TopicRegistration? topicRegistration = removeTopicRegistration(topicName);
     if topicRegistration is types:TopicRegistration {
-        types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();
-        util:updateVacantPartitionAssignment(partitionMapping.cloneReadOnly());
+        util:updateVacantPartitionAssignment(topicRegistration.partitionMapping.cloneReadOnly());
     }
     lock {
         _ = check persist:persistTopicRegistrations(registeredTopicsCache);
@@ -98,22 +102,43 @@ isolated function removeTopicRegistration(string topicName) returns types:TopicR
 }
 
 isolated function processSubscription(json payload) returns error? {
-    types:VerifiedSubscription subscription = check payload.fromJsonWithType();
-    types:EventHubPartition partitionMapping = check retrieveTopicPartitionMapping(subscription);
-    types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
-    subscription.consumerGroupMapping = consumerGroupMapping;
+    websubhub:VerifiedSubscription subscription = check payload.fromJsonWithType();
+    readonly & types:VerifiedSubscription constructedSubscription = check constructSubscription(subscription).cloneReadOnly();
     string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
         if !subscribersCache.hasKey(subscriberId) {
-            subscribersCache[subscriberId] = subscription.cloneReadOnly();
+            subscribersCache[subscriberId] = constructedSubscription;
         }
         _ = check persist:persistSubscriptions(subscribersCache);
     }
 }
 
-isolated function retrieveTopicPartitionMapping(types:VerifiedSubscription message) returns types:EventHubPartition|error {
-    string topicName = util:sanitizeTopicName(message.hubTopic);
+isolated function constructSubscription(websubhub:VerifiedSubscription subscription) returns types:VerifiedSubscription|error {
+    types:EventHubPartition partitionMapping = check retrieveTopicPartitionMapping(subscription.hubTopic);
+    types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
+    types:VerifiedSubscription message = {
+        verificationSuccess: subscription.verificationSuccess,
+        hub: subscription.hub,
+        hubCallback: subscription.hubCallback,
+        hubMode: subscription.hubMode,
+        hubTopic: subscription.hubTopic,
+        serverId: check subscription[SERVER_ID].ensureType(),
+        consumerGroupMapping: consumerGroupMapping
+    };
+    string? hubLeaseSeconds = subscription.hubLeaseSeconds;
+    if hubLeaseSeconds is string {
+        message.hubLeaseSeconds = hubLeaseSeconds;
+    }
+    string? hubSecret = subscription.hubSecret;
+    if hubSecret is string {
+        message.hubSecret = hubSecret;
+    }
+    return message;
+}
+
+isolated function retrieveTopicPartitionMapping(string hubTopic) returns types:EventHubPartition|error {
+    string topicName = util:sanitizeTopicName(hubTopic);
     lock {
         types:TopicRegistration topicRegistration = registeredTopicsCache.get(topicName);
         types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();

@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerinax/kafka;
-import ballerina/websubhub;
 import ballerina/log;
 import consolidatorService.config;
 import consolidatorService.types;
@@ -29,9 +28,9 @@ isolated map<types:VerifiedSubscription> subscribersCache = {};
 public function main() returns error? {
     _ = check assignPartitionsToSystemConsumers();
     // Initialize consolidator-service state
-    syncRegsisteredTopicsCache();
+    check syncRegsisteredTopicsCache();
     _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-    syncSubscribersCache();
+    check syncSubscribersCache();
     _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
     
     // Start the HealthCheck Service
@@ -70,10 +69,10 @@ function assignPartitionsToSystemConsumers() returns error? {
     _ = check conn:websubEventConsumer->assign(websubEventsPartitions);
 }
 
-isolated function syncRegsisteredTopicsCache() {
+isolated function syncRegsisteredTopicsCache() returns error? {
     do {
         types:TopicRegistration[] persistedTopics = check getPersistedTopics();
-        refreshTopicCache(persistedTopics);
+        check refreshTopicCache(persistedTopics);
     } on fail var e {
         log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
         kafka:Error? result = conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
@@ -92,19 +91,20 @@ isolated function getPersistedTopics() returns types:TopicRegistration[]|error {
     return [];
 }
 
-isolated function refreshTopicCache(types:TopicRegistration[] persistedTopics) {
+isolated function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns error? {
     foreach var topic in persistedTopics.cloneReadOnly() {
         string topicName = util:sanitizeTopicName(topic.topic);
         lock {
             registeredTopicsCache[topicName] = topic.cloneReadOnly();
         }
+        check util:updateNextPartition(topic.partitionMapping);
     }
 }
 
-isolated function syncSubscribersCache() {
+isolated function syncSubscribersCache() returns error? {
     do {
-        websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
-        refreshSubscribersCache(persistedSubscribers);
+        types:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
+        check refreshSubscribersCache(persistedSubscribers);
     } on fail var e {
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
         kafka:Error? result = conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
@@ -114,7 +114,7 @@ isolated function syncSubscribersCache() {
     } 
 }
 
-isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
+isolated function getPersistedSubscribers() returns types:VerifiedSubscription[]|error {
     types:ConsolidatedSubscribersConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
@@ -123,11 +123,12 @@ isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscripti
     return [];
 }
 
-isolated function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
+isolated function refreshSubscribersCache(types:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
         string groupName = util:generatedSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         lock {
             subscribersCache[groupName] = subscriber.cloneReadOnly();
         }
+        _ = check util:updateNextConsumerGroup(subscriber.consumerGroupMapping.cloneReadOnly());
     }
 }
