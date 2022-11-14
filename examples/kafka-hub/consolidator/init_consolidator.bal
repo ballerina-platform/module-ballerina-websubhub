@@ -20,10 +20,16 @@ import consolidatorService.config;
 import consolidatorService.types;
 import consolidatorService.util;
 import ballerina/http;
+import ballerina/websubhub;
 import consolidatorService.connections as conn;
 
 isolated map<types:TopicRegistration> registeredTopicsCache = {};
-isolated map<types:VerifiedSubscription> subscribersCache = {};
+isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
+
+const string NAMESPACE_ID = "namespaceId";
+const string EVENT_HUB_NAME = "eventHubName";
+const string EVENT_HUB_PARTITION = "eventHubPartition";
+const string CONSUMER_GROUP = "consumerGroup";
 
 public function main() returns error? {
     _ = check assignPartitionsToSystemConsumers();
@@ -97,13 +103,14 @@ isolated function refreshTopicCache(types:TopicRegistration[] persistedTopics) r
         lock {
             registeredTopicsCache[topicName] = topic.cloneReadOnly();
         }
-        check util:updateNextPartition(topic.partitionMapping);
+        types:EventHubPartition partitionMapping = check topic?.partitionMapping.ensureType();
+        check util:updateNextPartition(partitionMapping.cloneReadOnly());
     }
 }
 
 isolated function syncSubscribersCache() returns error? {
     do {
-        types:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
+        websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
         check refreshSubscribersCache(persistedSubscribers);
     } on fail var e {
         log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
@@ -114,7 +121,7 @@ isolated function syncSubscribersCache() returns error? {
     } 
 }
 
-isolated function getPersistedSubscribers() returns types:VerifiedSubscription[]|error {
+isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
     types:ConsolidatedSubscribersConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
     if records.length() > 0 {
         types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
@@ -123,12 +130,18 @@ isolated function getPersistedSubscribers() returns types:VerifiedSubscription[]
     return [];
 }
 
-isolated function refreshSubscribersCache(types:VerifiedSubscription[] persistedSubscribers) returns error? {
+isolated function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
         string groupName = util:generatedSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         lock {
             subscribersCache[groupName] = subscriber.cloneReadOnly();
         }
-        _ = check util:updateNextConsumerGroup(subscriber.consumerGroupMapping.cloneReadOnly());
+        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+            namespaceId: check subscriber[NAMESPACE_ID].ensureType(),
+            eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
+            partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
+            consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
+        };
+        _ = check util:updateNextConsumerGroup(consumerGroupMapping);
     }
 }

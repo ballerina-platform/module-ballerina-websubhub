@@ -39,26 +39,6 @@ isolated function initConsumerGroupAssignment() returns map<types:EventHubConsum
     return assignments;
 }
 
-# Returns the availablity of a consumer-group for a given EventHub partition.
-#
-# + eventHubPartition - EventHub partition for which needs a consumer-group
-# + return - Returns `true` if a consumer group is available or else `false`
-public isolated function isConsumerGroupAvailable(types:EventHubPartition eventHubPartition) returns boolean {
-    string partitionAssignmentKey = string `${eventHubPartition.namespaceId}_${eventHubPartition.eventHub}_${eventHubPartition.partition}`;
-    lock {
-        if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            types:EventHubConsumerGroup[] availableConsumerGroups = vacantConsumerGroupAssignments.get(partitionAssignmentKey);
-            if availableConsumerGroups.length() > 0 {
-                return true;
-            }
-        }
-    }
-    lock {
-        types:EventHubConsumerGroup? currentConsumerGroup = nextConsumerGroupAssignment.get(partitionAssignmentKey);
-        return currentConsumerGroup is types:EventHubConsumerGroup;
-    }
-}
-
 # Retrieves the next available consumer-group mapping for partition in an event hub.
 #
 # + eventHubPartition - Requested partition details

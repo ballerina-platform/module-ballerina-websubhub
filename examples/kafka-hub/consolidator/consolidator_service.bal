@@ -22,7 +22,6 @@ import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 import consolidatorService.types;
 
-const string SERVER_ID = "SERVER_ID";
 
 isolated function startConsolidator() returns error? {
     do {
@@ -88,7 +87,8 @@ isolated function processTopicDeregistration(json payload) returns error? {
     string topicName = util:sanitizeTopicName(deregistration.topic);
     types:TopicRegistration? topicRegistration = removeTopicRegistration(topicName);
     if topicRegistration is types:TopicRegistration {
-        util:updateVacantPartitionAssignment(topicRegistration.partitionMapping.cloneReadOnly());
+        types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();
+        util:updateVacantPartitionAssignment(partitionMapping.cloneReadOnly());
     }
     lock {
         _ = check persist:persistTopicRegistrations(registeredTopicsCache);
@@ -103,38 +103,20 @@ isolated function removeTopicRegistration(string topicName) returns types:TopicR
 
 isolated function processSubscription(json payload) returns error? {
     websubhub:VerifiedSubscription subscription = check payload.fromJsonWithType();
-    readonly & types:VerifiedSubscription constructedSubscription = check constructSubscription(subscription).cloneReadOnly();
+    types:EventHubPartition partitionMapping = check retrieveTopicPartitionMapping(subscription.hubTopic);
+    types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
+    subscription[NAMESPACE_ID] = consumerGroupMapping.namespaceId;
+    subscription[EVENT_HUB_NAME] = consumerGroupMapping.eventHub;
+    subscription[EVENT_HUB_PARTITION] = consumerGroupMapping.partition;
+    subscription[CONSUMER_GROUP] = consumerGroupMapping.consumerGroup;
     string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
     lock {
         // add the subscriber if subscription event received
         if !subscribersCache.hasKey(subscriberId) {
-            subscribersCache[subscriberId] = constructedSubscription;
+            subscribersCache[subscriberId] = subscription.cloneReadOnly();
         }
         _ = check persist:persistSubscriptions(subscribersCache);
     }
-}
-
-isolated function constructSubscription(websubhub:VerifiedSubscription subscription) returns types:VerifiedSubscription|error {
-    types:EventHubPartition partitionMapping = check retrieveTopicPartitionMapping(subscription.hubTopic);
-    types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
-    types:VerifiedSubscription message = {
-        verificationSuccess: subscription.verificationSuccess,
-        hub: subscription.hub,
-        hubCallback: subscription.hubCallback,
-        hubMode: subscription.hubMode,
-        hubTopic: subscription.hubTopic,
-        serverId: check subscription[SERVER_ID].ensureType(),
-        consumerGroupMapping: consumerGroupMapping
-    };
-    string? hubLeaseSeconds = subscription.hubLeaseSeconds;
-    if hubLeaseSeconds is string {
-        message.hubLeaseSeconds = hubLeaseSeconds;
-    }
-    string? hubSecret = subscription.hubSecret;
-    if hubSecret is string {
-        message.hubSecret = hubSecret;
-    }
-    return message;
 }
 
 isolated function retrieveTopicPartitionMapping(string hubTopic) returns types:EventHubPartition|error {
@@ -149,9 +131,14 @@ isolated function retrieveTopicPartitionMapping(string hubTopic) returns types:E
 isolated function processUnsubscription(json payload) returns error? {
     websubhub:VerifiedUnsubscription unsubscription = check payload.fromJsonWithType();
     string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
-    types:VerifiedSubscription? subscription = removeSubscription(subscriberId);
-    if subscription is types:VerifiedSubscription {
-        types:EventHubConsumerGroup consumerGroupMapping = check subscription?.consumerGroupMapping.ensureType();
+    websubhub:VerifiedSubscription? subscription = removeSubscription(subscriberId);
+    if subscription is websubhub:VerifiedSubscription {
+        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
+            namespaceId: check subscription[NAMESPACE_ID].ensureType(),
+            eventHub: check subscription[EVENT_HUB_NAME].ensureType(),
+            partition: check subscription[EVENT_HUB_PARTITION].ensureType(),
+            consumerGroup: check subscription[CONSUMER_GROUP].ensureType()
+        };
         util:updateVacantConsumerGroupAssignment(consumerGroupMapping.cloneReadOnly());
     }
     lock {
@@ -159,7 +146,7 @@ isolated function processUnsubscription(json payload) returns error? {
     }
 }
 
-isolated function removeSubscription(string subscriberId) returns types:VerifiedSubscription? {
+isolated function removeSubscription(string subscriberId) returns websubhub:VerifiedSubscription? {
     lock {
         return subscribersCache.removeIfHasKey(subscriberId).cloneReadOnly();
     }

@@ -30,13 +30,7 @@ public type EventHubConsumerGroup record {|
 
 public type TopicRegistration record {
     *websubhub:TopicRegistration;
-    EventHubPartition partitionMapping;
-};
-
-public type VerifiedSubscription record {
-    *websubhub:VerifiedSubscription;
-    string serverId;
-    EventHubConsumerGroup consumerGroupMapping;
+    EventHubPartition partitionMapping?;
 };
 
 public type HubRestartEvent record {|
@@ -50,7 +44,7 @@ public type ConsolidatedTopicsConsumerRecord record {|
 
 public type ConsolidatedSubscribersConsumerRecord record {|
     *kafka:AnydataConsumerRecord;
-    VerifiedSubscription[] value;
+    websubhub:VerifiedSubscription[] value;
 |};
 
 public type EventConsumerRecord record {|
