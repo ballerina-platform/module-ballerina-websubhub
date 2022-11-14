@@ -17,19 +17,8 @@
 import ballerinax/kafka;
 import ballerina/log;
 import consolidatorService.config;
-import consolidatorService.types;
-import consolidatorService.util;
 import ballerina/http;
-import ballerina/websubhub;
 import consolidatorService.connections as conn;
-
-isolated map<types:TopicRegistration> registeredTopicsCache = {};
-isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
-
-const string NAMESPACE_ID = "namespaceId";
-const string EVENT_HUB_NAME = "eventHubName";
-const string EVENT_HUB_PARTITION = "eventHubPartition";
-const string CONSUMER_GROUP = "consumerGroup";
 
 public function main() returns error? {
     _ = check assignPartitionsToSystemConsumers();
@@ -73,75 +62,4 @@ function assignPartitionsToSystemConsumers() returns error? {
         { topic: config:SYSTEM_INFO_HUB, partition: config:SYSTEM_EVENTS_PARTITION }
     ];
     _ = check conn:websubEventConsumer->assign(websubEventsPartitions);
-}
-
-isolated function syncRegsisteredTopicsCache() returns error? {
-    do {
-        types:TopicRegistration[] persistedTopics = check getPersistedTopics();
-        check refreshTopicCache(persistedTopics);
-    } on fail var e {
-        log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
-        kafka:Error? result = conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        if result is kafka:Error {
-            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
-        }
-    }
-}
-
-isolated function getPersistedTopics() returns types:TopicRegistration[]|error {
-    types:ConsolidatedTopicsConsumerRecord[] records = check conn:consolidatedTopicsConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        types:ConsolidatedTopicsConsumerRecord lastRecord = records.pop();
-        return lastRecord.value;
-    }
-    return [];
-}
-
-isolated function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns error? {
-    foreach var topic in persistedTopics.cloneReadOnly() {
-        string topicName = util:sanitizeTopicName(topic.topic);
-        lock {
-            registeredTopicsCache[topicName] = topic.cloneReadOnly();
-        }
-        types:EventHubPartition partitionMapping = check topic?.partitionMapping.ensureType();
-        check util:updateNextPartition(partitionMapping.cloneReadOnly());
-    }
-}
-
-isolated function syncSubscribersCache() returns error? {
-    do {
-        websubhub:VerifiedSubscription[] persistedSubscribers = check getPersistedSubscribers();
-        check refreshSubscribersCache(persistedSubscribers);
-    } on fail var e {
-        log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
-        kafka:Error? result = conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        if result is kafka:Error {
-            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
-        }
-    } 
-}
-
-isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error {
-    types:ConsolidatedSubscribersConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        types:ConsolidatedSubscribersConsumerRecord lastRecord = records.pop();
-        return lastRecord.value;
-    }
-    return [];
-}
-
-isolated function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
-    foreach var subscriber in persistedSubscribers {
-        string groupName = util:generatedSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
-        lock {
-            subscribersCache[groupName] = subscriber.cloneReadOnly();
-        }
-        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
-            namespaceId: check subscriber[NAMESPACE_ID].ensureType(),
-            eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
-            partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
-            consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
-        };
-        _ = check util:updateNextConsumerGroup(consumerGroupMapping);
-    }
 }

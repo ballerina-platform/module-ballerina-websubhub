@@ -15,9 +15,7 @@
 // under the License.
 
 import ballerina/log;
-import ballerina/websubhub;
 import consolidatorService.config;
-import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 import consolidatorService.types;
@@ -62,93 +60,6 @@ isolated function processPersistedData(json event) returns error? {
         _ => {
             return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
         }
-    }
-}
-
-isolated function processTopicRegistration(json payload) returns error? {
-    websubhub:TopicRegistration registration = check payload.fromJsonWithType();
-    readonly & types:EventHubPartition partitionMapping = check util:getNextPartition().cloneReadOnly();
-    string topicName = util:sanitizeTopicName(registration.topic);
-    lock {
-        // add the topic if topic-registration event received
-        if !registeredTopicsCache.hasKey(topicName) {
-            registeredTopicsCache[topicName] = {
-                topic: registration.topic,
-                hubMode: registration.hubMode,
-                partitionMapping: partitionMapping
-            };
-        }
-        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
-    }
-}
-
-isolated function processTopicDeregistration(json payload) returns error? {
-    websubhub:TopicDeregistration deregistration = check payload.fromJsonWithType();
-    string topicName = util:sanitizeTopicName(deregistration.topic);
-    types:TopicRegistration? topicRegistration = removeTopicRegistration(topicName);
-    if topicRegistration is types:TopicRegistration {
-        types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();
-        util:updateVacantPartitionAssignment(partitionMapping.cloneReadOnly());
-    }
-    lock {
-        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
-    }
-}
-
-isolated function removeTopicRegistration(string topicName) returns types:TopicRegistration? {
-    lock {
-        return registeredTopicsCache.removeIfHasKey(topicName).cloneReadOnly();
-    }
-}
-
-isolated function processSubscription(json payload) returns error? {
-    websubhub:VerifiedSubscription subscription = check payload.fromJsonWithType();
-    types:EventHubPartition partitionMapping = check retrieveTopicPartitionMapping(subscription.hubTopic);
-    types:EventHubConsumerGroup consumerGroupMapping = check util:getNextConsumerGroup(partitionMapping);
-    subscription[NAMESPACE_ID] = consumerGroupMapping.namespaceId;
-    subscription[EVENT_HUB_NAME] = consumerGroupMapping.eventHub;
-    subscription[EVENT_HUB_PARTITION] = consumerGroupMapping.partition;
-    subscription[CONSUMER_GROUP] = consumerGroupMapping.consumerGroup;
-    string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
-    lock {
-        // add the subscriber if subscription event received
-        if !subscribersCache.hasKey(subscriberId) {
-            subscribersCache[subscriberId] = subscription.cloneReadOnly();
-        }
-        _ = check persist:persistSubscriptions(subscribersCache);
-    }
-}
-
-isolated function retrieveTopicPartitionMapping(string hubTopic) returns types:EventHubPartition|error {
-    string topicName = util:sanitizeTopicName(hubTopic);
-    lock {
-        types:TopicRegistration topicRegistration = registeredTopicsCache.get(topicName);
-        types:EventHubPartition partitionMapping = check topicRegistration?.partitionMapping.ensureType();
-        return partitionMapping.cloneReadOnly();
-    }
-}
-
-isolated function processUnsubscription(json payload) returns error? {
-    websubhub:VerifiedUnsubscription unsubscription = check payload.fromJsonWithType();
-    string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
-    websubhub:VerifiedSubscription? subscription = removeSubscription(subscriberId);
-    if subscription is websubhub:VerifiedSubscription {
-        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
-            namespaceId: check subscription[NAMESPACE_ID].ensureType(),
-            eventHub: check subscription[EVENT_HUB_NAME].ensureType(),
-            partition: check subscription[EVENT_HUB_PARTITION].ensureType(),
-            consumerGroup: check subscription[CONSUMER_GROUP].ensureType()
-        };
-        util:updateVacantConsumerGroupAssignment(consumerGroupMapping.cloneReadOnly());
-    }
-    lock {
-        _ = check persist:persistSubscriptions(subscribersCache);
-    }
-}
-
-isolated function removeSubscription(string subscriberId) returns websubhub:VerifiedSubscription? {
-    lock {
-        return subscribersCache.removeIfHasKey(subscriberId).cloneReadOnly();
     }
 }
 
