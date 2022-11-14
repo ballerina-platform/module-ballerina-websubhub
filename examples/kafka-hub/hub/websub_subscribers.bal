@@ -64,14 +64,7 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
         if subscriberIds.length() != 0 {
             string[] unsubscribedSubscribers = subscribersCache.keys().filter('key => subscriberIds.indexOf('key) is ());
             foreach var sub in unsubscribedSubscribers {
-                websubhub:VerifiedSubscription subscriber = subscribersCache.remove(sub);
-                readonly & types:EventHubConsumerGroup consumerGroupMapping = {
-                    namespaceId: check subscriber[NAMESPACE_ID].ensureType(), 
-                    eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
-                    partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
-                    consumerGroup: check subscriber[CONSUMER_GROUP].ensureType()
-                };
-                _ = util:removeConsumerGroupAssignment(consumerGroupMapping);
+                _ = subscribersCache.removeIfHasKey(sub);
             }
         }
     }
@@ -79,16 +72,6 @@ function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubsc
 
 function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubscribers) returns error? {
     foreach var subscriber in persistedSubscribers {
-        string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
-        string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
-        readonly & types:EventHubConsumerGroup consumerGroupMapping = {
-            namespaceId: namespaceId,
-            eventHub: check subscriber[EVENT_HUB_NAME].ensureType(),
-            partition: check subscriber[EVENT_HUB_PARTITION].ensureType(),
-            consumerGroup: consumerGroup
-        };
-        // update the consumer-group mapping to identify the next available consumer-group
-        _ = check util:updateNextConsumerGroup(consumerGroupMapping);
         string subscriberId = util:generateSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
         boolean subscriberAvailable = true;
         lock {
@@ -103,8 +86,12 @@ function startMissingSubscribers(websubhub:VerifiedSubscription[] persistedSubsc
         if subscriberAvailable || serverId != config:SERVER_ID {
             continue;
         }
+        string namespaceId = check subscriber[NAMESPACE_ID].ensureType();
+        string consumerGroup = check subscriber[CONSUMER_GROUP].ensureType();
         kafka:Consumer consumerEp = check conn:createMessageConsumer(namespaceId, consumerGroup);
-        _ = check consumerEp->assign([{topic: consumerGroupMapping.eventHub, partition: consumerGroupMapping.partition}]);
+        string eventHub = check subscriber[EVENT_HUB_NAME].ensureType();
+        int partition = check subscriber[EVENT_HUB_PARTITION].ensureType();
+        _ = check consumerEp->assign([{topic: eventHub, partition: partition}]);
         websubhub:HubClient hubClientEp = check new (subscriber, {
             retryConfig: {
                 interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,

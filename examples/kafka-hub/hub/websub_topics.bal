@@ -55,8 +55,7 @@ function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns er
         if topicNames.length() != 0 {
             string[] unregisteredTopics = registeredTopicsCache.keys().filter('key => topicNames.indexOf('key) is ());
             foreach string topic in unregisteredTopics {
-                types:TopicRegistration unregisteredTopic = registeredTopicsCache.remove(topic);
-                _ = util:removePartitionAssignment(unregisteredTopic.partitionMapping.cloneReadOnly());
+                _ = registeredTopicsCache.removeIfHasKey(topic);
             }
         }
     }
@@ -65,7 +64,6 @@ function refreshTopicCache(types:TopicRegistration[] persistedTopics) returns er
         lock {
             if !registeredTopicsCache.hasKey(topicName) {
                 registeredTopicsCache[topicName] = topic;
-                check util:updateNextPartition(topic.partitionMapping);
             } 
         }
     }

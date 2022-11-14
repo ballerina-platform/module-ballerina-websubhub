@@ -36,7 +36,7 @@ public type EventHubConsumerGroup record {|
 
 public type TopicRegistration record {
     *websubhub:TopicRegistration;
-    EventHubPartition partitionMapping;
+    EventHubPartition partitionMapping?;
 };
 
 public type HubRestartEvent record {|

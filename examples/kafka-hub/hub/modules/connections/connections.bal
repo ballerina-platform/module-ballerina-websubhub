@@ -61,7 +61,7 @@ public final kafka:Consumer registeredTopicsConsumer = check new (config:SYSTEM_
 # + groupName - The consumer group name
 # + return - `kafka:Consumer` if succcessful or else `error`
 public isolated function createMessageConsumer(string namespaceId, string groupName) returns kafka:Consumer|error {
-    types:NameSpaceConfiguration configurations = config:NAMESPACES.filter(ns => ns.namespaceId == namespaceId)[0];
+    types:NameSpaceConfiguration configurations = config:NAMESPACES.get(namespaceId);
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
         autoCommit: false,

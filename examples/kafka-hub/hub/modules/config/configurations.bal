@@ -81,30 +81,24 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # System Configurations Related to Azure Event Hub
-public configurable string[] EVENT_HUBS = ?;
-
-public configurable int NUMBER_OF_PARTITIONS = ?;
-
-public configurable string[] CONSUMER_GROUPS = ?;
-
 public configurable string NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json";
 
-public final readonly & types:NameSpaceConfiguration[] NAMESPACES = check retrieveNamespaceConfig().cloneReadOnly();
+public final readonly & map<types:NameSpaceConfiguration> NAMESPACES = check retrieveNamespaceConfig().cloneReadOnly();
 
-public final readonly & string[] AVAILABLE_NAMESPACE_IDS = NAMESPACES.'map(ns => ns.namespaceId).cloneReadOnly();
-
-isolated function retrieveNamespaceConfig() returns types:NameSpaceConfiguration[]|error {
+isolated function retrieveNamespaceConfig() returns map<types:NameSpaceConfiguration>|error {
     json configs = check io:fileReadJson(NAMESPACE_CONFIG_FILE);
     record {|
         string namespaceId;
         string namespace;
         string connectionStringFile;
     |}[] namespaceConfigs = check configs.fromJsonWithType();
-    return namespaceConfigs.'map(
-        config => {
+    map<types:NameSpaceConfiguration> namespaces = {};
+    foreach var config in namespaceConfigs {
+        namespaces[config.namespaceId] = {
             namespaceId: config.namespaceId,
             namespace: config.namespace,
             connectionString: check io:fileReadString(config.connectionStringFile)
-        }
-    );
+        };
+    }
+    return namespaces;
 }
