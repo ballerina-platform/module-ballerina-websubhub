@@ -44,6 +44,41 @@ public isolated function getNextPartition() returns types:EventHubPartition|erro
     }
 }
 
+# Updates the next available partition mapping.
+#
+# + partitionDetails - Provided partition mapping
+# + return - Returns `error` if there is an exception while updating the partition information
+public isolated function updateNextPartition(readonly & types:EventHubPartition partitionDetails) returns error? {
+    int namespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(partitionDetails.namespaceId));
+    int eventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(partitionDetails.eventHub));
+    lock {
+        if nextPartition is () {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
+        int currentNamespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(nextPointer.namespaceId));
+        if namespaceIdx > currentNamespaceIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(nextPointer.eventHub));
+        if eventHubIdx > currentEventHubIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        if namespaceIdx == currentNamespaceIdx && eventHubIdx >= currentEventHubIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        int partition = partitionDetails.partition;
+        if namespaceIdx == currentNamespaceIdx && eventHubIdx == currentEventHubIdx && partition >= nextPointer.partition {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+    }
+}
+
 isolated function retrieveNextEventHubPartitionPointer(readonly & types:EventHubPartition eventHubPartition) returns types:EventHubPartition|error? {
     string currentNamespace = eventHubPartition.namespaceId;
     string currentEventHub = eventHubPartition.eventHub;
@@ -79,41 +114,6 @@ isolated function retrieveNextEventHubPartitionPointer(readonly & types:EventHub
             eventHub: currentEventHub,
             partition: currentPartitionId + 1
         };
-    }
-}
-
-# Updates the next available partition mapping.
-#
-# + partitionDetails - Provided partition mapping
-# + return - Returns `error` if there is an exception while updating the partition information
-public isolated function updateNextPartition(readonly & types:EventHubPartition partitionDetails) returns error? {
-    int namespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(partitionDetails.namespaceId));
-    int eventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(partitionDetails.eventHub));
-    lock {
-        if nextPartition is () {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
-        int currentNamespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(nextPointer.namespaceId));
-        if namespaceIdx > currentNamespaceIdx {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(nextPointer.eventHub));
-        if eventHubIdx > currentEventHubIdx {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        if namespaceIdx == currentNamespaceIdx && eventHubIdx >= currentEventHubIdx {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        int partition = partitionDetails.partition;
-        if namespaceIdx == currentNamespaceIdx && eventHubIdx == currentEventHubIdx && partition >= nextPointer.partition {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
     }
 }
 
