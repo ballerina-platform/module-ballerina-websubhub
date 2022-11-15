@@ -124,7 +124,7 @@ service object {
         lock {
             topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
-        if topicAvailable {
+        if !topicAvailable {
             return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
