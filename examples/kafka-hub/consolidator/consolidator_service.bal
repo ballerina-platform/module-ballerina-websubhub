@@ -15,13 +15,11 @@
 // under the License.
 
 import ballerina/log;
-import ballerina/time;
-import ballerina/websubhub;
 import consolidatorService.config;
-import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.persistence as persist;
 import consolidatorService.types;
+
 
 isolated function startConsolidator() returns error? {
     do {
@@ -62,50 +60,6 @@ isolated function processPersistedData(json event) returns error? {
         _ => {
             return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
         }
-    }
-}
-
-isolated function processTopicRegistration(json payload) returns error? {
-    types:TopicRegistration registration = check payload.fromJsonWithType();
-    [int, decimal] [timeInMillis, _] = time:utcNow();
-    registration["CONSOLIDATED_TIME"] = timeInMillis;
-    string topicName = util:sanitizeTopicName(registration.topic);
-    lock {
-        // add the topic if topic-registration event received
-        registeredTopicsCache[topicName] = registration.cloneReadOnly();
-        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
-    }
-}
-
-isolated function processTopicDeregistration(json payload) returns error? {
-    websubhub:TopicDeregistration deregistration = check payload.fromJsonWithType();
-    string topicName = util:sanitizeTopicName(deregistration.topic);
-    lock {
-        // remove the topic if topic-deregistration event received
-        _ = registeredTopicsCache.removeIfHasKey(topicName);
-        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
-    }
-}
-
-isolated function processSubscription(json payload) returns error? {
-    websubhub:VerifiedSubscription subscription = check payload.fromJsonWithType();
-    string subscriberId = util:generatedSubscriberId(subscription.hubTopic, subscription.hubCallback);
-    lock {
-        // add the subscriber if subscription event received
-        if !subscribersCache.hasKey(subscriberId) {
-            subscribersCache[subscriberId] = subscription.cloneReadOnly();
-        }
-        _ = check persist:persistSubscriptions(subscribersCache);
-    }
-}
-
-isolated function processUnsubscription(json payload) returns error? {
-    websubhub:VerifiedUnsubscription unsubscription = check payload.fromJsonWithType();
-    string subscriberId = util:generatedSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
-    lock {
-        // remove the subscriber if the unsubscription event received
-        _ = subscribersCache.removeIfHasKey(subscriberId);
-        _ = check persist:persistSubscriptions(subscribersCache);
     }
 }
 

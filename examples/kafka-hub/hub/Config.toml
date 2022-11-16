@@ -54,12 +54,6 @@ MESSAGE_DELIVERY_COUNT = 3
 MESSAGE_DELIVERY_TIMEOUT = 10.0
 
 # System Configurations Related to Azure Event Hub
-EVENT_HUBS = ["test-hub-1"]
-
-NUMBER_OF_PARTITIONS = 5
-
-CONSUMER_GROUPS = ["cg-1", "cg-2", "cg-3"]
-
 NAMESPACE_CONFIG_FILE = "./resources/namespace-config.json"
 
 [ballerina.http.accessLogConfig] 

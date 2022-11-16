@@ -51,3 +51,12 @@ public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
 # The port that is used to start the health-probe for consolidator
 public configurable int HEALTH_PROBE_PORT = 10001;
+
+# System Configurations Related to Azure Event Hub
+public configurable string[] EVENT_HUBS = ?;
+
+public configurable int NUMBER_OF_PARTITIONS = ?;
+
+public configurable string[] CONSUMER_GROUPS = ?;
+
+public configurable string[] AVAILABLE_NAMESPACE_IDS = [];

@@ -1,6 +1,6 @@
-// Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,8 +15,8 @@
 // under the License.
 
 import ballerina/lang.value;
-import kafkaHub.config;
-import kafkaHub.types;
+import consolidatorService.config;
+import consolidatorService.types;
 
 isolated types:EventHubPartition[] vacantPartitionAssignments = [];
 isolated types:EventHubPartition? nextPartition = {
@@ -41,6 +41,41 @@ public isolated function getNextPartition() returns types:EventHubPartition|erro
             return currentPointer.cloneReadOnly();
         }
         return error("Could not find a valid partition");
+    }
+}
+
+# Updates the next available partition mapping.
+#
+# + partitionDetails - Provided partition mapping
+# + return - Returns `error` if there is an exception while updating the partition information
+public isolated function updateNextPartition(readonly & types:EventHubPartition partitionDetails) returns error? {
+    int namespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(partitionDetails.namespaceId));
+    int eventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(partitionDetails.eventHub));
+    lock {
+        if nextPartition is () {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
+        int currentNamespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(nextPointer.namespaceId));
+        if namespaceIdx > currentNamespaceIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(nextPointer.eventHub));
+        if eventHubIdx > currentEventHubIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        if namespaceIdx == currentNamespaceIdx && eventHubIdx >= currentEventHubIdx {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
+        int partition = partitionDetails.partition;
+        if namespaceIdx == currentNamespaceIdx && eventHubIdx == currentEventHubIdx && partition >= nextPointer.partition {
+            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
+            return;
+        }
     }
 }
 
@@ -82,45 +117,10 @@ isolated function retrieveNextEventHubPartitionPointer(readonly & types:EventHub
     }
 }
 
-# Updates the next available partition mapping.
-#
-# + partitionDetails - Provided partition mapping
-# + return - Returns `error` if there is an exception while updating the partition information
-public isolated function updateNextPartition(readonly & types:EventHubPartition partitionDetails) returns error? {
-    int namespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(partitionDetails.namespaceId));
-    int eventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(partitionDetails.eventHub));
-    lock {
-        if nextPartition is () {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        types:EventHubPartition nextPointer = check value:ensureType(nextPartition);
-        int currentNamespaceIdx = check value:ensureType(config:AVAILABLE_NAMESPACE_IDS.indexOf(nextPointer.namespaceId));
-        if namespaceIdx > currentNamespaceIdx {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        int currentEventHubIdx = check value:ensureType(config:EVENT_HUBS.indexOf(nextPointer.eventHub));
-        if eventHubIdx > currentEventHubIdx {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        if namespaceIdx == currentNamespaceIdx && eventHubIdx >= currentEventHubIdx {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-        int partition = partitionDetails.partition;
-        if namespaceIdx == currentNamespaceIdx && eventHubIdx == currentEventHubIdx && partition >= nextPointer.partition {
-            nextPartition = check retrieveNextEventHubPartitionPointer(partitionDetails);
-            return;
-        }
-    }
-}
-
 # Updates the removed partition assignments.
 #
 # + removedAssignment - Removed partition assignment
-public isolated function removePartitionAssignment(readonly & types:EventHubPartition removedAssignment) {
+public isolated function updateVacantPartitionAssignment(readonly & types:EventHubPartition removedAssignment) {
     lock {
         boolean isPartitionAssignmentUnavailable = vacantPartitionAssignments
             .every(assignment => assignment.eventHub != removedAssignment.eventHub && assignment.partition != removedAssignment.partition);

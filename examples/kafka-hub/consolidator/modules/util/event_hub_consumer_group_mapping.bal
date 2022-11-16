@@ -1,6 +1,6 @@
-// Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,8 +15,8 @@
 // under the License.
 
 import ballerina/lang.value;
-import kafkaHub.config;
-import kafkaHub.types;
+import consolidatorService.config;
+import consolidatorService.types;
 
 isolated map<types:EventHubConsumerGroup[]> vacantConsumerGroupAssignments = {};
 isolated map<types:EventHubConsumerGroup?> nextConsumerGroupAssignment = initConsumerGroupAssignment();
@@ -37,26 +37,6 @@ isolated function initConsumerGroupAssignment() returns map<types:EventHubConsum
         }
     }
     return assignments;
-}
-
-# Returns the availablity of a consumer-group for a given EventHub partition.
-#
-# + eventHubPartition - EventHub partition for which needs a consumer-group
-# + return - Returns `true` if a consumer group is available or else `false`
-public isolated function isConsumerGroupAvailable(types:EventHubPartition eventHubPartition) returns boolean {
-    string partitionAssignmentKey = string `${eventHubPartition.namespaceId}_${eventHubPartition.eventHub}_${eventHubPartition.partition}`;
-    lock {
-        if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
-            types:EventHubConsumerGroup[] availableConsumerGroups = vacantConsumerGroupAssignments.get(partitionAssignmentKey);
-            if availableConsumerGroups.length() > 0 {
-                return true;
-            }
-        }
-    }
-    lock {
-        types:EventHubConsumerGroup? currentConsumerGroup = nextConsumerGroupAssignment.get(partitionAssignmentKey);
-        return currentConsumerGroup is types:EventHubConsumerGroup;
-    }
 }
 
 # Retrieves the next available consumer-group mapping for partition in an event hub.
@@ -83,21 +63,6 @@ public isolated function getNextConsumerGroup(types:EventHubPartition eventHubPa
     }
 }
 
-isolated function retrieveNextConsumerGroupPointer(types:EventHubConsumerGroup consumerGroup) returns types:EventHubConsumerGroup|error? {
-    int currentConsumerGroupIdx = check value:ensureType(config:CONSUMER_GROUPS.indexOf(consumerGroup.consumerGroup));
-    // if there is no consumer-group entry available, return `nil`
-    if currentConsumerGroupIdx >= config:CONSUMER_GROUPS.length() - 1 {
-        return;
-    }
-    string nextConsumerGroup = config:CONSUMER_GROUPS[currentConsumerGroupIdx + 1];
-    return {
-        namespaceId: consumerGroup.namespaceId,
-        eventHub: consumerGroup.eventHub,
-        partition: consumerGroup.partition,
-        consumerGroup: nextConsumerGroup
-    };
-}
-
 # Updates the next available consumer-group mapping for a event-hub partition.
 #
 # + consumerGroup - Provided consumer-group mapping
@@ -119,10 +84,25 @@ public isolated function updateNextConsumerGroup(readonly & types:EventHubConsum
     }
 }
 
+isolated function retrieveNextConsumerGroupPointer(types:EventHubConsumerGroup consumerGroup) returns types:EventHubConsumerGroup|error? {
+    int currentConsumerGroupIdx = check value:ensureType(config:CONSUMER_GROUPS.indexOf(consumerGroup.consumerGroup));
+    // if there is no consumer-group entry available, return `nil`
+    if currentConsumerGroupIdx >= config:CONSUMER_GROUPS.length() - 1 {
+        return;
+    }
+    string nextConsumerGroup = config:CONSUMER_GROUPS[currentConsumerGroupIdx + 1];
+    return {
+        namespaceId: consumerGroup.namespaceId,
+        eventHub: consumerGroup.eventHub,
+        partition: consumerGroup.partition,
+        consumerGroup: nextConsumerGroup
+    };
+}
+
 # Updates the removed partition assignments.
 #
 # + consumerGroup - Removed consumer-group assignment
-public isolated function removeConsumerGroupAssignment(readonly & types:EventHubConsumerGroup consumerGroup) {
+public isolated function updateVacantConsumerGroupAssignment(readonly & types:EventHubConsumerGroup consumerGroup) {
     string partitionAssignmentKey = string `${consumerGroup.namespaceId}_${consumerGroup.eventHub}_${consumerGroup.partition}`;
     lock {
         if vacantConsumerGroupAssignments.hasKey(partitionAssignmentKey) {
