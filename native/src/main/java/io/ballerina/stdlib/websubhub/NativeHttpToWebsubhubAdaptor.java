@@ -27,9 +27,11 @@ import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
+import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
@@ -60,7 +62,8 @@ public class NativeHttpToWebsubhubAdaptor {
     public static BArray getServiceMethodNames(BObject adaptor) {
         BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
         List<BString> methodNamesList = new ArrayList<>();
-        for (MethodType method : bHubService.getType().getMethods()) {
+        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(bHubService.getType());
+        for (MethodType method : serviceType.getMethods()) {
             methodNamesList.add(StringUtils.fromString(method.getName()));
         }
         return ValueCreator.createArrayValue(methodNamesList.toArray(BString[]::new));
@@ -176,7 +179,8 @@ public class NativeHttpToWebsubhubAdaptor {
     }
 
     private static boolean isReadOnlyParam(BObject serviceObj, String remoteMethod) {
-        for (MethodType method : serviceObj.getType().getMethods()) {
+        ObjectType objectType = (ObjectType) TypeUtils.getReferredType(serviceObj.getType());
+        for (MethodType method : objectType.getMethods()) {
             if (method.getName().equals(remoteMethod)) {
                 Parameter[] parameters = method.getParameters();
                 if (parameters.length >= 1) {
@@ -198,7 +202,8 @@ public class NativeHttpToWebsubhubAdaptor {
         Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                 parentFunctionName);
-        if (bHubService.getType().isIsolated() && bHubService.getType().isIsolated(remoteFunctionName)) {
+        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(bHubService.getType());
+        if (serviceType.isIsolated() && serviceType.isIsolated(remoteFunctionName)) {
             env.getRuntime().invokeMethodAsyncConcurrently(
                     bHubService, remoteFunctionName, null, metadata,
                     new HubCallback(balFuture, module), null, PredefinedTypes.TYPE_NULL, args);
