@@ -57,5 +57,5 @@ WORKDIR ${USER_HOME}
 # set environment variables
 ENV JAVA_OPTS="-Djava.util.prefs.systemRoot=${USER_HOME}/.java -Djava.util.prefs.userRoot=${USER_HOME}/.java/.userPrefs" \
     WORKING_DIRECTORY=${USER_HOME}
- 
-CMD java -jar /home/websubhub/kafkaHub.jar -Cballerina.http.traceLogConsole=true
+
+CMD java -jar /home/websubhub/kafkaHub.jar
