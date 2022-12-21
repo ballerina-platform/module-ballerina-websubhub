@@ -3,7 +3,7 @@
 _Owners_: @shafreenAnfar @chamil321 @ayeshLK    
 _Reviewers_: @shafreenAnfar    
 _Created_: 2021/11/23  
-_Updated_: 2022/02/17  
+_Updated_: 2022/12/08  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -348,7 +348,7 @@ While the below remote methods are strictly WebSub compliant,
 - onUnsubscriptionValidation
 - onUnsubscriptionIntenVerified
 
-The below remote functions are not, 
+The below remote methods are not, 
 - onEventMessage
 - onRegisterTopic
 - onUnregisterTopic
