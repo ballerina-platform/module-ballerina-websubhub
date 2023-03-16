@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- [Ballerina `websubhub` module will fail to provide error details properly when there is a `panic` from within the `websubhub:Service`](https://github.com/ballerina-platform/ballerina-standard-library/issues/4217)
+
+## [1.5.0] - 2022-11-29
+
+### Fixed
 - [Compiler plugin allows passing an HTTP listener with configs to listener init](https://github.com/ballerina-platform/ballerina-standard-library/issues/2782)
 
 ### Changed
