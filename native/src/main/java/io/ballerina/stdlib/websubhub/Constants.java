@@ -36,4 +36,9 @@ public interface Constants {
     String ON_UNSUBSCRIPTION = "onUnsubscription";
     String ON_UNSUBSCRIPTION_VALIDATION = "onUnsubscriptionValidation";
     String ON_UNSUBSCRIPTION_INTENT_VERIFIED = "onUnsubscriptionIntentVerified";
+
+    String COMMON_RESPONSE = "CommonResponse";
+    String STATUS_CODE = "statusCode";
+    String SERVICE_EXECUTION_ERROR = "ServiceExecutionError";
+    int PANIC_FROM_THE_SERVICE_ERROR = -6;
 }
