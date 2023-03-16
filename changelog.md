@@ -4,6 +4,13 @@ This file contains all the notable changes done to the Ballerina WebSubHub packa
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.5.1] - 2023-03-16
+
+### Fixed
+- [Ballerina `websubhub` module will fail to provide error details properly when there is a `panic` from within the `websubhub:Service`](https://github.com/ballerina-platform/ballerina-standard-library/issues/4217)
+
 ## [1.5.0] - 2022-11-29
 
 ### Fixed
