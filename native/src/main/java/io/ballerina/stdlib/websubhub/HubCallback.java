@@ -22,11 +22,19 @@ import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.Module;
 import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.values.BError;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.Map;
+
 import static io.ballerina.runtime.api.utils.StringUtils.fromString;
+import static io.ballerina.stdlib.websubhub.Constants.COMMON_RESPONSE;
+import static io.ballerina.stdlib.websubhub.Constants.PANIC_FROM_THE_SERVICE_ERROR;
+import static io.ballerina.stdlib.websubhub.Constants.SERVICE_EXECUTION_ERROR;
+import static io.ballerina.stdlib.websubhub.Constants.STATUS_CODE;
 
 /**
  * {@code HubCallback} used to handle the websubhub remote method invocation results.
@@ -56,8 +64,10 @@ public class HubCallback implements Callback {
     public void notifyFailure(BError bError) {
         bError.printStackTrace();
         BString errorMessage = fromString("service method invocation failed: " + bError.getErrorMessage());
-        BError invocationError = ErrorCreator.createError(module, "ServiceExecutionError",
-                errorMessage, bError, null);
+        BMap<BString, Object> errorDetails = ValueCreator.createRecordValue(module, COMMON_RESPONSE,
+                    Map.of(STATUS_CODE, PANIC_FROM_THE_SERVICE_ERROR));
+        BError invocationError = ErrorCreator.createError(module, SERVICE_EXECUTION_ERROR,
+                errorMessage, bError, errorDetails);
         future.complete(invocationError);
     }
 
