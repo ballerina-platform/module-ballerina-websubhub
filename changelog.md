@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.5.1] - 2023-03-16
+### [1.5.2] - 2023-03-21
+
+### Fixed
+- [Terminate the application when there is a panic from within the `websubhub:Service`](https://github.com/ballerina-platform/ballerina-standard-library/issues/4229)
+
+### [1.5.1] - 2023-03-16
 
 ### Fixed
 - [Ballerina `websubhub` module will fail to provide error details properly when there is a `panic` from within the `websubhub:Service`](https://github.com/ballerina-platform/ballerina-standard-library/issues/4217)
