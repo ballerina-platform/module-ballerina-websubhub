@@ -62,7 +62,7 @@ public class NativeHttpToWebsubhubAdaptor {
     public static BArray getServiceMethodNames(BObject adaptor) {
         BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
         List<BString> methodNamesList = new ArrayList<>();
-        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(bHubService.getType());
+        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
         for (MethodType method : serviceType.getMethods()) {
             methodNamesList.add(StringUtils.fromString(method.getName()));
         }
@@ -179,7 +179,7 @@ public class NativeHttpToWebsubhubAdaptor {
     }
 
     private static boolean isReadOnlyParam(BObject serviceObj, String remoteMethod) {
-        ObjectType objectType = (ObjectType) TypeUtils.getReferredType(serviceObj.getType());
+        ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(serviceObj));
         for (MethodType method : objectType.getMethods()) {
             if (method.getName().equals(remoteMethod)) {
                 Parameter[] parameters = method.getParameters();
@@ -202,7 +202,7 @@ public class NativeHttpToWebsubhubAdaptor {
         Module module = ModuleUtils.getModule();
         StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
                 parentFunctionName);
-        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(bHubService.getType());
+        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
         if (serviceType.isIsolated() && serviceType.isIsolated(remoteFunctionName)) {
             env.getRuntime().invokeMethodAsyncConcurrently(
                     bHubService, remoteFunctionName, null, metadata,
