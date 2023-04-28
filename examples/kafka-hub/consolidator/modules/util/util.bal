@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/regex;
 import ballerina/random;
 import ballerina/lang.'string as strings;
 
@@ -41,7 +40,7 @@ public isolated function generatedSubscriberId(string topic, string callbackUrl)
 # + baseString - `string` to be normalized
 # + return - Normalized `string`
 isolated function nomalizeString(string baseString) returns string {
-    return regex:replaceAll(baseString, "[^a-zA-Z0-9]", "_");
+    return re `[^a-zA-Z0-9]`.replaceAll(baseString, "_");
 }
 
 # Generates a random `string` of 10 characters
