@@ -18,7 +18,6 @@ import ballerina/lang.'string as strings;
 import ballerina/url;
 import ballerina/http;
 import ballerina/mime;
-import ballerina/regex;
 
 isolated function retrieveQueryParameter(map<string|string[]> params, string 'key) returns string|error {
     string|string[]? retrievedValue = params.removeIfHasKey('key);
@@ -127,7 +126,7 @@ isolated function getFormData(string payload) returns map<string> {
     if payload == "" {
         return parameters;
     }
-    string[] queryParams = regex:split(payload, "&");
+    string[] queryParams = re `&`.split(payload);
     foreach string query in queryParams {
         int? index = query.indexOf("=");
         if index is int && index != -1 {
