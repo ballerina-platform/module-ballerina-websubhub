@@ -1,2 +1,2 @@
 # The port that is used to start the hub
-HUB_PORT = 9000
+HUB_PORT = 9090
