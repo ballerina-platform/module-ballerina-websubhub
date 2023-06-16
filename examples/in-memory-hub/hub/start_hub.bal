@@ -15,15 +15,17 @@
 // under the License.
 
 import ballerina/websubhub;
+import ballerina/log;
 import in_memory_hub.dispatcher;
 
 configurable int HUB_PORT = 9090;
+listener websubhub:Listener hubListener = check new (HUB_PORT);
 
 public function main() returns error? {
     // Initialize the Hub
     _ = @strand {thread: "any"} start dispatcher:syncDispatcherState();
 
-    websubhub:Listener hubListener = check new (9090);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
+    log:printInfo("Hub started successfully");
 }
