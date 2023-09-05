@@ -22,6 +22,8 @@ import kafkaHub.config;
 import kafkaHub.connections as conn;
 import kafkaHub.util;
 import ballerina/mime;
+import kafkaHub.types;
+import kafkaHub.persistence;
 
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
@@ -100,11 +102,14 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
             _ = check notifySubscribers(records, clientEp, consumerEp);
         }
     } on fail var e {
-        lock {
-            _ = subscribersCache.removeIfHasKey(subscriberId);
-        }
         log:printError("Error occurred while sending notification to subscriber", err = e.message());
-
+        types:StaleSubscription staleSubscription = {
+            ...subscription
+        };
+        error? msgPersistError = persistence:markStaleSubscription(staleSubscription);
+        if msgPersistError is error {
+            log:printError("Error occurred while gracefully persisting state-subscription", err = msgPersistError.message());
+        }
         kafka:Error? result = consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
         if result is kafka:Error {
             log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
