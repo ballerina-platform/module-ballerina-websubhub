@@ -2,22 +2,17 @@
 # IP and Port of the Kafka bootstrap node
 KAFKA_BOOTSTRAP_NODE = "localhost:9092"
 
-# Kafka topic which will get notified for websub topic registration/deregistration
-# All the hubs must be pointed to the same Kafka topic to notify websub topic registration/deregistration
-REGISTERED_WEBSUB_TOPICS_TOPIC = "registered-websub-topics"
+# Kafka topic which stores websub-events for this server
+WEBSUB_EVENTS_TOPIC = "websub-events"
 
-# Kafka topic which stores consolidated websub topics for the hub
-CONSOLIDATED_WEBSUB_TOPICS_TOPIC = "consolidated-websub-topics"
-
-# Kafka topic which will get notified for websub subscription/unsubscription
-# All the hubs must be pointed to the same Kafka topic to notify websub subscription/unsubscription
-WEBSUB_SUBSCRIBERS_TOPIC = "registered-websub-subscribers"
-
-# Kafka topic which is stores consolidated websub subscribers for this server
-CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC = "consolidated-websub-subscribers"
+# Kafka topic which stores the current snapshot for the websub-events
+WEBSUB_EVENTS_SNAPSHOT_TOPIC = "websub-events-snapshot"
 
 # The interval in which Kafka consumers wait for new messages
 POLLING_INTERVAL = 10.0
 
 # The period in which Kafka close method waits to complete
 GRACEFUL_CLOSE_PERIOD = 5.0
+
+# The port that is used to start the HTTP endpoint for consolidator
+CONSOLIDATOR_HTTP_ENDPOINT_PORT = 10001
