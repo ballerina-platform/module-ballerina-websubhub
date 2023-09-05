@@ -22,6 +22,7 @@ import ballerina/lang.value;
 import kafkaHub.util;
 import kafkaHub.connections as conn;
 import ballerina/mime;
+import ballerina/lang.runtime;
 import kafkaHub.config;
 
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
@@ -43,12 +44,15 @@ public function main() returns error? {
             }
         }
     );
+    runtime:registerListener(httpListener);
     check httpListener.attach(healthCheckService, "/health");
 
     // Start the Hub
     websubhub:Listener hubListener = check new (httpListener);
+    runtime:registerListener(hubListener);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
+    log:printInfo("Websubhub service started successfully");
 }
 
 function syncRegsisteredTopicsCache() {
