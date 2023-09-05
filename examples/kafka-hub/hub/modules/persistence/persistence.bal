@@ -19,29 +19,29 @@ import kafkaHub.config;
 import kafkaHub.connections as conn;
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
-    check updateTopicDetails(message);
+    check updateHubState(message);
 }
 
 public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration message) returns error? {
-    check updateTopicDetails(message);
-}
-
-isolated function updateTopicDetails(websubhub:TopicRegistration|websubhub:TopicDeregistration message) returns error? {
-    json jsonData = message.toJson();
-    check produceKafkaMessage(config:REGISTERED_WEBSUB_TOPICS_TOPIC, jsonData);
+    check updateHubState(message);
 }
 
 public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
-    check updateSubscriptionDetails(message); 
+    check updateHubState(message); 
 }
 
 public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
-    check updateSubscriptionDetails(message); 
+    check updateHubState(message); 
 }
 
-isolated function updateSubscriptionDetails(websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+isolated function updateHubState(websubhub:TopicRegistration|websubhub:TopicDeregistration|
+                                websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
     json jsonData = message.toJson();
-    check produceKafkaMessage(config:WEBSUB_SUBSCRIBERS_TOPIC, jsonData); 
+    do {
+        check produceKafkaMessage(config:WEBSUB_EVENTS_TOPIC, jsonData);
+    } on fail error e {
+        return error (string `Failed to send updates for hub-state: ${e.message()}`, cause = e);
+    }
 }
 
 public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {
