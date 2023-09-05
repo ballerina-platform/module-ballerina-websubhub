@@ -22,8 +22,6 @@ import kafkaHub.config;
 import kafkaHub.connections as conn;
 import kafkaHub.util;
 import ballerina/mime;
-import kafkaHub.types;
-import kafkaHub.persistence;
 
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
@@ -42,14 +40,6 @@ function processWebsubSubscriptionsSnapshotState(websubhub:VerifiedSubscription[
 function processSubscription(websubhub:VerifiedSubscription subscription) returns error? {
     string subscriberId = util:generateSubscriberId(subscription.hubTopic, subscription.hubCallback);
     log:printDebug(string `Subscription event received for the subscriber ${subscriberId}`);
-    // if there is a `stale` subscription, `hub` should ignore it
-    if subscription[STATUS] == STALE_STATE {
-        log:printDebug(string `Subscriber ${subscriberId} has been marked as stale, hence removing the subscription from the internal state if available`);
-        lock {
-            _ = subscribersCache.removeIfHasKey(subscriberId);
-        }
-        return;
-    }
     boolean subscriberAlreadyAvailable = true;
     lock {
         // add the subscriber if subscription event received
@@ -102,13 +92,9 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
             _ = check notifySubscribers(records, clientEp, consumerEp);
         }
     } on fail var e {
-        log:printError("Error occurred while sending notification to subscriber", err = e.message());
-        types:StaleSubscription staleSubscription = {
-            ...subscription
-        };
-        error? msgPersistError = persistence:markStaleSubscription(staleSubscription);
-        if msgPersistError is error {
-            log:printError("Error occurred while gracefully persisting state-subscription", err = msgPersistError.message());
+        util:logError("Error occurred while sending notification to subscriber", e);
+        lock {
+            _ = subscribersCache.removeIfHasKey(subscriberId);
         }
         kafka:Error? result = consumerEp->close(config:GRACEFUL_CLOSE_PERIOD);
         if result is kafka:Error {
@@ -118,23 +104,25 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
 }
 
 isolated function isValidConsumer(string topicName, string subscriberId) returns boolean {
-    boolean subscriberAvailable = true;
+    return isValidTopic(topicName) && isValidSubscription(subscriberId);
+}
+
+isolated function isValidSubscription(string subscriberId) returns boolean {
     lock {
-        subscriberAvailable = subscribersCache.hasKey(subscriberId);
+        return subscribersCache.hasKey(subscriberId);
     }
-    return isValidTopic(topicName) && subscriberAvailable;
 }
 
 isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
     foreach var kafkaRecord in records {
         var message = deSerializeKafkaRecord(kafkaRecord);
-        if (message is websubhub:ContentDistributionMessage) {
+        if message is websubhub:ContentDistributionMessage {
             var response = clientEp->notifyContentDistribution(message);
-            if (response is error) {
-                return response;
-            } else {
+            if response is websubhub:ContentDistributionSuccess {
                 _ = check consumerEp->commit();
+                return;   
             }
+            return response;
         } else {
             log:printError("Error occurred while retrieving message data", err = message.message());
         }

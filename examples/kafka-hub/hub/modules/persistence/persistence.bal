@@ -17,7 +17,6 @@
 import ballerina/websubhub;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
-import kafkaHub.types;
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
     check updateHubState(message);
@@ -32,10 +31,6 @@ public isolated function addSubscription(websubhub:VerifiedSubscription message)
 }
 
 public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
-    check updateHubState(message); 
-}
-
-public isolated function markStaleSubscription(types:StaleSubscription message) returns error? {
     check updateHubState(message); 
 }
 

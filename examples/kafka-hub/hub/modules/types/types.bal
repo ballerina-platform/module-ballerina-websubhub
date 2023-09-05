@@ -16,11 +16,6 @@
 
 import ballerina/websubhub;
 
-public type StaleSubscription record {
-    *websubhub:VerifiedSubscription;
-    string status = "stale";
-};
-
 public type SystemStateSnapshot record {|
     websubhub:TopicRegistration[] topics;
     websubhub:VerifiedSubscription[] subscriptions;

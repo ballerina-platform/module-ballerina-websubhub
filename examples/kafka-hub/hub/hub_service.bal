@@ -129,11 +129,7 @@ service object {
                 "Topic [" + message.hubTopic + "] is not registered with the Hub", statusCode = http:STATUS_NOT_ACCEPTABLE);
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
-            boolean subscriberAvailable = false;
-            lock {
-                subscriberAvailable = subscribersCache.hasKey(subscriberId);
-            }
-            if subscriberAvailable {
+            if isValidSubscription(subscriberId) {
                 return error websubhub:SubscriptionDeniedError(
                     "Subscriber has already registered with the Hub", statusCode = http:STATUS_NOT_ACCEPTABLE);
             }
@@ -148,6 +144,7 @@ service object {
         lock {
             string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
             message[CONSUMER_GROUP] = consumerGroup;
+            message[SERVER_ID] = config:SERVER_ID;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
@@ -186,10 +183,7 @@ service object {
                 "Topic [" + message.hubTopic + "] is not registered with the Hub", statusCode = http:STATUS_NOT_ACCEPTABLE);
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
-            lock {
-                subscriberAvailable = subscribersCache.hasKey(subscriberId);
-            }
-            if !subscriberAvailable {
+            if !isValidSubscription(subscriberId) {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
                                 + message.hubTopic + "] and Callback [" + message.hubCallback + "]", statusCode = http:STATUS_NOT_ACCEPTABLE);
             }
