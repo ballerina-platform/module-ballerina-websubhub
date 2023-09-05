@@ -15,55 +15,10 @@
 // under the License.
 
 import ballerina/websubhub;
-import consolidatorService.connections as conn;
 import consolidatorService.util;
-import consolidatorService.persistence as persist;
 import ballerina/lang.value;
-import ballerinax/kafka;
-import ballerina/log;
-import consolidatorService.config;
 
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
-
-isolated function syncRegsisteredTopicsCache() {
-    do {
-        websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
-        if persistedTopics is websubhub:TopicRegistration[] {
-            refreshTopicCache(persistedTopics);
-        }
-    } on fail var e {
-        log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
-        kafka:Error? result = conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        if result is kafka:Error {
-            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
-        }
-    }
-}
-
-isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:consolidatedTopicsConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeTopicsMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving topic-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
-    }
-    return;
-}
-
-isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
-    websubhub:TopicRegistration[] currentTopics = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
-        currentTopics.push(topic);
-    }
-    return currentTopics;
-}
 
 isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
     foreach var topic in persistedTopics.cloneReadOnly() {
@@ -80,8 +35,8 @@ isolated function processTopicRegistration(json payload) returns error? {
     lock {
         // add the topic if topic-registration event received
         registeredTopicsCache[topicName] = registration.cloneReadOnly();
-        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
     }
+    check processStateUpdate();
 }
 
 isolated function processTopicDeregistration(json payload) returns error? {
@@ -90,8 +45,8 @@ isolated function processTopicDeregistration(json payload) returns error? {
     lock {
         // remove the topic if topic-deregistration event received
         _ = registeredTopicsCache.removeIfHasKey(topicName);
-        _ = check persist:persistTopicRegistrations(registeredTopicsCache);
     }
+    check processStateUpdate();
 }
 
 isolated function getTopics() returns websubhub:TopicRegistration[] {

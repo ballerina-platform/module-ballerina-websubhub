@@ -15,45 +15,10 @@
 // under the License.
 
 import ballerina/websubhub;
-import consolidatorService.config;
-import consolidatorService.connections as conn;
 import consolidatorService.util;
-import consolidatorService.persistence as persist;
 import ballerina/lang.value;
-import ballerina/log;
-import ballerinax/kafka;
 
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
-
-isolated function syncSubscribersCache() {
-    do {
-        websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
-        if persistedSubscribers is websubhub:VerifiedSubscription[] {
-            refreshSubscribersCache(persistedSubscribers);
-        }
-    } on fail var e {
-        log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
-        kafka:Error? result = conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        if result is kafka:Error {
-            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
-        }
-    } 
-}
-
-isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeSubscribersMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving consolidated-subscriber-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
-    }
-    return;
-}
 
 isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
     websubhub:VerifiedSubscription[] currentSubscriptions = [];
@@ -82,8 +47,8 @@ isolated function processSubscription(json payload) returns error? {
         if !subscribersCache.hasKey(subscriberId) {
             subscribersCache[subscriberId] = subscription.cloneReadOnly();
         }
-        _ = check persist:persistSubscriptions(subscribersCache);
     }
+    check processStateUpdate();
 }
 
 isolated function processUnsubscription(json payload) returns error? {
@@ -92,8 +57,8 @@ isolated function processUnsubscription(json payload) returns error? {
     lock {
         // remove the subscriber if the unsubscription event received
         _ = subscribersCache.removeIfHasKey(subscriberId);
-        _ = check persist:persistSubscriptions(subscribersCache);
     }
+    check processStateUpdate();
 }
 
 isolated function getSubscriptions() returns websubhub:VerifiedSubscription[] {

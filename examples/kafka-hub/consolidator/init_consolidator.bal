@@ -16,16 +16,19 @@
 
 import ballerina/log;
 import consolidatorService.config;
-import consolidatorService.connections as conn;
 import ballerina/lang.runtime;
 import ballerina/http;
+import ballerinax/kafka;
+import consolidatorService.util;
+import consolidatorService.types;
 
 public function main() returns error? {
     // Initialize consolidator-service state
-    syncRegsisteredTopicsCache();
-    _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-    syncSubscribersCache();
-    _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+    error? stateSyncResult = syncSystemState();
+    if stateSyncResult is error {
+        util:logError("Error while syncing system state during startup", stateSyncResult, "FATAL");
+        return;
+    }
 
     // Start the HTTP endpoint
     http:Listener httpListener = check new (config:CONSOLIDATOR_HTTP_ENDPOINT_PORT);
@@ -40,4 +43,29 @@ public function main() returns error? {
     lock {
         startupCompleted = true;
     }
+}
+
+isolated function syncSystemState() returns error? {
+    kafka:ConsumerConfiguration websubEventsSnapshotConfig = {
+        groupId: string `websub-events-snapshot-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+        offsetReset: "earliest",
+        topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC]
+    };
+    kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsSnapshotConfig);
+    do {
+        types:SystemStateSnapshot[] events = check websubEventsSnapshotConsumer->pollPayload(config:POLLING_INTERVAL);
+        if events.length() > 0 {
+            types:SystemStateSnapshot lastStateSnapshot = events.pop();
+            refreshTopicCache(lastStateSnapshot.topics);
+            refreshSubscribersCache(lastStateSnapshot.subscriptions);
+        }
+    } on fail error kafkaError {
+        util:logError("Error occurred while syncing system-state", kafkaError, "FATAL");
+        error? result = check websubEventsSnapshotConsumer->close();
+        if result is error {
+            util:logError("Error occurred while gracefully closing asb:MessageReceiver", result);
+        }
+        return kafkaError;
+    }
+    check websubEventsSnapshotConsumer->close();
 }

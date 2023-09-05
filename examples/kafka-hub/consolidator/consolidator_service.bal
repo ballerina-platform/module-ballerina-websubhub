@@ -19,6 +19,7 @@ import ballerina/lang.value;
 import ballerina/log;
 import consolidatorService.config;
 import consolidatorService.connections as conn;
+import consolidatorService.persistence as persist;
 import ballerina/http;
 import consolidatorService.types;
 
@@ -71,4 +72,12 @@ isolated function processPersistedData(string persistedData) returns error? {
             return error(string `Error occurred while deserializing subscriber events with invalid hubMode [${hubMode}]`);
         }
     }
+}
+
+isolated function processStateUpdate() returns error? {
+    types:SystemStateSnapshot stateSnapshot = {
+        topics: getTopics(),
+        subscriptions: getSubscriptions()
+    };
+    check persist:persistWebsubEventsSnapshot(stateSnapshot);
 }

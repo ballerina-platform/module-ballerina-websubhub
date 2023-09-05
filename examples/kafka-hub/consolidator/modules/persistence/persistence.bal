@@ -14,26 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websubhub;
 import consolidatorService.config;
 import consolidatorService.connections as conn;
+import consolidatorService.types;
 
-public isolated function persistTopicRegistrations(map<websubhub:TopicRegistration> registeredTopicsCache) returns error? {
-    websubhub:TopicRegistration[] availableTopics = [];
-    foreach var topic in registeredTopicsCache {
-        availableTopics.push(topic);
-    }
-    json[] jsonData = <json[]> availableTopics.toJson();
-    check produceKafkaMessage(config:CONSOLIDATED_WEBSUB_TOPICS_TOPIC, jsonData);
-}
-
-public isolated function persistSubscriptions(map<websubhub:VerifiedSubscription> subscribersCache) returns error? {
-    websubhub:VerifiedSubscription[] availableSubscriptions = [];
-    foreach var subscriber in subscribersCache {
-        availableSubscriptions.push(subscriber);
-    }
-    json[] jsonData = <json[]> availableSubscriptions.toJson();
-    check produceKafkaMessage(config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC, jsonData);
+public isolated function persistWebsubEventsSnapshot(types:SystemStateSnapshot systemStateSnapshot) returns error? {
+    json payload = systemStateSnapshot.toJson();
+    check produceKafkaMessage(config:WEBSUB_EVENTS_SNAPSHOT_TOPIC, payload);
 }
 
 isolated function produceKafkaMessage(string topicName, json payload) returns error? {
