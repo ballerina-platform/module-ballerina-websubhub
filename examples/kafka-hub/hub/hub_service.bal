@@ -60,7 +60,8 @@ service object {
         string topicName = util:sanitizeTopicName(message.topic);
         lock {
             if registeredTopicsCache.hasKey(topicName) {
-                return error websubhub:TopicRegistrationError("Topic has already registered with the Hub");
+                return error websubhub:TopicRegistrationError(
+                    "Topic has already registered with the Hub", statusCode = http:STATUS_CONFLICT);
             }
             error? persistingResult = persist:addRegsiteredTopic(message.cloneReadOnly());
             if persistingResult is error {
@@ -88,7 +89,8 @@ service object {
         string topicName = util:sanitizeTopicName(message.topic);
         lock {
             if !registeredTopicsCache.hasKey(topicName) {
-                return error websubhub:TopicDeregistrationError("Topic has not been registered in the Hub");
+                return error websubhub:TopicDeregistrationError(
+                    "Topic has not been registered in the Hub", statusCode = http:STATUS_NOT_FOUND);
             }
             error? persistingResult = persist:removeRegsiteredTopic(message.cloneReadOnly());
             if persistingResult is error {
@@ -123,15 +125,13 @@ service object {
             topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
         if !topicAvailable {
-            return error websubhub:SubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
+            return error websubhub:SubscriptionDeniedError(
+                "Topic [" + message.hubTopic + "] is not registered with the Hub", statusCode = http:STATUS_NOT_ACCEPTABLE);
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
-            boolean subscriberAvailable = false;
-            lock {
-                subscriberAvailable = subscribersCache.hasKey(subscriberId);
-            }
-            if subscriberAvailable {
-                return error websubhub:SubscriptionDeniedError("Subscriber has already registered with the Hub");
+            if isValidSubscription(subscriberId) {
+                return error websubhub:SubscriptionDeniedError(
+                    "Subscriber has already registered with the Hub", statusCode = http:STATUS_NOT_ACCEPTABLE);
             }
         }
     }
@@ -144,6 +144,7 @@ service object {
         lock {
             string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
             message[CONSUMER_GROUP] = consumerGroup;
+            message[SERVER_ID] = config:SERVER_ID;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());
@@ -178,15 +179,13 @@ service object {
             topicAvailable = registeredTopicsCache.hasKey(topicName);
         }
         if !topicAvailable {
-            return error websubhub:UnsubscriptionDeniedError("Topic [" + message.hubTopic + "] is not registered with the Hub");
+            return error websubhub:UnsubscriptionDeniedError(
+                "Topic [" + message.hubTopic + "] is not registered with the Hub", statusCode = http:STATUS_NOT_ACCEPTABLE);
         } else {
             string subscriberId = util:generateSubscriberId(message.hubTopic, message.hubCallback);
-            lock {
-                subscriberAvailable = subscribersCache.hasKey(subscriberId);
-            }
-            if !subscriberAvailable {
+            if !isValidSubscription(subscriberId) {
                 return error websubhub:UnsubscriptionDeniedError("Could not find a valid subscriber for Topic [" 
-                                + message.hubTopic + "] and Callback [" + message.hubCallback + "]");
+                                + message.hubTopic + "] and Callback [" + message.hubCallback + "]", statusCode = http:STATUS_NOT_ACCEPTABLE);
             }
         }       
     }
@@ -230,10 +229,12 @@ service object {
                 return errorResponse;
             } else if errorResponse is error {
                 log:printError("Error occurred while publishing the content ", errorMessage = errorResponse.message());
-                return error websubhub:UpdateMessageError(errorResponse.message());
+                return error websubhub:UpdateMessageError(
+                    errorResponse.message(), statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
             }
         } else {
-            return error websubhub:UpdateMessageError("Topic [" + msg.hubTopic + "] is not registered with the Hub");
+            return error websubhub:UpdateMessageError(
+                "Topic [" + msg.hubTopic + "] is not registered with the Hub", statusCode = http:STATUS_NOT_FOUND);
         }
     }
 };

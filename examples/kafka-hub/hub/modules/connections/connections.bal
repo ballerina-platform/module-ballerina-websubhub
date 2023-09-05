@@ -26,20 +26,12 @@ kafka:ProducerConfiguration statePersistConfig = {
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
 // Consumer which reads the persisted subscriber details
-kafka:ConsumerConfiguration subscribersConsumerConfig = {
-    groupId: "consolidated-websub-subscribers-group-" + config:CONSTRUCTED_SERVER_ID,
+kafka:ConsumerConfiguration websubEventsConsumerConfig = {
+    groupId: "websub-events-receiver-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC ]
+    topics: [ config:WEBSUB_EVENTS_TOPIC ]
 };
-public final kafka:Consumer subscribersConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, subscribersConsumerConfig);
-
-// Consumer which reads the persisted subscriber details
-kafka:ConsumerConfiguration registeredTopicsConsumerConfig = {
-    groupId: "consolidated--websub-topics-group-" + config:CONSTRUCTED_SERVER_ID,
-    offsetReset: "earliest",
-    topics: [ config:CONSOLIDATED_WEBSUB_TOPICS_TOPIC ]
-};
-public final kafka:Consumer registeredTopicsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, registeredTopicsConsumerConfig);
+public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsConsumerConfig);
 
 # Creates a `kafka:Consumer` for a subscriber.
 # 

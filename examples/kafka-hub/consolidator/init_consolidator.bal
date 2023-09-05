@@ -14,123 +14,58 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerinax/kafka;
-import ballerina/websubhub;
-import ballerina/lang.value;
 import ballerina/log;
 import consolidatorService.config;
+import ballerina/lang.runtime;
+import ballerina/http;
+import ballerinax/kafka;
 import consolidatorService.util;
-import consolidatorService.connections as conn;
-
-isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
-isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
+import consolidatorService.types;
 
 public function main() returns error? {
     // Initialize consolidator-service state
-    syncRegsisteredTopicsCache();
-    _ = check conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-    syncSubscribersCache();
-    _ = check conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
+    error? stateSyncResult = syncSystemState();
+    if stateSyncResult is error {
+        util:logError("Error while syncing system state during startup", stateSyncResult, "FATAL");
+        return;
+    }
+
+    // Start the HTTP endpoint
+    http:Listener httpListener = check new (config:CONSOLIDATOR_HTTP_ENDPOINT_PORT);
+    runtime:registerListener(httpListener);
+    check httpListener.attach(consolidatorService, "/consolidator");
+    check httpListener.attach(healthCheckService, "/health");
+    check httpListener.'start();
     log:printInfo("Starting Event Consolidator Service");
 
     // start the consolidator-service
-    check startConsolidator();
+    _ = @strand { thread: "any" } start consolidateSystemState();
+    lock {
+        startupCompleted = true;
+    }
 }
 
-isolated function syncRegsisteredTopicsCache() {
+isolated function syncSystemState() returns error? {
+    kafka:ConsumerConfiguration websubEventsSnapshotConfig = {
+        groupId: string `websub-events-snapshot-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+        offsetReset: "earliest",
+        topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC]
+    };
+    kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsSnapshotConfig);
     do {
-        websubhub:TopicRegistration[]? persistedTopics = check getPersistedTopics();
-        if persistedTopics is websubhub:TopicRegistration[] {
-            refreshTopicCache(persistedTopics);
+        types:SystemStateSnapshot[] events = check websubEventsSnapshotConsumer->pollPayload(config:POLLING_INTERVAL);
+        if events.length() > 0 {
+            types:SystemStateSnapshot lastStateSnapshot = events.pop();
+            refreshTopicCache(lastStateSnapshot.topics);
+            refreshSubscribersCache(lastStateSnapshot.subscriptions);
         }
-    } on fail var e {
-        log:printError("Error occurred while syncing registered-topics-cache ", err = e.message());
-        kafka:Error? result = conn:consolidatedTopicsConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        if result is kafka:Error {
-            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
+    } on fail error kafkaError {
+        util:logError("Error occurred while syncing system-state", kafkaError, "FATAL");
+        error? result = check websubEventsSnapshotConsumer->close();
+        if result is error {
+            util:logError("Error occurred while gracefully closing asb:MessageReceiver", result);
         }
+        return kafkaError;
     }
-}
-
-isolated function getPersistedTopics() returns websubhub:TopicRegistration[]|error? {
-    kafka:ConsumerRecord[] records = check conn:consolidatedTopicsConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeTopicsMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving topic-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
-    }
-    return;
-}
-
-isolated function deSerializeTopicsMessage(string lastPersistedData) returns websubhub:TopicRegistration[]|error {
-    websubhub:TopicRegistration[] currentTopics = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:TopicRegistration topic = check data.cloneWithType(websubhub:TopicRegistration);
-        currentTopics.push(topic);
-    }
-    return currentTopics;
-}
-
-isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
-    foreach var topic in persistedTopics.cloneReadOnly() {
-        string topicName = util:sanitizeTopicName(topic.topic);
-        lock {
-            registeredTopicsCache[topicName] = topic.cloneReadOnly();
-        }
-    }
-}
-
-isolated function syncSubscribersCache() {
-    do {
-        websubhub:VerifiedSubscription[]? persistedSubscribers = check getPersistedSubscribers();
-        if persistedSubscribers is websubhub:VerifiedSubscription[] {
-            refreshSubscribersCache(persistedSubscribers);
-        }
-    } on fail var e {
-        log:printError("Error occurred while syncing subscribers-cache ", err = e.message());
-        kafka:Error? result = conn:consolidatedSubscriberConsumer->close(config:GRACEFUL_CLOSE_PERIOD);
-        if result is kafka:Error {
-            log:printError("Error occurred while gracefully closing kafka-consumer", err = result.message());
-        }
-    } 
-}
-
-isolated function getPersistedSubscribers() returns websubhub:VerifiedSubscription[]|error? {
-    kafka:ConsumerRecord[] records = check conn:consolidatedSubscriberConsumer->poll(config:POLLING_INTERVAL);
-    if records.length() > 0 {
-        kafka:ConsumerRecord lastRecord = records.pop();
-        string|error lastPersistedData = string:fromBytes(lastRecord.value);
-        if lastPersistedData is string {
-            return deSerializeSubscribersMessage(lastPersistedData);
-        } else {
-            log:printError("Error occurred while retrieving consolidated-subscriber-details ", err = lastPersistedData.message());
-            return lastPersistedData;
-        }
-    }
-    return;
-}
-
-isolated function deSerializeSubscribersMessage(string lastPersistedData) returns websubhub:VerifiedSubscription[]|error {
-    websubhub:VerifiedSubscription[] currentSubscriptions = [];
-    json[] payload =  <json[]> check value:fromJsonString(lastPersistedData);
-    foreach var data in payload {
-        websubhub:VerifiedSubscription subscription = check data.cloneWithType(websubhub:VerifiedSubscription);
-        currentSubscriptions.push(subscription);
-    }
-    return currentSubscriptions;
-}
-
-isolated function refreshSubscribersCache(websubhub:VerifiedSubscription[] persistedSubscribers) {
-    foreach var subscriber in persistedSubscribers {
-        string groupName = util:generatedSubscriberId(subscriber.hubTopic, subscriber.hubCallback);
-        lock {
-            subscribersCache[groupName] = subscriber.cloneReadOnly();
-        }
-    }
+    check websubEventsSnapshotConsumer->close();
 }

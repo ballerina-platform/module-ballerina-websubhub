@@ -19,19 +19,11 @@ import consolidatorService.util;
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
-# Kafka topic which will get notified for websub topic registration/deregistration
-# All the hubs must be pointed to the same Kafka topic to notify websub topic registration/deregistration
-public configurable string REGISTERED_WEBSUB_TOPICS_TOPIC = "registered-websub-topics";
+# Kafka topic which stores websub-events for this server
+public configurable string WEBSUB_EVENTS_TOPIC = "websub-events";
 
-# Kafka topic which stores consolidated websub topics for the hub
-public configurable string CONSOLIDATED_WEBSUB_TOPICS_TOPIC = "consolidated-websub-topics";
-
-# Kafka topic which will get notified for websub subscription/unsubscription
-# All the hubs must be pointed to the same Kafka topic to notify websub subscription/unsubscription
-public configurable string WEBSUB_SUBSCRIBERS_TOPIC = "registered-websub-subscribers";
-
-# Kafka topic which is stores consolidated websub subscribers for this server
-public configurable string CONSOLIDATED_WEBSUB_SUBSCRIBERS_TOPIC = "consolidated-websub-subscribers";
+# Kafka topic which stores the current snapshot for the websub-events
+public configurable string WEBSUB_EVENTS_SNAPSHOT_TOPIC = "websub-events-snapshot";
 
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;
@@ -40,3 +32,6 @@ public configurable decimal POLLING_INTERVAL = 10;
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
 public final string CONSTRUCTED_CONSUMER_ID = util:generateRandomString();
+
+# The port that is used to start the HTTP endpoint for consolidator
+public configurable int CONSOLIDATOR_HTTP_ENDPOINT_PORT = 10001;

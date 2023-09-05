@@ -16,6 +16,7 @@
 
 import ballerina/random;
 import ballerina/lang.'string as strings;
+import ballerina/log;
 
 # Sanitizes the name of the `topic` by replacing special characters with `_`.
 # 
@@ -65,4 +66,19 @@ public isolated function generateRandomString() returns string {
     }
     string|error generatedValue = strings:fromCodePointInts(codePoints);
     return generatedValue is string ? generatedValue : "";
+}
+
+# Logs errors with proper details.
+#
+# + baseErrorMsg - Base error message  
+# + err - Current error
+# + severity - Severity of the error
+public isolated function logError(string baseErrorMsg, error err, string severity = "RECOVERABLE") {
+    string errorMsg = string `${baseErrorMsg}: ${err.message()}`;
+    error? cause = err.cause();
+    while cause is error {
+        errorMsg += string `: ${cause.message()}`;
+        cause = cause.cause();
+    }
+    log:printError(errorMsg, severity = severity, stackTrace = err.stackTrace());
 }
