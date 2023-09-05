@@ -31,9 +31,46 @@ As you can see the current implementation is relying on two different technologi
 
 Whenever there are multiple subscription requests from the same subscriber there can be a race condition. To handle the race conditions an `Event Consolidator` is implemented as a supportive service.
 
-Following diagram depicts how the kafka topics are utilized by the `Hub` and the `Event Consolidator`. 
+To manage the system's state, both the `hub` and the `consolidator` make use of two Kafka topics. 
+The `websub-events` topic is utilized for broadcasting system state update events to all relevant parties, while 
+the `websub-events-snapshot` topic serves as a storage location for the current snapshot of the system's overall state.
 
-![image](hub_topic_usage.png)
+| ![websubhub-2.0-topics.png](./websubhub-2.0-topics.png) | 
+|:--------------------------------------------------------------------------------:| 
+|                          *Image 2: System topic usage*                           |
+
+While both the `hub` and the `consolidator` listen to `websub-events` topic, `websub-events-snapshot` topic is only
+used by the `consolidator`. Whenever the `consolidator` re-starts, it will read the latest snapshot state from
+`websub-events-snapshot` topic and re-initialize the state. But, whenever the `hub` restarts it will send an HTTP request
+to the `consolidator` to retrieve the latest state.
+
+Following JSON structure is used to store the state-snapshot in the `websub-events-snapshot` topic.
+```json
+{
+   "topics":[
+      {
+         "topic":"orgA-test",
+         "hubMode":"register"
+      },
+      ...
+   ],
+   "subscriptions":[
+      {
+         "verificationSuccess":true,
+         "hub":"https://websubhub.com",
+         "hubMode":"subscribe",
+         "hubCallback":"https://sample.subscriber.com",
+         "hubTopic":"orgA-test",
+         "hubLeaseSeconds":"864000",
+         "hubSecret":null,
+         "SERVER_ID":"server-1"
+      },
+      ...
+   ]
+}
+```
+
+Each Websub `topic` corresponds directly to a Kakfa `topic`, while each Websub `subscriber` corresponds to a Kafka consumer. 
 
 ## Security
 As mentioned above apart from standard SSL/TLS, for authentication and authorization the hub depends on an external IdP. In this case we have used a docker image of WSO2 identity server. OAuth2 is used as the authorization protocol along with JWT tokens.
