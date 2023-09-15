@@ -99,12 +99,7 @@ isolated function processSubscriptionVerification(http:Headers headers, HttpToWe
         string respStringPayload = check subscriberResponse.getTextPayload();
         if (respStringPayload == challenge) {
             VerifiedSubscription verifiedMessage = {
-                hub: message.hub,
-                hubMode: message.hubMode,
-                hubCallback: message.hubCallback,
-                hubTopic: message.hubTopic,
-                hubLeaseSeconds: message.hubLeaseSeconds,
-                hubSecret: message.hubSecret
+                ...message
             };
             check adaptor.callOnSubscriptionIntentVerifiedMethod(verifiedMessage, headers);
         }
@@ -186,10 +181,7 @@ isolated function processUnSubscriptionVerification(http:Headers headers, HttpTo
         string respStringPayload = check subscriberResponse.getTextPayload();
         if (respStringPayload == challenge) {
             VerifiedUnsubscription verifiedMessage = {
-                hubMode: message.hubMode,
-                hubCallback: message.hubCallback,
-                hubTopic: message.hubTopic,
-                hubSecret: message.hubSecret
+                ...message
             };
             check adaptor.callOnUnsubscriptionIntentVerifiedMethod(verifiedMessage, headers);
         }
