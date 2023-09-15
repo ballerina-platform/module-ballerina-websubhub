@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.1] - 2023-09-14
+
 ### Fixed 
 - [Additional parameters sent in the subscription request is not properly propagated into the `websubhub:VerifiedSubscription` message](https://github.com/ballerina-platform/ballerina-standard-library/issues/4800)
 
