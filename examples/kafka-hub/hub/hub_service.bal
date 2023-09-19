@@ -142,8 +142,10 @@ service object {
     # + return - `error` if there is any unexpected error or else `()`
     isolated remote function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) returns error? {
         lock {
-            string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
-            message[CONSUMER_GROUP] = consumerGroup;
+            if !message.hasKey(CONSUMER_GROUP) {
+                string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
+                message[CONSUMER_GROUP] = consumerGroup;
+            }
             message[SERVER_ID] = config:SERVER_ID;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
@@ -238,4 +240,3 @@ service object {
         }
     }
 };
-
