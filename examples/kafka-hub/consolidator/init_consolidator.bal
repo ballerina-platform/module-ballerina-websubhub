@@ -59,7 +59,8 @@ isolated function syncSystemState() returns error? {
                 certFile: "./resources/brokercerts/client.public.crt",
                 keyFile: "./resources/brokercerts/client.private.key"
             }
-        }
+        },
+        securityProtocol: kafka:PROTOCOL_SSL
     };
     kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsSnapshotConfig);
     do {

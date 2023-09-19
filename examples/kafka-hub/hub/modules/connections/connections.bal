@@ -31,7 +31,8 @@ kafka:ProducerConfiguration statePersistConfig = {
             certFile: "./resources/brokercerts/client.public.crt",
             keyFile: "./resources/brokercerts/client.private.key"
         }
-    }
+    },
+    securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
@@ -49,7 +50,8 @@ kafka:ConsumerConfiguration websubEventsConsumerConfig = {
             certFile: "./resources/brokercerts/client.public.crt",
             keyFile: "./resources/brokercerts/client.private.key"
         }
-    }
+    },
+    securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsConsumerConfig);
 
@@ -72,7 +74,8 @@ public isolated function createMessageConsumer(string topicName, string groupNam
                 certFile: "./resources/brokercerts/client.public.crt",
                 keyFile: "./resources/brokercerts/client.private.key"
             }
-        }
+        },
+        securityProtocol: kafka:PROTOCOL_SSL
     };
     return check new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
 }

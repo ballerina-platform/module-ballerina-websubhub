@@ -31,7 +31,8 @@ kafka:ProducerConfiguration statePersistConfig = {
             certFile: "./resources/brokercerts/client.public.crt",
             keyFile: "./resources/brokercerts/client.private.key"
         }
-    }
+    },
+    securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
@@ -49,6 +50,7 @@ public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
             certFile: "./resources/brokercerts/client.public.crt",
             keyFile: "./resources/brokercerts/client.private.key"
         }
-    }
+    },
+    securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);

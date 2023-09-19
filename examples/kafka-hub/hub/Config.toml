@@ -7,7 +7,7 @@ SECURITY_ON = true
 SERVER_ID = "server-1"
 
 # IP and Port of the Kafka bootstrap node
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+KAFKA_BOOTSTRAP_NODE = "localhost:9094"
 
 # Kafka topic which is stores websub-events for this server
 WEBSUB_EVENTS_TOPIC = "websub-events"
