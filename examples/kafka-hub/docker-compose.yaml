@@ -17,15 +17,19 @@ services:
         depends_on:
             - zookeeper
         ports:
-            - '9092:9092'
-            - '9093:9093'
             - '9094:9094'
-            - '9095:9095'
         environment:
             KAFKA_BROKER_ID: 1
             KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
             KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092, SSL://localhost:9093
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,EX_PLAINTEXT://localhost:9092,EX_SSL://localhost:9094
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EX_PLAINTEXT:PLAINTEXT,EX_SSL:SSL
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker.keystore.jks
             KAFKA_SSL_KEYSTORE_CREDENTIALS: broker_keystore_creds
             KAFKA_SSL_KEY_CREDENTIALS: broker_sslkey_creds
