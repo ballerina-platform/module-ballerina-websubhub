@@ -49,7 +49,17 @@ isolated function syncSystemState() returns error? {
     kafka:ConsumerConfiguration websubEventsSnapshotConfig = {
         groupId: string `websub-events-snapshot-group-${config:CONSTRUCTED_CONSUMER_ID}`,
         offsetReset: "earliest",
-        topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC]
+        topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC],
+        secureSocket: {
+            cert: "./resources/brokercerts/broker.public.crt",
+            protocol: {
+                name: kafka:SSL 
+            },
+            'key: {
+                certFile: "./resources/brokercerts/client.public.crt",
+                keyFile: "./resources/brokercerts/client.private.key"
+            }
+        }
     };
     kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsSnapshotConfig);
     do {

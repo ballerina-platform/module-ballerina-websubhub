@@ -21,7 +21,17 @@ import consolidatorService.config;
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "consolidated-state-persist",
     acks: "1",
-    retryCount: 3
+    retryCount: 3,
+    secureSocket: {
+        cert: "./resources/brokercerts/broker.public.crt",
+        protocol: {
+            name: kafka:SSL 
+        },
+        'key: {
+            certFile: "./resources/brokercerts/client.public.crt",
+            keyFile: "./resources/brokercerts/client.private.key"
+        }
+    }
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
@@ -29,6 +39,16 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTS
 public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
     groupId: string `websub-events-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
-    topics: [ config:WEBSUB_EVENTS_TOPIC ]
+    topics: [ config:WEBSUB_EVENTS_TOPIC ],
+    secureSocket: {
+        cert: "./resources/brokercerts/broker.public.crt",
+        protocol: {
+            name: kafka:SSL 
+        },
+        'key: {
+            certFile: "./resources/brokercerts/client.public.crt",
+            keyFile: "./resources/brokercerts/client.private.key"
+        }
+    }
 };
 public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);
