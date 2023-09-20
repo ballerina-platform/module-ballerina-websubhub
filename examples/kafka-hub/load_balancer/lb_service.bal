@@ -16,14 +16,16 @@
 
 import ballerina/http;
 
-service /hub on new http:Listener(LB_PORT,
+listener http:Listener lbListener = check new (LB_PORT,
     secureSocket = {
         key: {
             certFile: "./resources/server.crt",
             keyFile: "./resources/server.key"
         }
     }
-) {
+);
+
+service /hub on lbListener {
     private final http:LoadBalanceClient loadBalanceClient;
 
     function init() returns error? {
