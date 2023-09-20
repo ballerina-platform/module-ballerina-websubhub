@@ -1,6 +1,6 @@
 [consolidatorService.config]
 # IP and Port of the Kafka bootstrap node
-KAFKA_BOOTSTRAP_NODE = "localhost:9092"
+KAFKA_BOOTSTRAP_NODE = "localhost:9094"
 
 # Kafka topic which stores websub-events for this server
 WEBSUB_EVENTS_TOPIC = "websub-events"
