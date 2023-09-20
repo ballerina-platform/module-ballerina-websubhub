@@ -1,0 +1,8 @@
+# The port that is used to start the load-balancer
+LB_PORT = 9090
+
+# The client timeout
+CLIENT_TIMEOUT = 10.0
+
+# Endpoint configurations related to the load-balancer
+LB_CONFIG_FILE = "./resources/lb-config.json"
