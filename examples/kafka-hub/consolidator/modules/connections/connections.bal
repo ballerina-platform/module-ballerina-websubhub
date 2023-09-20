@@ -17,21 +17,23 @@
 import ballerinax/kafka;
 import consolidatorService.config;
 
+public final kafka:SecureSocket & readonly secureSocketConfig = {
+    cert: "./resources/brokercerts/broker.public.crt",
+    protocol: {
+        name: kafka:SSL
+    },
+    'key: {
+        certFile: "./resources/brokercerts/client.public.crt",
+        keyFile: "./resources/brokercerts/client.private.key"
+    }
+};
+
 // Producer which persist the current consolidated in-memory state of the system
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "consolidated-state-persist",
     acks: "1",
     retryCount: 3,
-    secureSocket: {
-        cert: "./resources/brokercerts/broker.public.crt",
-        protocol: {
-            name: kafka:SSL 
-        },
-        'key: {
-            certFile: "./resources/brokercerts/client.public.crt",
-            keyFile: "./resources/brokercerts/client.private.key"
-        }
-    },
+    secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
@@ -41,16 +43,7 @@ public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
     groupId: string `websub-events-group-${config:CONSTRUCTED_CONSUMER_ID}`,
     offsetReset: "earliest",
     topics: [ config:WEBSUB_EVENTS_TOPIC ],
-    secureSocket: {
-        cert: "./resources/brokercerts/broker.public.crt",
-        protocol: {
-            name: kafka:SSL 
-        },
-        'key: {
-            certFile: "./resources/brokercerts/client.public.crt",
-            keyFile: "./resources/brokercerts/client.private.key"
-        }
-    },
+    secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);

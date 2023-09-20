@@ -17,21 +17,23 @@
 import ballerinax/kafka;
 import kafkaHub.config;
 
+final kafka:SecureSocket & readonly secureSocketConfig = {
+    cert: "./resources/brokercerts/broker.public.crt",
+    protocol: {
+        name: kafka:SSL
+    },
+    'key: {
+        certFile: "./resources/brokercerts/client.public.crt",
+        keyFile: "./resources/brokercerts/client.private.key"
+    }
+};
+
 // Producer which persist the current in-memory state of the Hub 
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "state-persist",
     acks: "1",
     retryCount: 3,
-    secureSocket: {
-        cert: "./resources/brokercerts/broker.public.crt",
-        protocol: {
-            name: kafka:SSL 
-        },
-        'key: {
-            certFile: "./resources/brokercerts/client.public.crt",
-            keyFile: "./resources/brokercerts/client.private.key"
-        }
-    },
+    secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
@@ -41,16 +43,7 @@ kafka:ConsumerConfiguration websubEventsConsumerConfig = {
     groupId: "websub-events-receiver-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
     topics: [ config:WEBSUB_EVENTS_TOPIC ],
-    secureSocket: {
-        cert: "./resources/brokercerts/broker.public.crt",
-        protocol: {
-            name: kafka:SSL 
-        },
-        'key: {
-            certFile: "./resources/brokercerts/client.public.crt",
-            keyFile: "./resources/brokercerts/client.private.key"
-        }
-    },
+    secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
 public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsConsumerConfig);
@@ -65,16 +58,7 @@ public isolated function createMessageConsumer(string topicName, string groupNam
         groupId: groupName,
         topics: [topicName],
         autoCommit: false,
-        secureSocket: {
-            cert: "./resources/brokercerts/broker.public.crt",
-            protocol: {
-                name: kafka:SSL
-            },
-            'key: {
-                certFile: "./resources/brokercerts/client.public.crt",
-                keyFile: "./resources/brokercerts/client.private.key"
-            }
-        },
+        secureSocket: secureSocketConfig,
         securityProtocol: kafka:PROTOCOL_SSL
     };
     return check new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
