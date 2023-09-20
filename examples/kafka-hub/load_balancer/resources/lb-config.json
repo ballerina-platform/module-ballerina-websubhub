@@ -1,0 +1,8 @@
+[
+    {
+        "url": "https://localhost:9000",
+        "secureSocket": {
+            "cert": "./resources/server.crt"
+        }
+    }
+]
