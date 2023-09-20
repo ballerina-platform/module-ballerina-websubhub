@@ -36,6 +36,6 @@ service /hub on lbListener {
     }
 
     resource function 'default .(http:Request request) returns http:Response|error {
-        return self.loadBalanceClient->forward("/hub", request);
+        return self.loadBalanceClient->forward(request.rawPath, request);
     }
 }
