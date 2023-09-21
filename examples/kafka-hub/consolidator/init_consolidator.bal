@@ -20,7 +20,6 @@ import ballerina/lang.runtime;
 import ballerina/http;
 import ballerinax/kafka;
 import consolidatorService.util;
-import consolidatorService.connections as conn;
 import consolidatorService.types;
 
 public function main() returns error? {
@@ -50,9 +49,7 @@ isolated function syncSystemState() returns error? {
     kafka:ConsumerConfiguration websubEventsSnapshotConfig = {
         groupId: string `websub-events-snapshot-group-${config:CONSTRUCTED_CONSUMER_ID}`,
         offsetReset: "earliest",
-        topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC],
-        secureSocket: conn:secureSocketConfig,
-        securityProtocol: kafka:PROTOCOL_SSL
+        topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC]
     };
     kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsSnapshotConfig);
     do {
