@@ -17,18 +17,27 @@
 import ballerina/websubhub;
 import ballerina/io;
 
+type OAuth2Config record {|
+    string tokenUrl;
+    string clientId;
+    string clientSecret;
+    string trustStore;
+    string trustStorePassword;
+|};
+configurable OAuth2Config oauth2Config = ?;
+
 public function main() returns error? {
     websubhub:PublisherClient websubHubClientEP = check new("https://localhost:9000/hub",
         auth = {
-            tokenUrl: "https://localhost:9443/oauth2/token",
-            clientId: "8EsaVTsN64t4sMDhGvBqJoqMi8Ea",
-            clientSecret: "QC71AIfbBjhgAibpi0mpfIEK_bMa",
+            tokenUrl: oauth2Config.tokenUrl,
+            clientId: oauth2Config.clientId,
+            clientSecret: oauth2Config.clientSecret,
             scopes: ["register_topic"],
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../_resources/client-truststore.jks",
-                        password: "wso2carbon"
+                        path: oauth2Config.trustStore,
+                        password: oauth2Config.trustStorePassword
                     }
                 }
             }
@@ -37,6 +46,6 @@ public function main() returns error? {
             cert: "../_resources/server.crt"
         }
     );
-    var registrationResponse = websubHubClientEP->registerTopic("test");
-    io:println("Receieved topic registration result : ", registrationResponse);
+    websubhub:TopicRegistrationSuccess registrationResponse = check websubHubClientEP->registerTopic("test");
+    io:println("Receieved topic registration result: ", registrationResponse);
 }
