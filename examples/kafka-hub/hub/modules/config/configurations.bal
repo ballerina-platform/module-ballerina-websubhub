@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import kafkaHub.types;
 import kafkaHub.util;
 
 # Flag to check whether to enable/disable security
@@ -51,9 +52,6 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # The base URL of IDP
-public configurable string MOSIP_AUTH_BASE_URL = "https://host/";
-
-# The token validation URL of IDP
-public configurable string MOSIP_AUTH_VALIDATE_TOKEN_URL = "https://host/oauth2/token";
+public configurable types:OAuth2Config OAUTH2_CONFIG = ?;
 
 public final string CONSTRUCTED_SERVER_ID = string `${SERVER_ID}-${util:generateRandomString()}`;

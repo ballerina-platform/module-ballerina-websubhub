@@ -33,5 +33,11 @@ MESSAGE_DELIVERY_COUNT = 3
 # The message delivery timeout
 MESSAGE_DELIVERY_TIMEOUT = 10.0
 
+[kafkaHub.config.OAUTH2_CONFIG]
+issuer = "https://localhost:9443/oauth2/token"
+jwksUrl = "https://localhost:9443/oauth2/jwks"
+trustStore = "./resources/client-truststore.jks"
+trustStorePassword = "wso2carbon"
+
 [ballerina.log]
 level = "DEBUG"
