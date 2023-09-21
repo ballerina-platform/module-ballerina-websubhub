@@ -114,6 +114,8 @@ docker container run -d --name wso2-is-instance -p 9443:9443 ayeshalmeida/wso2-i
 
 If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
 
+Security is optional in this deployment if you are not interested in security aspect of the deployment you can skip this step.
+
 ## Starting the Consolidator Service
 Once those servers are up and running the `Event Consolidator Service` could be started. Go into `consolidator` directory and run following command to build the project.
 ```
@@ -144,7 +146,7 @@ bal build
 
 Then to run the project execute the below command.
 ```
-BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/kafka_hub_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/kafkaHub.jar
 ```
 
 ### Running in Docker
@@ -158,9 +160,9 @@ Then to run the docker container execute the below command.
 docker run -p 9000:9000 -d ballerina/kafka:v1
 ```
 
-### Starting Multiple Hub Instances
+### Starting Multiple Hub Instances (Optional)
 
-* Copy the `kafka_hub_service.jar` to another location.
+* Copy the `kafkaHub.jar` to another location.
 
 * Copy the `Config.toml` which you could find in the project root directory.
 
@@ -168,7 +170,7 @@ docker run -p 9000:9000 -d ballerina/kafka:v1
 
 * Go into that location and run the following command.
 ```
-bal run kafka_hub_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run kafkaHub.jar
 ```
 
 ## Registering Topics
