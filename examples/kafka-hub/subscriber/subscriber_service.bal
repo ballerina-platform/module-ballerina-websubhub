@@ -17,6 +17,15 @@
 import ballerina/websub;
 import ballerina/log;
 
+type OAuth2Config record {|
+    string tokenUrl;
+    string clientId;
+    string clientSecret;
+    string trustStore;
+    string trustStorePassword;
+|};
+configurable OAuth2Config oauth2Config = ?;
+
 listener websub:Listener securedSubscriber = new(9100,
     host = "localhost",
     secureSocket = {
@@ -31,15 +40,15 @@ listener websub:Listener securedSubscriber = new(9100,
     target: ["https://localhost:9000/hub", "test"],
     httpConfig: {
         auth : {
-            tokenUrl: "https://localhost:9443/oauth2/token",
-            clientId: "8EsaVTsN64t4sMDhGvBqJoqMi8Ea",
-            clientSecret: "QC71AIfbBjhgAibpi0mpfIEK_bMa",
+            tokenUrl: oauth2Config.tokenUrl,
+            clientId: oauth2Config.clientId,
+            clientSecret: oauth2Config.clientSecret,
             scopes: ["subscribe"],
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../_resources/client-truststore.jks",
-                        password: "wso2carbon"
+                        path: oauth2Config.trustStore,
+                        password: oauth2Config.trustStorePassword
                     }
                 }
             }
