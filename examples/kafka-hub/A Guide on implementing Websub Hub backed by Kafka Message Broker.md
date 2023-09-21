@@ -86,7 +86,6 @@ This example uses a single node Kafka cluster. But in reality it can span across
 
 # Usage 
 This section discusses starting the hub, subscribing to the hub and message publishing to the hub.
-Starting the Hub
 Before starting the hub, both the WSO2 Identity Server and the Kafka message broker should be up and running.
 
 ## Starting Apache Kafka
@@ -114,7 +113,7 @@ docker container run -d --name wso2-is-instance -p 9443:9443 ayeshalmeida/wso2-i
 
 If you are interested in what we have configured in WSO2 IS, check the Appendix section. Please note that we haven’t made an effort to bind scopes to user claims as our goal is only to mimic the interaction between the hub and the IdP.
 
-Security is optional in this deployment if you are not interested in security aspect of the deployment you can skip this step.
+Security is optional in this deployment. Hence, if you are not interested in security aspect of the deployment you can skip this step.
 
 ## Starting the Consolidator Service
 Once those servers are up and running the `Event Consolidator Service` could be started. Go into `consolidator` directory and run following command to build the project.
@@ -148,6 +147,8 @@ Then to run the project execute the below command.
 ```
 BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/kafkaHub.jar
 ```
+
+**Note: If you want to disable the security of the deployment, update `SECURITY_ON` configurations in the `Config.toml` file.**
 
 ### Running in Docker
 Go into `hub` directory and run following command to build the docker image for the project.
