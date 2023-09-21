@@ -17,24 +17,11 @@
 import ballerinax/kafka;
 import kafkaHub.config;
 
-final kafka:SecureSocket & readonly secureSocketConfig = {
-    cert: "./resources/brokercerts/broker.public.crt",
-    protocol: {
-        name: kafka:SSL
-    },
-    'key: {
-        certFile: "./resources/brokercerts/client.public.crt",
-        keyFile: "./resources/brokercerts/client.private.key"
-    }
-};
-
 // Producer which persist the current in-memory state of the Hub 
 kafka:ProducerConfiguration statePersistConfig = {
     clientId: "state-persist",
     acks: "1",
-    retryCount: 3,
-    secureSocket: secureSocketConfig,
-    securityProtocol: kafka:PROTOCOL_SSL
+    retryCount: 3
 };
 public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
 
@@ -42,9 +29,7 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTS
 kafka:ConsumerConfiguration websubEventsConsumerConfig = {
     groupId: "websub-events-receiver-" + config:CONSTRUCTED_SERVER_ID,
     offsetReset: "earliest",
-    topics: [ config:WEBSUB_EVENTS_TOPIC ],
-    secureSocket: secureSocketConfig,
-    securityProtocol: kafka:PROTOCOL_SSL
+    topics: [ config:WEBSUB_EVENTS_TOPIC ]
 };
 public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsConsumerConfig);
 
@@ -57,9 +42,7 @@ public isolated function createMessageConsumer(string topicName, string groupNam
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
         topics: [topicName],
-        autoCommit: false,
-        secureSocket: secureSocketConfig,
-        securityProtocol: kafka:PROTOCOL_SSL
+        autoCommit: false
     };
     return check new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
 }
