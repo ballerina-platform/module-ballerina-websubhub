@@ -20,3 +20,10 @@ public type SystemStateSnapshot record {|
     websubhub:TopicRegistration[] topics;
     websubhub:VerifiedSubscription[] subscriptions;
 |};
+
+public type OAuth2Config record {|
+    string issuer;
+    string jwksUrl;
+    string trustStore;
+    string trustStorePassword;
+|};
