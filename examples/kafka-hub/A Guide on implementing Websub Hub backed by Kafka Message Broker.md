@@ -180,7 +180,7 @@ bal build topic_registration_client.bal
 Then execute the below command to run the program.
 
 ```
-bal run topic_registration_client.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run topic_registration_client.jar
 ```
 
 ## Subscribing to the Hub
@@ -193,7 +193,7 @@ bal build subscriber_service.bal
 Then execute the below command to run the program.
 
 ```
-bal run subscriber_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run subscriber_service.jar
 ```
 
 ## Publishing to the Hub
@@ -206,7 +206,7 @@ bal build content_publish_client.bal
 Then execute the below command to run the program.
 
 ```
-bal run content_publish_client.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run content_publish_client.jar
 ```
 
 # Scaling the Hub
