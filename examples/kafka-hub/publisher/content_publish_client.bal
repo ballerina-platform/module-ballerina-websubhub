@@ -32,7 +32,7 @@ public function main() returns error? {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
             clientSecret: oauth2Config.clientSecret,
-            scopes: ["register_topic"],
+            scopes: ["update_content"],
             clientConfig: {
                 secureSocket: {
                     cert: {
