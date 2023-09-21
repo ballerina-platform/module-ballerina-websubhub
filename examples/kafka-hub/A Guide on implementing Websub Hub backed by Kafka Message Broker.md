@@ -122,7 +122,7 @@ bal build
 
 Then to run the project execute the below command.
 ```
-bal run target/bin/consolidatorService.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/consolidatorService.jar
 ```
 
 ### Running in Docker
@@ -133,7 +133,7 @@ bal build --cloud=docker
 
 Then to run the docker container execute the below command.
 ```
-docker run -d ballerina/consolidator:v1
+docker run -p 10001:10001 -d ballerina/consolidator:v1
 ```
 
 ## Starting the Hub
@@ -144,7 +144,7 @@ bal build
 
 Then to run the project execute the below command.
 ```
-bal run target/bin/kafka_hub_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/kafka_hub_service.jar
 ```
 
 ### Running in Docker
