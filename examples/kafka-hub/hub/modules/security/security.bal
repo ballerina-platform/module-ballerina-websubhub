@@ -16,19 +16,20 @@
 
 import ballerina/log;
 import ballerina/http;
+import kafkaHub.config;
 import ballerina/jwt;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: "https://localhost:9443/oauth2/token",
-    audience: "ballerina",
+    issuer: config:OAUTH2_CONFIG.issuer,
+    audience: config:OAUTH2_CONFIG.audience,
     signatureConfig: {
         jwksConfig: {
-            url: "https://localhost:9443/oauth2/jwks",
+            url: config:OAUTH2_CONFIG.jwksUrl,
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "./resources/client-truststore.jks",
-                        password: "wso2carbon"
+                        path: config:OAUTH2_CONFIG.trustStore,
+                        password: config:OAUTH2_CONFIG.trustStorePassword
                     }
                 }
             }
