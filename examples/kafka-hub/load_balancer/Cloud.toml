@@ -4,16 +4,8 @@ name="loadbalancersvc"
 tag="v1"
 
 [[container.copy.files]]
-sourceFile="./resources/server.crt"
-target="/home/ballerina/resources/server.crt"
-
-[[container.copy.files]]
-sourceFile="./resources/server.key"
-target="/home/ballerina/resources/server.key"
-
-[[container.copy.files]]
-sourceFile="./resources/lb-config.json"
-target="/home/ballerina/resources/lb-config.json"
+sourceFile="./resources"
+target="/home/ballerina/resources"
 
 [[cloud.config.files]]
 file="./Config.toml"

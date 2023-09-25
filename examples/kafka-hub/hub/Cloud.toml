@@ -4,28 +4,8 @@ name="kafka"
 tag="v1"
 
 [[container.copy.files]]
-sourceFile="./resources/server.crt"
-target="/home/ballerina/resources/server.crt"
-
-[[container.copy.files]]
-sourceFile="./resources/server.key"
-target="/home/ballerina/resources/server.key"
-
-[[container.copy.files]]
-sourceFile="./resources/client-truststore.jks"
-target="/home/ballerina/resources/client-truststore.jks"
-
-[[container.copy.files]]
-sourceFile="./Config.toml"
-target="/home/ballerina/Config.toml"
-
-[[cloud.config.files]]
-file="./resources/server.key"
-mount_path="/home/ballerina/resorces/server.key"
-
-[[cloud.config.files]]
-file="./resources/server.crt"
-mount_path="/home/ballerina/resorces/server.crt"
+sourceFile="./resources"
+target="/home/ballerina/resources"
 
 [[cloud.config.files]]
 file="./Config.toml"
