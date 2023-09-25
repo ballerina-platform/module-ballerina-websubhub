@@ -4,8 +4,8 @@ name="consolidator"
 tag="v1"
 
 [[container.copy.files]]
-sourceFile="./Config.toml"
-target="/home/ballerina/Config.toml"
+sourceFile="./resources"
+target="/home/ballerina/resources"
 
 [[cloud.config.files]]
 file="./Config.toml"

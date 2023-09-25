@@ -86,7 +86,6 @@ This example uses a single node Kafka cluster. But in reality it can span across
 
 # Usage 
 This section discusses starting the hub, subscribing to the hub and message publishing to the hub.
-Starting the Hub
 Before starting the hub, both the WSO2 Identity Server and the Kafka message broker should be up and running.
 
 ## Starting Apache Kafka
@@ -144,7 +143,7 @@ bal build
 
 Then to run the project execute the below command.
 ```
-BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/kafka_hub_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/kafkaHub.jar
 ```
 
 ### Running in Docker
@@ -158,9 +157,9 @@ Then to run the docker container execute the below command.
 docker run -p 9000:9000 -d ballerina/kafka:v1
 ```
 
-### Starting Multiple Hub Instances
+### Starting Multiple Hub Instances (Optional)
 
-* Copy the `kafka_hub_service.jar` to another location.
+* Copy the `kafkaHub.jar` to another location.
 
 * Copy the `Config.toml` which you could find in the project root directory.
 
@@ -168,7 +167,7 @@ docker run -p 9000:9000 -d ballerina/kafka:v1
 
 * Go into that location and run the following command.
 ```
-bal run kafka_hub_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run kafkaHub.jar
 ```
 
 ## Registering Topics
@@ -181,7 +180,7 @@ bal build topic_registration_client.bal
 Then execute the below command to run the program.
 
 ```
-bal run topic_registration_client.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run topic_registration_client.jar
 ```
 
 ## Subscribing to the Hub
@@ -194,7 +193,7 @@ bal build subscriber_service.bal
 Then execute the below command to run the program.
 
 ```
-bal run subscriber_service.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run subscriber_service.jar
 ```
 
 ## Publishing to the Hub
@@ -207,7 +206,7 @@ bal build content_publish_client.bal
 Then execute the below command to run the program.
 
 ```
-bal run content_publish_client.jar
+BAL_CONFIG_FILES=/path/to/Config.toml bal run content_publish_client.jar
 ```
 
 # Scaling the Hub
