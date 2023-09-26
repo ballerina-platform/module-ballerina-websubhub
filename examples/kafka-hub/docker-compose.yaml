@@ -16,7 +16,7 @@ services:
         network_mode: "host"
 
     hub-1:
-        image: 'ballerina/kafka:v1'
+        image: 'ballerina/kafkahub:v1'
         container_name: hub-1
         depends_on:
             consolidator:
@@ -36,7 +36,7 @@ services:
         network_mode: "host"
     
     hub-2:
-        image: 'ballerina/kafka:v1'
+        image: 'ballerina/kafkahub:v1'
         container_name: hub-2
         depends_on:
             consolidator:
