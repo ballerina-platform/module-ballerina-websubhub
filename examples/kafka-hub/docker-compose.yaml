@@ -27,6 +27,7 @@ services:
         environment:
             HUB_PORT: 9000
             SERVER_ID: "server-1"
+            KAFKA_BOOTSTRAP_NODE: "localhost:9094"
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
             interval: 30s
@@ -34,6 +35,13 @@ services:
             start_period: 30s
             retries: 10
         network_mode: "host"
+        volumes:
+            # Kafka broker certificate
+            - /path/to/broker.public.crt:/home/ballerina/resources/brokercerts/broker.public.crt
+            # Kafka client certificate
+            - /path/to/client.public.crt:/home/ballerina/resources/brokercerts/client.public.crt
+            # Kafka client key
+            - /path/to/client.private.key:/home/ballerina/resources/brokercerts/client.private.key
     
     hub-2:
         image: 'ballerina/kafkahub:v1'
@@ -47,6 +55,7 @@ services:
         environment:
             HUB_PORT: 9001
             SERVER_ID: "server-2"
+            KAFKA_BOOTSTRAP_NODE: "localhost:9094"
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
             interval: 30s
@@ -54,15 +63,21 @@ services:
             start_period: 30s
             retries: 10
         network_mode: "host"
+        volumes:
+            # Kafka broker certificate
+            - /path/to/broker.public.crt:/home/ballerina/resources/brokercerts/broker.public.crt
+            # Kafka client certificate
+            - /path/to/client.public.crt:/home/ballerina/resources/brokercerts/client.public.crt
+            # Kafka client key
+            - /path/to/client.private.key:/home/ballerina/resources/brokercerts/client.private.key
 
     consolidator: 
         image: 'ballerina/consolidator:v1'
         container_name: consolidator
         ports:
             - '10001:10001'
-        depends_on:
-            broker:
-                condition: service_started
+        environment:
+            KAFKA_BOOTSTRAP_NODE: "localhost:9094"
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:10001/health/readiness' || exit 1"]
             interval: 30s
@@ -70,6 +85,13 @@ services:
             start_period: 30s
             retries: 10
         network_mode: "host"
+        volumes:
+            # Kafka broker certificate
+            - /path/to/broker.public.crt:/home/ballerina/resources/brokercerts/broker.public.crt
+            # Kafka client certificate
+            - /path/to/client.public.crt:/home/ballerina/resources/brokercerts/client.public.crt
+            # Kafka client key
+            - /path/to/client.private.key:/home/ballerina/resources/brokercerts/client.private.key
 
     idp:
         image: 'ayeshalmeida/wso2-is:5.11.0.update'
@@ -77,39 +99,3 @@ services:
         ports:
             - '9443:9443'
         network_mode: "host"
-
-    zookeeper:
-        image: 'confluentinc/cp-zookeeper:7.5.0'
-        hostname: zookeeper
-        container_name: kafka-zookeeper
-        ports:
-            - '2181:2181'
-        environment:
-            ZOOKEEPER_CLIENT_PORT: 2181
-            ZOOKEEPER_TICK_TIME: 2000
-
-    broker:
-        image: 'ayeshalmeida/cp-server:7.5.0'
-        container_name: kafka-broker
-        depends_on:
-            - zookeeper
-        ports:
-            - '9094:9094'
-        environment:
-            KAFKA_BROKER_ID: 1
-            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-            KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
-            KAFKA_NUM_PARTITIONS: 3
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,EX_PLAINTEXT://localhost:9092,EX_SSL://localhost:9094
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EX_PLAINTEXT:PLAINTEXT,EX_SSL:SSL
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3
-            KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-            KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker.keystore.jks
-            KAFKA_SSL_KEYSTORE_CREDENTIALS: broker_keystore_creds
-            KAFKA_SSL_KEY_CREDENTIALS: broker_sslkey_creds
-            KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.broker.truststore.jks
-            KAFKA_SSL_TRUSTSTORE_CREDENTIALS: broker_truststore_creds
