@@ -10,6 +10,9 @@ services:
             hub-1:
                 condition: service_healthy
                 restart: true
+            hub-2:
+                condition: service_healthy
+                restart: true
         network_mode: "host"
 
     hub-1:
@@ -43,7 +46,7 @@ services:
         environment:
             HUB_PORT: 9001
         healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
+            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
             interval: 30s
             timeout: 10s
             start_period: 30s
