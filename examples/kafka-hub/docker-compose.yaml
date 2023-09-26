@@ -1,19 +1,76 @@
 version: '2'
 
 services:
+    lb:
+        image: 'ballerina/loadbalancersvc:v1'
+        container_name: lb
+        ports:
+            - '9090:9090'
+        depends_on:
+            hub-1:
+                condition: service_healthy
+                restart: true
+        volumes:
+            - ./load_balancer/resources/lb-config.json:/home/ballerina/resources/lb-config.json
+        network_mode: "host"
+
+    hub-1:
+        image: 'ballerina/kafka:v1'
+        container_name: hub-1
+        ports:
+            - '9000:9000'
+        depends_on:
+            consolidator:
+                condition: service_healthy
+                restart: true
+            idp:
+                condition: service_started
+        healthcheck:
+            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
+            interval: 30s
+            timeout: 10s
+            start_period: 30s
+            retries: 10
+        volumes:
+            - ./hub/Config.toml:/home/ballerina/Config.toml
+        network_mode: "host"
+
+    consolidator: 
+        image: 'ballerina/consolidator:v1'
+        container_name: consolidator
+        ports:
+            - '10001:10001'
+        depends_on:
+            broker:
+                condition: service_started
+        healthcheck:
+            test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:10001/health/readiness' || exit 1"]
+            interval: 30s
+            timeout: 10s
+            start_period: 30s
+            retries: 10
+        network_mode: "host"
+
+    idp:
+        image: 'ayeshalmeida/wso2-is:5.11.0.update'
+        container_name: idp
+        ports:
+            - '9443:9443'
+        network_mode: "host"
+
     zookeeper:
         image: 'confluentinc/cp-zookeeper:latest'
         hostname: zookeeper
-        container_name: kafka-test-zookeeper
+        container_name: kafka-zookeeper
         ports:
             - '2181:2181'
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_TICK_TIME: 2000
+
     broker:
         image: 'confluentinc/cp-server:latest'
-        hostname: broker
-        container_name: kafka-test-broker
+        container_name: kafka-broker
         depends_on:
             - zookeeper
         ports:
