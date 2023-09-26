@@ -2,7 +2,7 @@ version: '2'
 
 services:
     lb:
-        image: 'ayeshalmeida/loadbalancersvc:1.0.0'
+        image: 'ballerina/loadbalancersvc:v1'
         container_name: lb
         ports:
             - '9090:9090'
@@ -16,7 +16,7 @@ services:
         network_mode: "host"
 
     hub-1:
-        image: 'ayeshalmeida/kafkahub:1.0.0'
+        image: 'ballerina/kafkahub:v1'
         container_name: hub-1
         depends_on:
             consolidator:
@@ -36,7 +36,7 @@ services:
         network_mode: "host"
     
     hub-2:
-        image: 'ayeshalmeida/kafkahub:1.0.0'
+        image: 'ballerina/kafkahub:v1'
         container_name: hub-2
         depends_on:
             consolidator:
@@ -56,7 +56,7 @@ services:
         network_mode: "host"
 
     consolidator: 
-        image: 'ayeshalmeida/consolidator:1.0.0'
+        image: 'ballerina/consolidator:v1'
         container_name: consolidator
         ports:
             - '10001:10001'
