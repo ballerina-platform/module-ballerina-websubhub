@@ -54,7 +54,7 @@ isolated function syncSystemState() returns error? {
         secureSocket: conn:secureSocketConfig,
         securityProtocol: kafka:PROTOCOL_SSL
     };
-    kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsSnapshotConfig);
+    kafka:Consumer websubEventsSnapshotConsumer = check new (config:KAFKA_URL, websubEventsSnapshotConfig);
     do {
         types:SystemStateSnapshot[] events = check websubEventsSnapshotConsumer->pollPayload(config:POLLING_INTERVAL);
         if events.length() > 0 {

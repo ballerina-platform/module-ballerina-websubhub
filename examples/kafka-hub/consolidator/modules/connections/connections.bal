@@ -36,7 +36,7 @@ kafka:ProducerConfiguration statePersistConfig = {
     secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
-public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
+public final kafka:Producer statePersistProducer = check new (config:KAFKA_URL, statePersistConfig);
 
 // Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
 public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
@@ -46,4 +46,4 @@ public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
     secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
-public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventConsumerConfig);
+public final kafka:Consumer websubEventConsumer = check new (config:KAFKA_URL, websubEventConsumerConfig);

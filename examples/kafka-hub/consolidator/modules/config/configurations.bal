@@ -15,9 +15,12 @@
 // under the License.
 
 import consolidatorService.util;
+import ballerina/os;
 
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
+
+public final string KAFKA_URL = os:getEnv("KAFKA_BOOTSTRAP_NODE") == "" ? KAFKA_BOOTSTRAP_NODE : os:getEnv("KAFKA_BOOTSTRAP_NODE");
 
 # Kafka topic which stores websub-events for this server
 public configurable string WEBSUB_EVENTS_TOPIC = "websub-events";

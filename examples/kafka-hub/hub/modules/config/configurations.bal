@@ -30,6 +30,8 @@ public final string SERVER_IDENTIFIER = os:getEnv("SERVER_ID") == "" ? SERVER_ID
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
+public final string KAFKA_URL = os:getEnv("KAFKA_BOOTSTRAP_NODE") == "" ? KAFKA_BOOTSTRAP_NODE : os:getEnv("KAFKA_BOOTSTRAP_NODE");
+
 # Kafka topic which is stores websub-events for this server
 public configurable string WEBSUB_EVENTS_TOPIC = "websub-events";
 
