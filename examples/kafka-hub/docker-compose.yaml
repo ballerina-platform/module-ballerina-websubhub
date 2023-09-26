@@ -10,29 +10,44 @@ services:
             hub-1:
                 condition: service_healthy
                 restart: true
-        volumes:
-            - ./load_balancer/resources/lb-config.json:/home/ballerina/resources/lb-config.json
         network_mode: "host"
 
     hub-1:
         image: 'ballerina/kafka:v1'
         container_name: hub-1
-        ports:
-            - '9000:9000'
         depends_on:
             consolidator:
                 condition: service_healthy
                 restart: true
             idp:
                 condition: service_started
+        environment:
+            HUB_PORT: 9000
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
             interval: 30s
             timeout: 10s
             start_period: 30s
             retries: 10
-        volumes:
-            - ./hub/Config.toml:/home/ballerina/Config.toml
+        network_mode: "host"
+    
+    hub-2:
+        image: 'ballerina/kafka:v1'
+        container_name: hub-2
+        depends_on:
+            consolidator:
+                condition: service_healthy
+                restart: true
+            idp:
+                condition: service_started
+        environment:
+            HUB_PORT: 9001
+        healthcheck:
+            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
+            interval: 30s
+            timeout: 10s
+            start_period: 30s
+            retries: 10
         network_mode: "host"
 
     consolidator: 
