@@ -4,5 +4,11 @@
         "secureSocket": {
             "cert": "./resources/server.crt"
         }
+    },
+    {
+        "url": "https://localhost:9001",
+        "secureSocket": {
+            "cert": "./resources/server.crt"
+        }
     }
 ]
