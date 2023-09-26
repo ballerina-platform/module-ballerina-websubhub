@@ -36,7 +36,7 @@ kafka:ProducerConfiguration statePersistConfig = {
     secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
-public final kafka:Producer statePersistProducer = check new (config:KAFKA_BOOTSTRAP_NODE, statePersistConfig);
+public final kafka:Producer statePersistProducer = check new (config:KAFKA_URL, statePersistConfig);
 
 // Consumer which reads the persisted subscriber details
 kafka:ConsumerConfiguration websubEventsConsumerConfig = {
@@ -46,7 +46,7 @@ kafka:ConsumerConfiguration websubEventsConsumerConfig = {
     secureSocket: secureSocketConfig,
     securityProtocol: kafka:PROTOCOL_SSL
 };
-public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_BOOTSTRAP_NODE, websubEventsConsumerConfig);
+public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_URL, websubEventsConsumerConfig);
 
 # Creates a `kafka:Consumer` for a subscriber.
 # 
@@ -61,5 +61,5 @@ public isolated function createMessageConsumer(string topicName, string groupNam
         secureSocket: secureSocketConfig,
         securityProtocol: kafka:PROTOCOL_SSL
     };
-    return check new (config:KAFKA_BOOTSTRAP_NODE, consumerConfiguration);  
+    return check new (config:KAFKA_URL, consumerConfiguration);  
 }
