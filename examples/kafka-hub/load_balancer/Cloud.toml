@@ -7,5 +7,9 @@ tag="v1"
 sourceFile="./resources"
 target="/home/ballerina/resources"
 
+[[container.copy.files]]
+sourceFile="./Config.toml"
+target="/home/ballerina/Config.toml"
+
 [[cloud.config.files]]
 file="./Config.toml"
