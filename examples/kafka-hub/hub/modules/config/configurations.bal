@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import kafkaHub.util;
+import ballerina/os;
 import kafkaHub.types;
 
 # Flag to check whether to enable/disable security
@@ -23,6 +23,8 @@ public configurable boolean SECURITY_ON = true;
 # Server ID is is used to uniquely identify each server 
 # Each server must have a unique ID
 public configurable string SERVER_ID = "server-1";
+
+public final string SERVER_IDENTIFIER = os:getEnv("SERVER_ID") == "" ? SERVER_ID : os:getEnv("SERVER_ID");
 
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
@@ -53,5 +55,3 @@ public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # The Oauth2 authorization related configurations
 public configurable types:OAuth2Config OAUTH2_CONFIG = ?;
-
-public final string CONSTRUCTED_SERVER_ID = string `${SERVER_ID}-${util:generateRandomString()}`;

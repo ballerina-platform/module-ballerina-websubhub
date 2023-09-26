@@ -51,7 +51,7 @@ function processSubscription(websubhub:VerifiedSubscription subscription) return
     string serverId = check subscription[SERVER_ID].ensureType();
     // if the subscription already exists in the `hub` instance, or the given subscription
     // does not belong to the `hub` instance do not start the consumer
-    if subscriberAlreadyAvailable || serverId != config:SERVER_ID {
+    if subscriberAlreadyAvailable || serverId != config:SERVER_IDENTIFIER {
         log:printDebug(string `Subscriber ${subscriberId} is already available or it does not belong to the current server, hence not starting the consumer`, 
             subscriberAvailable = subscriberAlreadyAvailable, serverId = serverId);
         return;
