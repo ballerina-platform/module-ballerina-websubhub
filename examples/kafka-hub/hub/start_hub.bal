@@ -18,14 +18,16 @@ import ballerina/log;
 import ballerina/http;
 import ballerina/websubhub;
 import ballerina/lang.runtime;
+import ballerina/os;
 import kafkaHub.config;
 
 public function main() returns error? {    
     // Initialize the Hub
     check initializeHubState();
-    
+
+    int hubPort = check getHubPort();
     // Start the HealthCheck Service
-    http:Listener httpListener = check new (config:HUB_PORT, 
+    http:Listener httpListener = check new (hubPort, 
         secureSocket = {
             key: {
                 certFile: "./resources/server.crt",
@@ -42,4 +44,12 @@ public function main() returns error? {
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
     log:printInfo("Websubhub service started successfully");
+}
+
+isolated function getHubPort() returns int|error {
+    string hubPort = os:getEnv("HUB_PORT");
+    if hubPort == "" {
+        return config:HUB_PORT;
+    }
+    return int:fromString(hubPort);
 }
