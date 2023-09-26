@@ -1,6 +1,6 @@
 [container.image]
 repository="ballerina"
-name="kafka"
+name="kafkahub"
 tag="v1"
 
 [[container.copy.files]]
