@@ -146,7 +146,7 @@ service object {
                 string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
                 message[CONSUMER_GROUP] = consumerGroup;
             }
-            message[SERVER_ID] = config:SERVER_ID;
+            message[SERVER_ID] = config:SERVER_IDENTIFIER;
             error? persistingResult = persist:addSubscription(message.cloneReadOnly());
             if persistingResult is error {
                 log:printError("Error occurred while persisting the subscription ", err = persistingResult.message());

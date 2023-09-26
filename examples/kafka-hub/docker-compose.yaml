@@ -26,6 +26,7 @@ services:
                 condition: service_started
         environment:
             HUB_PORT: 9000
+            SERVER_ID: "server-1"
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
             interval: 30s
@@ -45,6 +46,7 @@ services:
                 condition: service_started
         environment:
             HUB_PORT: 9001
+            SERVER_ID: "server-2"
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
             interval: 30s
