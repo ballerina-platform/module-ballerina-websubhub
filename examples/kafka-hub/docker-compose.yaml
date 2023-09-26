@@ -77,7 +77,7 @@ services:
         network_mode: "host"
 
     zookeeper:
-        image: 'confluentinc/cp-zookeeper:latest'
+        image: 'confluentinc/cp-zookeeper:7.5.0'
         hostname: zookeeper
         container_name: kafka-zookeeper
         ports:
@@ -87,7 +87,7 @@ services:
             ZOOKEEPER_TICK_TIME: 2000
 
     broker:
-        image: 'confluentinc/cp-server:latest'
+        image: 'ayeshalmeida/cp-server:7.5.0'
         container_name: kafka-broker
         depends_on:
             - zookeeper
@@ -111,9 +111,3 @@ services:
             KAFKA_SSL_KEY_CREDENTIALS: broker_sslkey_creds
             KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.broker.truststore.jks
             KAFKA_SSL_TRUSTSTORE_CREDENTIALS: broker_truststore_creds
-        volumes:
-            - ./_resources/trustoresandkeystores/broker_keystore_creds:/etc/kafka/secrets/broker_keystore_creds
-            - ./_resources/trustoresandkeystores/broker_sslkey_creds:/etc/kafka/secrets/broker_sslkey_creds
-            - ./_resources/trustoresandkeystores/broker_truststore_creds:/etc/kafka/secrets/broker_truststore_creds
-            - ./_resources/trustoresandkeystores/kafka.broker.keystore.jks:/etc/kafka/secrets/kafka.broker.keystore.jks
-            - ./_resources/trustoresandkeystores/kafka.broker.truststore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
