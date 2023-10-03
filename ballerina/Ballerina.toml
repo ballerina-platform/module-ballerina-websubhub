@@ -16,4 +16,4 @@ graalvmCompatible = true
 groupId = "io.ballerina.stdlib"
 artifactId = "websubhub-native"
 version = "1.10.0"
-path = "../native/build/libs/websubhub-native-1.10.0-SNAPSHOT.jar"
+path = "../native/build/libs/websubhub-native-1.10.0.jar"
