@@ -54,7 +54,9 @@ import static io.ballerina.stdlib.websubhub.Constants.SERVICE_OBJECT;
 /**
  * {@code NativeHttpToWebsubhubAdaptor} is a wrapper object used for service method execution.
  */
-public class NativeHttpToWebsubhubAdaptor {
+public final class NativeHttpToWebsubhubAdaptor {
+    private NativeHttpToWebsubhubAdaptor() {}
+
     public static void externInit(BObject adaptor, BObject serviceObj) {
         adaptor.addNativeData(SERVICE_OBJECT, serviceObj);
     }
