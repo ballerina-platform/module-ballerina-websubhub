@@ -16,6 +16,7 @@
 
 import consolidatorService.util;
 import ballerina/os;
+import consolidatorService.types;
 
 # IP and Port of the Kafka bootstrap node
 public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
@@ -35,6 +36,9 @@ public configurable decimal POLLING_INTERVAL = 10;
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
 public final string CONSTRUCTED_CONSUMER_ID = util:generateRandomString();
+
+# The MTLS configurations related to Kafka connection
+public configurable types:KafkaMtlsConfig KAFKA_MTLS_CONFIG = ?;
 
 # The port that is used to start the HTTP endpoint for consolidator
 public configurable int CONSOLIDATOR_HTTP_ENDPOINT_PORT = 10001;
