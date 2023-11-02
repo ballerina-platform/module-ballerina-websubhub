@@ -59,4 +59,7 @@ public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 # The Oauth2 authorization related configurations
 public configurable types:OAuth2Config OAUTH2_CONFIG = ?;
 
+# The MTLS configurations related to Kafka connection
+public configurable types:KafkaMtlsConfig KAFKA_MTLS_CONFIG = ?;
+
 public final string CONSTRUCTED_SERVER_ID = string `${SERVER_IDENTIFIER}-${util:generateRandomString()}`;

@@ -41,5 +41,11 @@ jwksUrl = "https://localhost:9443/oauth2/jwks"
 trustStore = "./resources/client-truststore.jks"
 trustStorePassword = "wso2carbon"
 
+# The MTLS configurations related to Kafka connection
+[kafkaHub.config.KAFKA_MTLS_CONFIG]
+brokerCert = "./resources/brokercerts/broker.public.crt"
+clientCert = "./resources/brokercerts/client.public.crt"
+clientKey = "./resources/brokercerts/client.private.key"
+
 [ballerina.log]
 level = "DEBUG"
