@@ -28,3 +28,10 @@ public type OAuth2Config record {|
     string trustStore;
     string trustStorePassword;
 |};
+
+public type KafkaMtlsConfig record {|
+    string brokerCert;
+    string clientCert;
+    string clientKey;
+    string keyPassword?;
+|};

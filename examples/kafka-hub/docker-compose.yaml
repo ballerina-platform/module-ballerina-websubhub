@@ -27,10 +27,14 @@ services:
         environment:
             HUB_PORT: 9000
             SERVER_ID: "server-1"
+        volumes:
+            - ./_resources/brokercerts/broker.public.crt:/home/ballerina/resources/brokercerts/broker.public.crt
+            - ./_resources/brokercerts/client.public.crt:/home/ballerina/resources/brokercerts/client.public.crt
+            - ./_resources/brokercerts/client.private.key:/home/ballerina/resources/brokercerts/client.private.key
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
             interval: 30s
-            timeout: 10s
+            timeout: 10s 
             start_period: 30s
             retries: 10
         network_mode: "host"
@@ -47,6 +51,10 @@ services:
         environment:
             HUB_PORT: 9001
             SERVER_ID: "server-2"
+        volumes:
+            - ./_resources/brokercerts/broker.public.crt:/home/ballerina/resources/brokercerts/broker.public.crt
+            - ./_resources/brokercerts/client.public.crt:/home/ballerina/resources/brokercerts/client.public.crt
+            - ./_resources/brokercerts/client.private.key:/home/ballerina/resources/brokercerts/client.private.key
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
             interval: 30s
@@ -63,6 +71,10 @@ services:
         depends_on:
             broker:
                 condition: service_started
+        volumes:
+            - ./_resources/brokercerts/broker.public.crt:/home/ballerina/resources/brokercerts/broker.public.crt
+            - ./_resources/brokercerts/client.public.crt:/home/ballerina/resources/brokercerts/client.public.crt
+            - ./_resources/brokercerts/client.private.key:/home/ballerina/resources/brokercerts/client.private.key
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:10001/health/readiness' || exit 1"]
             interval: 30s

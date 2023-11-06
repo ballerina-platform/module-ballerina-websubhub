@@ -20,3 +20,10 @@ public type SystemStateSnapshot record {|
     websubhub:TopicRegistration[] topics;
     websubhub:VerifiedSubscription[] subscriptions;
 |};
+
+public type KafkaMtlsConfig record {|
+    string brokerCert;
+    string clientCert;
+    string clientKey;
+    string keyPassword?;
+|};

@@ -16,3 +16,9 @@ GRACEFUL_CLOSE_PERIOD = 5.0
 
 # The port that is used to start the HTTP endpoint for consolidator
 CONSOLIDATOR_HTTP_ENDPOINT_PORT = 10001
+
+# The MTLS configurations related to Kafka connection
+[consolidatorService.config.KAFKA_MTLS_CONFIG]
+brokerCert = "./resources/brokercerts/broker.public.crt"
+clientCert = "./resources/brokercerts/client.public.crt"
+clientKey = "./resources/brokercerts/client.private.key"

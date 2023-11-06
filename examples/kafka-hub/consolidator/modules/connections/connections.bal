@@ -18,13 +18,13 @@ import ballerinax/kafka;
 import consolidatorService.config;
 
 public final kafka:SecureSocket & readonly secureSocketConfig = {
-    cert: "./resources/brokercerts/broker.public.crt",
+    cert: config:KAFKA_MTLS_CONFIG.brokerCert,
     protocol: {
         name: kafka:SSL
     },
     'key: {
-        certFile: "./resources/brokercerts/client.public.crt",
-        keyFile: "./resources/brokercerts/client.private.key"
+        certFile: config:KAFKA_MTLS_CONFIG.clientCert,
+        keyFile: config:KAFKA_MTLS_CONFIG.clientKey
     }
 };
 
