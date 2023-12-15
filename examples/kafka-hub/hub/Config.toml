@@ -43,9 +43,10 @@ trustStorePassword = "wso2carbon"
 
 # The MTLS configurations related to Kafka connection
 [kafkaHub.config.KAFKA_MTLS_CONFIG]
-brokerCert = "./resources/brokercerts/broker.public.crt"
-clientCert = "./resources/brokercerts/client.public.crt"
-clientKey = "./resources/brokercerts/client.private.key"
+cert.path = "./resources/brokercerts/client-truststore.jks"
+cert.password = "password"
+key.keyStore.path = "./resources/brokercerts/client-keystore.jks"
+key.keyStore.password = "password"
 
 [ballerina.log]
 level = "DEBUG"
