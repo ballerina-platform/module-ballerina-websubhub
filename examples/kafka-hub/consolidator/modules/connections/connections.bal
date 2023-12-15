@@ -17,7 +17,7 @@
 import ballerinax/kafka;
 import consolidatorService.config;
 
-final kafka:SecureSocket & readonly secureSocketConfig = {
+public final kafka:SecureSocket & readonly secureSocketConfig = {
     cert: config:KAFKA_MTLS_CONFIG.cert,
     protocol: {
         name: kafka:SSL
