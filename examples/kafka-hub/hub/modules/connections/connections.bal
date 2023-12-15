@@ -16,14 +16,46 @@
 
 import ballerinax/kafka;
 import kafkaHub.config;
+import ballerina/crypto;
+import ballerina/os;
 
 final kafka:SecureSocket & readonly secureSocketConfig = {
-    cert: config:KAFKA_MTLS_CONFIG.cert,
+    cert: getCertConfig().cloneReadOnly(),
     protocol: {
         name: kafka:SSL
     },
-    'key: config:KAFKA_MTLS_CONFIG.key
+    'key: check getKeystoreConfig().cloneReadOnly()
 };
+
+isolated function getCertConfig() returns crypto:TrustStore|string {
+    crypto:TrustStore|string cert = config:KAFKA_MTLS_CONFIG.cert;
+    if cert is string {
+        return cert;
+    }
+    string trustStorePassword = os:getEnv("TRUSTSTORE_PASSWORD") == "" ? cert.password : os:getEnv("TRUSTSTORE_PASSWORD");
+    return {
+        path: cert.path,
+        password: trustStorePassword
+    };
+}
+
+isolated function getKeystoreConfig() returns record {|crypto:KeyStore keyStore; string keyPassword?;|}|kafka:CertKey|error? {
+    if config:KAFKA_MTLS_CONFIG.key is () {
+        return;
+    }
+    if config:KAFKA_MTLS_CONFIG.key is kafka:CertKey {
+        return config:KAFKA_MTLS_CONFIG.key;
+    }
+    record {|crypto:KeyStore keyStore; string keyPassword?;|} 'key = check config:KAFKA_MTLS_CONFIG.key.ensureType();
+    string keyStorePassword = os:getEnv("KEYSTORE_PASSWORD") == "" ? 'key.keyStore.password : os:getEnv("KEYSTORE_PASSWORD");
+    return {
+        keyStore: {
+            path: 'key.keyStore.path, 
+            password: keyStorePassword
+        },
+        keyPassword: 'key.keyPassword
+    };
+}
 
 // Producer which persist the current in-memory state of the Hub 
 kafka:ProducerConfiguration statePersistConfig = {
