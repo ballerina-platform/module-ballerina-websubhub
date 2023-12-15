@@ -15,6 +15,8 @@
 // under the License.
 
 import ballerina/websubhub;
+import ballerinax/kafka;
+import ballerina/crypto;
 
 public type SystemStateSnapshot record {|
     websubhub:TopicRegistration[] topics;
@@ -30,8 +32,9 @@ public type OAuth2Config record {|
 |};
 
 public type KafkaMtlsConfig record {|
-    string brokerCert;
-    string clientCert;
-    string clientKey;
-    string keyPassword?;
+    crypto:TrustStore|string cert;
+    record {|
+        crypto:KeyStore keyStore;
+        string keyPassword?;
+    |}|kafka:CertKey key?;
 |};
