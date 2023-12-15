@@ -1,7 +1,7 @@
 [container.image]
 repository="ballerina"
 name="consolidator"
-tag="v1"
+tag="2.0.0"
 
 [[container.copy.files]]
 sourceFile="./resources"
