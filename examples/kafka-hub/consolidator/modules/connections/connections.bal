@@ -17,15 +17,12 @@
 import ballerinax/kafka;
 import consolidatorService.config;
 
-public final kafka:SecureSocket & readonly secureSocketConfig = {
-    cert: config:KAFKA_MTLS_CONFIG.brokerCert,
+final kafka:SecureSocket & readonly secureSocketConfig = {
+    cert: config:KAFKA_MTLS_CONFIG.cert,
     protocol: {
         name: kafka:SSL
     },
-    'key: {
-        certFile: config:KAFKA_MTLS_CONFIG.clientCert,
-        keyFile: config:KAFKA_MTLS_CONFIG.clientKey
-    }
+    'key: config:KAFKA_MTLS_CONFIG.key
 };
 
 // Producer which persist the current consolidated in-memory state of the system
