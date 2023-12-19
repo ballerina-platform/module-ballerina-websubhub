@@ -34,7 +34,7 @@ isolated function getCertConfig() returns crypto:TrustStore|string {
     }
     string trustStorePassword = os:getEnv("TRUSTSTORE_PASSWORD") == "" ? cert.password : os:getEnv("TRUSTSTORE_PASSWORD");
     return {
-        path: cert.path,
+        path: getFilePath(cert.path, "TRUSTSTORE_FILE_NAME"),
         password: trustStorePassword
     };
 }
@@ -50,11 +50,19 @@ isolated function getKeystoreConfig() returns record {|crypto:KeyStore keyStore;
     string keyStorePassword = os:getEnv("KEYSTORE_PASSWORD") == "" ? 'key.keyStore.password : os:getEnv("KEYSTORE_PASSWORD");
     return {
         keyStore: {
-            path: 'key.keyStore.path, 
+            path: getFilePath('key.keyStore.path, "KEYSTORE_FILE_NAME"), 
             password: keyStorePassword
         },
         keyPassword: 'key.keyPassword
     };
+}
+
+isolated function getFilePath(string defaultFilePath, string envVariableName) returns string {
+    string trustStoreFileName = os:getEnv(envVariableName);
+    if trustStoreFileName == "" {
+        return defaultFilePath;
+    }
+    return string `/home/ballerina/resources/brokercerts/${trustStoreFileName}`;
 }
 
 // Producer which persist the current in-memory state of the Hub 
