@@ -1,0 +1,15 @@
+[container.image]
+repository="ballerina"
+name="wbsbpublisher"
+tag="1.0.0"
+
+[[container.copy.files]]
+sourceFile="./resources"
+target="/home/ballerina/resources"
+
+[[container.copy.files]]
+sourceFile="./Config.toml"
+target="/home/ballerina/Config.toml"
+
+[[cloud.config.files]]
+file="./Config.toml"
