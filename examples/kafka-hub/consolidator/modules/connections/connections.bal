@@ -18,6 +18,7 @@ import ballerinax/kafka;
 import consolidatorService.config;
 import ballerina/crypto;
 import ballerina/os;
+import ballerina/log;
 
 public final kafka:SecureSocket & readonly secureSocketConfig = {
     cert: getCertConfig().cloneReadOnly(),
