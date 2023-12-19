@@ -18,6 +18,7 @@ import ballerina/websub;
 import ballerina/log;
 import ballerina/http;
 import ballerina/websubhub;
+import ballerina/os;
 
 string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 
