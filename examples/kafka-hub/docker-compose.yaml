@@ -16,7 +16,7 @@ services:
         network_mode: "host"
 
     hub-1:
-        image: 'ayeshalmeida/kafkahub:4.0.0'
+        image: 'ayeshalmeida/kafkahub:5.0.0'
         container_name: hub-1
         depends_on:
             consolidator:
@@ -51,7 +51,7 @@ services:
         network_mode: "host"
     
     hub-2:
-        image: 'ayeshalmeida/kafkahub:4.0.0'
+        image: 'ayeshalmeida/kafkahub:5.0.0'
         container_name: hub-2
         depends_on:
             consolidator:
@@ -86,7 +86,7 @@ services:
         network_mode: "host"
 
     consolidator: 
-        image: 'ayeshalmeida/consolidator:4.0.0'
+        image: 'ayeshalmeida/consolidator:5.0.0'
         container_name: consolidator
         ports:
             - '10001:10001'
