@@ -19,6 +19,8 @@ import ballerina/log;
 import ballerina/http;
 import ballerina/websubhub;
 
+string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
+
 type OAuth2Config record {|
     string tokenUrl;
     string clientId;
@@ -58,7 +60,7 @@ function init() returns error? {
             cert: "./resources/server.crt"
         }
     );
-    websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError response = websubHubClientEP->registerTopic("priceUpdate");
+    websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError response = websubHubClientEP->registerTopic(topicName);
     if response is websubhub:TopicRegistrationError {
         int statusCode = response.detail().statusCode;
         if http:STATUS_CONFLICT != statusCode {
@@ -68,7 +70,7 @@ function init() returns error? {
 }
 
 @websub:SubscriberServiceConfig { 
-    target: ["https://localhost:9090/hub", "priceUpdate"],
+    target: ["https://localhost:9090/hub", topicName],
     httpConfig: {
         auth : {
             tokenUrl: oauth2Config.tokenUrl,
@@ -94,7 +96,7 @@ service /JuApTOXq19 on securedSubscriber {
     
     remote function onSubscriptionVerification(websub:SubscriptionVerification msg) 
         returns websub:SubscriptionVerificationSuccess {
-        log:printInfo(string `Successfully subscribed for notifications on topic [priceUpdate]`);
+        log:printInfo(string `Successfully subscribed for notifications on topic [${topicName}]`);
         return websub:SUBSCRIPTION_VERIFICATION_SUCCESS;
     }
 

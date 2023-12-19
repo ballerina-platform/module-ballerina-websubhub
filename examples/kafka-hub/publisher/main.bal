@@ -16,6 +16,9 @@
 
 import ballerina/websubhub;
 import ballerina/io;
+import ballerina/os;
+
+string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -53,6 +56,6 @@ public function main() returns error? {
         newPrice: 28999.00,
         currencyCode: "SEK"
     };
-    websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate("priceUpdate", params);
+    websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, params);
     io:println("Receieved content-publish result: ", response);
 }
