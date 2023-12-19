@@ -29,8 +29,12 @@ services:
             SERVER_ID: "server-1"
             # Update following enviornment variable to point to the relevant kafka-cluster
             KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            # Update following enviornment variable to set the client truststore name
+            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
             # Update following enviornment variable to set the client truststore password
             TRUSTSTORE_PASSWORD: "password"
+            # Update following enviornment variable to set the client keystore name
+            KEYSTORE_FILE_NAME: "client-keystore.jks"
             # Update following enviornment variable to set the client keystore password
             KEYSTORE_PASSWORD: "password"
         volumes:
@@ -60,8 +64,12 @@ services:
             SERVER_ID: "server-2"
             # Update following enviornment variable to point to the relevant kafka-cluster
             KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            # Update following enviornment variable to set the client truststore name
+            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
             # Update following enviornment variable to set the client truststore password
             TRUSTSTORE_PASSWORD: "password"
+            # Update following enviornment variable to set the client keystore name
+            KEYSTORE_FILE_NAME: "client-keystore.jks"
             # Update following enviornment variable to set the client keystore password
             KEYSTORE_PASSWORD: "password"
         volumes:
@@ -85,8 +93,12 @@ services:
         environment:
             # Update following enviornment variable to point to the relevant kafka-cluster
             KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            # Update following enviornment variable to set the client truststore name
+            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
             # Update following enviornment variable to set the client truststore password
             TRUSTSTORE_PASSWORD: "password"
+            # Update following enviornment variable to set the client keystore name
+            KEYSTORE_FILE_NAME: "client-keystore.jks"
             # Update following enviornment variable to set the client keystore password
             KEYSTORE_PASSWORD: "password"
         depends_on:
