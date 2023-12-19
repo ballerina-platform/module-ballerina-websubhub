@@ -1,6 +1,6 @@
-// Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,47 +16,93 @@
 
 import ballerina/websub;
 import ballerina/log;
+import ballerina/http;
+import ballerina/websubhub;
+import ballerina/os;
+
+final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
+
+type OAuth2Config record {|
+    string tokenUrl;
+    string clientId;
+    string clientSecret;
+    string trustStore;
+    string trustStorePassword;
+|};
+configurable OAuth2Config oauth2Config = ?;
 
 listener websub:Listener securedSubscriber = new(9100,
     host = "localhost",
     secureSocket = {
         key: {
-            certFile: "../_resources/server.crt",
-            keyFile: "../_resources/server.key"
+            certFile: "./resources/server.crt",
+            keyFile: "./resources/server.key"
         }
     }
 );
 
+function init() returns error? {
+    websubhub:PublisherClient websubHubClientEP = check new("https://localhost:9090/hub",
+        auth = {
+            tokenUrl: oauth2Config.tokenUrl,
+            clientId: oauth2Config.clientId,
+            clientSecret: oauth2Config.clientSecret,
+            scopes: ["register_topic"],
+            clientConfig: {
+                secureSocket: {
+                    cert: {
+                        path: oauth2Config.trustStore,
+                        password: oauth2Config.trustStorePassword
+                    }
+                }
+            }
+        },
+        secureSocket = {
+            cert: "./resources/server.crt"
+        }
+    );
+    websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError response = websubHubClientEP->registerTopic(topicName);
+    if response is websubhub:TopicRegistrationError {
+        int statusCode = response.detail().statusCode;
+        if http:STATUS_CONFLICT != statusCode {
+            return response;
+        }
+    }
+}
+
 @websub:SubscriberServiceConfig { 
-    target: ["https://localhost:9000/hub", "test"],
+    target: ["https://localhost:9090/hub", topicName],
     httpConfig: {
         auth : {
-            tokenUrl: "https://localhost:9443/oauth2/token",
-            clientId: "8EsaVTsN64t4sMDhGvBqJoqMi8Ea",
-            clientSecret: "QC71AIfbBjhgAibpi0mpfIEK_bMa",
+            tokenUrl: oauth2Config.tokenUrl,
+            clientId: oauth2Config.clientId,
+            clientSecret: oauth2Config.clientSecret,
             scopes: ["subscribe"],
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: "../_resources/client-truststore.jks",
-                        password: "wso2carbon"
+                        path: oauth2Config.trustStore,
+                        password: oauth2Config.trustStorePassword
                     }
                 }
             }
         },
         secureSocket : {
-            cert: "../_resources/server.crt"
+            cert: "./resources/server.crt"
         }
-    }
+    },
+    unsubscribeOnShutdown: true
 } 
 service /JuApTOXq19 on securedSubscriber {
-    remote function onSubscriptionValidationDenied(websub:SubscriptionDeniedError msg) returns websub:Acknowledgement? {
-        log:printInfo("onSubscriptionValidationDenied invoked", 'error = msg);
-        return websub:ACKNOWLEDGEMENT;
+    
+    remote function onSubscriptionVerification(websub:SubscriptionVerification msg) 
+        returns websub:SubscriptionVerificationSuccess {
+        log:printInfo(string `Successfully subscribed for notifications on topic [${topicName}]`);
+        return websub:SUBSCRIPTION_VERIFICATION_SUCCESS;
     }
 
-    remote function onEventNotification(websub:ContentDistributionMessage event) returns websub:Acknowledgement{
-        log:printInfo("onEventNotification invoked ", contentDistributionMessage = event);
-        return websub:ACKNOWLEDGEMENT;
+    remote function onEventNotification(websub:ContentDistributionMessage event) returns error? {
+        json notification = check event.content.ensureType();
+        log:printInfo("Received notification", content = notification);
     }
 }
