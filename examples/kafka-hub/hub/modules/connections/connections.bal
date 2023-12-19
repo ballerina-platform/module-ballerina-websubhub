@@ -18,6 +18,7 @@ import ballerinax/kafka;
 import kafkaHub.config;
 import ballerina/crypto;
 import ballerina/os;
+import ballerina/log;
 
 final kafka:SecureSocket & readonly secureSocketConfig = {
     cert: getCertConfig().cloneReadOnly(),
@@ -33,8 +34,10 @@ isolated function getCertConfig() returns crypto:TrustStore|string {
         return cert;
     }
     string trustStorePassword = os:getEnv("TRUSTSTORE_PASSWORD") == "" ? cert.password : os:getEnv("TRUSTSTORE_PASSWORD");
+    string trustStorePath = getFilePath(cert.path, "TRUSTSTORE_FILE_NAME");
+    log:printDebug("Kafka client SSL truststore configuration: ", path = trustStorePath);
     return {
-        path: getFilePath(cert.path, "TRUSTSTORE_FILE_NAME"),
+        path: trustStorePath,
         password: trustStorePassword
     };
 }
@@ -48,9 +51,11 @@ isolated function getKeystoreConfig() returns record {|crypto:KeyStore keyStore;
     }
     record {|crypto:KeyStore keyStore; string keyPassword?;|} 'key = check config:KAFKA_MTLS_CONFIG.key.ensureType();
     string keyStorePassword = os:getEnv("KEYSTORE_PASSWORD") == "" ? 'key.keyStore.password : os:getEnv("KEYSTORE_PASSWORD");
+    string keyStorePath = getFilePath('key.keyStore.path, "KEYSTORE_FILE_NAME");
+    log:printDebug("Kafka client SSL keystore configuration: ", path = keyStorePath);
     return {
         keyStore: {
-            path: getFilePath('key.keyStore.path, "KEYSTORE_FILE_NAME"), 
+            path: keyStorePath, 
             password: keyStorePassword
         },
         keyPassword: 'key.keyPassword
