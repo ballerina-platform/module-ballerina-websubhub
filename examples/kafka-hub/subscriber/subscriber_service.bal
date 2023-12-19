@@ -20,7 +20,7 @@ import ballerina/http;
 import ballerina/websubhub;
 import ballerina/os;
 
-string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
+final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 
 type OAuth2Config record {|
     string tokenUrl;
