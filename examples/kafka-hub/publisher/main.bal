@@ -14,9 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websubhub;
 import ballerina/io;
 import ballerina/os;
+import ballerina/websubhub;
 
 json DEFAULT_PAYLOAD = {
     itemName: string `Panasonic 32" LED TV`,
@@ -27,7 +27,7 @@ json DEFAULT_PAYLOAD = {
 };
 
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
-final json payload = os:getEnv("PAYLOAD") == "" ? DEFAULT_PAYLOAD: check os:getEnv("PAYLOAD").fromJsonString();
+final json payload = os:getEnv("PAYLOAD") == "" ? DEFAULT_PAYLOAD : check os:getEnv("PAYLOAD").fromJsonString();
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -36,10 +36,11 @@ type OAuth2Config record {|
     string trustStore;
     string trustStorePassword;
 |};
+
 configurable OAuth2Config oauth2Config = ?;
 
 public function main() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new("https://localhost:9090/hub",
+    websubhub:PublisherClient websubHubClientEP = check new ("https://localhost:9090/hub",
         auth = {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
