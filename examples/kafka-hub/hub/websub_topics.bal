@@ -16,6 +16,7 @@
 
 import ballerina/websubhub;
 import ballerina/log;
+import kafkaHub.util;
 
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 
@@ -27,7 +28,7 @@ isolated function processWebsubTopicsSnapshotState(websubhub:TopicRegistration[]
 }
 
 isolated function processTopicRegistration(websubhub:TopicRegistration topicRegistration) returns error? {
-    string topicName = topicRegistration.topic;
+    string topicName = util:sanitizeTopicName(topicRegistration.topic);
     log:printDebug(string `Topic registration event received for topic ${topicName}, hence adding the topic to the internal state`);
     lock {
         // add the topic if topic-registration event received
@@ -38,7 +39,7 @@ isolated function processTopicRegistration(websubhub:TopicRegistration topicRegi
 }
 
 isolated function processTopicDeregistration(websubhub:TopicDeregistration topicDeregistration) returns error? {
-    string topicName = topicDeregistration.topic;
+    string topicName = util:sanitizeTopicName(topicDeregistration.topic);
     log:printDebug(string `Topic deregistration event received for topic ${topicName}, hence removing the topic from the internal state`);
     lock {
         _ = registeredTopicsCache.removeIfHasKey(topicName);
