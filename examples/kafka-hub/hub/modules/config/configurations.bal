@@ -62,4 +62,9 @@ public configurable types:OAuth2Config OAUTH2_CONFIG = ?;
 # The MTLS configurations related to Kafka connection
 public configurable types:KafkaMtlsConfig KAFKA_MTLS_CONFIG = ?;
 
-public final string CONSTRUCTED_SERVER_ID = string `${SERVER_IDENTIFIER}-${util:generateRandomString()}`;
+# Consumer group name for `websub-events` consumer
+public final string WEBSUB_EVENTS_CONSUMER_GROUP = os:getEnv("WEBSUB_EVENTS_CONSUMER_GROUP") == "" ? constructSystemConsumerGroup() : os:getEnv("WEBSUB_EVENTS_CONSUMER_GROUP");
+
+isolated function constructSystemConsumerGroup() returns string {
+    return string `websub-events-receiver-${SERVER_IDENTIFIER}-${util:generateRandomString()}`;
+}

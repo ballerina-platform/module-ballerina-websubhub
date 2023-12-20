@@ -4,7 +4,7 @@ SECURITY_ON = true
 
 # Server ID is is used to uniquely identify each server 
 # Each server must have a unique ID
-SERVER_ID = "server-1"
+SERVER_ID = "hub-1"
 
 # IP and Port of the Kafka bootstrap node
 KAFKA_BOOTSTRAP_NODE = "localhost:9094"
