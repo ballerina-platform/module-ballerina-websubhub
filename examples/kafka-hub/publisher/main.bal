@@ -18,7 +18,16 @@ import ballerina/websubhub;
 import ballerina/io;
 import ballerina/os;
 
-string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
+json DEFAULT_PAYLOAD = {
+    itemName: string `Panasonic 32" LED TV`,
+    itemCode: "ITM30029",
+    previousPrice: 32999.00,
+    newPrice: 28999.00,
+    currencyCode: "SEK"
+};
+
+final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
+final json payload = os:getEnv("PAYLOAD") == "" ? DEFAULT_PAYLOAD: check os:getEnv("PAYLOAD").fromJsonString();
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -49,13 +58,6 @@ public function main() returns error? {
             cert: "./resources/server.crt"
         }
     );
-    json params = {
-        itemName: string `Panasonic 32" LED TV`,
-        itemCode: "ITM30029",
-        previousPrice: 32999.00,
-        newPrice: 28999.00,
-        currencyCode: "SEK"
-    };
-    websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, params);
+    websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, payload);
     io:println("Receieved content-publish result: ", response);
 }
