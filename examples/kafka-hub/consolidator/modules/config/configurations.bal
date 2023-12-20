@@ -35,10 +35,18 @@ public configurable decimal POLLING_INTERVAL = 10;
 # The period in which Kafka close method waits to complete
 public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 
-public final string CONSTRUCTED_CONSUMER_ID = util:generateRandomString();
-
 # The MTLS configurations related to Kafka connection
 public configurable types:KafkaMtlsConfig KAFKA_MTLS_CONFIG = ?;
 
 # The port that is used to start the HTTP endpoint for consolidator
 public configurable int CONSOLIDATOR_HTTP_ENDPOINT_PORT = 10001;
+
+# Consumer group name for `websub-events` consumer
+public final string WEBSUB_EVENTS_CONSUMER_GROUP = os:getEnv("WEBSUB_EVENTS_CONSUMER_GROUP") == "" ? constructSystemConsumerGroup("websub-events") : os:getEnv("WEBSUB_EVENTS_CONSUMER_GROUP");
+
+# Consumer group name for `websub-events` consumer
+public final string WEBSUB_EVENTS_SNAPSHOT_CONSUMER_GROUP = os:getEnv("WEBSUB_EVENTS_SNAPSHOT_CONSUMER_GROUP") == "" ? constructSystemConsumerGroup("websub-events-snapshot") : os:getEnv("WEBSUB_EVENTS_SNAPSHOT_CONSUMER_GROUP");
+
+isolated function constructSystemConsumerGroup(string prefix) returns string {
+    return string `${prefix}-receiver-consolidator-${util:generateRandomString()}`;
+}

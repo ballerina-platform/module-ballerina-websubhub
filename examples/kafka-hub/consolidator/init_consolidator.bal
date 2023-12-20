@@ -48,7 +48,7 @@ public function main() returns error? {
 
 isolated function syncSystemState() returns error? {
     kafka:ConsumerConfiguration websubEventsSnapshotConfig = {
-        groupId: string `websub-events-snapshot-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+        groupId: config:WEBSUB_EVENTS_SNAPSHOT_CONSUMER_GROUP,
         offsetReset: "earliest",
         topics: [config:WEBSUB_EVENTS_SNAPSHOT_TOPIC],
         secureSocket: conn:secureSocketConfig,
@@ -66,7 +66,7 @@ isolated function syncSystemState() returns error? {
         util:logError("Error occurred while syncing system-state", kafkaError, "FATAL");
         error? result = check websubEventsSnapshotConsumer->close();
         if result is error {
-            util:logError("Error occurred while gracefully closing asb:MessageReceiver", result);
+            util:logError("Error occurred while gracefully closing kafka:Consumer", result);
         }
         return kafkaError;
     }
