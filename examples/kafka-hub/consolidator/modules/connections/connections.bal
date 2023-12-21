@@ -82,7 +82,7 @@ public final kafka:Producer statePersistProducer = check new (config:KAFKA_URL, 
 
 // Consumer which reads the persisted topic-registration/topic-deregistration/subscription/unsubscription events
 public final kafka:ConsumerConfiguration websubEventConsumerConfig = {
-    groupId: string `websub-events-group-${config:CONSTRUCTED_CONSUMER_ID}`,
+    groupId: config:WEBSUB_EVENTS_CONSUMER_GROUP,
     offsetReset: "earliest",
     topics: [ config:WEBSUB_EVENTS_TOPIC ],
     secureSocket: secureSocketConfig,
