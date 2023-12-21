@@ -91,7 +91,8 @@ function init() returns error? {
             cert: "./resources/server.crt"
         }
     },
-    unsubscribeOnShutdown: true
+    unsubscribeOnShutdown: true,
+    customParams: getCustomParams()
 } 
 service /JuApTOXq19 on securedSubscriber {
     
@@ -105,4 +106,13 @@ service /JuApTOXq19 on securedSubscriber {
         json notification = check event.content.ensureType();
         log:printInfo("Received notification", content = notification);
     }
+}
+
+isolated function getCustomParams() returns map<string> {
+    if os:getEnv("CONSUMER_GROUP") == "" {
+        return {};
+    }
+    return {
+        consumerGroup: os:getEnv("CONSUMER_GROUP");
+    };
 }
