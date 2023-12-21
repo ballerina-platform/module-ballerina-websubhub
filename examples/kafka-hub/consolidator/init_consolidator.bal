@@ -22,6 +22,7 @@ import ballerinax/kafka;
 import consolidatorService.util;
 import consolidatorService.connections as conn;
 import consolidatorService.types;
+import consolidatorService.persistence;
 
 public function main() returns error? {
     // Initialize consolidator-service state
@@ -61,6 +62,7 @@ isolated function syncSystemState() returns error? {
             types:SystemStateSnapshot lastStateSnapshot = events.pop();
             refreshTopicCache(lastStateSnapshot.topics);
             refreshSubscribersCache(lastStateSnapshot.subscriptions);
+            check persistence:persistWebsubEventsSnapshot(lastStateSnapshot);
         }
     } on fail error kafkaError {
         util:logError("Error occurred while syncing system-state", kafkaError, "FATAL");
