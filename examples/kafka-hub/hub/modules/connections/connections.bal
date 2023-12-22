@@ -19,6 +19,7 @@ import kafkaHub.config;
 import ballerina/crypto;
 import ballerina/os;
 import ballerina/log;
+import kafkaHub.types;
 
 final kafka:SecureSocket & readonly secureSocketConfig = {
     cert: getCertConfig().cloneReadOnly(),
@@ -100,8 +101,26 @@ public isolated function createMessageConsumer(string topicName, string groupNam
         groupId: groupName,
         topics: [topicName],
         autoCommit: false,
-        secureSocket: secureSocketConfig,
+        secureSocket: getConsumerSecureSocketConfig(groupName),
         securityProtocol: kafka:PROTOCOL_SSL
     };
     return check new (config:KAFKA_URL, consumerConfiguration);  
+}
+
+isolated function getConsumerSecureSocketConfig(string consumerGroup) returns kafka:SecureSocket {
+    types:KafkaClientKeyStoreConfig? ksConfig = config:kafkaClientKsCofigs[consumerGroup];
+    if ksConfig is () {
+        log:printDebug("Could not find the keystore configuration for the consumer-group, hence using default configurations.", 
+            consumerGroup = consumerGroup);
+        return secureSocketConfig;
+    }
+    log:printDebug("Found the keystore configuration for the consumer-group: ", 
+        consumerGroup = consumerGroup, ksConfig = ksConfig.key);
+    return {
+        cert: getCertConfig().cloneReadOnly(),
+        protocol: {
+            name: kafka:SSL
+        },
+        'key: ksConfig.key
+    };    
 }

@@ -68,3 +68,17 @@ public final string WEBSUB_EVENTS_CONSUMER_GROUP = os:getEnv("WEBSUB_EVENTS_CONS
 isolated function constructSystemConsumerGroup() returns string {
     return string `websub-events-receiver-${SERVER_IDENTIFIER}-${util:generateRandomString()}`;
 }
+
+# The client MTLS configurations used by Kafka consumers mapped to HTTP subscribers
+public configurable types:KafkaClientKeyStoreConfig[] KAFKA_CLIENT_KS_CONFIGS = ?;
+
+public final readonly & map<types:KafkaClientKeyStoreConfig> kafkaClientKsCofigs = retrieveKafkaClientKeyStoreConfig();
+
+isolated function retrieveKafkaClientKeyStoreConfig() returns readonly & map<types:KafkaClientKeyStoreConfig> {
+    map<types:KafkaClientKeyStoreConfig> clientKeyStoreConfigs = {};
+    foreach var config in KAFKA_CLIENT_KS_CONFIGS {
+        clientKeyStoreConfigs[config.consumerGroupName] = config;
+    }
+    return clientKeyStoreConfigs.cloneReadOnly();
+}
+
