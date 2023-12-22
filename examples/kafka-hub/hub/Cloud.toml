@@ -1,7 +1,7 @@
 [container.image]
 repository="ballerina"
 name="kafkahub"
-tag="7.0.0"
+tag="8.0.0"
 
 [[container.copy.files]]
 sourceFile="./resources"
