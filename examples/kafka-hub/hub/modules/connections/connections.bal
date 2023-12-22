@@ -108,7 +108,7 @@ public isolated function createMessageConsumer(string topicName, string groupNam
 }
 
 isolated function getConsumerSecureSocketConfig(string consumerGroup) returns kafka:SecureSocket {
-    types:KafkaClientKeyStoreConfig? ksConfig = config:kafkaClientKsCofigs[consumerGroup];
+    types:KafkaClientKeyStoreConfig? ksConfig = config:KAFKA_CLIENT_KS_CONFIGS[consumerGroup];
     if ksConfig is () {
         log:printDebug("Could not find the keystore configuration for the consumer-group, hence using default configurations.", 
             consumerGroup = consumerGroup);

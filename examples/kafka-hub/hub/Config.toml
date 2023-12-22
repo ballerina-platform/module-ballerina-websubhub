@@ -49,7 +49,7 @@ key.keyStore.path = "./resources/brokercerts/client-keystore.jks"
 key.keyStore.password = "password"
 
 # The client MTLS configurations used by Kafka consumers mapped to HTTP subscribers
-[[kafkaHub.config.KAFKA_CLIENT_KS_CONFIGS]]
+[kafkaHub.config.KAFKA_CLIENT_KS_CONFIGS."test-consumer-group"]
 consumerGroupName="test-consumer-group"
 key.keyStore.path = "./resources/brokercerts/test-consumer-group-client-keystore.jks"
 key.keyStore.password = "password"

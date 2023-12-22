@@ -70,15 +70,4 @@ isolated function constructSystemConsumerGroup() returns string {
 }
 
 # The client MTLS configurations used by Kafka consumers mapped to HTTP subscribers
-public configurable types:KafkaClientKeyStoreConfig[] KAFKA_CLIENT_KS_CONFIGS = ?;
-
-public final readonly & map<types:KafkaClientKeyStoreConfig> kafkaClientKsCofigs = retrieveKafkaClientKeyStoreConfig();
-
-isolated function retrieveKafkaClientKeyStoreConfig() returns readonly & map<types:KafkaClientKeyStoreConfig> {
-    map<types:KafkaClientKeyStoreConfig> clientKeyStoreConfigs = {};
-    foreach var config in KAFKA_CLIENT_KS_CONFIGS {
-        clientKeyStoreConfigs[config.consumerGroupName] = config;
-    }
-    return clientKeyStoreConfigs.cloneReadOnly();
-}
-
+public configurable map<types:KafkaClientKeyStoreConfig> KAFKA_CLIENT_KS_CONFIGS = ?;
