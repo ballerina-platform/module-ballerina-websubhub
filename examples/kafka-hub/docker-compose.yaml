@@ -16,7 +16,7 @@ services:
         network_mode: "host"
 
     hub-1:
-        image: 'ayeshalmeida/kafkahub:7.0.0'
+        image: 'ayeshalmeida/kafkahub:8.0.0'
         container_name: hub-1
         depends_on:
             consolidator:
@@ -44,6 +44,8 @@ services:
             - ./_resources/brokercerts/client-truststore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
             - ./_resources/brokercerts/client-keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            # Kafka client keystore file for `test-consumer-group` 
+            - ./_resources/brokercerts/test-consumer-group-client-keystore.jks:/home/ballerina/resources/brokercerts/test-consumer-group-client-keystore.jks
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
             interval: 30s
@@ -53,7 +55,7 @@ services:
         network_mode: "host"
     
     hub-2:
-        image: 'ayeshalmeida/kafkahub:7.0.0'
+        image: 'ayeshalmeida/kafkahub:8.0.0'
         container_name: hub-2
         depends_on:
             consolidator:
@@ -81,6 +83,8 @@ services:
             - ./_resources/brokercerts/client-truststore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
             - ./_resources/brokercerts/client-keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            # Kafka client keystore file for `test-consumer-group` 
+            - ./_resources/brokercerts/test-consumer-group-client-keystore.jks:/home/ballerina/resources/brokercerts/test-consumer-group-client-keystore.jks
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
             interval: 30s
