@@ -13,11 +13,14 @@ services:
             hub-2:
                 condition: service_healthy
                 restart: true
-        network_mode: "host"
+        networks:
+            - hub_network
 
     hub-1:
-        image: 'ayeshalmeida/kafkahub:7.0.0'
+        image: 'ballerina/kafkahub:7.0.0'
         container_name: hub-1
+        ports:
+            - '9000:9000'
         depends_on:
             consolidator:
                 condition: service_healthy
@@ -29,6 +32,12 @@ services:
             SERVER_ID: "hub-1"
             # Update following enviornment variable to point to the relevant kafka-cluster
             KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            # Update following enviornment variable to point to the consolidator state-snapshot endpoint
+            STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
+            # Update following enviornment variable to point to the IdP token endpoint
+            IDP_TOKEN_ENDPOINT: "https://idp:9443/oauth2/token"
+            # Update following enviornment variable to point to the IdP JWKS endpoint
+            IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
             # Consumer group name uses for `websub-events` consumer
             WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-1"
             # Update following enviornment variable to set the client truststore name
@@ -50,11 +59,14 @@ services:
             timeout: 10s 
             start_period: 30s
             retries: 10
-        network_mode: "host"
+        networks:
+            - hub_network
     
     hub-2:
         image: 'ayeshalmeida/kafkahub:7.0.0'
         container_name: hub-2
+        ports:
+            - '9001:9001'
         depends_on:
             consolidator:
                 condition: service_healthy
@@ -66,6 +78,12 @@ services:
             SERVER_ID: "hub-2"
             # Update following enviornment variable to point to the relevant kafka-cluster
             KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            # Update following enviornment variable to point to the consolidator state-snapshot endpoint
+            STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
+            # Update following enviornment variable to point to the IdP token endpoint
+            IDP_TOKEN_ENDPOINT: "https://idp:9443/oauth2/token"
+            # Update following enviornment variable to point to the IdP JWKS endpoint
+            IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
             # Consumer group name uses for `websub-events` consumer
             WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-2"
             # Update following enviornment variable to set the client truststore name
@@ -87,7 +105,8 @@ services:
             timeout: 10s
             start_period: 30s
             retries: 10
-        network_mode: "host"
+        networks:
+            - hub_network
 
     consolidator: 
         image: 'ayeshalmeida/consolidator:6.0.0'
@@ -123,14 +142,16 @@ services:
             timeout: 10s
             start_period: 30s
             retries: 10
-        network_mode: "host"
+        networks:
+            - hub_network
 
     idp:
         image: 'ayeshalmeida/wso2-is:5.11.0.update'
         container_name: idp
         ports:
             - '9443:9443'
-        network_mode: "host"
+        networks:
+            - hub_network
 
     zookeeper:
         image: 'confluentinc/cp-zookeeper:7.5.0'
@@ -167,3 +188,6 @@ services:
             KAFKA_SSL_KEY_CREDENTIALS: broker_sslkey_creds
             KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.broker.truststore.jks
             KAFKA_SSL_TRUSTSTORE_CREDENTIALS: broker_truststore_creds
+
+networks:
+    hub_network:

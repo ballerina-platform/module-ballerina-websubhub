@@ -24,7 +24,7 @@ import kafkaHub.connections as conn;
 import ballerinax/kafka;
 
 function initializeHubState() returns error? {
-    http:Client stateSnapshotClient = check new (config:STATE_SNAPSHOT_ENDPOINT);
+    http:Client stateSnapshotClient = check new (config:STATE_SNAPSHOT_ENDPOINT_URL);
     do {
         types:SystemStateSnapshot systemStateSnapshot = check stateSnapshotClient->/consolidator/state\-snapshot;
         check processWebsubTopicsSnapshotState(systemStateSnapshot.topics);

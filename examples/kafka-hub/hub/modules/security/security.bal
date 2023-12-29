@@ -18,15 +18,17 @@ import ballerina/log;
 import ballerina/http;
 import kafkaHub.config;
 import ballerina/jwt;
+import ballerina/os;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: config:OAUTH2_CONFIG.issuer,
+    issuer: getIdpUrlConfig("IDP_TOKEN_ENDPOINT", config:OAUTH2_CONFIG.issuer),
     audience: config:OAUTH2_CONFIG.audience,
     signatureConfig: {
         jwksConfig: {
-            url: config:OAUTH2_CONFIG.jwksUrl,
+            url: getIdpUrlConfig("IDP_JWKS_ENDPOINT", config:OAUTH2_CONFIG.jwksUrl),
             clientConfig: {
                 secureSocket: {
+                    disable: true,
                     cert: {
                         path: config:OAUTH2_CONFIG.trustStore,
                         password: config:OAUTH2_CONFIG.trustStorePassword
@@ -37,6 +39,10 @@ final http:ListenerJwtAuthHandler handler = new({
     },
     scopeKey: "scope"
 });
+
+isolated function getIdpUrlConfig(string envVariableName, string defaultValue) returns string {
+    return os:getEnv(envVariableName) == "" ? defaultValue : os:getEnv(envVariableName);
+}
 
 # Checks for authorization for the current request.
 # 
