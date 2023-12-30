@@ -162,6 +162,8 @@ services:
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_TICK_TIME: 2000
+        networks:
+            - broker_network
 
     broker:
         image: 'confluentinc/cp-kafka:7.5.0'
@@ -195,6 +197,10 @@ services:
             - ./_resources/trustoresandkeystores/broker_truststore_creds:/etc/kafka/secrets/broker_truststore_creds
             - ./_resources/trustoresandkeystores/kafka.broker.keystore.jks:/etc/kafka/secrets/kafka.broker.keystore.jks
             - ./_resources/trustoresandkeystores/kafka.broker.truststore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
+        networks:
+            - hub_network
+            - broker_network
 
 networks:
     hub_network:
+    broker_network:
