@@ -18,6 +18,7 @@ services:
 
     hub-1:
         image: 'ballerina/kafkahub:7.0.0'
+        hostname: hub.1
         container_name: hub-1
         ports:
             - '9000:9000'
@@ -31,11 +32,9 @@ services:
             HUB_PORT: 9000
             SERVER_ID: "hub-1"
             # Update following enviornment variable to point to the relevant kafka-cluster
-            KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            KAFKA_BOOTSTRAP_NODE: "broker:9094"
             # Update following enviornment variable to point to the consolidator state-snapshot endpoint
             STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
-            # Update following enviornment variable to point to the IdP token endpoint
-            IDP_TOKEN_ENDPOINT: "https://idp:9443/oauth2/token"
             # Update following enviornment variable to point to the IdP JWKS endpoint
             IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
             # Consumer group name uses for `websub-events` consumer
@@ -50,9 +49,9 @@ services:
             KEYSTORE_PASSWORD: "password"
         volumes:
             # Kafka client truststore file
-            - ./_resources/brokercerts/client-truststore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
-            - ./_resources/brokercerts/client-keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
             interval: 30s
@@ -64,6 +63,7 @@ services:
     
     hub-2:
         image: 'ballerina/kafkahub:7.0.0'
+        hostname: hub.2
         container_name: hub-2
         ports:
             - '9001:9001'
@@ -77,11 +77,9 @@ services:
             HUB_PORT: 9001
             SERVER_ID: "hub-2"
             # Update following enviornment variable to point to the relevant kafka-cluster
-            KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            KAFKA_BOOTSTRAP_NODE: "broker:9094"
             # Update following enviornment variable to point to the consolidator state-snapshot endpoint
             STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
-            # Update following enviornment variable to point to the IdP token endpoint
-            IDP_TOKEN_ENDPOINT: "https://idp:9443/oauth2/token"
             # Update following enviornment variable to point to the IdP JWKS endpoint
             IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
             # Consumer group name uses for `websub-events` consumer
@@ -96,9 +94,9 @@ services:
             KEYSTORE_PASSWORD: "password"
         volumes:
             # Kafka client truststore file
-            - ./_resources/brokercerts/client-truststore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
-            - ./_resources/brokercerts/client-keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
             interval: 30s
@@ -110,12 +108,13 @@ services:
 
     consolidator: 
         image: 'ayeshalmeida/consolidator:6.0.0'
+        hostname: consolidator
         container_name: consolidator
         ports:
             - '10001:10001'
         environment:
             # Update following enviornment variable to point to the relevant kafka-cluster
-            KAFKA_BOOTSTRAP_NODE: "localhost:9094"
+            KAFKA_BOOTSTRAP_NODE: "broker:9094"
             # Consumer group name uses for `websub-events` consumer
             WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-consolidator"
             # Consumer group name uses for `websub-events-snapshot` consumer
@@ -133,9 +132,9 @@ services:
                 condition: service_started
         volumes:
             # Kafka client truststore file
-            - ./_resources/brokercerts/client-truststore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
-            - ./_resources/brokercerts/client-keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
         healthcheck:
             test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:10001/health/readiness' || exit 1"]
             interval: 30s
@@ -147,6 +146,7 @@ services:
 
     idp:
         image: 'ayeshalmeida/wso2-is:5.11.0.update'
+        hostname: idp
         container_name: idp
         ports:
             - '9443:9443'
@@ -178,7 +178,7 @@ services:
             KAFKA_BROKER_ID: 1
             KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
             KAFKA_NUM_PARTITIONS: 3
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,EX_PLAINTEXT://localhost:9092,EX_SSL://localhost:9094
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,EX_PLAINTEXT://localhost:9092,EX_SSL://broker:9094
             KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EX_PLAINTEXT:PLAINTEXT,EX_SSL:SSL
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3
@@ -192,11 +192,11 @@ services:
             KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.broker.truststore.jks
             KAFKA_SSL_TRUSTSTORE_CREDENTIALS: broker_truststore_creds
         volumes:
-            - ./_resources/trustoresandkeystores/broker_keystore_creds:/etc/kafka/secrets/broker_keystore_creds
-            - ./_resources/trustoresandkeystores/broker_sslkey_creds:/etc/kafka/secrets/broker_sslkey_creds
-            - ./_resources/trustoresandkeystores/broker_truststore_creds:/etc/kafka/secrets/broker_truststore_creds
-            - ./_resources/trustoresandkeystores/kafka.broker.keystore.jks:/etc/kafka/secrets/kafka.broker.keystore.jks
-            - ./_resources/trustoresandkeystores/kafka.broker.truststore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
+            - ./_resources/secrets/kafka-broker/broker_keystore_creds:/etc/kafka/secrets/broker_keystore_creds
+            - ./_resources/secrets/kafka-broker/broker_sslkey_creds:/etc/kafka/secrets/broker_sslkey_creds
+            - ./_resources/secrets/kafka-broker/broker_truststore_creds:/etc/kafka/secrets/broker_truststore_creds
+            - ./_resources/secrets/kafka-broker/broker.keystore.jks:/etc/kafka/secrets/kafka.broker.keystore.jks
+            - ./_resources/secrets/kafka-broker/broker.trustStore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
         networks:
             - hub_network
             - broker_network
