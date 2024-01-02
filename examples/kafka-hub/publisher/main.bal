@@ -40,7 +40,7 @@ type OAuth2Config record {|
 configurable OAuth2Config oauth2Config = ?;
 
 public function main() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new ("https://localhost:9090/hub",
+    websubhub:PublisherClient websubHubClientEP = check new ("https://hub1:9000/hub",
         auth = {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
@@ -56,7 +56,10 @@ public function main() returns error? {
             }
         },
         secureSocket = {
-            cert: "./resources/server.crt"
+            cert: {
+                path: "./resources/publisher.truststore.jks",
+                password: "password"
+            }
         }
     );
     websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, payload);
