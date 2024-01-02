@@ -38,6 +38,8 @@ public configurable string WEBSUB_EVENTS_TOPIC = "websub-events";
 # Consolidator HTTP endpoint to be used to retrieve current state-snapshot
 public configurable string STATE_SNAPSHOT_ENDPOINT = "http://localhost:10001";
 
+public final string STATE_SNAPSHOT_ENDPOINT_URL = os:getEnv("STATE_SNAPSHOT_ENDPOINT") == "" ? STATE_SNAPSHOT_ENDPOINT : os:getEnv("STATE_SNAPSHOT_ENDPOINT");
+
 # The interval in which Kafka consumers wait for new messages
 public configurable decimal POLLING_INTERVAL = 10;
 
