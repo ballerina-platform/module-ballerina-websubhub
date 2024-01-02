@@ -53,6 +53,8 @@ services:
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
             - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            # IdP client truststore
+            - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
             # SSL configurations
             - ./_resources/secrets/hub/hub-1.keystore.jks:/home/ballerina/resources/hub.keystore.jks
         healthcheck:
@@ -99,7 +101,9 @@ services:
             # Kafka client truststore file
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
-            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks            # IdP client truststore
+            # IdP client truststore
+            - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
             # SSL configurations
             - ./_resources/secrets/hub/hub-2.keystore.jks:/home/ballerina/resources/hub.keystore.jks
         healthcheck:
