@@ -1,4 +1,5 @@
 version: '2'
+name: 'kafkahub'
 
 services:
     lb:
@@ -18,7 +19,7 @@ services:
 
     hub-1:
         image: 'ballerina/kafkahub:7.0.0'
-        hostname: hub.1
+        hostname: hub1
         container_name: hub-1
         ports:
             - '9000:9000'
@@ -52,8 +53,10 @@ services:
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
             - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            # SSL configurations
+            - ./_resources/secrets/hub/hub-1.keystore.jks:/home/ballerina/resources/hub.keystore.jks
         healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9000/health' || exit 1"]
+            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://hub1:9000/health' || exit 1"]
             interval: 30s
             timeout: 10s 
             start_period: 30s
@@ -63,7 +66,7 @@ services:
     
     hub-2:
         image: 'ballerina/kafkahub:7.0.0'
-        hostname: hub.2
+        hostname: hub2
         container_name: hub-2
         ports:
             - '9001:9001'
@@ -97,8 +100,10 @@ services:
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
             - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            # SSL configurations
+            - ./_resources/secrets/hub/hub-2.keystore.jks:/home/ballerina/resources/hub.keystore.jks
         healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://localhost:9001/health' || exit 1"]
+            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://hub2:9001/health' || exit 1"]
             interval: 30s
             timeout: 10s
             start_period: 30s
@@ -150,6 +155,11 @@ services:
         container_name: idp
         ports:
             - '9443:9443'
+        volumes:
+            # IdP truststore file
+            - ./_resources/secrets/idp/client-truststore.jks:/opt/wso2is-5.11.0/repository/resources/security/client-truststore.jks
+            # IdP keystore file
+            - ./_resources/secrets/idp/idp.keystore.jks:/opt/wso2is-5.11.0/repository/resources/security/wso2carbon.jks
         networks:
             - hub_network
 
@@ -163,7 +173,7 @@ services:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_TICK_TIME: 2000
         networks:
-            - broker_network
+            - hub_network
 
     broker:
         image: 'confluentinc/cp-kafka:7.5.0'
@@ -199,8 +209,6 @@ services:
             - ./_resources/secrets/kafka-broker/broker.trustStore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
         networks:
             - hub_network
-            - broker_network
 
 networks:
     hub_network:
-    broker_network:
