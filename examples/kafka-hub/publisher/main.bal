@@ -28,6 +28,7 @@ json DEFAULT_PAYLOAD = {
 
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final json payload = os:getEnv("PAYLOAD") == "" ? DEFAULT_PAYLOAD : check os:getEnv("PAYLOAD").fromJsonString();
+final string hubUrl = os:getEnv("HUB_URL") == "https://lb:9090/hub" ? "priceUpdate" : os:getEnv("HUB_URL");
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -40,7 +41,7 @@ type OAuth2Config record {|
 configurable OAuth2Config oauth2Config = ?;
 
 public function main() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new ("https://hub1:9000/hub",
+    websubhub:PublisherClient websubHubClientEP = check new (hubUrl,
         auth = {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
