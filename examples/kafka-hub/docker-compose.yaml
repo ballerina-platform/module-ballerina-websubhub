@@ -2,20 +2,20 @@ version: '2'
 name: 'kafkahub'
 
 services:
-    lb:
-        image: 'ayeshalmeida/loadbalancersvc:1.0.0'
-        container_name: lb
-        ports:
-            - '9090:9090'
-        depends_on:
-            hub-1:
-                condition: service_healthy
-                restart: true
-            hub-2:
-                condition: service_healthy
-                restart: true
-        networks:
-            - hub_network
+    # lb:
+    #     image: 'ayeshalmeida/loadbalancersvc:1.0.0'
+    #     container_name: lb
+    #     ports:
+    #         - '9090:9090'
+    #     depends_on:
+    #         hub-1:
+    #             condition: service_healthy
+    #             restart: true
+    #         hub-2:
+    #             condition: service_healthy
+    #             restart: true
+    #     networks:
+    #         - hub_network
 
     hub-1:
         image: 'ayeshalmeida/kafkahub:7.0.0'
