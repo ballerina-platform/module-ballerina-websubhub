@@ -31,18 +31,10 @@ type OAuth2Config record {|
 |};
 configurable OAuth2Config oauth2Config = ?;
 
-listener websub:Listener securedSubscriber = new(9100,
-    host = "localhost",
-    secureSocket = {
-        key: {
-            certFile: "./resources/server.crt",
-            keyFile: "./resources/server.key"
-        }
-    }
-);
+listener websub:Listener securedSubscriber = new(9100, host = "subscriber");
 
 function init() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new("https://localhost:9090/hub",
+    websubhub:PublisherClient websubHubClientEP = check new("https://hub1:9000/hub",
         auth = {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
@@ -58,7 +50,10 @@ function init() returns error? {
             }
         },
         secureSocket = {
-            cert: "./resources/server.crt"
+            cert: {
+                path: "./resources/subscriber.truststore.jks",
+                password: "password"
+            }
         }
     );
     websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError response = websubHubClientEP->registerTopic(topicName);
@@ -71,7 +66,7 @@ function init() returns error? {
 }
 
 @websub:SubscriberServiceConfig { 
-    target: ["https://localhost:9090/hub", topicName],
+    target: ["https://hub1:9000/hub", topicName],
     httpConfig: {
         auth : {
             tokenUrl: oauth2Config.tokenUrl,
@@ -88,7 +83,10 @@ function init() returns error? {
             }
         },
         secureSocket : {
-            cert: "./resources/server.crt"
+            cert: {
+                path: "./resources/subscriber.truststore.jks",
+                password: "password"
+            }
         }
     },
     unsubscribeOnShutdown: true,
@@ -113,6 +111,6 @@ isolated function getCustomParams() returns map<string> {
         return {};
     }
     return {
-        consumerGroup: os:getEnv("CONSUMER_GROUP");
+        consumerGroup: os:getEnv("CONSUMER_GROUP")
     };
 }
