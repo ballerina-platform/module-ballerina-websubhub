@@ -21,14 +21,13 @@ import ballerina/jwt;
 import ballerina/os;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: getIdpUrlConfig("IDP_TOKEN_ENDPOINT", config:OAUTH2_CONFIG.issuer),
+    issuer: getIdpUrlConfig("TOKEN_ISSUER", config:OAUTH2_CONFIG.issuer),
     audience: config:OAUTH2_CONFIG.audience,
     signatureConfig: {
         jwksConfig: {
             url: getIdpUrlConfig("IDP_JWKS_ENDPOINT", config:OAUTH2_CONFIG.jwksUrl),
             clientConfig: {
                 secureSocket: {
-                    disable: true,
                     cert: {
                         path: config:OAUTH2_CONFIG.trustStore,
                         password: config:OAUTH2_CONFIG.trustStorePassword

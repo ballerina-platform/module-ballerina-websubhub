@@ -30,8 +30,8 @@ public function main() returns error? {
     http:Listener httpListener = check new (hubPort, 
         secureSocket = {
             key: {
-                certFile: "./resources/server.crt",
-                keyFile: "./resources/server.key"
+                path: "./resources/hub.keystore.jks",
+                password: "password"
             }
         }
     );
