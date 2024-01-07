@@ -70,6 +70,3 @@ public final string WEBSUB_EVENTS_CONSUMER_GROUP = os:getEnv("WEBSUB_EVENTS_CONS
 isolated function constructSystemConsumerGroup() returns string {
     return string `websub-events-receiver-${SERVER_IDENTIFIER}-${util:generateRandomString()}`;
 }
-
-# The client MTLS configurations used by Kafka consumers mapped to HTTP subscribers
-public configurable map<types:KafkaClientKeyStoreConfig> KAFKA_CLIENT_KS_CONFIGS = ?;
