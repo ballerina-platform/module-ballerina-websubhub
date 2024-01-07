@@ -21,7 +21,8 @@ import ballerina/websubhub;
 import ballerina/os;
 
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
-final string hubUrl = os:getEnv("HUB_URL") == "https://lb:9090/hub" ? "priceUpdate" : os:getEnv("HUB_URL");
+final string hubUrl = os:getEnv("HUB_URL") == "" ? "https://lb:9090/hub" : os:getEnv("HUB_URL");
+final boolean unsubOnShutdown = os:getEnv("UNSUB_ON_SHUTDOWN") == "" ? false: check boolean:fromString(os:getEnv("UNSUB_ON_SHUTDOWN"));
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -90,7 +91,7 @@ function init() returns error? {
             }
         }
     },
-    unsubscribeOnShutdown: true,
+    unsubscribeOnShutdown: unsubOnShutdown,
     customParams: getCustomParams()
 } 
 service /JuApTOXq19 on securedSubscriber {
