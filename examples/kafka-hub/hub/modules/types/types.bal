@@ -38,11 +38,3 @@ public type KafkaMtlsConfig record {|
         string keyPassword?;
     |}|kafka:CertKey key?;
 |};
-
-public type KafkaClientKeyStoreConfig record {|
-    string consumerGroupName;
-        record {|
-        crypto:KeyStore keyStore;
-        string keyPassword?;
-    |}|kafka:CertKey key?;
-|};
