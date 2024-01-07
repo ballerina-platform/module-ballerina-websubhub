@@ -135,7 +135,6 @@ services:
         ports:
             - '9094:9094'
             - '9092:9092'
-            - '8091:8091'
         environment:
             KAFKA_BROKER_ID: 1
             KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
