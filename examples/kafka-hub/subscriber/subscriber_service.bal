@@ -33,7 +33,7 @@ type OAuth2Config record {|
 |};
 configurable OAuth2Config oauth2Config = ?;
 
-listener websub:Listener securedSubscriber = new(9100, host = "subscriber");
+listener websub:Listener securedSubscriber = new(9100, host = os:getEnv("HOSTNAME"));
 
 function init() returns error? {
     websubhub:PublisherClient websubHubClientEP = check new(hubUrl,
