@@ -66,54 +66,54 @@ services:
         networks:
             - hub_network
     
-    hub-2:
-        image: 'ayeshalmeida/kafkahub:8.0.0'
-        hostname: hub2
-        container_name: hub-2
-        ports:
-            - '9001:9001'
-        depends_on:
-            consolidator:
-                condition: service_healthy
-                restart: true
-            idp:
-                condition: service_started
-        environment:
-            HUB_PORT: 9001
-            SERVER_ID: "hub-2"
-            # Update following enviornment variable to point to the relevant kafka-cluster
-            KAFKA_BOOTSTRAP_NODE: "broker:9094"
-            # Update following enviornment variable to point to the consolidator state-snapshot endpoint
-            STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
-            # Update following enviornment variable to point to the IdP JWKS endpoint
-            IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
-            # Consumer group name uses for `websub-events` consumer
-            WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-2"
-            # Update following enviornment variable to set the client truststore name
-            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
-            # Update following enviornment variable to set the client truststore password
-            TRUSTSTORE_PASSWORD: "password"
-            # Update following enviornment variable to set the client keystore name
-            KEYSTORE_FILE_NAME: "client-keystore.jks"
-            # Update following enviornment variable to set the client keystore password
-            KEYSTORE_PASSWORD: "password"
-        volumes:
-            # Kafka client truststore file
-            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
-            # Kafka client keystore file
-            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks            # IdP client truststore
-            # IdP client truststore
-            - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
-            # SSL configurations
-            - ./_resources/secrets/hub/hub-2.keystore.jks:/home/ballerina/resources/hub.keystore.jks
-        healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://hub2:9001/health' || exit 1"]
-            interval: 30s
-            timeout: 10s
-            start_period: 30s
-            retries: 10
-        networks:
-            - hub_network
+    # hub-2:
+    #     image: 'ayeshalmeida/kafkahub:8.0.0'
+    #     hostname: hub2
+    #     container_name: hub-2
+    #     ports:
+    #         - '9001:9001'
+    #     depends_on:
+    #         consolidator:
+    #             condition: service_healthy
+    #             restart: true
+    #         idp:
+    #             condition: service_started
+    #     environment:
+    #         HUB_PORT: 9001
+    #         SERVER_ID: "hub-2"
+    #         # Update following enviornment variable to point to the relevant kafka-cluster
+    #         KAFKA_BOOTSTRAP_NODE: "broker:9094"
+    #         # Update following enviornment variable to point to the consolidator state-snapshot endpoint
+    #         STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
+    #         # Update following enviornment variable to point to the IdP JWKS endpoint
+    #         IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
+    #         # Consumer group name uses for `websub-events` consumer
+    #         WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-2"
+    #         # Update following enviornment variable to set the client truststore name
+    #         TRUSTSTORE_FILE_NAME: "client-truststore.jks"
+    #         # Update following enviornment variable to set the client truststore password
+    #         TRUSTSTORE_PASSWORD: "password"
+    #         # Update following enviornment variable to set the client keystore name
+    #         KEYSTORE_FILE_NAME: "client-keystore.jks"
+    #         # Update following enviornment variable to set the client keystore password
+    #         KEYSTORE_PASSWORD: "password"
+    #     volumes:
+    #         # Kafka client truststore file
+    #         - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+    #         # Kafka client keystore file
+    #         - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks            # IdP client truststore
+    #         # IdP client truststore
+    #         - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
+    #         # SSL configurations
+    #         - ./_resources/secrets/hub/hub-2.keystore.jks:/home/ballerina/resources/hub.keystore.jks
+    #     healthcheck:
+    #         test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://hub2:9001/health' || exit 1"]
+    #         interval: 30s
+    #         timeout: 10s
+    #         start_period: 30s
+    #         retries: 10
+    #     networks:
+    #         - hub_network
 
     consolidator: 
         image: 'ayeshalmeida/consolidator:6.0.0'
