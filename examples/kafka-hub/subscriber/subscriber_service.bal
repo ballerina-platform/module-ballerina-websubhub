@@ -22,7 +22,7 @@ import ballerina/os;
 
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final string hubUrl = os:getEnv("HUB_URL") == "" ? "https://lb:9090/hub" : os:getEnv("HUB_URL");
-final boolean unsubOnShutdown = os:getEnv("UNSUB_ON_SHUTDOWN") == "" ? false: check boolean:fromString(os:getEnv("UNSUB_ON_SHUTDOWN"));
+final boolean unsubOnShutdown = os:getEnv("UNSUB_ON_SHUTDOWN") == "true";
 
 type OAuth2Config record {|
     string tokenUrl;
