@@ -17,47 +17,8 @@
 import ballerina/io;
 import ballerina/os;
 import ballerina/websubhub;
-import ballerina/lang.runtime;
 
-readonly & json[] messages = [
-    {
-        itemName: string `Panasonic 32" LED TV`,
-        itemCode: "ITM30029",
-        previousPrice: 32999.00,
-        newPrice: 28999.00,
-        currencyCode: "SEK"
-    },
-    {
-        itemName: string `LUMIX-camera DC-BS1H`,
-        itemCode: "ITM30030",
-        previousPrice: 32999.00,
-        newPrice: 28999.00,
-        currencyCode: "SEK"
-    },
-    {
-        itemName: string `Panasonic Steam Iron NI-S530`,
-        itemCode: "ITM30031",
-        previousPrice: 32999.00,
-        newPrice: 28999.00,
-        currencyCode: "SEK"
-    },
-    {
-        itemName: string `Panasonic 32" LED TV`,
-        itemCode: "ITM30029",
-        previousPrice: 32999.00,
-        newPrice: 28999.00,
-        currencyCode: "SEK"
-    },
-    {
-        itemName: string `Panasonic 32" LED TV`,
-        itemCode: "ITM30029",
-        previousPrice: 32999.00,
-        newPrice: 28999.00,
-        currencyCode: "SEK"
-    }
-];
-
-readonly &json DEFAULT_PAYLOAD = {
+json DEFAULT_PAYLOAD = {
     itemName: string `Panasonic 32" LED TV`,
     itemCode: "ITM30029",
     previousPrice: 32999.00,
@@ -68,7 +29,6 @@ readonly &json DEFAULT_PAYLOAD = {
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final json payload = os:getEnv("PAYLOAD") == "" ? DEFAULT_PAYLOAD : check os:getEnv("PAYLOAD").fromJsonString();
 final string hubUrl = os:getEnv("HUB_URL") == "https://lb:9090/hub" ? "priceUpdate" : os:getEnv("HUB_URL");
-final boolean bulkMode = os:getEnv("BULK_MODE_ENABLED") == "true";
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -103,19 +63,6 @@ public function main() returns error? {
             }
         }
     );
-    if !bulkMode {
-        websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, payload);
-        io:println("Receieved content-publish result: ", response);
-        return;
-    }
-    int counter = 1;
-    int idx = 0;
-    while true {
-        json message = messages[idx];
-        websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, message);
-        io:println("Receieved content-publish result: ", response.statusCode);
-        idx = counter / messages.length();
-        counter += 1;
-        runtime:sleep(1);
-    }
+    websubhub:Acknowledgement response = check websubHubClientEP->publishUpdate(topicName, payload);
+    io:println("Receieved content-publish result: ", response);
 }
