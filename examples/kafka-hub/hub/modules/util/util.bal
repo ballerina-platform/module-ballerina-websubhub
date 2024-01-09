@@ -24,7 +24,7 @@ import ballerina/log;
 # + topic - The `topic` which subscriber needs to subscribe
 # + callbackUrl - Subscriber callback URL
 # + return - Generated subscriber Id for the subscriber
-public isolated function generatedSubscriberId(string topic, string callbackUrl) returns string {
+public isolated function generateSubscriberId(string topic, string callbackUrl) returns string {
     return string `${topic}___${callbackUrl}`;
 }
 
