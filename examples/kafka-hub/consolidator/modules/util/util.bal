@@ -27,14 +27,6 @@ public isolated function generatedSubscriberId(string topic, string callbackUrl)
     return string `${topic}___${callbackUrl}`;
 }
 
-# Normalizes a `string` by replacing special characters with `_`.
-# 
-# + baseString - `string` to be normalized
-# + return - Normalized `string`
-isolated function nomalizeString(string baseString) returns string {
-    return re `[^a-zA-Z0-9]`.replaceAll(baseString, "_");
-}
-
 # Generates a random `string` of 10 characters
 # 
 # + return - The generated `string`
