@@ -22,9 +22,9 @@ import ballerina/log;
 # 
 # + topic - Name of the `topic`
 # + return - Sanitized topic name
-public isolated function sanitizeTopicName(string topic) returns string {
-    return nomalizeString(topic);
-}
+// public isolated function sanitizeTopicName(string topic) returns string {
+//     return nomalizeString(topic);
+// }
 
 # Generates a group-name for a subscriber.
 # 
