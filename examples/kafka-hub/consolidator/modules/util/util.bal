@@ -24,8 +24,7 @@ import ballerina/log;
 # + callbackUrl - Subscriber callback URL
 # + return - Generated group-name for subscriber
 public isolated function generatedSubscriberId(string topic, string callbackUrl) returns string {
-    string idValue = topic + ":::" + callbackUrl;
-    return nomalizeString(idValue);
+    return string `${topic}___${callbackUrl}`;
 }
 
 # Normalizes a `string` by replacing special characters with `_`.
