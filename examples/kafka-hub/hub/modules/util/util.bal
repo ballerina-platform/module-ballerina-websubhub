@@ -19,14 +19,6 @@ import ballerina/time;
 import ballerina/lang.'string as strings;
 import ballerina/log;
 
-# Sanitizes the name of the `topic` by replacing special characters with `_`.
-# 
-# + topic - Name of the `topic`
-# + return - Sanitized topic name
-public isolated function sanitizeTopicName(string topic) returns string {
-    return nomalizeString(topic);
-}
-
 # Generates a unique Id for a subscriber.
 # 
 # + topic - The `topic` which subscriber needs to subscribe

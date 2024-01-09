@@ -68,9 +68,8 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 }
 
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
-    string topicName = util:sanitizeTopicName(subscription.hubTopic);
     string consumerGroup = check value:ensureType(subscription[CONSUMER_GROUP]);
-    kafka:Consumer consumerEp = check conn:createMessageConsumer(topicName, consumerGroup);
+    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -86,8 +85,8 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
     do {
         while true {
             kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
-            if !isValidConsumer(topicName, subscriberId) {
-                fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
+            if !isValidConsumer(subscription.hubTopic, subscriberId) {
+                fail error(string `Subscriber with Id ${subscriberId} or topic ${subscription.hubTopic} is invalid`);
             }
             _ = check notifySubscribers(records, clientEp, consumerEp);
         }
