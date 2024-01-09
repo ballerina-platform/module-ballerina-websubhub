@@ -2,21 +2,6 @@ version: '2'
 name: 'kafkahub'
 
 services:
-    # lb:
-    #     image: 'ayeshalmeida/loadbalancersvc:1.0.0'
-    #     container_name: lb
-    #     ports:
-    #         - '9090:9090'
-    #     depends_on:
-    #         hub-1:
-    #             condition: service_healthy
-    #             restart: true
-    #         hub-2:
-    #             condition: service_healthy
-    #             restart: true
-    #     networks:
-    #         - hub_network
-
     hub-1:
         image: 'ayeshalmeida/kafkahub:8.0.0'
         hostname: hub1
@@ -65,55 +50,6 @@ services:
             retries: 10
         networks:
             - hub_network
-    
-    hub-2:
-        image: 'ayeshalmeida/kafkahub:8.0.0'
-        hostname: hub2
-        container_name: hub-2
-        ports:
-            - '9001:9001'
-        depends_on:
-            consolidator:
-                condition: service_healthy
-                restart: true
-            idp:
-                condition: service_started
-        environment:
-            HUB_PORT: 9001
-            SERVER_ID: "hub-2"
-            # Update following enviornment variable to point to the relevant kafka-cluster
-            KAFKA_BOOTSTRAP_NODE: "broker:9094"
-            # Update following enviornment variable to point to the consolidator state-snapshot endpoint
-            STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
-            # Update following enviornment variable to point to the IdP JWKS endpoint
-            IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
-            # Consumer group name uses for `websub-events` consumer
-            WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-2"
-            # Update following enviornment variable to set the client truststore name
-            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
-            # Update following enviornment variable to set the client truststore password
-            TRUSTSTORE_PASSWORD: "password"
-            # Update following enviornment variable to set the client keystore name
-            KEYSTORE_FILE_NAME: "client-keystore.jks"
-            # Update following enviornment variable to set the client keystore password
-            KEYSTORE_PASSWORD: "password"
-        volumes:
-            # Kafka client truststore file
-            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
-            # Kafka client keystore file
-            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks            # IdP client truststore
-            # IdP client truststore
-            - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
-            # SSL configurations
-            - ./_resources/secrets/hub/hub-2.keystore.jks:/home/ballerina/resources/hub.keystore.jks
-        healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://hub2:9001/health' || exit 1"]
-            interval: 30s
-            timeout: 10s
-            start_period: 30s
-            retries: 10
-        networks:
-            - hub_network
 
     consolidator: 
         image: 'ayeshalmeida/consolidator:6.0.0'
@@ -138,7 +74,7 @@ services:
             KEYSTORE_PASSWORD: "password"
         depends_on:
             broker:
-                condition: service_started
+                condition: service_healthy
         volumes:
             # Kafka client truststore file
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
@@ -171,6 +107,11 @@ services:
         image: 'confluentinc/cp-zookeeper:7.5.0'
         hostname: zookeeper
         container_name: kafka-zookeeper
+        healthcheck:
+            test: nc zookeeper 2181 || exit 1
+            interval: 10s
+            timeout: 5s
+            retries: 20
         ports:
             - '2181:2181'
         environment:
@@ -183,8 +124,14 @@ services:
         image: 'confluentinc/cp-kafka:7.5.0'
         hostname: broker
         container_name: kafka-broker
+        healthcheck:
+            test: kafka-topics --bootstrap-server broker:29092 --list
+            interval: 30s
+            timeout: 10s
+            retries: 3
         depends_on:
-            - zookeeper
+            zookeeper:
+                condition: service_healthy
         ports:
             - '9094:9094'
             - '9092:9092'
@@ -211,6 +158,48 @@ services:
             - ./_resources/secrets/kafka-broker/broker_truststore_creds:/etc/kafka/secrets/broker_truststore_creds
             - ./_resources/secrets/kafka-broker/broker.keystore.jks:/etc/kafka/secrets/kafka.broker.keystore.jks
             - ./_resources/secrets/kafka-broker/broker.trustStore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
+        networks:
+            - hub_network
+
+    schema-registry:
+        image: 'confluentinc/cp-schema-registry:7.5.0'
+        hostname: schema-registry
+        container_name: schema-registry
+        healthcheck:
+            test: curl --output /dev/null --silent --head --fail http://schema-registry:8081/subjects
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        depends_on:
+            broker:
+                condition: service_healthy
+        ports:
+            - '8081:8081'
+        environment:
+            SCHEMA_REGISTRY_HOST_NAME: schema-registry
+            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+            SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+        networks:
+            - hub_network
+
+    control-center:
+        image: 'confluentinc/cp-enterprise-control-center:7.5.0'
+        hostname: control-center
+        container_name: control-center
+        depends_on:
+            schema-registry:
+                condition: service_healthy
+        ports:
+            - '9021:9021'
+        environment:
+            CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
+            CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            CONTROL_CENTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+            CONTROL_CENTER_REPLICATION_FACTOR: 1
+            CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+            CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+            CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+            PORT: 9021
         networks:
             - hub_network
 
