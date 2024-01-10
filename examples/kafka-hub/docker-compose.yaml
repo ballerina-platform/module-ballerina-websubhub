@@ -3,7 +3,7 @@ name: 'kafkahub'
 
 services:
     hub-1:
-        image: 'ayeshalmeida/kafkahub:8.0.0'
+        image: 'ayeshalmeida/kafkahub:9.0.0'
         hostname: hub1
         container_name: hub-1
         ports:
@@ -52,7 +52,7 @@ services:
             - hub_network
 
     consolidator: 
-        image: 'ayeshalmeida/consolidator:6.0.0'
+        image: 'ayeshalmeida/consolidator:7.0.0'
         hostname: consolidator
         container_name: consolidator
         ports:
