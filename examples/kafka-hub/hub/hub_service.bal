@@ -57,9 +57,8 @@ service object {
     }
 
     isolated function registerTopic(websubhub:TopicRegistration message) returns websubhub:TopicRegistrationError? {
-        string topicName = util:sanitizeTopicName(message.topic);
         lock {
-            if registeredTopicsCache.hasKey(topicName) {
+            if registeredTopicsCache.hasKey(message.topic) {
                 return error websubhub:TopicRegistrationError(
                     "Topic has already registered with the Hub", statusCode = http:STATUS_CONFLICT);
             }
@@ -86,9 +85,8 @@ service object {
     }
 
     isolated function deregisterTopic(websubhub:TopicRegistration message) returns websubhub:TopicDeregistrationError? {
-        string topicName = util:sanitizeTopicName(message.topic);
         lock {
-            if !registeredTopicsCache.hasKey(topicName) {
+            if !registeredTopicsCache.hasKey(message.topic) {
                 return error websubhub:TopicDeregistrationError(
                     "Topic has not been registered in the Hub", statusCode = http:STATUS_NOT_FOUND);
             }
@@ -119,10 +117,9 @@ service object {
     # + return - `websubhub:SubscriptionDeniedError` if the subscription is denied by the hub or else `()`
     isolated remote function onSubscriptionValidation(websubhub:Subscription message)
                 returns websubhub:SubscriptionDeniedError? {
-        string topicName = util:sanitizeTopicName(message.hubTopic);
         boolean topicAvailable = false;
         lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(message.hubTopic);
         }
         if !topicAvailable {
             return error websubhub:SubscriptionDeniedError(
@@ -174,11 +171,10 @@ service object {
     # + return - `websubhub:UnsubscriptionDeniedError` if the unsubscription is denied by the hub or else `()`
     isolated remote function onUnsubscriptionValidation(websubhub:Unsubscription message)
                 returns websubhub:UnsubscriptionDeniedError? {
-        string topicName = util:sanitizeTopicName(message.hubTopic);
         boolean topicAvailable = false;
         boolean subscriberAvailable = false;
         lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(message.hubTopic);
         }
         if !topicAvailable {
             return error websubhub:UnsubscriptionDeniedError(
@@ -220,13 +216,12 @@ service object {
     }
 
     isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
-        string topicName = util:sanitizeTopicName(msg.hubTopic);
         boolean topicAvailable = false;
         lock {
-            topicAvailable = registeredTopicsCache.hasKey(topicName);
+            topicAvailable = registeredTopicsCache.hasKey(msg.hubTopic);
         }
         if topicAvailable {
-            error? errorResponse = persist:addUpdateMessage(topicName, msg);
+            error? errorResponse = persist:addUpdateMessage(msg.hubTopic, msg);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
             } else if errorResponse is error {

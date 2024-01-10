@@ -19,22 +19,13 @@ import ballerina/time;
 import ballerina/lang.'string as strings;
 import ballerina/log;
 
-# Sanitizes the name of the `topic` by replacing special characters with `_`.
-# 
-# + topic - Name of the `topic`
-# + return - Sanitized topic name
-public isolated function sanitizeTopicName(string topic) returns string {
-    return nomalizeString(topic);
-}
-
 # Generates a unique Id for a subscriber.
 # 
 # + topic - The `topic` which subscriber needs to subscribe
 # + callbackUrl - Subscriber callback URL
 # + return - Generated subscriber Id for the subscriber
 public isolated function generateSubscriberId(string topic, string callbackUrl) returns string {
-    string idValue = topic + ":::" + callbackUrl;
-    return nomalizeString(idValue);
+    return string `${topic}___${callbackUrl}`;
 }
 
 # Generates a group name for the kafka-consumer.
@@ -43,16 +34,7 @@ public isolated function generateSubscriberId(string topic, string callbackUrl) 
 # + callbackUrl - Subscriber callback URL
 # + return - Generated consumer group name the subscriber
 public isolated function generateGroupName(string topic, string callbackUrl) returns string {
-    string idValue = topic + ":::" + callbackUrl + ":::" + time:monotonicNow().toBalString();
-    return nomalizeString(idValue);
-}
-
-# Normalizes a `string` by replacing special characters with `_`.
-# 
-# + baseString - `string` to be normalized
-# + return - Normalized `string`
-isolated function nomalizeString(string baseString) returns string {
-    return re `[^a-zA-Z0-9]`.replaceAll(baseString, "_");
+    return string `${topic}___${callbackUrl}___${time:monotonicNow().toBalString()}`;
 }
 
 # Generates a random `string` of 10 characters
