@@ -15,36 +15,32 @@
 // under the License.
 
 import ballerina/websubhub;
-import consolidatorService.util;
 import ballerina/lang.value;
 
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 
 isolated function refreshTopicCache(websubhub:TopicRegistration[] persistedTopics) {
     foreach var topic in persistedTopics.cloneReadOnly() {
-        string topicName = util:sanitizeTopicName(topic.topic);
         lock {
-            registeredTopicsCache[topicName] = topic.cloneReadOnly();
+            registeredTopicsCache[topic.topic] = topic.cloneReadOnly();
         }
     }
 }
 
 isolated function processTopicRegistration(json payload) returns error? {
     websubhub:TopicRegistration registration = check value:cloneWithType(payload);
-    string topicName = util:sanitizeTopicName(registration.topic);
     lock {
         // add the topic if topic-registration event received
-        registeredTopicsCache[topicName] = registration.cloneReadOnly();
+        registeredTopicsCache[registration.topic] = registration.cloneReadOnly();
     }
     check processStateUpdate();
 }
 
 isolated function processTopicDeregistration(json payload) returns error? {
     websubhub:TopicDeregistration deregistration = check value:cloneWithType(payload);
-    string topicName = util:sanitizeTopicName(deregistration.topic);
     lock {
         // remove the topic if topic-deregistration event received
-        _ = registeredTopicsCache.removeIfHasKey(topicName);
+        _ = registeredTopicsCache.removeIfHasKey(deregistration.topic);
     }
     check processStateUpdate();
 }
