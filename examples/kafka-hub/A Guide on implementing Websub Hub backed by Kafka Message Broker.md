@@ -25,7 +25,7 @@ Following are some of the goals and technical requirements which we considered w
 # Implementation 
 As mentioned above implementation is based on Kafka message broker. Therefore, the Kafka message broker will be doing most of the heavy lifting. At a high level following are the key components associated with this implementation.
 
-![image](../https://github.com/ballerina-platform/module-ballerina-websubhub/tree/main/examples/kafka-hub/_resources/images/kafka_hub_image.png)
+![image](https://github.com/ballerina-platform/module-ballerina-websubhub/tree/main/examples/kafka-hub/_resources/images/kafka_hub_image.png)
 
 As you can see the current implementation is relying on two different technologies. An IdP is used to handle any authentication and authorization request. This would be the normal case in any production environment. For the other quality of services such as message persistence, subscription management, etc the implementation depends on Kafka message broker. 
 
@@ -35,7 +35,7 @@ To manage the system's state, both the `hub` and the `consolidator` make use of 
 The `websub-events` topic is utilized for broadcasting system state update events to all relevant parties, while 
 the `websub-events-snapshot` topic serves as a storage location for the current snapshot of the system's overall state.
 
-| ![websubhub-2.0-topics.png](../https://github.com/ballerina-platform/module-ballerina-websubhub/tree/main/examples/kafka-hub/_resources/images/websubhub-2.0-topics.png) | 
+| ![websubhub-2.0-topics.png](https://github.com/ballerina-platform/module-ballerina-websubhub/tree/main/examples/kafka-hub/_resources/images/websubhub-2.0-topics.png) | 
 |:--------------------------------------------------------------------------------:| 
 |                          *Image 2: System topic usage*                           |
 
