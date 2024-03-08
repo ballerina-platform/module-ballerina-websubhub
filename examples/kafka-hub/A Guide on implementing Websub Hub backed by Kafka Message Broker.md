@@ -35,7 +35,7 @@ To manage the system's state, both the `hub` and the `consolidator` make use of 
 The `websub-events` topic is utilized for broadcasting system state update events to all relevant parties, while 
 the `websub-events-snapshot` topic serves as a storage location for the current snapshot of the system's overall state.
 
-| ![websubhub-2.0-topics.png](https://raw.githubusercontent.com/ballerina-platform/module-ballerina-websubhub/main/examples/kafka-hub/_resources/images/websubhub-2.0-topics.png) | 
+| ![websubhub-2.0-topics.png](https://raw.githubusercontent.com/ballerina-platform/module-ballerina-websubhub/main/examples/kafka-hub/_resources/images/websubhub-2.0-topics.png) |
 |:--------------------------------------------------------------------------------:| 
 |                          *Image 2: System topic usage*                           |
 
