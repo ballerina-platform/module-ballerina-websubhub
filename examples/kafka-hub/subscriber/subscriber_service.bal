@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websub;
-import ballerina/log;
 import ballerina/http;
-import ballerina/websubhub;
+import ballerina/log;
 import ballerina/os;
+import ballerina/websub;
+import ballerina/websubhub;
 
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final string hubUrl = os:getEnv("HUB_URL") == "" ? "https://lb:9090/hub" : os:getEnv("HUB_URL");
@@ -31,12 +31,13 @@ type OAuth2Config record {|
     string trustStore;
     string trustStorePassword;
 |};
+
 configurable OAuth2Config oauth2Config = ?;
 
-listener websub:Listener securedSubscriber = new(9100, host = os:getEnv("HOSTNAME"));
+listener websub:Listener securedSubscriber = getListener();
 
 function init() returns error? {
-    websubhub:PublisherClient websubHubClientEP = check new(hubUrl,
+    websubhub:PublisherClient websubHubClientEP = check new (hubUrl,
         auth = {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
@@ -67,10 +68,10 @@ function init() returns error? {
     }
 }
 
-@websub:SubscriberServiceConfig { 
+@websub:SubscriberServiceConfig {
     target: [hubUrl, topicName],
     httpConfig: {
-        auth : {
+        auth: {
             tokenUrl: oauth2Config.tokenUrl,
             clientId: oauth2Config.clientId,
             clientSecret: oauth2Config.clientSecret,
@@ -84,7 +85,7 @@ function init() returns error? {
                 }
             }
         },
-        secureSocket : {
+        secureSocket: {
             cert: {
                 path: "./resources/subscriber.truststore.jks",
                 password: "password"
@@ -93,10 +94,10 @@ function init() returns error? {
     },
     unsubscribeOnShutdown: unsubOnShutdown,
     customParams: getCustomParams()
-} 
+}
 service /JuApTOXq19 on securedSubscriber {
-    
-    remote function onSubscriptionVerification(websub:SubscriptionVerification msg) 
+
+    remote function onSubscriptionVerification(websub:SubscriptionVerification msg)
         returns websub:SubscriptionVerificationSuccess {
         log:printInfo(string `Successfully subscribed for notifications on topic [${topicName}]`);
         return websub:SUBSCRIPTION_VERIFICATION_SUCCESS;
@@ -115,4 +116,11 @@ isolated function getCustomParams() returns map<string> {
     return {
         consumerGroup: os:getEnv("CONSUMER_GROUP")
     };
+}
+
+isolated function getListener() returns websub:Listener|error {
+    if os:getEnv("SVC_PORT") == "" {
+        return new (9100, host = os:getEnv("HOSTNAME"));
+    }
+    return new (check int:fromString(os:getEnv("SVC_PORT")), host = os:getEnv("HOSTNAME"));
 }
