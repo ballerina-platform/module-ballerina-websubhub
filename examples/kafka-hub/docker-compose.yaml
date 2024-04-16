@@ -3,7 +3,7 @@ name: 'kafkahub'
 
 services:
     hub-1:
-        image: 'ayeshalmeida/kafkahub:9.0.0'
+        image: 'ayeshalmeida/kafkahub:10.0.0'
         hostname: hub1
         container_name: hub-1
         ports:
