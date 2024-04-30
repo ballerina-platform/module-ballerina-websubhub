@@ -393,6 +393,29 @@ public class CompilerPluginTest {
         Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
         Assert.assertEquals(diagnostic.message(), expectedCode.getDescription());
     }
+
+    @Test
+    public void testCompilerPluginForListenerImplicitInitWithPortAsConfig() {
+        Package currentPackage = loadPackage("sample_23");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .toList();
+        Assert.assertEquals(errorDiagnostics.size(), 0);
+    }
+
+    @Test
+    public void testCompilerPluginForListenerExplicitInitWithPortAsConfig() {
+        Package currentPackage = loadPackage("sample_24");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .toList();
+        Assert.assertEquals(errorDiagnostics.size(), 0);
+    }
+
     private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,
                                                        String typeDesc, String remoteMethodName) {
         DiagnosticInfo info = diagnostic.diagnosticInfo();
