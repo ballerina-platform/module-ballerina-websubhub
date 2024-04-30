@@ -395,19 +395,8 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testCompilerPluginForListenerImplicitInitWithPortAsConfig() {
+    public void testCompilerPluginForListenerInitWithPortConfig() {
         Package currentPackage = loadPackage("sample_23");
-        PackageCompilation compilation = currentPackage.getCompilation();
-        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
-        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
-                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
-                .toList();
-        Assert.assertEquals(errorDiagnostics.size(), 0);
-    }
-
-    @Test
-    public void testCompilerPluginForListenerExplicitInitWithPortAsConfig() {
-        Package currentPackage = loadPackage("sample_24");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()

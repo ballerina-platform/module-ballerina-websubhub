@@ -16,8 +16,11 @@
 
 import ballerina/websubhub;
 
+final readonly & string[] TOPICS = ["test", "test1"];
+
 configurable int port = 9090;
-listener websubhub:Listener functionWithArgumentsListener = new(port, {
+
+listener websubhub:Listener ln = new(port, {
     secureSocket: {
         key: {
             path: "tests/resources/ballerinaKeystore.pkcs12",
@@ -26,9 +29,14 @@ listener websubhub:Listener functionWithArgumentsListener = new(port, {
     }
 });
 
-final readonly & string[] TOPICS = ["test", "test1"];
-
-service /websubhub on functionWithArgumentsListener {
+service /websubhub on new websubhub:Listener(port, {
+    secureSocket: {
+        key: {
+            path: "tests/resources/ballerinaKeystore.pkcs12",
+            password: "ballerina"
+        }
+    }
+}) {
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message)
                                 returns websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError {
         if TOPICS.indexOf(message.topic) is () {
@@ -55,7 +63,7 @@ service /websubhub on functionWithArgumentsListener {
             return websubhub:UPDATE_MESSAGE_ERROR;
         }
     }
-    
+
     isolated remote function onSubscription(websubhub:Subscription message) returns websubhub:SubscriptionAccepted {
         return websubhub:SUBSCRIPTION_ACCEPTED;
     }
