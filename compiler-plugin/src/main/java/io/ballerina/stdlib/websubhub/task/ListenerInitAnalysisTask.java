@@ -20,8 +20,10 @@ package io.ballerina.stdlib.websubhub.task;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
@@ -112,12 +114,18 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
         // two args are valid only if the first arg is numeric (i.e, port and config)
         if (functionArgs.size() > 1) {
             PositionalArgumentNode firstArg = (PositionalArgumentNode) functionArgs.get(0);
-            FunctionArgumentNode secondArg = functionArgs.get(1);
-            SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
-            if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_101;
-                updateContext(context, errorCode, secondArg.location());
+            Optional<Symbol> firstArgSymbolOpt = context.semanticModel().symbol(firstArg.expression());
+            if (firstArgSymbolOpt.isEmpty()) {
+                return;
             }
+            Symbol firstArgSymbol = firstArgSymbolOpt.get();
+            if (SymbolKind.VARIABLE.equals(firstArgSymbol.kind())) {
+                VariableSymbol variable = (VariableSymbol) firstArgSymbol;
+                if (TypeDescKind.INT.equals(variable.typeDescriptor().typeKind())) {
+                    return;
+                }
+            }
+            updateContext(context, WebSubHubDiagnosticCodes.WEBSUBHUB_101, functionArgs.get(1).location());
         }
     }
 }
