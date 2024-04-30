@@ -28,7 +28,6 @@ import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ListenerDeclarationNode;
-import io.ballerina.compiler.syntax.tree.NodeLocation;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
@@ -72,7 +71,7 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
             return;
         }
         SeparatedNodeList<FunctionArgumentNode> functionArgs = node.parenthesizedArgList().arguments();
-        verifyListenerArgType(context, node.location(), functionArgs);
+        verifyListenerArgType(context, functionArgs);
     }
 
     private void validateImplicitNewListener(SyntaxNodeAnalysisContext context, ImplicitNewExpressionNode node) {
@@ -94,7 +93,7 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
         }
         if (node.parenthesizedArgList().isPresent()) {
             SeparatedNodeList<FunctionArgumentNode> functionArgs = node.parenthesizedArgList().get().arguments();
-            verifyListenerArgType(context, node.location(), functionArgs);
+            verifyListenerArgType(context, functionArgs);
         }
     }
 
@@ -109,7 +108,7 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
         return Optional.empty();
     }
 
-    private void verifyListenerArgType(SyntaxNodeAnalysisContext context, NodeLocation location,
+    private void verifyListenerArgType(SyntaxNodeAnalysisContext context,
                                        SeparatedNodeList<FunctionArgumentNode> functionArgs) {
         // two args are valid only if the first arg is numeric (i.e, port and config)
         if (functionArgs.size() > 1) {
@@ -125,7 +124,8 @@ public class ListenerInitAnalysisTask implements AnalysisTask<SyntaxNodeAnalysis
                     return;
                 }
             }
-            updateContext(context, WebSubHubDiagnosticCodes.WEBSUBHUB_101, functionArgs.get(1).location());
+            FunctionArgumentNode secondArg = functionArgs.get(1);
+            updateContext(context, WebSubHubDiagnosticCodes.WEBSUBHUB_101, secondArg.location());
         }
     }
 }
