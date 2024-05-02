@@ -32,14 +32,7 @@ http:Service healthCheckService = service object {
     }
 };
 
-websubhub:Service hubService = @websubhub:ServiceConfig { 
-    webHookConfig: {
-        secureSocket: {
-            cert: "./resources/server.crt"
-        }
-    }
-}
-service object {
+websubhub:Service hubService = service object {
 
     # Registers a `topic` in the hub.
     # 
