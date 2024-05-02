@@ -20,7 +20,27 @@ final readonly & string[] TOPICS = ["test", "test1"];
 
 configurable int port = 9090;
 
-listener websubhub:Listener ln = new(port, {
+listener websubhub:Listener ln1 = new(port, {
+    secureSocket: {
+        key: {
+            path: "tests/resources/ballerinaKeystore.pkcs12",
+            password: "ballerina"
+        }
+    }
+});
+
+listener websubhub:Listener ln2 = check new(listenTo = port, config = {
+    secureSocket: {
+        key: {
+            path: "tests/resources/ballerinaKeystore.pkcs12",
+            password: "ballerina"
+        }
+    }
+});
+
+listener websubhub:Listener ln3 = check new(listenTo = port);
+
+listener websubhub:Listener ln4 = check new(listenTo = 9090, config = {
     secureSocket: {
         key: {
             path: "tests/resources/ballerinaKeystore.pkcs12",
