@@ -16,6 +16,7 @@
 
 import ballerina/websubhub;
 import in_memory_hub.dispatcher;
+import ballerina/lang.runtime;
 
 public function main() returns error? {
     // Initialize the Hub
@@ -24,4 +25,5 @@ public function main() returns error? {
     websubhub:Listener hubListener = check new(9090);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
+    runtime:registerListener(hubListener);
 }
