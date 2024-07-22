@@ -1,7 +1,2 @@
-[package]
-org = "ballerina"
-name = "hub_load_test"
-version = "1.0.0"
-
 [build-options]
 observabilityIncluded = true
