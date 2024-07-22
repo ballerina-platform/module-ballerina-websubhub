@@ -20,10 +20,10 @@ import ballerina/lang.runtime;
 
 public function main() returns error? {
     // Initialize the Hub
-    _ = @strand {thread: "any"} start dispatcher:syncDispatcherState();
+    _ = start dispatcher:syncDispatcherState();
 
-    websubhub:Listener hubListener = check new(9090);
+    websubhub:Listener hubListener = check new(9000, host = "0.0.0.0");
+    runtime:registerListener(hubListener);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();
-    runtime:registerListener(hubListener);
 }

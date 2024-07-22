@@ -8,9 +8,9 @@ metadata:
 spec:
   ports:
     - name: "port-1-in-mem"
-      port: 9090
+      port: 9000
       protocol: "TCP"
-      targetPort: 9090
+      targetPort: 9000
   selector:
     app: "in_memory_hub"
   type: "ClusterIP"
