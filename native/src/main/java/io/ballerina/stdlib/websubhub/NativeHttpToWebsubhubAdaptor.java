@@ -20,7 +20,6 @@ package io.ballerina.stdlib.websubhub;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
@@ -204,10 +203,8 @@ public final class NativeHttpToWebsubhubAdaptor {
             CompletableFuture<Object> balFuture = new CompletableFuture<>();
             Module module = ModuleUtils.getModule();
             ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
-            boolean isIsolated = serviceType.isIsolated() && serviceType.isIsolated(remoteFunctionName);
-            StrandMetadata metadata = new StrandMetadata(isIsolated, null);
             try {
-                Object result = env.getRuntime().callMethod(bHubService, remoteFunctionName, metadata, args);
+                Object result = env.getRuntime().callMethod(bHubService, remoteFunctionName, null, args);
                 ModuleUtils.notifySuccess(balFuture, result);
                 return ModuleUtils.getResult(balFuture);
             } catch (BError bError) {
