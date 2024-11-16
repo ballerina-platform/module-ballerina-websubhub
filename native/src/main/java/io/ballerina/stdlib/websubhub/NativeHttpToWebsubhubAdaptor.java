@@ -20,14 +20,13 @@ package io.ballerina.stdlib.websubhub;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
@@ -203,18 +202,9 @@ public final class NativeHttpToWebsubhubAdaptor {
         return env.yieldAndRun(() -> {
             CompletableFuture<Object> balFuture = new CompletableFuture<>();
             Module module = ModuleUtils.getModule();
-            StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
-                    parentFunctionName);
             ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
-            Object result;
             try {
-                if (serviceType.isIsolated() && serviceType.isIsolated(remoteFunctionName)) {
-                    result = env.getRuntime().startIsolatedWorker(bHubService, remoteFunctionName, null, metadata,
-                            null, args).get();
-                } else {
-                    result = env.getRuntime().startNonIsolatedWorker(bHubService, remoteFunctionName, null,
-                            metadata, null, args).get();
-                }
+                Object result = env.getRuntime().callMethod(bHubService, remoteFunctionName, null, args);
                 ModuleUtils.notifySuccess(balFuture, result);
                 return ModuleUtils.getResult(balFuture);
             } catch (BError bError) {
