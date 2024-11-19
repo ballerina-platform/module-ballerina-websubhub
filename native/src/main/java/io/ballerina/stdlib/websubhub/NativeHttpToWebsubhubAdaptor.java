@@ -19,26 +19,25 @@
 package io.ballerina.stdlib.websubhub;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.Module;
-import io.ballerina.runtime.api.PredefinedTypes;
-import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.types.Parameter;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.stdlib.websubhub.Constants.ON_DEREGISTER_TOPIC;
 import static io.ballerina.stdlib.websubhub.Constants.ON_REGISTER_TOPIC;
@@ -78,7 +77,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callRegisterMethod", ON_REGISTER_TOPIC);
     }
@@ -90,7 +89,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callDeregisterMethod", ON_DEREGISTER_TOPIC);
     }
@@ -102,7 +101,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUpdateMethod", ON_UPDATE_MESSAGE);
     }
@@ -114,7 +113,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionMethod", ON_SUBSCRIPTION);
     }
@@ -126,7 +125,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionValidationMethod", ON_SUBSCRIPTION_VALIDATION);
     }
@@ -138,7 +137,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionIntentVerifiedMethod",
                 ON_SUBSCRIPTION_INTENT_VERIFIED);
@@ -151,7 +150,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUnsubscriptionMethod", ON_UNSUBSCRIPTION);
     }
@@ -163,7 +162,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionValidationMethod",
                 ON_UNSUBSCRIPTION_VALIDATION);
     }
@@ -175,7 +174,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, true, bHttpHeaders, true};
+        Object[] args = new Object[]{message, bHttpHeaders};
         return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionIntentVerifiedMethod",
                 ON_UNSUBSCRIPTION_INTENT_VERIFIED);
     }
@@ -200,20 +199,18 @@ public final class NativeHttpToWebsubhubAdaptor {
 
     private static Object invokeRemoteFunction(Environment env, BObject bHubService, Object[] args,
                                                String parentFunctionName, String remoteFunctionName) {
-        Future balFuture = env.markAsync();
-        Module module = ModuleUtils.getModule();
-        StrandMetadata metadata = new StrandMetadata(module.getOrg(), module.getName(), module.getVersion(),
-                parentFunctionName);
-        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
-        if (serviceType.isIsolated() && serviceType.isIsolated(remoteFunctionName)) {
-            env.getRuntime().invokeMethodAsyncConcurrently(
-                    bHubService, remoteFunctionName, null, metadata,
-                    new HubCallback(balFuture, module), null, PredefinedTypes.TYPE_NULL, args);
-        } else {
-            env.getRuntime().invokeMethodAsyncSequentially(
-                    bHubService, remoteFunctionName, null, metadata,
-                    new HubCallback(balFuture, module), null, PredefinedTypes.TYPE_NULL, args);;
-        }
-        return null;
+        return env.yieldAndRun(() -> {
+            CompletableFuture<Object> balFuture = new CompletableFuture<>();
+            Module module = ModuleUtils.getModule();
+            ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
+            try {
+                Object result = env.getRuntime().callMethod(bHubService, remoteFunctionName, null, args);
+                ModuleUtils.notifySuccess(balFuture, result);
+                return ModuleUtils.getResult(balFuture);
+            } catch (BError bError) {
+                ModuleUtils.notifyFailure(bError);
+            }
+            return null;
+        });
     }
 }
