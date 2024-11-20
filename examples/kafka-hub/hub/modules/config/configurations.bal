@@ -65,7 +65,9 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
 # The HTTP status codes for which the client should retry
-public configurable int[] RETRYABLE_STATUS_CODES = [500, 502, 503];
+public configurable int[] MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES = [500, 502, 503];
+
+public final readonly & int[] RETRYABLE_STATUS_CODES = check getRetryableStatusCodes(MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES).cloneReadOnly();
 
 # The Oauth2 authorization related configurations
 public configurable types:OAuth2Config OAUTH2_CONFIG = ?;
@@ -78,4 +80,12 @@ public final string WEBSUB_EVENTS_CONSUMER_GROUP = os:getEnv("WEBSUB_EVENTS_CONS
 
 isolated function constructSystemConsumerGroup() returns string {
     return string `websub-events-receiver-${SERVER_IDENTIFIER}-${util:generateRandomString()}`;
+}
+
+isolated function getRetryableStatusCodes(int[] configuredCodes) returns int[]|error {
+    if os:getEnv("RETRYABLE_STATUS_CODES") is "" {
+        return configuredCodes;
+    }
+    string[] statusCodes = re ` `.split(os:getEnv("RETRYABLE_STATUS_CODES"));
+    return statusCodes.'map(i => check int:fromString(i));
 }
