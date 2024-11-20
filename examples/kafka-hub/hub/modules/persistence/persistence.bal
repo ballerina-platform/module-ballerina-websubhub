@@ -60,8 +60,5 @@ isolated function produceKafkaMessage(string topicName, json payload,
 isolated function getProducerMsg(string topic, json payload, 
                                 map<string|string[]> headers) returns kafka:AnydataProducerRecord {
     byte[] value = payload.toJsonString().toBytes();
-    if headers.length() == 0 {
-        return { topic, value };
-    }
-    return { topic, value, headers };
+    return headers.length() == 0 ? { topic, value } : { topic, value, headers };
 }
