@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/websubhub;
+import ballerinax/kafka;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
 
@@ -49,8 +50,15 @@ public isolated function addUpdateMessage(string topicName, websubhub:UpdateMess
     check produceKafkaMessage(topicName, payload);
 }
 
-isolated function produceKafkaMessage(string topicName, json payload) returns error? {
-    byte[] serializedContent = payload.toJsonString().toBytes();
-    check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
+isolated function produceKafkaMessage(string topicName, json payload, 
+                                    map<string|string[]> headers = {}) returns error? {
+    kafka:AnydataProducerRecord message = getProducerMsg(topicName, payload, headers);
+    check conn:statePersistProducer->send(message);
     check conn:statePersistProducer->'flush();
+}
+
+isolated function getProducerMsg(string topic, json payload, 
+                                map<string|string[]> headers) returns kafka:AnydataProducerRecord {
+    byte[] value = payload.toJsonString().toBytes();
+    return headers.length() == 0 ? { topic, value } : { topic, value, headers };
 }
