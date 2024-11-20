@@ -101,7 +101,8 @@ public isolated function createMessageConsumer(string topicName, string groupNam
         topics: [topicName],
         autoCommit: false,
         secureSocket: secureSocketConfig,
-        securityProtocol: kafka:PROTOCOL_SSL
+        securityProtocol: kafka:PROTOCOL_SSL,
+        maxPollRecords: config:CONSUMER_MAX_POLL_RECORDS
     };
     return check new (config:KAFKA_URL, consumerConfiguration);  
 }
