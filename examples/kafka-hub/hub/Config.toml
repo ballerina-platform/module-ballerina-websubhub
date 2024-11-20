@@ -9,6 +9,9 @@ SERVER_ID = "hub-1"
 # IP and Port of the Kafka bootstrap node
 KAFKA_BOOTSTRAP_NODE = "localhost:9094"
 
+# Maximum number of records returned in a single call to consumer-poll
+KAFKA_CONSUMER_MAX_POLL_RECORDS = 50
+
 # Kafka topic which is stores websub-events for this server
 WEBSUB_EVENTS_TOPIC = "websub-events"
 

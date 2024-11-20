@@ -33,6 +33,8 @@ services:
             KEYSTORE_FILE_NAME: "client-keystore.jks"
             # Update following enviornment variable to set the client keystore password
             KEYSTORE_PASSWORD: "password"
+            # Maximum number of records returned in a single call to consumer-poll
+            KAFKA_CONSUMER_MAX_POLL_RECORDS: 50
         volumes:
             # Kafka client truststore file
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks

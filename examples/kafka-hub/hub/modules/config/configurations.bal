@@ -32,6 +32,12 @@ public configurable string KAFKA_BOOTSTRAP_NODE = "localhost:9092";
 
 public final string KAFKA_URL = os:getEnv("KAFKA_BOOTSTRAP_NODE") == "" ? KAFKA_BOOTSTRAP_NODE : os:getEnv("KAFKA_BOOTSTRAP_NODE");
 
+# Maximum number of records returned in a single call to consumer-poll
+public configurable int KAFKA_CONSUMER_MAX_POLL_RECORDS = ?;
+
+public final int CONSUMER_MAX_POLL_RECORDS = os:getEnv("KAFKA_CONSUMER_MAX_POLL_RECORDS") == "" ? 
+    KAFKA_CONSUMER_MAX_POLL_RECORDS : check int:fromString(os:getEnv("KAFKA_CONSUMER_MAX_POLL_RECORDS"));
+
 # Kafka topic which is stores websub-events for this server
 public configurable string WEBSUB_EVENTS_TOPIC = "websub-events";
 
