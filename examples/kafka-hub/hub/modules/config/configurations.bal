@@ -86,6 +86,6 @@ isolated function getRetryableStatusCodes(int[] configuredCodes) returns int[]|e
     if os:getEnv("RETRYABLE_STATUS_CODES") is "" {
         return configuredCodes;
     }
-    string[] statusCodes = re ` `.split(os:getEnv("RETRYABLE_STATUS_CODES"));
-    return statusCodes.'map(i => check int:fromString(i));
+    string[] statusCodes = re `,`.split(os:getEnv("RETRYABLE_STATUS_CODES"));
+    return statusCodes.'map(i => check int:fromString(i.trim()));
 }

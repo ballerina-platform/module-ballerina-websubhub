@@ -36,7 +36,7 @@ services:
             # Maximum number of records returned in a single call to consumer-poll
             KAFKA_CONSUMER_MAX_POLL_RECORDS: 50
             # The HTTP status codes for which the client should retry
-            RETRYABLE_STATUS_CODES: "500 502 503"
+            RETRYABLE_STATUS_CODES: "500,502,503"
         volumes:
             # Kafka client truststore file
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
