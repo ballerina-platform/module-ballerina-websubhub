@@ -36,6 +36,9 @@ MESSAGE_DELIVERY_COUNT = 3
 # The message delivery timeout
 MESSAGE_DELIVERY_TIMEOUT = 10.0
 
+# The HTTP status codes for which the client should retry
+MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES = [500, 502, 503]
+
 # The Oauth2 authorization related configurations
 [kafkaHub.config.OAUTH2_CONFIG]
 issuer = "https://localhost:9443/oauth2/token"
