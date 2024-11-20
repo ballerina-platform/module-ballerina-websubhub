@@ -15,9 +15,9 @@
 // under the License.
 
 import ballerina/websubhub;
+import ballerinax/kafka;
 import kafkaHub.config;
 import kafkaHub.connections as conn;
-import ballerinax/kafka;
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
     check updateHubState(message);
