@@ -64,6 +64,9 @@ public configurable int MESSAGE_DELIVERY_COUNT = 3;
 # The message delivery timeout
 public configurable decimal MESSAGE_DELIVERY_TIMEOUT = 10;
 
+# The HTTP status codes for which the client should retry
+public configurable int[] RETRYABLE_STATUS_CODES = [500, 502, 503];
+
 # The Oauth2 authorization related configurations
 public configurable types:OAuth2Config OAUTH2_CONFIG = ?;
 

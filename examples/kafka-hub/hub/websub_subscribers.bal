@@ -75,7 +75,8 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
             interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
             count: config:MESSAGE_DELIVERY_COUNT,
             backOffFactor: 2.0,
-            maxWaitInterval: 20
+            maxWaitInterval: 20,
+            statusCodes: config:RETRYABLE_STATUS_CODES
         },
         timeout: config:MESSAGE_DELIVERY_TIMEOUT
     });
