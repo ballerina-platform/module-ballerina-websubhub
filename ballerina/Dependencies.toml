@@ -335,7 +335,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websubhub"
-version = "1.11.0"
+version = "1.11.1"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "http"},
