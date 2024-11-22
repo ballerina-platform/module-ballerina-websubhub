@@ -70,7 +70,12 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string consumerGroup = check value:ensureType(subscription[CONSUMER_GROUP]);
-    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup);
+    int? topicPartition = ();
+    if subscription.hasKey(CONSUMER_TOPIC_PARTITION) {
+        string partitionDetails = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITION]);
+        topicPartition = check int:fromString(partitionDetails);
+    }
+    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup, topicPartition);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
