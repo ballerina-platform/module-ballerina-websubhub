@@ -19,13 +19,13 @@ import ballerina/mime;
 import ballerina/crypto;
 
 # HTTP Based client for WebSub content publishing to subscribers
-public client class HubClient {
-    private string callback;
-    private string hub;
-    private string topic;
-    private string hubLinks;
-    private string? secret;
-    private http:Client httpClient;
+public isolated client class HubClient {
+    private final string callback;
+    private final string hub;
+    private final string topic;
+    private final string hubLinks;
+    private final string? secret;
+    private final http:Client httpClient;
 
     # Initializes the `websubhub:HubClient`.
     # ```ballerina
