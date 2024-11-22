@@ -82,11 +82,11 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
     });
     do {
         while true {
-            kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            readonly & kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
             if !isValidConsumer(subscription.hubTopic, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${subscription.hubTopic} is invalid`);
             }
-            _ = check notifySubscribers(records, clientEp, consumerEp);
+            _ = start notifySubscribers(records, clientEp);
         }
     } on fail var e {
         util:logError("Error occurred while sending notification to subscriber", e);
@@ -110,19 +110,14 @@ isolated function isValidSubscription(string subscriberId) returns boolean {
     }
 }
 
-isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
-    foreach var kafkaRecord in records {
-        var message = deSerializeKafkaRecord(kafkaRecord);
-        if message is websubhub:ContentDistributionMessage {
-            var response = clientEp->notifyContentDistribution(message);
-            if response is websubhub:ContentDistributionSuccess {
-                _ = check consumerEp->commit();
-                return;   
-            }
-            return response;
-        } else {
-            log:printError("Error occurred while retrieving message data", err = message.message());
+isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp) returns error? {
+    do {
+        foreach var kafkaRecord in records {
+            websubhub:ContentDistributionMessage message = check deSerializeKafkaRecord(kafkaRecord);
+            _ = check clientEp->notifyContentDistribution(message);
         }
+    } on fail error e {
+        log:printError("Error occurred while delivering messages to the subscriber", err = e.message());
     }
 }
 

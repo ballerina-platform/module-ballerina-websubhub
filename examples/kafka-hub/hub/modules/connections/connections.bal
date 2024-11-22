@@ -96,10 +96,15 @@ public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_URL, 
 # + groupName - The consumer group name
 # + return - `kafka:Consumer` if succcessful or else `error`
 public isolated function createMessageConsumer(string topicName, string groupName) returns kafka:Consumer|error {
+    // Messages are distributed to subscribers in parallel.
+    // In this scenario, manually committing offsets is unnecessary because 
+    // the next message polling starts as soon as the worker begins delivering messages to the subscribers.
+    // Therefore, auto-commit is enabled to handle offset management automatically.
+    // Related issue: https://github.com/ballerina-platform/ballerina-library/issues/7376
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
         topics: [topicName],
-        autoCommit: false,
+        autoCommit: true,
         secureSocket: secureSocketConfig,
         securityProtocol: kafka:PROTOCOL_SSL,
         maxPollRecords: config:CONSUMER_MAX_POLL_RECORDS
