@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.1] - 2024-11-22
+
 ### Changed
 - [Mark `websubhub:HubClient` as an isolated client](https://github.com/ballerina-platform/ballerina-library/issues/7400)
 
