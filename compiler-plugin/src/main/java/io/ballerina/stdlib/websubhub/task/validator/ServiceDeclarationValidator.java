@@ -41,6 +41,10 @@ public class ServiceDeclarationValidator {
     private static final Map<String, List<String>> allowedReturnTypes;
     private static final List<String> methodsWithOptionalReturnTypes;
 
+    private ServiceDeclarationValidator() {
+        //private constructor
+    }
+
     static {
         allowedMethods = List.of(
                 Constants.ON_REGISTER_TOPIC, Constants.ON_DEREGISTER_TOPIC, Constants.ON_UPDATE_MESSAGE,
