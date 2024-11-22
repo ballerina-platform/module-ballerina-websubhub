@@ -26,6 +26,7 @@ import ballerina/mime;
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string CONSUMER_GROUP = "consumerGroup";
+const string CONSUMER_TOPIC_PARTITION = "topicPartition";
 const string SERVER_ID = "SERVER_ID";
 const string STATUS = "status";
 const string STALE_STATE = "stale";
