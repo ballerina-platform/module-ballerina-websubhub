@@ -184,6 +184,12 @@ Then execute the below command to run the program.
 BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/wbsbsubscriber.jar
 ```
 
+Running the subscriber on docker.
+
+```sh
+docker run --rm --name <name-of-container> -e TOPIC_NAME="<topic-name>" -e CONSUMER_GROUP="<consumer-group>" -e HUB_URL="<hub-URL>" -e UNSUB_ON_SHUTDOWN="true" -e SVC_PORT="<subscriber-port>" --network="<docker-network-name>" --hostname=<hostname> ayeshalmeida/wbsbsubscriber:5.0.0
+```
+
 ## Publishing to the Hub
 
 Go into the `publisher` directory and execute the following command.
@@ -196,6 +202,12 @@ Then execute the below command to run the program.
 
 ```sh
 BAL_CONFIG_FILES=/path/to/Config.toml bal run target/bin/wbsbpublisher.jar
+```
+
+Running the publisher on docker.
+
+```sh
+docker run --rm --network host --name websub-publisher -e TOPIC_NAME="<topic-name>" ayeshalmeida/wbsbpublisher:4.0.0
 ```
 
 # Scaling the Hub
