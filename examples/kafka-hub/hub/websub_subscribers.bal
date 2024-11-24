@@ -26,7 +26,7 @@ import ballerina/mime;
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string CONSUMER_GROUP = "consumerGroup";
-const string CONSUMER_TOPIC_PARTITION = "topicPartition";
+const string CONSUMER_TOPIC_PARTITIONS = "topicPartitions";
 const string SERVER_ID = "SERVER_ID";
 const string STATUS = "status";
 const string STALE_STATE = "stale";
@@ -148,10 +148,10 @@ isolated function getHeaders(kafka:ConsumerRecord kafkaRecord) returns map<strin
 }
 
 isolated function getTopicPartitions(websubhub:VerifiedSubscription subscription) returns int[]|error? {
-    if !subscription.hasKey(CONSUMER_TOPIC_PARTITION) {
+    if !subscription.hasKey(CONSUMER_TOPIC_PARTITIONS) {
         return;
     }
     // Kafka topic partitions will be a string with comma separated integers eg: "1,2,3,4"
-    string partitionInfo = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITION]);
+    string partitionInfo = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITIONS]);
     return re `,`.split(partitionInfo).'map(p => p.trim()).'map(p => check int:fromString(p));
 }
