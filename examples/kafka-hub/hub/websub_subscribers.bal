@@ -70,12 +70,8 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string consumerGroup = check value:ensureType(subscription[CONSUMER_GROUP]);
-    int? topicPartition = ();
-    if subscription.hasKey(CONSUMER_TOPIC_PARTITION) {
-        string partitionDetails = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITION]);
-        topicPartition = check int:fromString(partitionDetails);
-    }
-    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup, topicPartition);
+    int[]? topicPartitions = check getTopicPartitions(subscription);
+    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup, topicPartitions);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -149,4 +145,13 @@ isolated function getHeaders(kafka:ConsumerRecord kafkaRecord) returns map<strin
         }
     }
     return headers;
+}
+
+isolated function getTopicPartitions(websubhub:VerifiedSubscription subscription) returns int[]|error? {
+    if !subscription.hasKey(CONSUMER_TOPIC_PARTITION) {
+        return;
+    }
+    // Kafka topic partitions will be a string with comma separated integers eg: "1,2,3,4"
+    string partitionInfo = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITION]);
+    return re `,`.split(partitionInfo).'map(p => p.trim()).'map(p => check int:fromString(p));
 }

@@ -94,9 +94,9 @@ public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_URL, 
 #
 # + topicName - The kafka-topic to which the consumer should subscribe  
 # + groupName - The consumer group name  
-# + partition - The kafka topic-partitions
+# + partitions - The kafka topic-partitions
 # + return - `kafka:Consumer` if succcessful or else `error`
-public isolated function createMessageConsumer(string topicName, string groupName, int|int[]? partition = ()) returns kafka:Consumer|error {
+public isolated function createMessageConsumer(string topicName, string groupName, int[]? partitions = ()) returns kafka:Consumer|error {
     // Messages are distributed to subscribers in parallel.
     // In this scenario, manually committing offsets is unnecessary because 
     // the next message polling starts as soon as the worker begins delivering messages to the subscribers.
@@ -110,20 +110,12 @@ public isolated function createMessageConsumer(string topicName, string groupNam
         securityProtocol: kafka:PROTOCOL_SSL,
         maxPollRecords: config:CONSUMER_MAX_POLL_RECORDS
     };
-    if partition is () {
+    if partitions is () {
         return new (config:KAFKA_URL, consumerConfiguration);
     }
     
     kafka:Consumer consumerEp = check new (config:KAFKA_URL, consumerConfiguration);
-    check consumerEp->assign(getTopicPartitions(topicName, partition));
+    kafka:TopicPartition[] kafkaTopicPartitions = partitions.'map(p => {topic: topicName, partition: p});
+    check consumerEp->assign(kafkaTopicPartitions);
     return consumerEp;  
-}
-
-isolated function getTopicPartitions(string topic, int|int[] partition) returns kafka:TopicPartition[] {
-    if partition is int {
-        return [
-            {topic, partition}
-        ];
-    }
-    return partition.'map(p => {topic, partition: p});
 }
