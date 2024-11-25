@@ -103,7 +103,6 @@ public isolated function createMessageConsumer(string topicName, string groupNam
     // Therefore, auto-commit is enabled to handle offset management automatically.
     // Related issue: https://github.com/ballerina-platform/ballerina-library/issues/7376
     kafka:ConsumerConfiguration consumerConfiguration = {
-        groupId: groupName,
         topics: [topicName],
         autoCommit: true,
         secureSocket: secureSocketConfig,
@@ -111,6 +110,8 @@ public isolated function createMessageConsumer(string topicName, string groupNam
         maxPollRecords: config:CONSUMER_MAX_POLL_RECORDS
     };
     if partitions is () {
+        // Kafka will require a consumer group only if the consumer does not assign partitions manually
+        consumerConfiguration.groupId = groupName;
         return new (config:KAFKA_URL, consumerConfiguration);
     }
     
