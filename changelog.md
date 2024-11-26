@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.1] - 2024-11-22
+
+### Changed
+- [Mark `websubhub:HubClient` as an isolated client](https://github.com/ballerina-platform/ballerina-library/issues/7400)
+
+## [1.11.0] - 2024-05-03
+
+### Fixed
+- [`websubhub` compiler plugin does not allow listener port to be a pre-defined variable](https://github.com/ballerina-platform/ballerina-library/issues/6339)
+
 ## [1.9.1] - 2023-09-14
 
 ### Fixed 

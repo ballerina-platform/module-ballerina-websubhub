@@ -12,6 +12,6 @@ spec:
         - name: "in-memory-hub-deployment"
           imagePullPolicy: Always
           ports:
-            - containerPort: 9090
+            - containerPort: 9000
               name: "port-1-in-mem"
               protocol: "TCP"
