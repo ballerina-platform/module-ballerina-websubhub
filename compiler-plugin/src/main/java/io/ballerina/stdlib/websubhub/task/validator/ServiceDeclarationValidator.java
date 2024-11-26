@@ -296,8 +296,4 @@ public class ServiceDeclarationValidator {
             return !allowedReturnTypes.contains(qualifiedParamType);
         }
     }
-
-    private ServiceDeclarationValidator() {
-        // private constructor
-    }
 }
