@@ -34,6 +34,7 @@ import static io.ballerina.stdlib.websubhub.task.AnalyserUtils.updateContext;
  * package implementation.
  */
 public class ServiceDeclarationValidator {
+
     private static final ServiceDeclarationValidator INSTANCE = new ServiceDeclarationValidator();
     private static final List<String> allowedMethods;
     private static final List<String> requiredMethods;
@@ -257,7 +258,7 @@ public class ServiceDeclarationValidator {
             return ((UnionTypeSymbol) returnTypeDescriptor)
                     .memberTypeDescriptors().stream()
                     .map(e -> isReturnTypeNotAllowed(allowedReturnTypes, e, nilableReturnTypeAllowed))
-                    .reduce(false, (a , b) -> a || b);
+                    .reduce(false, (a, b) -> a || b);
         } else if (TypeDescKind.TYPE_REFERENCE.equals(typeKind)) {
             TypeSymbol internalType = ((TypeReferenceTypeSymbol) returnTypeDescriptor).typeDescriptor();
             if (internalType instanceof ErrorTypeSymbol) {
@@ -290,5 +291,9 @@ public class ServiceDeclarationValidator {
         } else {
             return !allowedReturnTypes.contains(qualifiedParamType);
         }
+    }
+
+    private ServiceDeclarationValidator() {
+        // private constructor
     }
 }
