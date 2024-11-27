@@ -103,20 +103,37 @@ public isolated function createMessageConsumer(string topicName, string groupNam
     // Therefore, auto-commit is enabled to handle offset management automatically.
     // Related issue: https://github.com/ballerina-platform/ballerina-library/issues/7376
     kafka:ConsumerConfiguration consumerConfiguration = {
-        topics: [topicName],
+        groupId: groupName,
         autoCommit: true,
         secureSocket: secureSocketConfig,
         securityProtocol: kafka:PROTOCOL_SSL,
         maxPollRecords: config:CONSUMER_MAX_POLL_RECORDS
     };
     if partitions is () {
-        // Kafka will require a consumer group only if the consumer does not assign partitions manually
-        consumerConfiguration.groupId = groupName;
+        // Kafka consumer topic subscription should only be used when manual partition assignment is not used
+        consumerConfiguration.topics = [topicName];
         return new (config:KAFKA_URL, consumerConfiguration);
     }
     
-    kafka:Consumer consumerEp = check new (config:KAFKA_URL, consumerConfiguration);
+    log:printInfo("Assigning kafka-topic partitions manually", details = partitions);
+    kafka:Consumer|kafka:Error consumerEp = check new (config:KAFKA_URL, consumerConfiguration);
+    if consumerEp is kafka:Error {
+        log:printError("Error occurred while creating the consumer", consumerEp);
+        return consumerEp;
+    }
+
     kafka:TopicPartition[] kafkaTopicPartitions = partitions.'map(p => {topic: topicName, partition: p});
-    check consumerEp->assign(kafkaTopicPartitions);
+    kafka:Error? paritionAssignmentErr = consumerEp->assign(kafkaTopicPartitions);
+    if paritionAssignmentErr is kafka:Error {
+        log:printError("Error occurred while assigning partitions to the consumer", paritionAssignmentErr);
+        return paritionAssignmentErr;
+    }
+
+    kafka:Error? kafkaSeekErr = consumerEp->seekToBeginning(kafkaTopicPartitions);
+    if kafkaSeekErr is kafka:Error {
+        log:printError("Error occurred while assigning seeking partitions for the consumer", paritionAssignmentErr);
+        return kafkaSeekErr;
+    }
+
     return consumerEp;  
 }
