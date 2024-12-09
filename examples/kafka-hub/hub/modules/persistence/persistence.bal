@@ -45,7 +45,8 @@ isolated function updateHubState(websubhub:TopicRegistration|websubhub:TopicDere
     }
 }
 
-public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {
+public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message, 
+                                        map<string|string[]> headers = {}) returns error? {
     json payload = <json>message.content;
     check produceKafkaMessage(topicName, payload);
 }

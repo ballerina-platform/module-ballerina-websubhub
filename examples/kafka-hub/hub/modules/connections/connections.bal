@@ -94,9 +94,9 @@ public final kafka:Consumer websubEventsConsumer = check new (config:KAFKA_URL, 
 #
 # + topicName - The kafka-topic to which the consumer should subscribe  
 # + groupName - The consumer group name  
-# + partition - The kafka topic-partitions
+# + partitions - The kafka topic-partitions
 # + return - `kafka:Consumer` if succcessful or else `error`
-public isolated function createMessageConsumer(string topicName, string groupName, int|int[]? partition = ()) returns kafka:Consumer|error {
+public isolated function createMessageConsumer(string topicName, string groupName, int[]? partitions = ()) returns kafka:Consumer|error {
     // Messages are distributed to subscribers in parallel.
     // In this scenario, manually committing offsets is unnecessary because 
     // the next message polling starts as soon as the worker begins delivering messages to the subscribers.
@@ -104,26 +104,36 @@ public isolated function createMessageConsumer(string topicName, string groupNam
     // Related issue: https://github.com/ballerina-platform/ballerina-library/issues/7376
     kafka:ConsumerConfiguration consumerConfiguration = {
         groupId: groupName,
-        topics: [topicName],
         autoCommit: true,
         secureSocket: secureSocketConfig,
         securityProtocol: kafka:PROTOCOL_SSL,
         maxPollRecords: config:CONSUMER_MAX_POLL_RECORDS
     };
-    if partition is () {
+    if partitions is () {
+        // Kafka consumer topic subscription should only be used when manual partition assignment is not used
+        consumerConfiguration.topics = [topicName];
         return new (config:KAFKA_URL, consumerConfiguration);
     }
     
-    kafka:Consumer consumerEp = check new (config:KAFKA_URL, consumerConfiguration);
-    check consumerEp->assign(getTopicPartitions(topicName, partition));
-    return consumerEp;  
-}
-
-isolated function getTopicPartitions(string topic, int|int[] partition) returns kafka:TopicPartition[] {
-    if partition is int {
-        return [
-            {topic, partition}
-        ];
+    log:printInfo("Assigning kafka-topic partitions manually", details = partitions);
+    kafka:Consumer|kafka:Error consumerEp = check new (config:KAFKA_URL, consumerConfiguration);
+    if consumerEp is kafka:Error {
+        log:printError("Error occurred while creating the consumer", consumerEp);
+        return consumerEp;
     }
-    return partition.'map(p => {topic, partition: p});
+
+    kafka:TopicPartition[] kafkaTopicPartitions = partitions.'map(p => {topic: topicName, partition: p});
+    kafka:Error? paritionAssignmentErr = consumerEp->assign(kafkaTopicPartitions);
+    if paritionAssignmentErr is kafka:Error {
+        log:printError("Error occurred while assigning partitions to the consumer", paritionAssignmentErr);
+        return paritionAssignmentErr;
+    }
+
+    kafka:Error? kafkaSeekErr = consumerEp->seekToBeginning(kafkaTopicPartitions);
+    if kafkaSeekErr is kafka:Error {
+        log:printError("Error occurred while assigning seeking partitions for the consumer", paritionAssignmentErr);
+        return kafkaSeekErr;
+    }
+
+    return consumerEp;  
 }

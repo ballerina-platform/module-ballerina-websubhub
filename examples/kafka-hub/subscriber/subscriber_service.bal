@@ -110,12 +110,19 @@ service /JuApTOXq19 on securedSubscriber {
 }
 
 isolated function getCustomParams() returns map<string> {
-    if os:getEnv("CONSUMER_GROUP") == "" {
-        return {};
+    if os:getEnv("CONSUMER_GROUP") !is "" {
+        return {
+            consumerGroup: os:getEnv("CONSUMER_GROUP")
+        };
     }
-    return {
-        consumerGroup: os:getEnv("CONSUMER_GROUP")
-    };
+
+    if os:getEnv("TOPIC_PARTITIONS") !is "" {
+        return {
+            topicPartitions: os:getEnv("TOPIC_PARTITIONS")
+        };
+    }
+
+    return {};
 }
 
 isolated function getListener() returns websub:Listener|error {
