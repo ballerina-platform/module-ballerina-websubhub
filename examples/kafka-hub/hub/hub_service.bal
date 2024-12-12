@@ -204,17 +204,18 @@ websubhub:Service hubService = service object {
         if config:SECURITY_ON {
             check security:authorize(headers, ["update_content"]);
         }
-        check self.updateMessage(message);
+        check self.updateMessage(message, headers);
         return websubhub:ACKNOWLEDGEMENT;
     }
 
-    isolated function updateMessage(websubhub:UpdateMessage msg) returns websubhub:UpdateMessageError? {
+    isolated function updateMessage(websubhub:UpdateMessage msg, http:Headers headers) returns websubhub:UpdateMessageError? {
         boolean topicAvailable = false;
         lock {
             topicAvailable = registeredTopicsCache.hasKey(msg.hubTopic);
         }
         if topicAvailable {
-            error? errorResponse = persist:addUpdateMessage(msg.hubTopic, msg);
+            map<string[]> messageHeaders = getHeadersMap(headers);
+            error? errorResponse = persist:addUpdateMessage(msg.hubTopic, msg, messageHeaders);
             if errorResponse is websubhub:UpdateMessageError {
                 return errorResponse;
             } else if errorResponse is error {
@@ -228,3 +229,16 @@ websubhub:Service hubService = service object {
         }
     }
 };
+
+isolated function getHeadersMap(http:Headers httpHeaders) returns map<string[]> {
+    map<string[]> headers = {};
+    foreach string headerName in httpHeaders.getHeaderNames() {
+        var headerValues = httpHeaders.getHeaders(headerName);
+        // safe to ingore the error as here we are retrieving only the available headers
+        if headerValues is error {
+            continue;
+        }
+        headers[headerName] = headerValues;
+    }
+    return headers;
+}

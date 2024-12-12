@@ -26,7 +26,7 @@ import ballerina/mime;
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string CONSUMER_GROUP = "consumerGroup";
-const string CONSUMER_TOPIC_PARTITION = "topicPartition";
+const string CONSUMER_TOPIC_PARTITIONS = "topicPartitions";
 const string SERVER_ID = "SERVER_ID";
 const string STATUS = "status";
 const string STALE_STATE = "stale";
@@ -70,12 +70,9 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string consumerGroup = check value:ensureType(subscription[CONSUMER_GROUP]);
-    int? topicPartition = ();
-    if subscription.hasKey(CONSUMER_TOPIC_PARTITION) {
-        string partitionDetails = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITION]);
-        topicPartition = check int:fromString(partitionDetails);
-    }
-    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup, topicPartition);
+    int[]? topicPartitions = check getTopicPartitions(subscription);
+    log:printInfo("Manually partition assignment", isRequired = topicPartitions !is ());
+    kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup, topicPartitions);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:MESSAGE_DELIVERY_RETRY_INTERVAL,
@@ -88,7 +85,7 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
     });
     do {
         while true {
-            readonly & kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            readonly & kafka:BytesConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
             if !isValidConsumer(subscription.hubTopic, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${subscription.hubTopic} is invalid`);
             }
@@ -116,7 +113,7 @@ isolated function isValidSubscription(string subscriberId) returns boolean {
     }
 }
 
-isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp) returns error? {
+isolated function notifySubscribers(kafka:BytesConsumerRecord[] records, websubhub:HubClient clientEp) returns error? {
     do {
         foreach var kafkaRecord in records {
             websubhub:ContentDistributionMessage message = check deSerializeKafkaRecord(kafkaRecord);
@@ -127,7 +124,7 @@ isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:Hu
     }
 }
 
-isolated function deSerializeKafkaRecord(kafka:ConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
+isolated function deSerializeKafkaRecord(kafka:BytesConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
     byte[] content = kafkaRecord.value;
     string message = check string:fromBytes(content);
     json payload =  check value:fromJsonString(message);
@@ -139,14 +136,24 @@ isolated function deSerializeKafkaRecord(kafka:ConsumerRecord kafkaRecord) retur
     return distributionMsg;
 }
 
-isolated function getHeaders(kafka:ConsumerRecord kafkaRecord) returns map<string|string[]>|error {
+isolated function getHeaders(kafka:BytesConsumerRecord kafkaRecord) returns map<string|string[]>|error {
     map<string|string[]> headers = {};
     foreach var ['key, value] in kafkaRecord.headers.entries().toArray() {
-        if value is string || value is string[] {
-            headers['key] = value;
-        } else if value is byte[] {
+        if value is byte[] {
             headers['key] = check string:fromBytes(value);
+        } else if value is byte[][] {
+            string[] headerValue = value.'map(v => check string:fromBytes(v));
+            headers['key] = headerValue;
         }
     }
     return headers;
+}
+
+isolated function getTopicPartitions(websubhub:VerifiedSubscription subscription) returns int[]|error? {
+    if !subscription.hasKey(CONSUMER_TOPIC_PARTITIONS) {
+        return;
+    }
+    // Kafka topic partitions will be a string with comma separated integers eg: "1,2,3,4"
+    string partitionInfo = check value:ensureType(subscription[CONSUMER_TOPIC_PARTITIONS]);
+    return re `,`.split(partitionInfo).'map(p => p.trim()).'map(p => check int:fromString(p));
 }
