@@ -71,7 +71,6 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string consumerGroup = check value:ensureType(subscription[CONSUMER_GROUP]);
     int[]? topicPartitions = check getTopicPartitions(subscription);
-    log:printInfo("Manually partition assignment", isRequired = topicPartitions !is ());
     kafka:Consumer consumerEp = check conn:createMessageConsumer(subscription.hubTopic, consumerGroup, topicPartitions);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
@@ -89,7 +88,7 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
             if !isValidConsumer(subscription.hubTopic, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${subscription.hubTopic} is invalid`);
             }
-            _ = start notifySubscribers(records, clientEp);
+            _ = check notifySubscribers(consumerEp, records, clientEp);
         }
     } on fail var e {
         util:logError("Error occurred while sending notification to subscriber", e);
@@ -113,15 +112,32 @@ isolated function isValidSubscription(string subscriberId) returns boolean {
     }
 }
 
-isolated function notifySubscribers(kafka:BytesConsumerRecord[] records, websubhub:HubClient clientEp) returns error? {
+isolated function notifySubscribers(kafka:Consumer consumerEp, kafka:BytesConsumerRecord[] records, websubhub:HubClient clientEp) returns error? {
     do {
+        future<websubhub:ContentDistributionSuccess|error>[] distributionResponses = [];
         foreach var kafkaRecord in records {
             websubhub:ContentDistributionMessage message = check deSerializeKafkaRecord(kafkaRecord);
-            _ = check clientEp->notifyContentDistribution(message);
+            future<websubhub:ContentDistributionSuccess|error> distributionResponse = start clientEp->notifyContentDistribution(message.cloneReadOnly());
+            distributionResponses.push(distributionResponse);
         }
+
+        boolean hasErrors = distributionResponses
+            .'map(f => waitAndGetResult(f))
+            .'map(r => r is error)
+            .reduce(isolated function (boolean a, boolean b) returns boolean => a && b, false);
+        
+        if hasErrors {
+            return error("Error occurred while distributing content to the subscriber");
+        }
+        return consumerEp->'commit();
     } on fail error e {
         log:printError("Error occurred while delivering messages to the subscriber", err = e.message());
     }
+}
+
+isolated function waitAndGetResult(future<websubhub:ContentDistributionSuccess|error> response) returns websubhub:ContentDistributionSuccess|error {
+    websubhub:ContentDistributionSuccess|error responseValue = wait response;
+    return responseValue;
 }
 
 isolated function deSerializeKafkaRecord(kafka:BytesConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
