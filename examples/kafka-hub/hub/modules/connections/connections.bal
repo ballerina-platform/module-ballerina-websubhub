@@ -142,7 +142,7 @@ public isolated function createMessageConsumer(string topicName, string groupNam
 
         if offset is kafka:PartitionOffset {
             kafka:Error? kafkaSeekErr = consumerEp->seek(offset);
-            if kafkaSeekErr is error {
+            if kafkaSeekErr is kafka:Error {
                 log:printError("Error occurred while assigning seeking partitions for the consumer", kafkaSeekErr);
                 return kafkaSeekErr;
             }
