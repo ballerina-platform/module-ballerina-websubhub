@@ -23,6 +23,7 @@ import ballerina/websubhub;
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final string hubUrl = os:getEnv("HUB_URL") == "" ? "https://lb:9090/hub" : os:getEnv("HUB_URL");
 final boolean unsubOnShutdown = os:getEnv("UNSUB_ON_SHUTDOWN") == "true";
+final boolean logHeaders = os:getEnv("LOG_HEADERS") == "true";
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -106,6 +107,13 @@ service /JuApTOXq19 on securedSubscriber {
     remote function onEventNotification(websub:ContentDistributionMessage event) returns error? {
         json notification = check event.content.ensureType();
         log:printInfo("Received notification", content = notification);
+        if logHeaders {
+            map<string|string[]>? receivedHeaders = event.headers;
+            if receivedHeaders is () {
+                return;
+            }
+            log:printInfo("Received headers: ", headers = receivedHeaders);
+        }
     }
 }
 
