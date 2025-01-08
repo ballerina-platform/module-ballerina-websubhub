@@ -21,8 +21,13 @@ services:
             KAFKA_BOOTSTRAP_NODE: "broker:9094"
             # Update following enviornment variable to point to the consolidator state-snapshot endpoint
             STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
-            # Update following enviornment variable to point to the IdP JWKS endpoint
+            # Update following enviornment variable change the IdP token validation mechanism
+            IDP_TOKEN_ISSUER: "https://localhost:9443/oauth2/token"
+            IDP_TOKEN_AUDIENCE: "ballerina"
+            IDP_TOKEN_SCOPE_KEY: "scope"
             IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
+            IDP_CLIENT_TRUSTSTORE_FILENAME: "client-truststore.jks"
+            IDP_CLIENT_TRUSTSTORE_PASSWORD: "wso2carbon"
             # Consumer group name uses for `websub-events` consumer
             WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-1"
             # Update following enviornment variable to set the client truststore name
