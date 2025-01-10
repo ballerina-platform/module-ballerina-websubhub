@@ -3,7 +3,7 @@ name: 'kafkahub'
 
 services:
     hub-1:
-        image: 'ayeshalmeida/kafkahub:11.0.0'
+        image: 'ayeshalmeida/kafkahub:12.0.0'
         hostname: hub1
         container_name: hub-1
         ports:
@@ -26,7 +26,7 @@ services:
             IDP_TOKEN_AUDIENCE: "ballerina"
             IDP_TOKEN_SCOPE_KEY: "scope"
             IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
-            IDP_CLIENT_TRUSTSTORE_FILENAME: "client-truststore.jks"
+            IDP_CLIENT_TRUSTSTORE_FILEPATH: "./resources/client-truststore.jks"
             IDP_CLIENT_TRUSTSTORE_PASSWORD: "wso2carbon"
             # Consumer group name uses for `websub-events` consumer
             WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-1"
@@ -34,8 +34,6 @@ services:
             TRUSTSTORE_FILE_NAME: "client-truststore.jks"
             # Update following enviornment variable to set the client truststore password
             TRUSTSTORE_PASSWORD: "password"
-            # Update following enviornment variable to set the client keystore name
-            KEYSTORE_FILE_NAME: "client-keystore.jks"
             # Update following enviornment variable to set the client keystore password
             KEYSTORE_PASSWORD: "password"
             # Maximum number of records returned in a single call to consumer-poll
