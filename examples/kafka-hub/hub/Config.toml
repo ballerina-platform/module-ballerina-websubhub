@@ -44,7 +44,7 @@ MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES = [500, 502, 503]
 issuer = "https://localhost:9443/oauth2/token"
 audience = "ballerina"
 jwksUrl = "https://localhost:9443/oauth2/jwks"
-trustStore = "client-truststore.jks"
+trustStore = "./resources/client-truststore.jks"
 trustStorePassword = "wso2carbon"
 
 # The MTLS configurations related to Kafka connection

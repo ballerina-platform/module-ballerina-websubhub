@@ -29,7 +29,7 @@ final http:ListenerJwtAuthHandler handler = new({
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: string `"./resources/${getIdpConfig("IDP_CLIENT_TRUSTSTORE_FILENAME", config:OAUTH2_CONFIG.trustStore)}`,
+                        path: getIdpConfig("IDP_CLIENT_TRUSTSTORE_FILEPATH", config:OAUTH2_CONFIG.trustStore),
                         password: getIdpConfig("IDP_CLIENT_TRUSTSTORE_PASSWORD", config:OAUTH2_CONFIG.trustStorePassword)
                     }
                 }
