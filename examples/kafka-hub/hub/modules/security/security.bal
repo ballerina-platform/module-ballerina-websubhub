@@ -21,25 +21,25 @@ import ballerina/jwt;
 import ballerina/os;
 
 final http:ListenerJwtAuthHandler handler = new({
-    issuer: getIdpUrlConfig("TOKEN_ISSUER", config:OAUTH2_CONFIG.issuer),
-    audience: config:OAUTH2_CONFIG.audience,
+    issuer: getIdpConfig("IDP_TOKEN_ISSUER", config:OAUTH2_CONFIG.issuer),
+    audience: getIdpConfig("IDP_TOKEN_AUDIENCE", config:OAUTH2_CONFIG.audience),
     signatureConfig: {
         jwksConfig: {
-            url: getIdpUrlConfig("IDP_JWKS_ENDPOINT", config:OAUTH2_CONFIG.jwksUrl),
+            url: getIdpConfig("IDP_JWKS_ENDPOINT", config:OAUTH2_CONFIG.jwksUrl),
             clientConfig: {
                 secureSocket: {
                     cert: {
-                        path: config:OAUTH2_CONFIG.trustStore,
-                        password: config:OAUTH2_CONFIG.trustStorePassword
+                        path: string `"./resources/${getIdpConfig("IDP_CLIENT_TRUSTSTORE_FILENAME", config:OAUTH2_CONFIG.trustStore)}`,
+                        password: getIdpConfig("IDP_CLIENT_TRUSTSTORE_PASSWORD", config:OAUTH2_CONFIG.trustStorePassword)
                     }
                 }
             }
         }
     },
-    scopeKey: "scope"
+    scopeKey: getIdpConfig("IDP_TOKEN_SCOPE_KEY", "scope")
 });
 
-isolated function getIdpUrlConfig(string envVariableName, string defaultValue) returns string {
+isolated function getIdpConfig(string envVariableName, string defaultValue) returns string {
     return os:getEnv(envVariableName) == "" ? defaultValue : os:getEnv(envVariableName);
 }
 
