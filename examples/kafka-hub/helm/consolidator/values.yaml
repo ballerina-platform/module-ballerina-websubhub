@@ -1,0 +1,30 @@
+# Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
+#
+# This software is the property of WSO2 LLC. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained
+# herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+# You may not alter or remove any copyright or other notice from copies of this content.
+#
+# --------------------------------------------------------------------------------------
+deployment:
+  replicas: 1
+  image:
+    repository: "ayeshalmeida/consolidator"
+    pullPolicy: IfNotPresent
+    tag: 7.0.0
+    pullPolicy: "IfNotPresent"
+  config:
+    port: 10001
+    kafka:
+      bootstrap_node: "broker:9094"
+      truststore_name: "client-truststore.jks"
+      truststore_password: "password"
+      keystore_name: "client-keystore.jks"
+      keystore_password: "password"
+
+ingress:
+  hosts:
+    - host: ballerina-consolidator.local
+      paths:
+        - path: /consolidator
+          pathType: Prefix

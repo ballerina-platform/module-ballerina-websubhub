@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.deployment.config.port }}
+          volumeMounts:
+            - name: "config-config-map-volume"
+              mountPath: "/home/ballerina"
+              readOnly: true
+      volumes:
+        - name: "config-config-map-volume"
+          configMap:
+            name: "consolidator-svc-cm"
