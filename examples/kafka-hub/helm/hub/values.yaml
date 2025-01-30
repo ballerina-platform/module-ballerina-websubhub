@@ -1,0 +1,44 @@
+# -------------------------------------------------------------------------------------
+#
+# Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
+#
+# This software is the property of WSO2 LLC. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained
+# herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+# You may not alter or remove any copyright or other notice from copies of this content.
+#
+# --------------------------------------------------------------------------------------
+deployment:
+  replicas: 1
+  image:
+    repository: "ayeshalmeida/kafkahub"
+    pullPolicy: IfNotPresent
+    tag: 12.0.0
+    pullPolicy: "IfNotPresent"
+  config:
+    port: 9000
+    server_id: "hub-1"
+    state_snapshot_endpoint: "http://consolidator:10001"
+    retryable_status_codes: [500, 502, 503]
+    logLevel: "ERROR"
+    idp:
+      jwt_issuer: "https://localhost:9443/oauth2/token"
+      jwt_audience: "ballerina"
+      jwt_jwks_endpoint: "https://idp:9443/oauth2/jwks"
+      truststore_name: "client-truststore.jks"
+      truststore_password: "wso2carbon"
+    kafka:
+      bootstrap_node: "broker:9094"
+      max_poll_records: 50
+      truststore_name: "client-truststore.jks"
+      truststore_password: "password"
+      keystore_name: "client-keystore.jks"
+      keystore_password: "password"
+
+ingress:
+  hosts:
+    - host: ballerina-websubhub.local
+      paths:
+        - path: /hub
+          pathType: Prefix
+  tls: []
