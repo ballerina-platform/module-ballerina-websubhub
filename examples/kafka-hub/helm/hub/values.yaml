@@ -20,7 +20,6 @@ deployment:
     repository: "ayeshalmeida/kafkahub"
     pullPolicy: IfNotPresent
     tag: 12.0.0
-    pullPolicy: "IfNotPresent"
   config:
     port: 9000
     server_id: "hub-1"
