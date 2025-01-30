@@ -21,6 +21,8 @@ deployment:
       truststore_password: "password"
       keystore_name: "client-keystore.jks"
       keystore_password: "password"
+      websub_events_topic: "websub-events"
+      websub_events_snapshot_topic: "websub-events-snapshot"
 
 ingress:
   hosts:
