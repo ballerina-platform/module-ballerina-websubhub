@@ -20,7 +20,6 @@ deployment:
     repository: "ayeshalmeida/consolidator"
     pullPolicy: IfNotPresent
     tag: 7.0.0
-    pullPolicy: "IfNotPresent"
   config:
     port: 10001
     kafka:
