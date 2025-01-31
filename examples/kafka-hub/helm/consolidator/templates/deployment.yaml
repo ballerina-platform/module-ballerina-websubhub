@@ -40,7 +40,19 @@ spec:
             - name: "config-config-map-volume"
               mountPath: "/home/ballerina"
               readOnly: true
+            {{- range .Values.deployment.secrets }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+              readOnly: true
+            {{- end }}
+
       volumes:
         - name: "config-config-map-volume"
           configMap:
             name: "consolidator-svc-cm"
+        {{- range .Values.deployment.secrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .name }}
+        {{- end }}

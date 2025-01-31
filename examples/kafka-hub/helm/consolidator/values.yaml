@@ -20,6 +20,15 @@ deployment:
     repository: "ayeshalmeida/consolidator"
     pullPolicy: IfNotPresent
     tag: 7.0.0
+  secrets:
+    - name: broker_truststore
+      mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
+      subPath: "client-truststore.jks"
+      filePath: "./_resources/kafka-client/kafka-client.trustStore.jks"
+    - name: broker_keystore
+      mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
+      subPath: "client-keystore.jks"
+      filePath: "./_resources/kafka-client/kafka-client.keystore.jks"
   config:
     port: 10001
     kafka:
