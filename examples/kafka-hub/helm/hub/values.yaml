@@ -40,7 +40,7 @@ deployment:
   config:
     port: 9000
     server_id: "hub-1"
-    state_snapshot_endpoint: "http://consolidator:10001"
+    state_snapshot_endpoint: "http://ballerina-consolidator-deployment:10001"
     retryable_status_codes: [500, 502, 503]
     logLevel: "ERROR"
     ssl_keystoreName: "hub.keystore.jks"
