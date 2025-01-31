@@ -15,7 +15,7 @@
 # under the License.
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}-deployment
   labels:
@@ -36,6 +36,13 @@ spec:
           imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.deployment.config.port }}
+          env:
+            - name: "SERVER_ID"
+              valueFrom:
+                fieldRef:
+                  fieldPath: {{ .Values.deployment.config.server_id }}
+            - name: "BALLERINA_MAX_POOL_SIZE"
+              value: "100"
           volumeMounts:
             - name: "config-config-map-volume"
               mountPath: "/home/ballerina"
