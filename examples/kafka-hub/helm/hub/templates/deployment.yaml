@@ -45,7 +45,7 @@ spec:
               mountPath: {{ .mountPath }}
               subPath: {{ .subPath }}
               readOnly: true
-      {{- end }}
+            {{- end }}
 
       volumes:
         - name: "config-config-map-volume"
