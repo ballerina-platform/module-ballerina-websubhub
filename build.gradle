@@ -22,9 +22,6 @@ plugins {
     id "net.researchgate.release"
 }
 
-ext.ballerinaLangVersion = project.ballerinaLangVersion
-ext.puppycrawlCheckstyleVersion = project.checkstylePluginVersion
-
 allprojects {
     group = project.group
     version = project.version
@@ -66,8 +63,15 @@ subprojects {
 
     configurations {
         ballerinaStdLibs
+        jbalTools
     }
+
     dependencies {
+        /* JBallerina Tools */
+        jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
+            transitive = false
+        }
+
         /* Standard libraries */
         ballerinaStdLibs "io.ballerina.stdlib:constraint-ballerina:${stdlibConstraintVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:io-ballerina:${stdlibIoVersion}"
