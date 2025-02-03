@@ -21,12 +21,12 @@ deployment:
     pullPolicy: IfNotPresent
     tag: 7.0.0
   secrets:
-    - name: broker_truststore
+    - name: broker-truststore
       mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
       subPath: "client-truststore.jks"
       filePath: "./_resources/kafka-client/kafka-client.trustStore.jks"
-    - name: broker_keystore
-      mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
+    - name: broker-keystore
+      mountPath: "/home/ballerina/resources/brokercerts/client-keystore.jks"
       subPath: "client-keystore.jks"
       filePath: "./_resources/kafka-client/kafka-client.keystore.jks"
   config:
