@@ -18,4 +18,4 @@ apiVersion: v2
 appVersion: 7.0.0
 description: A Helm chart for the deployment of WSO2 Websubhub Consolidator Deployment
 name: consolidator
-version: 0.1.24
+version: 0.1.0
