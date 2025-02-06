@@ -30,8 +30,8 @@ public function main() returns error? {
     http:Listener httpListener = check new (hubPort, 
         secureSocket = {
             key: {
-                path: "./resources/hub.keystore.jks",
-                password: "password"
+                path: config:SSL_KEYSTORE_PATH,
+                password: config:KEYSTORE_PASSWORD
             }
         }
     );

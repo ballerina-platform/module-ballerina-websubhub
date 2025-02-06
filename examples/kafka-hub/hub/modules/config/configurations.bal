@@ -55,6 +55,12 @@ public configurable decimal GRACEFUL_CLOSE_PERIOD = 5;
 # The port that is used to start the hub
 public configurable int HUB_PORT = 9000;
 
+# SSL keystore file path
+public configurable string SSL_KEYSTORE_PATH = "./resources/hub.keystore.jks";
+
+# SSL keystore password
+public configurable string KEYSTORE_PASSWORD = "password";
+
 # The period between retry requests
 public configurable decimal MESSAGE_DELIVERY_RETRY_INTERVAL = 3;
 

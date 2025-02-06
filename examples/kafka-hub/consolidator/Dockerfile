@@ -1,3 +1,23 @@
+# ------------------------------------------------------------------------
+#
+# Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+#
+#  WSO2 LLC. licenses this file to you under the Apache License,
+#  Version 2.0 (the "License"); you may not use this file except
+#  in compliance with the License.
+#  You may obtain a copy of the License at
+
+#  http://www.apache.org/licenses/LICENSE-2.0
+
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+#
+# ------------------------------------------------------------------------
+
 ARG BASE_IMAGE_DIGEST=sha256:6bb29faf5333dcc2034cad9d29abd0832846c8d961143c70a4c0e504fdfc9543
 FROM eclipse-temurin:17.0.14_7-jdk-ubi9-minimal@${BASE_IMAGE_DIGEST}
 LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
@@ -38,5 +58,4 @@ WORKDIR ${USER_HOME}
 ENV JAVA_OPTS="-Djava.util.prefs.systemRoot=${USER_HOME}/.java -Djava.util.prefs.userRoot=${USER_HOME}/.java/.userPrefs" \
     WORKING_DIRECTORY=${USER_HOME}
 
-# ENTRYPOINT [ "java" , "-jar", "consolidatorService.jar" ]
 CMD java -jar consolidatorService.jar
