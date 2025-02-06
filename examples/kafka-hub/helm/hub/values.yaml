@@ -21,29 +21,32 @@ deployment:
     pullPolicy: IfNotPresent
     tag: 12.0.0
   secrets:
-    - name: ballerina-websubhub-hub-keystore
-      mountPath: "/home/ballerina/resources/hub.keystore.jks"
-      subPath: "hub.keystore.jks"
-      filePath: "_resources/hub-1.keystore.jks"
-    - name: ballerina-websubhub-idp-truststore
-      mountPath: "/home/ballerina/resources/client-truststore.jks"
-      subPath: "client-truststore.jks"
-      filePath: "_resources/idp/client-truststore.jks"
-    - name: ballerina-websubhub-broker-truststore
-      mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
-      subPath: "client-truststore.jks"
-      filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
-    - name: ballerina-websubhub-broker-keystore
-      mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
-      subPath: "client-keystore.jks"
-      filePath: "_resources/kafka-client/kafka-client.keystore.jks"
+    - name: ballerina-websubhub-ssl
+      mountPath: "/home/websubhub/resources/ssl"
+      content:
+        - filePath: "_resources/hub-1.keystore.jks"
+          fileKey: "hub.keystore.jks"
+    - name: ballerina-websubhub-idp
+      mountPath: "/home/websubhub/resources/idp"
+      content:
+        - filePath: "_resources/idp/client-truststore.jks"
+          fileKey: "client-truststore.jks"
+    - name: ballerina-consolidator-broker
+      mountPath: "/home/websubhub/resources/brokercerts"
+      content:
+        - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
+          fileKey: "client-truststore.jks"
+        - filePath: "_resources/kafka-client/kafka-client.keystore.jks"
+          fileKey: "client-keystore.jks"
   config:
     port: 9000
     server_id: "hub-1"
     state_snapshot_endpoint: "http://ballerina-consolidator-deployment:10001"
     retryable_status_codes: [500, 502, 503]
     logLevel: "ERROR"
-    ssl_keystoreName: "hub.keystore.jks"
+    ssl:
+      keystore_name: "hub.keystore.jks"
+      keystore_password: "password"
     idp:
       jwt_issuer: "https://localhost:9443/oauth2/token"
       jwt_audience: "ballerina"

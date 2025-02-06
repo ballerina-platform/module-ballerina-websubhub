@@ -41,16 +41,17 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: {{ .Values.deployment.config.server_id }}
+            - name: "BAL_CONFIG_FILES"
+              value: "/home/websubhub/conf/Config.toml"
             - name: "BALLERINA_MAX_POOL_SIZE"
               value: "100"
           volumeMounts:
             - name: "config-config-map-volume"
-              mountPath: "/home/ballerina"
+              mountPath: "/home/websubhub/conf"
               readOnly: true
             {{- range .Values.deployment.secrets }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              subPath: {{ .subPath }}
               readOnly: true
             {{- end }}
 

@@ -43,6 +43,13 @@ GRACEFUL_CLOSE_PERIOD = 5.0
 # The port that is used to start the hub
 HUB_PORT = {{ .Values.deployment.config.port }}
 
+# SSL keystore file path
+# SSL_KEYSTORE_PATH = "./resources/hub.keystore.jks"
+SSL_KEYSTORE_PATH = "/home/websubhub/resources/ssl/{{ .Values.deployment.config.ssl.keystore_name }}"
+
+# SSL keystore password
+KEYSTORE_PASSWORD = {{ .Values.deployment.config.ssl.keystore_password | quote }}
+
 # The period between retry requests
 MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
 
@@ -60,14 +67,14 @@ MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES = [{{ join ", " .Values.deployment.confi
 issuer = {{ .Values.deployment.config.idp.jwt_issuer | quote }}
 audience = {{ .Values.deployment.config.idp.jwt_audience | quote }}
 jwksUrl = {{ .Values.deployment.config.idp.jwt_jwks_endpoint | quote }}
-trustStore = "/home/ballerina/resources/{{ .Values.deployment.config.idp.truststore_name }}"
+trustStore = "/home/websubhub/resources/idp/{{ .Values.deployment.config.idp.truststore_name }}"
 trustStorePassword = {{ .Values.deployment.config.idp.truststore_password | quote }}
 
 # The MTLS configurations related to Kafka connection
 [kafkaHub.config.KAFKA_MTLS_CONFIG]
-cert.path = "/home/ballerina/resources/brokercerts/{{ .Values.deployment.config.kafka.truststore_name }}"
+cert.path = "/home/websubhub/resources/brokercerts/{{ .Values.deployment.config.kafka.truststore_name }}"
 cert.password = {{ .Values.deployment.config.kafka.truststore_password | quote }}
-key.keyStore.path = "/home/ballerina/resources/brokercerts/{{ .Values.deployment.config.kafka.keystore_name }}"
+key.keyStore.path = "/home/websubhub/resources/brokercerts/{{ .Values.deployment.config.kafka.keystore_name }}"
 key.keyStore.password = {{ .Values.deployment.config.kafka.keystore_password | quote }}
 
 [ballerina.log]
