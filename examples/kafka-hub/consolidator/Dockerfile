@@ -58,5 +58,4 @@ WORKDIR ${USER_HOME}
 ENV JAVA_OPTS="-Djava.util.prefs.systemRoot=${USER_HOME}/.java -Djava.util.prefs.userRoot=${USER_HOME}/.java/.userPrefs" \
     WORKING_DIRECTORY=${USER_HOME}
 
-# ENTRYPOINT [ "java" , "-jar", "consolidatorService.jar" ]
 CMD java -jar consolidatorService.jar
