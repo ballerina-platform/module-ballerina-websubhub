@@ -46,7 +46,6 @@ spec:
             {{- range .Values.deployment.secrets }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              # subPath: {{ .subPath }}
               readOnly: true
             {{- end }}
 
@@ -58,7 +57,4 @@ spec:
         - name: {{ .name }}
           secret:
             secretName: {{ .name }}
-            # items:
-            #   - key: {{ .fileKey }}
-            #     path: {{ .subPath }}
         {{- end }}
