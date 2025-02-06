@@ -20,4 +20,4 @@ metadata:
   name: consolidator-svc-cm
   namespace : {{ .Release.Namespace }}
 data:
-  config.toml: {{ tpl (.Files.Get "confs/Config.toml") . | quote }}
+  Config.toml: {{ tpl (.Files.Get "confs/Config.toml") . | quote }}

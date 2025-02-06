@@ -17,18 +17,17 @@
 deployment:
   replicas: 1
   image:
-    repository: "ayeshalmeida/consolidator"
+    repository: "ballerina/consolidator"
     pullPolicy: IfNotPresent
     tag: 7.0.0
   secrets:
-    - name: ballerina-consolidator-broker-truststore
-      mountPath: "/home/ballerina/resources/brokercerts/client-truststore.jks"
-      subPath: "client-truststore.jks"
-      filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
-    - name: ballerina-consolidator-broker-keystore
-      mountPath: "/home/ballerina/resources/brokercerts/client-keystore.jks"
-      subPath: "client-keystore.jks"
-      filePath: "_resources/kafka-client/kafka-client.keystore.jks"
+    - name: ballerina-consolidator-secrets
+      mountPath: "/home/consolidator/resources/brokercerts"
+      content:
+        - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
+          fileKey: "client-truststore.jks"
+        - filePath: "_resources/kafka-client/kafka-client.keystore.jks"
+          fileKey: "client-keystore.jks"
   config:
     port: 10001
     kafka:

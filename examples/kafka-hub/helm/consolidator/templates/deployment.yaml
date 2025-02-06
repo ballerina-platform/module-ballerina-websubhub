@@ -36,14 +36,17 @@ spec:
           imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.deployment.config.port }}
+          env:
+            - name: "BAL_CONFIG_FILES"
+              value: "/home/consolidator/conf/Config.toml"
           volumeMounts:
             - name: "config-config-map-volume"
-              mountPath: "/home/ballerina"
+              mountPath: "/home/consolidator/conf"
               readOnly: true
             {{- range .Values.deployment.secrets }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              subPath: {{ .subPath }}
+              # subPath: {{ .subPath }}
               readOnly: true
             {{- end }}
 
@@ -55,4 +58,7 @@ spec:
         - name: {{ .name }}
           secret:
             secretName: {{ .name }}
+            # items:
+            #   - key: {{ .fileKey }}
+            #     path: {{ .subPath }}
         {{- end }}
