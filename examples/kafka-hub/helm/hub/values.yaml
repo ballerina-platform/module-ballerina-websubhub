@@ -22,17 +22,17 @@ deployment:
     tag: 13.0.0
   secrets:
     - name: ballerina-websubhub-ssl
-      mountPath: "/home/websubhub/resources/ssl"
+      mountPath: "/home/ballerina/resources/ssl"
       content:
         - filePath: "_resources/hub-1.keystore.jks"
           fileKey: "hub.keystore.jks"
     - name: ballerina-websubhub-idp
-      mountPath: "/home/websubhub/resources/idp"
+      mountPath: "/home/ballerina/resources/idp"
       content:
         - filePath: "_resources/idp/client-truststore.jks"
           fileKey: "client-truststore.jks"
     - name: ballerina-websubhub-broker
-      mountPath: "/home/websubhub/resources/brokercerts"
+      mountPath: "/home/ballerina/resources/brokercerts"
       content:
         - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
           fileKey: "client-truststore.jks"
