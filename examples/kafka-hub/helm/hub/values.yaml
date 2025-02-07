@@ -31,7 +31,7 @@ deployment:
       content:
         - filePath: "_resources/idp/client-truststore.jks"
           fileKey: "client-truststore.jks"
-    - name: ballerina-consolidator-broker
+    - name: ballerina-websubhub-broker
       mountPath: "/home/websubhub/resources/brokercerts"
       content:
         - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
