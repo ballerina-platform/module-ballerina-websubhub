@@ -1,0 +1,81 @@
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com).
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+[kafkaHub.config]
+# Flag to check whether to enable/disable security
+SECURITY_ON = true
+
+# Server ID is is used to uniquely identify each server 
+# Each server must have a unique ID
+SERVER_ID = {{ .Values.deployment.config.server_id | quote }}
+
+# IP and Port of the Kafka bootstrap node
+KAFKA_BOOTSTRAP_NODE = {{ .Values.deployment.config.kafka.bootstrap_node | quote }}
+
+# Maximum number of records returned in a single call to consumer-poll
+KAFKA_CONSUMER_MAX_POLL_RECORDS = {{ .Values.deployment.config.kafka.max_poll_records }}
+
+# Kafka topic which is stores websub-events for this server
+WEBSUB_EVENTS_TOPIC = "websub-events"
+
+# Consolidator HTTP endpoint to be used to retrieve current state-snapshot
+STATE_SNAPSHOT_ENDPOINT = {{ .Values.deployment.config.state_snapshot_endpoint | quote }}
+
+# The interval in which Kafka consumers wait for new messages
+POLLING_INTERVAL = 10.0
+
+# The period in which Kafka close method waits to complete
+GRACEFUL_CLOSE_PERIOD = 5.0
+
+# The port that is used to start the hub
+HUB_PORT = {{ .Values.deployment.config.port }}
+
+# SSL keystore file path
+# SSL_KEYSTORE_PATH = "./resources/hub.keystore.jks"
+SSL_KEYSTORE_PATH = "/home/ballerina/resources/ssl/{{ .Values.deployment.config.ssl.keystore_name }}"
+
+# SSL keystore password
+KEYSTORE_PASSWORD = {{ .Values.deployment.config.ssl.keystore_password | quote }}
+
+# The period between retry requests
+MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
+
+# The maximum retry count
+MESSAGE_DELIVERY_COUNT = 3
+
+# The message delivery timeout
+MESSAGE_DELIVERY_TIMEOUT = 10.0
+
+# The HTTP status codes for which the client should retry
+MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES = [{{ join ", " .Values.deployment.config.retryable_status_codes }}]
+
+# The Oauth2 authorization related configurations
+[kafkaHub.config.OAUTH2_CONFIG]
+issuer = {{ .Values.deployment.config.idp.jwt_issuer | quote }}
+audience = {{ .Values.deployment.config.idp.jwt_audience | quote }}
+jwksUrl = {{ .Values.deployment.config.idp.jwt_jwks_endpoint | quote }}
+trustStore = "/home/ballerina/resources/idp/{{ .Values.deployment.config.idp.truststore_name }}"
+trustStorePassword = {{ .Values.deployment.config.idp.truststore_password | quote }}
+
+# The MTLS configurations related to Kafka connection
+[kafkaHub.config.KAFKA_MTLS_CONFIG]
+cert.path = "/home/ballerina/resources/brokercerts/{{ .Values.deployment.config.kafka.truststore_name }}"
+cert.password = {{ .Values.deployment.config.kafka.truststore_password | quote }}
+key.keyStore.path = "/home/ballerina/resources/brokercerts/{{ .Values.deployment.config.kafka.keystore_name }}"
+key.keyStore.password = {{ .Values.deployment.config.kafka.keystore_password | quote }}
+
+[ballerina.log]
+level = {{ .Values.deployment.config.logLevel | quote  }}

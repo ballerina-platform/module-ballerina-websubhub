@@ -1,0 +1,70 @@
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com).
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+deployment:
+  replicas: 1
+  image:
+    repository: "ayeshalmeida/kafkahub"
+    pullPolicy: IfNotPresent
+    tag: 13.0.0
+  secrets:
+    - name: ballerina-websubhub-ssl
+      mountPath: "/home/ballerina/resources/ssl"
+      content:
+        - filePath: "_resources/hub-1.keystore.jks"
+          fileKey: "hub.keystore.jks"
+    - name: ballerina-websubhub-idp
+      mountPath: "/home/ballerina/resources/idp"
+      content:
+        - filePath: "_resources/idp/client-truststore.jks"
+          fileKey: "client-truststore.jks"
+    - name: ballerina-websubhub-broker
+      mountPath: "/home/ballerina/resources/brokercerts"
+      content:
+        - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
+          fileKey: "client-truststore.jks"
+        - filePath: "_resources/kafka-client/kafka-client.keystore.jks"
+          fileKey: "client-keystore.jks"
+  config:
+    port: 9000
+    server_id: "hub-1"
+    state_snapshot_endpoint: "http://ballerina-consolidator-deployment:10001"
+    retryable_status_codes: [500, 502, 503]
+    logLevel: "ERROR"
+    ssl:
+      keystore_name: "hub.keystore.jks"
+      keystore_password: "password"
+    idp:
+      jwt_issuer: "https://localhost:9443/oauth2/token"
+      jwt_audience: "ballerina"
+      jwt_jwks_endpoint: "https://idp:9443/oauth2/jwks"
+      truststore_name: "client-truststore.jks"
+      truststore_password: "wso2carbon"
+    kafka:
+      bootstrap_node: "broker:9094"
+      max_poll_records: 50
+      truststore_name: "client-truststore.jks"
+      truststore_password: "password"
+      keystore_name: "client-keystore.jks"
+      keystore_password: "password"
+
+ingress:
+  hosts:
+    - host: ballerina-websubhub.local
+      paths:
+        - path: /hub
+          pathType: Prefix
+  tls: []

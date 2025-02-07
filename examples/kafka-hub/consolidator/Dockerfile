@@ -24,7 +24,7 @@ LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
 
 # set Docker image build arguments
 # build arguments for user/group configurations
-ARG USER=consolidator
+ARG USER=ballerina
 ARG USER_ID=10001
 ARG USER_GROUP=wso2
 ARG USER_GROUP_ID=10001
