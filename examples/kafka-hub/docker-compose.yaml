@@ -83,12 +83,14 @@ services:
             broker:
                 condition: service_healthy
         volumes:
+            # `Config.toml` file for the consolidator-service
+            - ./_resources/consolidator.config.toml:/home/ballerina/Config.toml
             # Kafka client truststore file
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
             - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
         healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://consolidator:10001/health/readiness' || exit 1"]
+            test: ["CMD-SHELL", "curl --fail http://consolidator:10001/health/readiness || exit 1"]
             interval: 30s
             timeout: 10s
             start_period: 30s
