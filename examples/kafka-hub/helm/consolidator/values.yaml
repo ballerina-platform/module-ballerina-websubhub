@@ -17,12 +17,12 @@
 deployment:
   replicas: 1
   image:
-    repository: "ballerina/consolidator"
+    repository: "ballerina/ballerina"
     pullPolicy: IfNotPresent
     tag: 8.0.0
   secrets:
     - name: ballerina-consolidator-broker
-      mountPath: "/home/consolidator/resources/brokercerts"
+      mountPath: "/home/ballerina/resources/brokercerts"
       content:
         - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
           fileKey: "client-truststore.jks"
@@ -43,5 +43,5 @@ ingress:
   hosts:
     - host: ballerina-consolidator.local
       paths:
-        - path: /consolidator
+        - path: /ballerina
           pathType: Prefix

@@ -35,7 +35,7 @@ CONSOLIDATOR_HTTP_ENDPOINT_PORT = {{ .Values.deployment.config.port }}
 
 # The MTLS configurations related to Kafka connection
 [consolidatorService.config.KAFKA_MTLS_CONFIG]
-cert.path = "/home/consolidator/resources/brokercerts/{{ .Values.deployment.config.kafka.truststore_name }}"
+cert.path = "/home/ballerina/resources/brokercerts/{{ .Values.deployment.config.kafka.truststore_name }}"
 cert.password = {{ .Values.deployment.config.kafka.truststore_password | quote }}
-key.keyStore.path = "/home/consolidator/resources/brokercerts/{{ .Values.deployment.config.kafka.keystore_name }}"
+key.keyStore.path = "/home/ballerina/resources/brokercerts/{{ .Values.deployment.config.kafka.keystore_name }}"
 key.keyStore.password = {{ .Values.deployment.config.kafka.keystore_password | quote }}

@@ -38,10 +38,10 @@ spec:
             - containerPort: {{ .Values.deployment.config.port }}
           env:
             - name: "BAL_CONFIG_FILES"
-              value: "/home/consolidator/conf/Config.toml"
+              value: "/home/ballerina/conf/Config.toml"
           volumeMounts:
             - name: "config-config-map-volume"
-              mountPath: "/home/consolidator/conf"
+              mountPath: "/home/ballerina/conf"
               readOnly: true
             {{- range .Values.deployment.secrets }}
             - name: {{ .name }}
