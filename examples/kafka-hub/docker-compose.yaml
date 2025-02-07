@@ -41,6 +41,8 @@ services:
             # The HTTP status codes for which the client should retry
             RETRYABLE_STATUS_CODES: "500,502,503"
         volumes:
+            # `Config.toml` file for the websubhub-service
+            - ./_resources/hub.config.toml:/home/ballerina/Config.toml
             # Kafka client truststore file
             - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
             # Kafka client keystore file
@@ -50,7 +52,7 @@ services:
             # SSL configurations
             - ./_resources/secrets/hub/hub-1.keystore.jks:/home/ballerina/resources/hub.keystore.jks
         healthcheck:
-            test: ["CMD-SHELL", "wget --no-verbose --no-check-certificate --tries=1 --spider 'https://hub1:9000/health' || exit 1"]
+            test: ["CMD-SHELL", "curl -k --fail https://hub1:9000/health || exit 1"]
             interval: 30s
             timeout: 10s 
             start_period: 30s
