@@ -39,7 +39,7 @@ To uninstall/delete the `ballerina-websubhub` statefulset, run the following com
 
 #### Configurations
 
-The Kafka Websubhub container image related configurations can be found under `deployment.image` in the `hub/values.yaml`
+The Kafka Websubhub container image related configurations can be found under `deployment.image` in the `hub/values.yaml`.
 
 | Configuration  | Description                        |
 |-------------- |-------------------------------------|
@@ -79,17 +79,17 @@ Apart from the above configurations, several volume mounts are required for the 
 
 Each secret follows the structure below:  
 
-- **`name`**: Name of the secret.  
-- **`mountPath`**: The path on the pod where the secrets should be mounted.  
+- **`name`**: Name of the secret
+- **`mountPath`**: The path on the pod where the secrets should be mounted  
 - **`content`**: A list of secrets to be mounted to the pod. Each item in the list contains:
-  - **`filePath`**: The path to the original file.  
-  - **`fileKey`**: The key for the secret value in `hub/secret.yaml`. 
+  - **`filePath`**: The path to the original file
+  - **`fileKey`**: The key for the secret value in `hub/secret.yaml` 
 
 The deployment requires three sets of volume mounts, each serving a specific purpose:  
 
-- **`ballerina-websubhub-ssl`**: Enables HTTPS for the WebSubHub HTTP endpoint.  
-- **`ballerina-websubhub-idp`**: Supports secure HTTPS communication between WebSubHub and the IdP JWKS endpoint.  
-- **`ballerina-websubhub-broker`**: Establishes an mTLS connection between WebSubHub and the Kafka broker.  
+- **`ballerina-websubhub-ssl`**: Enables HTTPS for the WebSubHub HTTP endpoint  
+- **`ballerina-websubhub-idp`**: Supports secure HTTPS communication between WebSubHub and the IdP JWKS endpoint  
+- **`ballerina-websubhub-broker`**: Establishes an mTLS connection between WebSubHub and the Kafka broker
 
 ### 2. Deploying the `consolidator`
 
@@ -110,7 +110,7 @@ To uninstall/delete the `ballerina-consolidator` deployment, run the following c
 
 #### Configurations
 
-The consolidator container image related configurations can be found under `deployment.image` in the `consolidator/values.yaml`
+The consolidator container image related configurations can be found under `deployment.image` in the `consolidator/values.yaml`.
 
 | Configuration  | Description                        |
 |-------------- |-------------------------------------|
@@ -139,12 +139,12 @@ Apart from the above configurations, several volume mounts are required for the 
 
 Each secret follows the structure below:  
 
-- **`name`**: Name of the secret.  
-- **`mountPath`**: The path on the pod where the secrets should be mounted.  
+- **`name`**: Name of the secret
+- **`mountPath`**: The path on the pod where the secrets should be mounted  
 - **`content`**: A list of secrets to be mounted to the pod. Each item in the list contains:
-  - **`filePath`**: The path to the original file.  
-  - **`fileKey`**: The key for the secret value in `hub/secret.yaml`. 
+  - **`filePath`**: The path to the original file
+  - **`fileKey`**: The key for the secret value in `hub/secret.yaml` 
 
 The deployment requires three sets of volume mounts, each serving a specific purpose:  
 
-- **`ballerina-consolidator-broker`**: Establishes an mTLS connection between consolidator and the Kafka broker.  
+- **`ballerina-consolidator-broker`**: Establishes an mTLS connection between consolidator and the Kafka broker
