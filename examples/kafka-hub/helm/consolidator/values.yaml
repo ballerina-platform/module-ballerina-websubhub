@@ -21,7 +21,7 @@ deployment:
     pullPolicy: IfNotPresent
     tag: 7.0.0
   secrets:
-    - name: ballerina-consolidator-secrets
+    - name: ballerina-consolidator-broker
       mountPath: "/home/consolidator/resources/brokercerts"
       content:
         - filePath: "_resources/kafka-client/kafka-client.trustStore.jks"
