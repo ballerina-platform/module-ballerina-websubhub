@@ -19,7 +19,7 @@ deployment:
   image:
     repository: "ayeshalmeida/kafkahub"
     pullPolicy: IfNotPresent
-    tag: 12.0.0
+    tag: 13.0.0
   secrets:
     - name: ballerina-websubhub-ssl
       mountPath: "/home/websubhub/resources/ssl"

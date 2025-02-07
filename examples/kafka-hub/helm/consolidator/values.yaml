@@ -19,7 +19,7 @@ deployment:
   image:
     repository: "ballerina/consolidator"
     pullPolicy: IfNotPresent
-    tag: 7.0.0
+    tag: 8.0.0
   secrets:
     - name: ballerina-consolidator-broker
       mountPath: "/home/consolidator/resources/brokercerts"
