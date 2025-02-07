@@ -1,4 +1,4 @@
-# [KafkaHub] Helm charts
+# [Kafka Websubhub] Helm charts
 
 Ballerina Kafka Websubhub is a WebSub compliant `hub` implementation backed by Apache Kafka message broker.
 
