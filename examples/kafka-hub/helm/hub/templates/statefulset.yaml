@@ -37,10 +37,6 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.config.port }}
           env:
-            - name: "SERVER_ID"
-              valueFrom:
-                fieldRef:
-                  fieldPath: {{ .Values.deployment.config.server_id }}
             - name: "BAL_CONFIG_FILES"
               value: "/home/ballerina/conf/Config.toml"
             - name: "BALLERINA_MAX_POOL_SIZE"
