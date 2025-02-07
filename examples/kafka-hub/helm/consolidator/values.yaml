@@ -17,7 +17,7 @@
 deployment:
   replicas: 1
   image:
-    repository: "ballerina/ballerina"
+    repository: "ayeshalmeida/consolidator"
     pullPolicy: IfNotPresent
     tag: 8.0.0
   secrets:
