@@ -20,7 +20,7 @@ import ballerina/uuid;
 isolated class SubscriptionHandler {
     private final HttpToWebsubhubAdaptor adaptor;
     private final readonly & ClientConfiguration clientConfig;
-    private final int defaultHubLeaseSeconds;
+    private final int defaultLeaseSeconds;
 
     private final boolean isOnSubscriptionAvailable;
     private final boolean isOnSubscriptionValidationAvailable;
@@ -29,7 +29,7 @@ isolated class SubscriptionHandler {
 
     isolated function init(HttpToWebsubhubAdaptor adaptor, int leaseSeconds, *ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
-        self.defaultHubLeaseSeconds = leaseSeconds;
+        self.defaultLeaseSeconds = leaseSeconds;
         self.clientConfig = clientConfig.cloneReadOnly();
         string[] methodNames = adaptor.getServiceMethodNames();
         self.isOnSubscriptionAvailable = methodNames.indexOf("onSubscription") is int;
@@ -147,10 +147,10 @@ isolated class SubscriptionHandler {
     }
 }
 
-isolated function createSubscriptionMessage(string hubUrl, int defaultHubLeaseSeconds, map<string> params) returns Subscription|error {
+isolated function createSubscriptionMessage(string hubUrl, int defaultLeaseSeconds, map<string> params) returns Subscription|error {
     string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     string hubCallback = check retrieveQueryParameter(params, HUB_CALLBACK);
-    int leaseSeconds = retrieveLeaseSeconds(params, defaultHubLeaseSeconds);
+    int leaseSeconds = retrieveLeaseSeconds(params, defaultLeaseSeconds);
     Subscription message = {
         hub: hubUrl,
         hubMode: MODE_SUBSCRIBE,
@@ -165,7 +165,7 @@ isolated function createSubscriptionMessage(string hubUrl, int defaultHubLeaseSe
     return message;
 }
 
-isolated function retrieveLeaseSeconds(map<string> params, int defaultHubLeaseSeconds) returns int {
+isolated function retrieveLeaseSeconds(map<string> params, int defaultLeaseSeconds) returns int {
     var hubLeaseSeconds = params.removeIfHasKey(HUB_LEASE_SECONDS);
     if hubLeaseSeconds is string {
         var retrievedLeaseSeconds = 'int:fromString(hubLeaseSeconds);
@@ -173,7 +173,7 @@ isolated function retrieveLeaseSeconds(map<string> params, int defaultHubLeaseSe
             return retrievedLeaseSeconds;
         }
     }
-    return defaultHubLeaseSeconds;
+    return defaultLeaseSeconds;
 }
 
 isolated function processOnSubscriptionResult(SubscriptionAccepted|error result) returns http:Response|Redirect {
