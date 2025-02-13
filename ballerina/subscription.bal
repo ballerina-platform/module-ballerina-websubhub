@@ -20,16 +20,14 @@ import ballerina/uuid;
 isolated class SubscriptionHandler {
     private final HttpToWebsubhubAdaptor adaptor;
     private final readonly & ClientConfiguration clientConfig;
-    private final int defaultLeaseSeconds;
 
     private final boolean isOnSubscriptionAvailable;
     private final boolean isOnSubscriptionValidationAvailable;
     private final boolean isOnUnsubscriptionAvailable;
     private final boolean isOnUnsubscriptionValidationAvailable;
 
-    isolated function init(HttpToWebsubhubAdaptor adaptor, int leaseSeconds, *ClientConfiguration clientConfig) {
+    isolated function init(HttpToWebsubhubAdaptor adaptor, *ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
-        self.defaultLeaseSeconds = leaseSeconds;
         self.clientConfig = clientConfig.cloneReadOnly();
         string[] methodNames = adaptor.getServiceMethodNames();
         self.isOnSubscriptionAvailable = methodNames.indexOf("onSubscription") is int;

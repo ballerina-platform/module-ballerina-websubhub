@@ -23,15 +23,15 @@ isolated service class HttpService {
 
     private final HttpToWebsubhubAdaptor adaptor;
     private final string hub;
-    private final int defaultHubLeaseSeconds;
+    private final int defaultLeaseSeconds;
     private final SubscriptionHandler subscriptionHandler;
 
     isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
             *ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
         self.hub = hubUrl;
-        self.defaultHubLeaseSeconds = leaseSeconds;
-        self.subscriptionHandler = new (adaptor, leaseSeconds, clientConfig);
+        self.defaultLeaseSeconds = leaseSeconds;
+        self.subscriptionHandler = new (adaptor, clientConfig);
     }
 
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {
@@ -114,7 +114,7 @@ isolated service class HttpService {
 
     isolated function onSubscriptionRequest(http:Caller caller, http:Headers headers, map<string> params) 
     returns Error? {
-        Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultHubLeaseSeconds, params);
+        Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultLeaseSeconds, params);
         if subscription is error {
             http:Response response = new;
             response.statusCode = http:STATUS_BAD_REQUEST;
@@ -136,9 +136,9 @@ isolated service class HttpService {
             return;
         }
 
-        error? verificationResult = self.subscriptionHandler.processSubscriptionVerification(subscription, headers);
-        if verificationResult is error {
-            log:printError("Error occurred while processing subscription", 'error = verificationResult);
+        error? verification = self.subscriptionHandler.processSubscriptionVerification(subscription, headers);
+        if verification is error {
+            log:printError("Error occurred while processing subscription", 'error = verification);
         }        
     }
 
@@ -158,10 +158,9 @@ isolated service class HttpService {
             return;
         }
 
-        error? verificationResult = self.subscriptionHandler.processUnSubscriptionVerification(
-            unsubscription, headers);
-        if verificationResult is error {
-            log:printError("Error occurred while processing unsubscription", 'error = verificationResult);
+        error? verification = self.subscriptionHandler.processUnSubscriptionVerification(unsubscription, headers);
+        if verification is error {
+            log:printError("Error occurred while processing unsubscription", 'error = verification);
         }
     }
 }
