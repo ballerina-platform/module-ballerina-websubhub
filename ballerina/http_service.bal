@@ -29,6 +29,7 @@ isolated service class HttpService {
     private final boolean isSubscriptionValidationAvailable;
     private final boolean isUnsubscriptionAvailable;
     private final boolean isUnsubscriptionValidationAvailable;
+    private final Controller hubController;
 
     isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
                            *ClientConfiguration clientConfig) {
@@ -41,6 +42,7 @@ isolated service class HttpService {
         self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
         self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
         self.isUnsubscriptionValidationAvailable = isMethodAvailable("onUnsubscriptionValidation", methodNames);
+        self.hubController = new;
     }
 
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {
