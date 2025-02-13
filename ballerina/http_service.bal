@@ -136,7 +136,7 @@ isolated service class HttpService {
             return;
         }
 
-        error? verification = self.subscriptionHandler.processSubscriptionVerification(subscription, headers);
+        error? verification = self.subscriptionHandler.verifySubscription(subscription, headers);
         if verification is error {
             log:printError("Error occurred while processing subscription", 'error = verification);
         }        
@@ -158,7 +158,7 @@ isolated service class HttpService {
             return;
         }
 
-        error? verification = self.subscriptionHandler.processUnSubscriptionVerification(unsubscription, headers);
+        error? verification = self.subscriptionHandler.verifyUnsubscription(unsubscription, headers);
         if verification is error {
             log:printError("Error occurred while processing unsubscription", 'error = verification);
         }

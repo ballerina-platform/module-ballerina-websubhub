@@ -51,7 +51,7 @@ isolated class SubscriptionHandler {
         return processOnSubscriptionResult(result);
     }
 
-    isolated function processSubscriptionVerification(Subscription message, http:Headers headers) returns error? {
+    isolated function verifySubscription(Subscription message, http:Headers headers) returns error? {
         error? validationResult = self.validateSubscription(message, headers);
         if validationResult is error {
             [string, string?][] params = [
@@ -104,7 +104,7 @@ isolated class SubscriptionHandler {
         return processOnUnsubscriptionResult(result);
     }
 
-    isolated function processUnSubscriptionVerification(Unsubscription message, http:Headers headers) returns error? {
+    isolated function verifyUnsubscription(Unsubscription message, http:Headers headers) returns error? {
         error? validationResult = self.validateUnsubscription(message, headers);
         if validationResult is error {
             [string, string?][] params = [
