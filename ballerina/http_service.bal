@@ -37,10 +37,10 @@ isolated service class HttpService {
         self.hub = hubUrl;
         self.defaultHubLeaseSeconds = leaseSeconds;
         string[] methodNames = adaptor.getServiceMethodNames();
-        self.isSubscriptionAvailable = isMethodAvailable("onSubscription", methodNames);
-        self.isSubscriptionValidationAvailable = isMethodAvailable("onSubscriptionValidation", methodNames);
-        self.isUnsubscriptionAvailable = isMethodAvailable("onUnsubscription", methodNames);
-        self.isUnsubscriptionValidationAvailable = isMethodAvailable("onUnsubscriptionValidation", methodNames);
+        self.isSubscriptionAvailable = methodNames.indexOf("onSubscription") is int;
+        self.isSubscriptionValidationAvailable = methodNames.indexOf("onSubscriptionValidation") is int;
+        self.isUnsubscriptionAvailable = methodNames.indexOf("onUnsubscription") is int;
+        self.isUnsubscriptionValidationAvailable = methodNames.indexOf("onUnsubscriptionValidation") is int;
     }
 
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {
@@ -49,18 +49,18 @@ isolated service class HttpService {
         if params is error {
             response.statusCode = http:STATUS_BAD_REQUEST;
             response.setTextPayload(params.message());
-            return respondToRequest(caller, response);
+            return respondWithResult(caller, response);
         }
 
         string? mode = params[HUB_MODE];
         match mode {
             MODE_REGISTER => {
                 http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
-                return handleResult(caller, result);
+                return respondWithResult(caller, result);
             }
             MODE_DEREGISTER => {
                 http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
-                return handleResult(caller, result);
+                return respondWithResult(caller, result);
             }
             MODE_SUBSCRIBE => {
                 return self.handleSubscription(caller, headers, params);
@@ -73,15 +73,15 @@ isolated service class HttpService {
                 if result is error {
                     response.statusCode = http:STATUS_BAD_REQUEST;
                     response.setTextPayload(result.message());
-                    return respondToRequest(caller, response);
+                    return respondWithResult(caller, response);
                 }
-                return respondToRequest(caller, result);
+                return respondWithResult(caller, result);
             }
             _ => {
                 response.statusCode = http:STATUS_BAD_REQUEST;
                 string errorMessage = "The request does not include valid `hub.mode` form param.";
                 response.setTextPayload(errorMessage);
-                return respondToRequest(caller, response);
+                return respondWithResult(caller, response);
             }
         }
     }
@@ -135,7 +135,8 @@ isolated service class HttpService {
             
             int currentStatusCode = result.statusCode;
             if currentStatusCode == http:STATUS_ACCEPTED {
-                check respondToRequest(caller, result);
+                check respondWithResult(caller, result);
+                
                 error? verificationResult = processSubscriptionVerification(
                     headers, self.adaptor, subscription, self.isSubscriptionValidationAvailable, self.clientConfig);
                 if verificationResult is error {
@@ -143,13 +144,13 @@ isolated service class HttpService {
                 }
                 return;
             }
-            return respondToRequest(caller, result);
+            return respondWithResult(caller, result);
         }
         
         http:Response response = new;
         response.statusCode = http:STATUS_BAD_REQUEST;
         response.setTextPayload(subscription.message());
-        return respondToRequest(caller, response);
+        return respondWithResult(caller, response);
     }
 
     isolated function handleUnsubscription(http:Caller caller, http:Headers headers, map<string> params) returns Error? {
@@ -158,7 +159,7 @@ isolated service class HttpService {
             http:Response result = processUnsubscription(unsubscription, headers, self.adaptor, self.isUnsubscriptionAvailable);
             int currentStatusCode = result.statusCode;
             if currentStatusCode == http:STATUS_ACCEPTED {
-                check respondToRequest(caller, result);
+                check respondWithResult(caller, result);
                 error? verificationResult = processUnSubscriptionVerification(
                     headers, self.adaptor, unsubscription, self.isUnsubscriptionValidationAvailable, self.clientConfig);
                 if verificationResult is error {
@@ -166,35 +167,29 @@ isolated service class HttpService {
                 }
                 return;
             }
-            return respondToRequest(caller, result);
+            return respondWithResult(caller, result);
         }
 
         http:Response response = new;
         response.statusCode = http:STATUS_BAD_REQUEST;
         response.setTextPayload(unsubscription.message());
-        return respondToRequest(caller, response);
+        return respondWithResult(caller, response);
     }
 }
 
-isolated function isMethodAvailable(string methodName, string[] methods) returns boolean {
-    return methods.indexOf(methodName) is int;
-}
-
-isolated function handleResult(http:Caller caller, http:Response|error result) returns Error? {
+isolated function respondWithResult(http:Caller caller, http:Response|error result) returns Error? {
+    http:ListenerError? respondError = ();
     if result is error {
         http:Response response = new;
         response.statusCode = http:STATUS_BAD_REQUEST;
         response.setTextPayload(result.message());
-        return respondToRequest(caller, response);
+        respondError = caller->respond(response);
+    } else {
+        respondError = caller->respond(result);
     }
-    
-    return respondToRequest(caller, result);
-}
 
-isolated function respondToRequest(http:Caller caller, http:Response response) returns Error? {
-    http:ListenerError? responseError = caller->respond(response);
-    if responseError is http:ListenerError {
-        return error Error(
-            "Error occurred while responding to the request ", responseError, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
+    if respondError is http:ListenerError {
+        return error Error("Error occurred while responding to the request ", respondError, 
+            statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
     }
 }
