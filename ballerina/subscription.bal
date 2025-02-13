@@ -145,7 +145,8 @@ isolated class SubscriptionHandler {
     }
 }
 
-isolated function createSubscriptionMessage(string hubUrl, int defaultLeaseSeconds, map<string> params) returns Subscription|error {
+isolated function createSubscriptionMessage(string hubUrl, int defaultLeaseSeconds, map<string> params)
+returns Subscription|error {
     string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     string hubCallback = check retrieveQueryParameter(params, HUB_CALLBACK);
     int leaseSeconds = retrieveLeaseSeconds(params, defaultLeaseSeconds);
@@ -184,7 +185,8 @@ isolated function processOnSubscriptionResult(SubscriptionAccepted|error result)
         updateErrorResponse(response, errorDetails, result.message());
         return response;
     } else {
-        CommonResponse errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
+        CommonResponse errorDetails = result is InternalSubscriptionError ?
+            result.detail() : INTERNAL_SUBSCRIPTION_ERROR.detail();
         updateErrorResponse(response, errorDetails, result.message());
         return response;
     }
@@ -215,7 +217,8 @@ isolated function processOnUnsubscriptionResult(UnsubscriptionAccepted|error res
         updateErrorResponse(response, errorDetails, result.message());
         return response;
     } else {
-        CommonResponse errorDetails = result is InternalSubscriptionError ? result.detail() : INTERNAL_UNSUBSCRIPTION_ERROR.detail();
+        CommonResponse errorDetails = result is InternalSubscriptionError ?
+            result.detail() : INTERNAL_UNSUBSCRIPTION_ERROR.detail();
         updateErrorResponse(response, errorDetails, result.message());
         return response;
     }
