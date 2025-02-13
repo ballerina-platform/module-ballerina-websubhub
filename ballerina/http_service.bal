@@ -15,32 +15,23 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/mime;
 import ballerina/log;
+import ballerina/mime;
 
 isolated service class HttpService {
     *http:Service;
-    
+
     private final HttpToWebsubhubAdaptor adaptor;
-    private final readonly & ClientConfiguration clientConfig;
     private final string hub;
     private final int defaultHubLeaseSeconds;
-    private final boolean isSubscriptionAvailable;
-    private final boolean isSubscriptionValidationAvailable;
-    private final boolean isUnsubscriptionAvailable;
-    private final boolean isUnsubscriptionValidationAvailable;
+    private final SubscriptionHandler subscriptionHandler;
 
     isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
-                           *ClientConfiguration clientConfig) {
+            *ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
-        self.clientConfig = clientConfig.cloneReadOnly();
         self.hub = hubUrl;
         self.defaultHubLeaseSeconds = leaseSeconds;
-        string[] methodNames = adaptor.getServiceMethodNames();
-        self.isSubscriptionAvailable = methodNames.indexOf("onSubscription") is int;
-        self.isSubscriptionValidationAvailable = methodNames.indexOf("onSubscriptionValidation") is int;
-        self.isUnsubscriptionAvailable = methodNames.indexOf("onUnsubscription") is int;
-        self.isUnsubscriptionValidationAvailable = methodNames.indexOf("onUnsubscriptionValidation") is int;
+        self.subscriptionHandler = new (adaptor, leaseSeconds, clientConfig);
     }
 
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {
@@ -124,7 +115,7 @@ isolated service class HttpService {
     isolated function handleSubscription(http:Caller caller, http:Headers headers, map<string> params) returns Error? {
         Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultHubLeaseSeconds, params);
         if subscription is Subscription {
-            http:Response|Redirect result = processSubscription(subscription, headers, self.adaptor, self.isSubscriptionAvailable);
+            http:Response|Redirect result = self.subscriptionHandler.processSubscription(subscription, headers);
             if result is Redirect {
                 error? redirectError = caller->redirect(new http:Response(), result.code, result.redirectUrls);
                 if redirectError is error {
@@ -132,13 +123,12 @@ isolated service class HttpService {
                 }
                 return;
             }
-            
+
             int currentStatusCode = result.statusCode;
             if currentStatusCode == http:STATUS_ACCEPTED {
                 check respondWithResult(caller, result);
-                
-                error? verificationResult = processSubscriptionVerification(
-                    headers, self.adaptor, subscription, self.isSubscriptionValidationAvailable, self.clientConfig);
+
+                error? verificationResult = self.subscriptionHandler.processSubscriptionVerification(subscription, headers);
                 if verificationResult is error {
                     log:printError("Error occurred while processing subscription", 'error = verificationResult);
                 }
@@ -146,7 +136,7 @@ isolated service class HttpService {
             }
             return respondWithResult(caller, result);
         }
-        
+
         http:Response response = new;
         response.statusCode = http:STATUS_BAD_REQUEST;
         response.setTextPayload(subscription.message());
@@ -156,12 +146,12 @@ isolated service class HttpService {
     isolated function handleUnsubscription(http:Caller caller, http:Headers headers, map<string> params) returns Error? {
         Unsubscription|error unsubscription = createUnsubscriptionMessage(params);
         if unsubscription is Unsubscription {
-            http:Response result = processUnsubscription(unsubscription, headers, self.adaptor, self.isUnsubscriptionAvailable);
+            http:Response result = self.subscriptionHandler.processUnsubscription(unsubscription, headers);
             int currentStatusCode = result.statusCode;
             if currentStatusCode == http:STATUS_ACCEPTED {
                 check respondWithResult(caller, result);
-                error? verificationResult = processUnSubscriptionVerification(
-                    headers, self.adaptor, unsubscription, self.isUnsubscriptionValidationAvailable, self.clientConfig);
+                error? verificationResult = self.subscriptionHandler.processUnSubscriptionVerification(
+                    unsubscription, headers);
                 if verificationResult is error {
                     log:printError("Error occurred while processing unsubscription", 'error = verificationResult);
                 }
@@ -189,7 +179,7 @@ isolated function respondWithResult(http:Caller caller, http:Response|error resu
     }
 
     if respondError is http:ListenerError {
-        return error Error("Error occurred while responding to the request ", respondError, 
+        return error Error("Error occurred while responding to the request ", respondError,
             statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
     }
 }
