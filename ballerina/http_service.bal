@@ -50,39 +50,38 @@ isolated service class HttpService {
             response.statusCode = http:STATUS_BAD_REQUEST;
             response.setTextPayload(params.message());
             return respondToRequest(caller, response);
-        } else {
-            string? mode = params[HUB_MODE];
-            match mode {
-                MODE_REGISTER => {
-                    http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
-                    return handleResult(caller, result);
-                }
-                MODE_DEREGISTER => {
-                    http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
-                    return handleResult(caller, result);
-                }
-                MODE_SUBSCRIBE => {
-                    return self.handleSubscription(caller, headers, params);
-                }
-                MODE_UNSUBSCRIBE => {
-                    return self.handleUnsubscription(caller, headers, params);
-                }
-                MODE_PUBLISH => {
-                    http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
-                    if result is error {
-                        response.statusCode = http:STATUS_BAD_REQUEST;
-                        response.setTextPayload(result.message());
-                        return respondToRequest(caller, response);
-                    } else {
-                        return respondToRequest(caller, result);
-                    }
-                }
-                _ => {
+        }
+
+        string? mode = params[HUB_MODE];
+        match mode {
+            MODE_REGISTER => {
+                http:Response|error result = processTopicRegistration(headers, params, self.adaptor);
+                return handleResult(caller, result);
+            }
+            MODE_DEREGISTER => {
+                http:Response|error result = processTopicDeregistration(headers, params, self.adaptor);
+                return handleResult(caller, result);
+            }
+            MODE_SUBSCRIBE => {
+                return self.handleSubscription(caller, headers, params);
+            }
+            MODE_UNSUBSCRIBE => {
+                return self.handleUnsubscription(caller, headers, params);
+            }
+            MODE_PUBLISH => {
+                http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
+                if result is error {
                     response.statusCode = http:STATUS_BAD_REQUEST;
-                    string errorMessage = "The request does not include valid `hub.mode` form param.";
-                    response.setTextPayload(errorMessage);
+                    response.setTextPayload(result.message());
                     return respondToRequest(caller, response);
                 }
+                return respondToRequest(caller, result);
+            }
+            _ => {
+                response.statusCode = http:STATUS_BAD_REQUEST;
+                string errorMessage = "The request does not include valid `hub.mode` form param.";
+                response.setTextPayload(errorMessage);
+                return respondToRequest(caller, response);
             }
         }
     }
@@ -131,25 +130,26 @@ isolated service class HttpService {
                 if redirectError is error {
                     log:printError("Error occurred while redirecting the subscription", 'error = redirectError);
                 }
-            } else {
-                int currentStatusCode = result.statusCode;
-                if currentStatusCode == http:STATUS_ACCEPTED {
-                    check respondToRequest(caller, result);
-                    error? verificationResult = processSubscriptionVerification(headers, self.adaptor, subscription,
-                                                                                        self.isSubscriptionValidationAvailable, self.clientConfig);
-                    if verificationResult is error {
-                        log:printError("Error occurred while processing subscription", 'error = verificationResult);
-                    }
-                    return;
-                }
-                return respondToRequest(caller, result);
+                return;
             }
-        } else {
-            http:Response response = new;
-            response.statusCode = http:STATUS_BAD_REQUEST;
-            response.setTextPayload(subscription.message());
-            return respondToRequest(caller, response);
+            
+            int currentStatusCode = result.statusCode;
+            if currentStatusCode == http:STATUS_ACCEPTED {
+                check respondToRequest(caller, result);
+                error? verificationResult = processSubscriptionVerification(
+                    headers, self.adaptor, subscription, self.isSubscriptionValidationAvailable, self.clientConfig);
+                if verificationResult is error {
+                    log:printError("Error occurred while processing subscription", 'error = verificationResult);
+                }
+                return;
+            }
+            return respondToRequest(caller, result);
         }
+        
+        http:Response response = new;
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        response.setTextPayload(subscription.message());
+        return respondToRequest(caller, response);
     }
 
     isolated function handleUnsubscription(http:Caller caller, http:Headers headers, map<string> params) returns Error? {
@@ -159,20 +159,20 @@ isolated service class HttpService {
             int currentStatusCode = result.statusCode;
             if currentStatusCode == http:STATUS_ACCEPTED {
                 check respondToRequest(caller, result);
-                error? verificationResult = processUnSubscriptionVerification(headers, self.adaptor, unsubscription,
-                                                                                        self.isUnsubscriptionValidationAvailable, self.clientConfig);
+                error? verificationResult = processUnSubscriptionVerification(
+                    headers, self.adaptor, unsubscription, self.isUnsubscriptionValidationAvailable, self.clientConfig);
                 if verificationResult is error {
                     log:printError("Error occurred while processing unsubscription", 'error = verificationResult);
                 }
                 return;
             }
             return respondToRequest(caller, result);
-        } else {
-            http:Response response = new;
-            response.statusCode = http:STATUS_BAD_REQUEST;
-            response.setTextPayload(unsubscription.message());
-            return respondToRequest(caller, response);
         }
+
+        http:Response response = new;
+        response.statusCode = http:STATUS_BAD_REQUEST;
+        response.setTextPayload(unsubscription.message());
+        return respondToRequest(caller, response);
     }
 }
 
@@ -186,9 +186,9 @@ isolated function handleResult(http:Caller caller, http:Response|error result) r
         response.statusCode = http:STATUS_BAD_REQUEST;
         response.setTextPayload(result.message());
         return respondToRequest(caller, response);
-    } else {
-        return respondToRequest(caller, result);
     }
+    
+    return respondToRequest(caller, result);
 }
 
 isolated function respondToRequest(http:Caller caller, http:Response response) returns Error? {
