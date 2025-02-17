@@ -19,8 +19,12 @@ import ballerina/jballerina.java;
 
 isolated class HttpToWebsubhubAdaptor {
     isolated function init(Service 'service) {
-        externInit(self, 'service);
+        self.externInit('service);
     }
+
+    isolated function externInit(Service serviceObj) = @java:Method {
+        'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
+    } external;
 
     isolated function getServiceMethodNames() returns string[] = @java:Method {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
@@ -69,7 +73,3 @@ isolated class HttpToWebsubhubAdaptor {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 }
-
-isolated function externInit(HttpToWebsubhubAdaptor adaptor, Service serviceObj) = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
-} external;
