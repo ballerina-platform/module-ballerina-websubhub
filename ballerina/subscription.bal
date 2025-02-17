@@ -46,7 +46,8 @@ isolated class SubscriptionHandler {
             return response;
         }
 
-        SubscriptionAccepted|Redirect|error result = self.adaptor.callOnSubscriptionMethod(message, headers);
+        SubscriptionAccepted|Redirect|error result = self.adaptor.callOnSubscriptionMethod(
+            message, headers, self.hubController);
         if result is Redirect {
             return result;
         }
@@ -106,7 +107,8 @@ isolated class SubscriptionHandler {
             return response;
         }
 
-        UnsubscriptionAccepted|error result = self.adaptor.callOnUnsubscriptionMethod(message, headers);
+        UnsubscriptionAccepted|error result = self.adaptor.callOnUnsubscriptionMethod(
+            message, headers, self.hubController);
         return processOnUnsubscriptionResult(result);
     }
 

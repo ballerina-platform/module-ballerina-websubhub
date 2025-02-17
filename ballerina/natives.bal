@@ -45,8 +45,9 @@ isolated class HttpToWebsubhubAdaptor {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 
-    isolated function callOnSubscriptionMethod(Subscription msg, http:Headers headers) returns SubscriptionAccepted|
-        SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError|InternalSubscriptionError|error = @java:Method {
+    isolated function callOnSubscriptionMethod(Subscription msg, http:Headers headers, Controller hubController) 
+    returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError
+    |InternalSubscriptionError|error = @java:Method {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 
@@ -59,7 +60,7 @@ isolated class HttpToWebsubhubAdaptor {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 
-    isolated function callOnUnsubscriptionMethod(Unsubscription msg, http:Headers headers)
+    isolated function callOnUnsubscriptionMethod(Unsubscription msg, http:Headers headers, Controller hubController) 
     returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError|error = @java:Method {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;

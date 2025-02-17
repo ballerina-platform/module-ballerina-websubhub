@@ -106,14 +106,14 @@ public final class NativeHttpToWebsubhubAdaptor {
                 "callOnUpdateMethod", ON_UPDATE_MESSAGE);
     }
 
-    public static Object callOnSubscriptionMethod(Environment env, BObject adaptor,
-                                                  BMap<BString, Object> message, BObject bHttpHeaders) {
+    public static Object callOnSubscriptionMethod(Environment env, BObject adaptor, BMap<BString, Object> message,
+                                                  BObject bHttpHeaders, BObject bHubController) {
         BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_SUBSCRIPTION);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = new Object[]{message, bHttpHeaders, bHubController};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionMethod", ON_SUBSCRIPTION);
     }
@@ -143,14 +143,14 @@ public final class NativeHttpToWebsubhubAdaptor {
                 ON_SUBSCRIPTION_INTENT_VERIFIED);
     }
 
-    public static Object callOnUnsubscriptionMethod(Environment env, BObject adaptor,
-                                                    BMap<BString, Object> message, BObject bHttpHeaders) {
+    public static Object callOnUnsubscriptionMethod(Environment env, BObject adaptor, BMap<BString, Object> message,
+                                                    BObject bHttpHeaders, BObject bHubController) {
         BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_UNSUBSCRIPTION);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = new Object[]{message, bHttpHeaders, bHubController};
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUnsubscriptionMethod", ON_UNSUBSCRIPTION);
     }
