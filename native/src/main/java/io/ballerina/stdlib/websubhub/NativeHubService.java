@@ -22,25 +22,20 @@ import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.utils.TypeUtils;
-import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
-import io.ballerina.runtime.api.values.BString;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
-
-import static io.ballerina.stdlib.websubhub.Constants.HTTP_HEADERS_TYPE;
 
 /**
  * {@code NativeBHubService} is a Java wrapper for Ballerina `websubhub:Service` object.
  */
 public class NativeHubService {
     private final BObject bHubService;
-    private final List<String> remoteMethodNames = new ArrayList<>();
     private final Map<String, List<Type>> methodParameterMapping = new HashMap<>();
 
 
@@ -50,7 +45,6 @@ public class NativeHubService {
             String methodName = remoteMethod.getName();
             List<Type> paramTypeInOrder = Stream.of(remoteMethod.getParameters()).map(p -> p.type).toList();
             methodParameterMapping.put(methodName, paramTypeInOrder);
-            remoteMethodNames.add(methodName);
         }
         this.bHubService = bHubService;
     }
@@ -59,21 +53,13 @@ public class NativeHubService {
         return bHubService;
     }
 
-    public List<String> getRemoteMethodNames() {
-        return remoteMethodNames;
+    public Set<String> getRemoteMethodNames() {
+        return methodParameterMapping.keySet();
     }
 
-    public Object[] getMethodArgs(String methodName, BMap<BString, Object> message, BObject bHttpHeaders) {
+    public Object[] getMethodArgs(String methodName, InteropArgs args) {
         return methodParameterMapping.getOrDefault(methodName, Collections.emptyList()).stream()
-                .map(argType -> getMappingArg(argType, message, bHttpHeaders))
+                .map(args::getMappingArg)
                 .toArray();
-    }
-
-    private Object getMappingArg(Type argType, BMap<BString, Object> message, BObject bHttpHeaders) {
-        String argTypeName = argType.toString();
-        if (HTTP_HEADERS_TYPE.equals(argTypeName)) {
-            return bHttpHeaders;
-        }
-        return message;
     }
 }

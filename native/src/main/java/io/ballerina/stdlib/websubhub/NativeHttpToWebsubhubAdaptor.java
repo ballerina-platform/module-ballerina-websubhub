@@ -74,7 +74,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_REGISTER_TOPIC, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_REGISTER_TOPIC, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callRegisterMethod", ON_REGISTER_TOPIC);
     }
@@ -87,7 +87,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_DEREGISTER_TOPIC, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_DEREGISTER_TOPIC, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callDeregisterMethod", ON_DEREGISTER_TOPIC);
     }
@@ -100,7 +100,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_UPDATE_MESSAGE, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_UPDATE_MESSAGE, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUpdateMethod", ON_UPDATE_MESSAGE);
     }
@@ -113,7 +113,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionMethod", ON_SUBSCRIPTION);
     }
@@ -126,7 +126,8 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION_VALIDATION, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION_VALIDATION,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionValidationMethod", ON_SUBSCRIPTION_VALIDATION);
     }
@@ -139,7 +140,8 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION_INTENT_VERIFIED, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION_INTENT_VERIFIED,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionIntentVerifiedMethod",
                 ON_SUBSCRIPTION_INTENT_VERIFIED);
@@ -153,7 +155,7 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUnsubscriptionMethod", ON_UNSUBSCRIPTION);
     }
@@ -166,7 +168,8 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION_VALIDATION, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION_VALIDATION,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionValidationMethod",
                 ON_UNSUBSCRIPTION_VALIDATION);
     }
@@ -179,7 +182,8 @@ public final class NativeHttpToWebsubhubAdaptor {
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION_INTENT_VERIFIED, message, bHttpHeaders);
+        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION_INTENT_VERIFIED,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionIntentVerifiedMethod",
                 ON_UNSUBSCRIPTION_INTENT_VERIFIED);
     }
