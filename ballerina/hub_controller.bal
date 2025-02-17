@@ -46,8 +46,10 @@ public isolated class Controller {
     }
 }
 
-// todo: implement this logic properly
-isolated function retrieveKey(Subscription|Unsubscription message) returns string {
-    string 'key = message.toJsonString().trim();
-    return 'key;
+isolated function retrieveKey(record {} message) returns string {
+    string[] keyValuePairs = [];
+    foreach var [_, value] in message.entries() {
+        keyValuePairs.push(string `${value.toString()}`);
+    }
+    return string:'join(":::", ...keyValuePairs);
 }
