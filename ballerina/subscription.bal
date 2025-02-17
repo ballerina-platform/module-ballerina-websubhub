@@ -36,7 +36,7 @@ isolated class SubscriptionHandler {
         self.isOnUnsubscriptionValidationAvailable = methodNames.indexOf("onUnsubscriptionValidation") is int;
     }
 
-    isolated function processSubscription(Subscription message, http:Headers headers) returns http:Response|Redirect {
+    isolated function intiateSubscription(Subscription message, http:Headers headers) returns http:Response|Redirect {
         if !self.isOnSubscriptionAvailable {
             http:Response response = new;
             response.statusCode = http:STATUS_ACCEPTED;
@@ -93,7 +93,7 @@ isolated class SubscriptionHandler {
         }
     }
 
-    isolated function processUnsubscription(Unsubscription message, http:Headers headers) returns http:Response {
+    isolated function initiateUnsubscription(Unsubscription message, http:Headers headers) returns http:Response {
         if !self.isOnUnsubscriptionAvailable {
             http:Response response = new;
             response.statusCode = http:STATUS_ACCEPTED;

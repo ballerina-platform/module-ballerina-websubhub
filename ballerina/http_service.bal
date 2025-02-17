@@ -54,10 +54,10 @@ isolated service class HttpService {
                 return respondWithResult(caller, result);
             }
             MODE_SUBSCRIBE => {
-                return self.onSubscriptionRequest(caller, headers, params);
+                return self.processSubscription(caller, headers, params);
             }
             MODE_UNSUBSCRIBE => {
-                return self.onUnsubcriptionRequest(caller, headers, params);
+                return self.processUnsubscription(caller, headers, params);
             }
             MODE_PUBLISH => {
                 http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
@@ -112,7 +112,7 @@ isolated service class HttpService {
         return params;
     }
 
-    isolated function onSubscriptionRequest(http:Caller caller, http:Headers headers, map<string> params) 
+    isolated function processSubscription(http:Caller caller, http:Headers headers, map<string> params) 
     returns Error? {
 
         Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultLeaseSeconds, params);
@@ -123,7 +123,7 @@ isolated service class HttpService {
             return respondWithResult(caller, response);            
         }
 
-        http:Response|Redirect result = self.subscriptionHandler.processSubscription(subscription, headers);
+        http:Response|Redirect result = self.subscriptionHandler.intiateSubscription(subscription, headers);
         if result is Redirect {
             error? redirectError = caller->redirect(new http:Response(), result.code, result.redirectUrls);
             if redirectError is error {
@@ -143,7 +143,7 @@ isolated service class HttpService {
         }        
     }
 
-    isolated function onUnsubcriptionRequest(http:Caller caller, http:Headers headers, map<string> params) 
+    isolated function processUnsubscription(http:Caller caller, http:Headers headers, map<string> params) 
     returns Error? {
 
         Unsubscription|error unsubscription = createUnsubscriptionMessage(params);
@@ -154,7 +154,7 @@ isolated service class HttpService {
             return respondWithResult(caller, response);            
         }
 
-        http:Response result = self.subscriptionHandler.processUnsubscription(unsubscription, headers);
+        http:Response result = self.subscriptionHandler.initiateUnsubscription(unsubscription, headers);
         check respondWithResult(caller, result);
         if result.statusCode != http:STATUS_ACCEPTED {
             return;
