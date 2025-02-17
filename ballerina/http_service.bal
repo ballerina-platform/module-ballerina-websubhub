@@ -107,7 +107,7 @@ isolated service class HttpService {
         return params;
     }
 
-    isolated function processSubscription(http:Caller caller, http:Headers headers, map<string> params) 
+    isolated function processSubscription(http:Caller caller, http:Headers headers, map<string> params)
     returns Error? {
 
         Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultLeaseSeconds, params);
@@ -115,7 +115,7 @@ isolated service class HttpService {
             http:Response response = new;
             response.statusCode = http:STATUS_BAD_REQUEST;
             response.setTextPayload(subscription.message());
-            return respondWithResult(caller, response);            
+            return respondWithResult(caller, response);
         }
 
         http:Response|Redirect result = self.subscriptionHandler.intiateSubscription(subscription, headers);
@@ -135,10 +135,10 @@ isolated service class HttpService {
         error? verification = self.subscriptionHandler.verifySubscription(subscription, headers);
         if verification is error {
             log:printError("Error occurred while processing subscription", 'error = verification);
-        }        
+        }
     }
 
-    isolated function processUnsubscription(http:Caller caller, http:Headers headers, map<string> params) 
+    isolated function processUnsubscription(http:Caller caller, http:Headers headers, map<string> params)
     returns Error? {
 
         Unsubscription|error unsubscription = createUnsubscriptionMessage(params);
@@ -146,7 +146,7 @@ isolated service class HttpService {
             http:Response response = new;
             response.statusCode = http:STATUS_BAD_REQUEST;
             response.setTextPayload(unsubscription.message());
-            return respondWithResult(caller, response);            
+            return respondWithResult(caller, response);
         }
 
         http:Response result = self.subscriptionHandler.initiateUnsubscription(unsubscription, headers);
