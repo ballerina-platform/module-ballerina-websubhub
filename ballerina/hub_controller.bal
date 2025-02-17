@@ -14,20 +14,40 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// todo: implement this properly
-
 public isolated class Controller {
     private final boolean autoVerifySubscription;
+
+    private final map<Subscription|Unsubscription> autoVerifyState = {};
 
     isolated function init(boolean autoVerifySubscription) {
         self.autoVerifySubscription = autoVerifySubscription;
     }
 
-    public isolated function markAsVerified(Subscription|Unsubscription subscription) returns error? {
-        return error("Not implemented yet");
+    public isolated function markAsVerified(Subscription|Unsubscription subscription) returns Error? {
+        if !self.autoVerifySubscription {
+            return error Error(
+                "Trying mark a subcription as auto-verifiable, but the `hub` has not enabled subscription auto-verification", 
+                statusCode = SUB_AUTO_VERIFY_ERROR);
+        }
+
+        string 'key = retrieveKey(subscription);
+        lock {
+            self.autoVerifyState['key] = subscription.cloneReadOnly();
+        }
     }
 
     isolated function skipSubscriptionVerification(Subscription|Unsubscription subscription) returns boolean {
-        return false;
+        string 'key = retrieveKey(subscription);
+        Subscription|Unsubscription? skipped;
+        lock {
+            skipped = self.autoVerifyState.removeIfHasKey('key).cloneReadOnly();
+        }
+        return skipped !is ();
     }
+}
+
+// todo: implement this logic properly
+isolated function retrieveKey(Subscription|Unsubscription message) returns string {
+    string 'key = message.toJsonString().trim();
+    return 'key;
 }
