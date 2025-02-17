@@ -26,12 +26,13 @@ isolated service class HttpService {
     private final int defaultLeaseSeconds;
     private final SubscriptionHandler subscriptionHandler;
 
-    isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, int leaseSeconds,
-            *ClientConfiguration clientConfig) {
+    isolated function init(HttpToWebsubhubAdaptor adaptor, string hubUrl, ServiceConfiguration? serviceConfig) {
         self.adaptor = adaptor;
         self.hub = hubUrl;
-        self.defaultLeaseSeconds = leaseSeconds;
-        self.subscriptionHandler = new (adaptor, clientConfig);
+        self.defaultLeaseSeconds = serviceConfig?.leaseSeconds ?: DEFAULT_HUB_LEASE_SECONDS;
+        ClientConfiguration clientConfig = serviceConfig?.webHookConfig ?: {};
+        boolean autoVerifySubscription = serviceConfig?.autoVerifySubscription ?: false;
+        self.subscriptionHandler = new (adaptor, autoVerifySubscription, clientConfig);
     }
 
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {

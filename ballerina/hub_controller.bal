@@ -17,12 +17,17 @@
 // todo: implement this properly
 
 public isolated class Controller {
+    private final boolean autoVerifySubscription;
 
-    public function markAsVerified(Subscription|Unsubscription subscription) returns error? {
+    isolated function init(boolean autoVerifySubscription) {
+        self.autoVerifySubscription = autoVerifySubscription;
+    }
+
+    public isolated function markAsVerified(Subscription|Unsubscription subscription) returns error? {
         return error("Not implemented yet");
     }
 
-    function skipSubscriptionVerification(Subscription|Unsubscription subscription) returns boolean {
+    isolated function skipSubscriptionVerification(Subscription|Unsubscription subscription) returns boolean {
         return false;
     }
 }

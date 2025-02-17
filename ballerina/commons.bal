@@ -55,6 +55,8 @@ const int LISTENER_DETACH_ERROR = -4;
 const int LISTENER_STOP_ERROR = -5;
 const int CLIENT_INIT_ERROR = -10;
 
+const DEFAULT_HUB_LEASE_SECONDS = 86400;
+
 # Options to compress using Gzip or deflate.
 #
 # `AUTO`: When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the
