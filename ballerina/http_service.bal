@@ -114,6 +114,7 @@ isolated service class HttpService {
 
     isolated function onSubscriptionRequest(http:Caller caller, http:Headers headers, map<string> params) 
     returns Error? {
+
         Subscription|error subscription = createSubscriptionMessage(self.hub, self.defaultLeaseSeconds, params);
         if subscription is error {
             http:Response response = new;
@@ -144,6 +145,7 @@ isolated service class HttpService {
 
     isolated function onUnsubcriptionRequest(http:Caller caller, http:Headers headers, map<string> params) 
     returns Error? {
+
         Unsubscription|error unsubscription = createUnsubscriptionMessage(params);
         if unsubscription is error {
             http:Response response = new;

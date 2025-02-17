@@ -147,6 +147,7 @@ isolated class SubscriptionHandler {
 
 isolated function createSubscriptionMessage(string hubUrl, int defaultLeaseSeconds, map<string> params)
 returns Subscription|error {
+
     string topic = check retrieveQueryParameter(params, HUB_TOPIC);
     string hubCallback = check retrieveQueryParameter(params, HUB_CALLBACK);
     int leaseSeconds = retrieveLeaseSeconds(params, defaultLeaseSeconds);
