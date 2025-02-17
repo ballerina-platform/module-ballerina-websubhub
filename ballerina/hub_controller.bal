@@ -30,14 +30,14 @@ public isolated class Controller {
                 statusCode = SUB_AUTO_VERIFY_ERROR);
         }
 
-        string 'key = retrieveKey(subscription);
+        string 'key = constructSubscriptionKey(subscription);
         lock {
             self.autoVerifyState['key] = subscription.cloneReadOnly();
         }
     }
 
     isolated function skipSubscriptionVerification(Subscription|Unsubscription subscription) returns boolean {
-        string 'key = retrieveKey(subscription);
+        string 'key = constructSubscriptionKey(subscription);
         Subscription|Unsubscription? skipped;
         lock {
             skipped = self.autoVerifyState.removeIfHasKey('key).cloneReadOnly();
@@ -46,10 +46,7 @@ public isolated class Controller {
     }
 }
 
-isolated function retrieveKey(record {} message) returns string {
-    string[] keyValuePairs = [];
-    foreach var [_, value] in message.entries() {
-        keyValuePairs.push(string `${value.toString()}`);
-    }
-    return string:'join(":::", ...keyValuePairs);
+isolated function constructSubscriptionKey(record {} message) returns string {
+    string[] values = message.toArray().'map(v => string `${v.toString()}`);
+    return string:'join(":::", ...values);
 }
