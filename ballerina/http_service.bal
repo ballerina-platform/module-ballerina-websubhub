@@ -61,11 +61,6 @@ isolated service class HttpService {
             }
             MODE_PUBLISH => {
                 http:Response|error result = processContentPublish(request, headers, params, self.adaptor);
-                if result is error {
-                    response.statusCode = http:STATUS_BAD_REQUEST;
-                    response.setTextPayload(result.message());
-                    return respondWithResult(caller, response);
-                }
                 return respondWithResult(caller, result);
             }
             _ => {
