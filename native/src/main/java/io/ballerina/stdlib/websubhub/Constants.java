@@ -25,7 +25,7 @@ public interface Constants {
     String PACKAGE_ORG = "ballerina";
     String PACKAGE_NAME = "websubhub";
 
-    String SERVICE_OBJECT = "WEBSUBHUB_SERVICE_OBJECT";
+    String NATIVE_HUB_SERVICE = "NATIVE_HUB_SERVICE";
 
     String ON_REGISTER_TOPIC = "onRegisterTopic";
     String ON_DEREGISTER_TOPIC = "onDeregisterTopic";
@@ -36,6 +36,8 @@ public interface Constants {
     String ON_UNSUBSCRIPTION = "onUnsubscription";
     String ON_UNSUBSCRIPTION_VALIDATION = "onUnsubscriptionValidation";
     String ON_UNSUBSCRIPTION_INTENT_VERIFIED = "onUnsubscriptionIntentVerified";
+
+    String HTTP_HEADERS_TYPE = "http:Headers";
 
     String COMMON_RESPONSE = "CommonResponse";
     String STATUS_CODE = "statusCode";
