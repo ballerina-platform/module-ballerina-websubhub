@@ -35,7 +35,6 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -48,7 +47,7 @@ import static io.ballerina.stdlib.websubhub.Constants.ON_UNSUBSCRIPTION;
 import static io.ballerina.stdlib.websubhub.Constants.ON_UNSUBSCRIPTION_INTENT_VERIFIED;
 import static io.ballerina.stdlib.websubhub.Constants.ON_UNSUBSCRIPTION_VALIDATION;
 import static io.ballerina.stdlib.websubhub.Constants.ON_UPDATE_MESSAGE;
-import static io.ballerina.stdlib.websubhub.Constants.SERVICE_OBJECT;
+import static io.ballerina.stdlib.websubhub.Constants.NATIVE_HUB_SERVICE;
 
 /**
  * {@code NativeHttpToWebsubhubAdaptor} is a wrapper object used for service method execution.
@@ -57,87 +56,93 @@ public final class NativeHttpToWebsubhubAdaptor {
     private NativeHttpToWebsubhubAdaptor() {}
 
     public static void externInit(BObject adaptor, BObject serviceObj) {
-        adaptor.addNativeData(SERVICE_OBJECT, serviceObj);
+        adaptor.addNativeData(NATIVE_HUB_SERVICE, new NativeHubService(serviceObj));
     }
 
     public static BArray getServiceMethodNames(BObject adaptor) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
-        List<BString> methodNamesList = new ArrayList<>();
-        ObjectType serviceType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(bHubService));
-        for (MethodType method : serviceType.getMethods()) {
-            methodNamesList.add(StringUtils.fromString(method.getName()));
-        }
-        return ValueCreator.createArrayValue(methodNamesList.toArray(BString[]::new));
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        List<BString> remoteMethodNames = nativeHubService.getRemoteMethodNames().stream()
+                .map(StringUtils::fromString).toList();
+        return ValueCreator.createArrayValue(remoteMethodNames.toArray(BString[]::new));
     }
 
     public static Object callRegisterMethod(Environment env, BObject adaptor,
                                             BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_REGISTER_TOPIC);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_REGISTER_TOPIC, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callRegisterMethod", ON_REGISTER_TOPIC);
     }
 
     public static Object callDeregisterMethod(Environment env, BObject adaptor,
                                               BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_DEREGISTER_TOPIC);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_DEREGISTER_TOPIC, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callDeregisterMethod", ON_DEREGISTER_TOPIC);
     }
 
     public static Object callOnUpdateMethod(Environment env, BObject adaptor,
                                             BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_UPDATE_MESSAGE);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_UPDATE_MESSAGE, new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUpdateMethod", ON_UPDATE_MESSAGE);
     }
 
     public static Object callOnSubscriptionMethod(Environment env, BObject adaptor, BMap<BString, Object> message,
                                                   BObject bHttpHeaders, BObject bHubController) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_SUBSCRIPTION);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders, bHubController};
+        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION, new InteropArgs(
+                message, bHttpHeaders, bHubController));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionMethod", ON_SUBSCRIPTION);
     }
 
     public static Object callOnSubscriptionValidationMethod(Environment env, BObject adaptor,
                                                             BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_SUBSCRIPTION_VALIDATION);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION_VALIDATION,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionValidationMethod", ON_SUBSCRIPTION_VALIDATION);
     }
 
     public static Object callOnSubscriptionIntentVerifiedMethod(Environment env, BObject adaptor,
                                                                 BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_SUBSCRIPTION_INTENT_VERIFIED);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_SUBSCRIPTION_INTENT_VERIFIED,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnSubscriptionIntentVerifiedMethod",
                 ON_SUBSCRIPTION_INTENT_VERIFIED);
@@ -145,36 +150,42 @@ public final class NativeHttpToWebsubhubAdaptor {
 
     public static Object callOnUnsubscriptionMethod(Environment env, BObject adaptor, BMap<BString, Object> message,
                                                     BObject bHttpHeaders, BObject bHubController) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_UNSUBSCRIPTION);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders, bHubController};
+        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION, new InteropArgs(
+                message, bHttpHeaders, bHubController));
         return invokeRemoteFunction(env, bHubService, args,
                 "callOnUnsubscriptionMethod", ON_UNSUBSCRIPTION);
     }
 
     public static Object callOnUnsubscriptionValidationMethod(Environment env, BObject adaptor,
                                                               BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_UNSUBSCRIPTION_VALIDATION);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION_VALIDATION,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionValidationMethod",
                 ON_UNSUBSCRIPTION_VALIDATION);
     }
 
     public static Object callOnUnsubscriptionIntentVerifiedMethod(Environment env, BObject adaptor,
                                                                   BMap<BString, Object> message, BObject bHttpHeaders) {
-        BObject bHubService = (BObject) adaptor.getNativeData(SERVICE_OBJECT);
+        NativeHubService nativeHubService = (NativeHubService) adaptor.getNativeData(NATIVE_HUB_SERVICE);
+        BObject bHubService = nativeHubService.getBHubService();
         boolean isReadOnly = isReadOnlyParam(bHubService, ON_UNSUBSCRIPTION_INTENT_VERIFIED);
         if (isReadOnly) {
             message.freezeDirect();
         }
-        Object[] args = new Object[]{message, bHttpHeaders};
+        Object[] args = nativeHubService.getMethodArgs(ON_UNSUBSCRIPTION_INTENT_VERIFIED,
+                new InteropArgs(message, bHttpHeaders));
         return invokeRemoteFunction(env, bHubService, args, "callOnUnsubscriptionIntentVerifiedMethod",
                 ON_UNSUBSCRIPTION_INTENT_VERIFIED);
     }

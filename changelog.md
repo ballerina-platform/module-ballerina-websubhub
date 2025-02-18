@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [Introduce dynamic parameter order for the `websubhub:Service` remote methods](https://github.com/ballerina-platform/ballerina-library/issues/7600)
+
 ## [1.11.1] - 2024-11-22
 
 ### Changed
