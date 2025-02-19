@@ -262,22 +262,14 @@ public class CompilerPluginTest {
     }
 
     @Test
-    public void testCompilerPluginForParamOrder() {
+    public void testCompilerPluginForDynamicParamOrder() {
         Package currentPackage = loadPackage("sample_13");
         PackageCompilation compilation = currentPackage.getCompilation();
         DiagnosticResult diagnosticResult = compilation.diagnosticResult();
         List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
                 .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
                 .collect(Collectors.toList());
-        Assert.assertEquals(errorDiagnostics.size(), 1);
-        Diagnostic diagnostic = (Diagnostic) errorDiagnostics.toArray()[0];
-        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
-        WebSubHubDiagnosticCodes expectedCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
-        Assert.assertNotNull(diagnosticInfo, "DiagnosticInfo is null for erroneous service definition");
-        Assert.assertEquals(diagnosticInfo.code(), expectedCode.getCode());
-        String expectedMsg = MessageFormat.format(expectedCode.getDescription(),
-                "onUnsubscription", "websubhub:Unsubscription,http:Headers");
-        Assert.assertEquals(diagnostic.message(), expectedMsg);
+        Assert.assertEquals(errorDiagnostics.size(), 0);
     }
 
     @Test
