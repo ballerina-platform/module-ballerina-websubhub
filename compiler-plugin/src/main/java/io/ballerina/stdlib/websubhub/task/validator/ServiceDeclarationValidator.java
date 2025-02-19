@@ -65,13 +65,13 @@ public class ServiceDeclarationValidator {
                 Constants.ON_UPDATE_MESSAGE,
                 List.of(Constants.UPDATE_MESSAGE, Constants.HTTP_HEADERS),
                 Constants.ON_SUBSCRIPTION,
-                List.of(Constants.SUBSCRIPTION, Constants.HTTP_HEADERS),
+                List.of(Constants.SUBSCRIPTION, Constants.HTTP_HEADERS, Constants.CONTROLLER),
                 Constants.ON_SUBSCRIPTION_VALIDATION,
                 Collections.singletonList(Constants.SUBSCRIPTION),
                 Constants.ON_SUBSCRIPTION_INTENT_VERIFICATION,
                 Collections.singletonList(Constants.VERIFIED_SUBSCRIPTION),
                 Constants.ON_UNSUBSCRIPTION,
-                List.of(Constants.UNSUBSCRIPTION, Constants.HTTP_HEADERS),
+                List.of(Constants.UNSUBSCRIPTION, Constants.HTTP_HEADERS, Constants.CONTROLLER),
                 Constants.ON_UNSUBSCRIPTION_VALIDATION,
                 Collections.singletonList(Constants.UNSUBSCRIPTION),
                 Constants.ON_UNSUBSCRIPTION_INTENT_VERIFICATION,
@@ -183,16 +183,16 @@ public class ServiceDeclarationValidator {
                             .map(e -> getTypeDescription(e.typeDescriptor()))
                             .collect(Collectors.toList());
                     if (allowedParameters.containsAll(availableParamNames)) {
-                        validateParamOrder(context, functionDefinition, functionName, allowedParameters,
-                                availableParamNames);
-                    } else {
-                        List<String> notAllowedParams = availableParamNames.stream()
-                                .filter(e -> !allowedParameters.contains(e))
-                                .collect(Collectors.toList());
-                        String message = String.join(",", notAllowedParams);
-                        WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_105;
-                        updateContext(context, errorCode, functionDefinition.location(), message, functionName);
+                        return;
+//                        validateParamOrder(context, functionDefinition, functionName, allowedParameters,
+//                                availableParamNames);
                     }
+                    List<String> notAllowedParams = availableParamNames.stream()
+                            .filter(e -> !allowedParameters.contains(e))
+                            .collect(Collectors.toList());
+                    String message = String.join(",", notAllowedParams);
+                    WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_105;
+                    updateContext(context, errorCode, functionDefinition.location(), message, functionName);
                 }
             } else {
                 if (!allowedParameters.isEmpty()) {
@@ -204,22 +204,22 @@ public class ServiceDeclarationValidator {
         }
     }
 
-    private void validateParamOrder(SyntaxNodeAnalysisContext context, FunctionDefinitionNode functionDefinition,
-                                    String functionName, List<String> allowedParameters,
-                                    List<String> availableParamNames) {
-        if (allowedParameters.size() >= availableParamNames.size()) {
-            for (int idx = 0; idx < availableParamNames.size(); idx++) {
-                String availableParam = availableParamNames.get(idx);
-                String allowedParam = allowedParameters.get(idx);
-                if (!allowedParam.equals(availableParam)) {
-                    WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
-                    updateContext(context, errorCode, functionDefinition.location(), functionName,
-                            String.join(",", allowedParameters));
-                    return;
-                }
-            }
-        }
-    }
+//    private void validateParamOrder(SyntaxNodeAnalysisContext context, FunctionDefinitionNode functionDefinition,
+//                                    String functionName, List<String> allowedParameters,
+//                                    List<String> availableParamNames) {
+//        if (allowedParameters.size() >= availableParamNames.size()) {
+//            for (int idx = 0; idx < availableParamNames.size(); idx++) {
+//                String availableParam = availableParamNames.get(idx);
+//                String allowedParam = allowedParameters.get(idx);
+//                if (!allowedParam.equals(availableParam)) {
+//                    WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
+//                    updateContext(context, errorCode, functionDefinition.location(), functionName,
+//                            String.join(",", allowedParameters));
+//                    return;
+//                }
+//            }
+//        }
+//    }
 
     private void executeMethodReturnTypeValidation(SyntaxNodeAnalysisContext context,
                                                    FunctionDefinitionNode functionDefinition,

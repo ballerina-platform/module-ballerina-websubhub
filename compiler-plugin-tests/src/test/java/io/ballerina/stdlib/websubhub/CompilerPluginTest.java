@@ -405,6 +405,17 @@ public class CompilerPluginTest {
         Assert.assertEquals(errorDiagnostics.size(), 0);
     }
 
+    @Test
+    public void testCompilerPluginWebsubhubControllerUsage() {
+        Package currentPackage = loadPackage("sample_24");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .toList();
+        Assert.assertEquals(errorDiagnostics.size(), 0);
+    }
+
     private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,
                                                        String typeDesc, String remoteMethodName) {
         DiagnosticInfo info = diagnostic.diagnosticInfo();
