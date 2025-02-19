@@ -201,7 +201,7 @@ public class ServiceDeclarationValidator {
             }
         }
     }
-    
+
     private void executeMethodReturnTypeValidation(SyntaxNodeAnalysisContext context,
                                                    FunctionDefinitionNode functionDefinition,
                                                    FunctionTypeSymbol typeSymbol) {
