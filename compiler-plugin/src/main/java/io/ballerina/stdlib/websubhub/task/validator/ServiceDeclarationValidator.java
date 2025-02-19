@@ -181,11 +181,9 @@ public class ServiceDeclarationValidator {
                 } else {
                     List<String> availableParamNames = params.stream()
                             .map(e -> getTypeDescription(e.typeDescriptor()))
-                            .collect(Collectors.toList());
+                            .toList();
                     if (allowedParameters.containsAll(availableParamNames)) {
                         return;
-//                        validateParamOrder(context, functionDefinition, functionName, allowedParameters,
-//                                availableParamNames);
                     }
                     List<String> notAllowedParams = availableParamNames.stream()
                             .filter(e -> !allowedParameters.contains(e))
@@ -203,24 +201,7 @@ public class ServiceDeclarationValidator {
             }
         }
     }
-
-//    private void validateParamOrder(SyntaxNodeAnalysisContext context, FunctionDefinitionNode functionDefinition,
-//                                    String functionName, List<String> allowedParameters,
-//                                    List<String> availableParamNames) {
-//        if (allowedParameters.size() >= availableParamNames.size()) {
-//            for (int idx = 0; idx < availableParamNames.size(); idx++) {
-//                String availableParam = availableParamNames.get(idx);
-//                String allowedParam = allowedParameters.get(idx);
-//                if (!allowedParam.equals(availableParam)) {
-//                    WebSubHubDiagnosticCodes errorCode = WebSubHubDiagnosticCodes.WEBSUBHUB_109;
-//                    updateContext(context, errorCode, functionDefinition.location(), functionName,
-//                            String.join(",", allowedParameters));
-//                    return;
-//                }
-//            }
-//        }
-//    }
-
+    
     private void executeMethodReturnTypeValidation(SyntaxNodeAnalysisContext context,
                                                    FunctionDefinitionNode functionDefinition,
                                                    FunctionTypeSymbol typeSymbol) {
