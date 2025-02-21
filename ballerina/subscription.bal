@@ -19,6 +19,7 @@ import ballerina/uuid;
 
 isolated class SubscriptionHandler {
     private final HttpToWebsubhubAdaptor adaptor;
+    private final Controller hubController;
     private final readonly & ClientConfiguration clientConfig;
 
     private final boolean isOnSubscriptionAvailable;
@@ -26,8 +27,10 @@ isolated class SubscriptionHandler {
     private final boolean isOnUnsubscriptionAvailable;
     private final boolean isOnUnsubscriptionValidationAvailable;
 
-    isolated function init(HttpToWebsubhubAdaptor adaptor, *ClientConfiguration clientConfig) {
+    isolated function init(HttpToWebsubhubAdaptor adaptor, boolean autoVerifySubscriptionIntent,
+            ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
+        self.hubController = new (autoVerifySubscriptionIntent);
         self.clientConfig = clientConfig.cloneReadOnly();
         string[] methodNames = adaptor.getServiceMethodNames();
         self.isOnSubscriptionAvailable = methodNames.indexOf("onSubscription") is int;
@@ -43,7 +46,8 @@ isolated class SubscriptionHandler {
             return response;
         }
 
-        SubscriptionAccepted|Redirect|error result = self.adaptor.callOnSubscriptionMethod(message, headers);
+        SubscriptionAccepted|Redirect|error result = self.adaptor.callOnSubscriptionMethod(
+            message, headers, self.hubController);
         if result is Redirect {
             return result;
         }
@@ -63,17 +67,20 @@ isolated class SubscriptionHandler {
             return;
         }
 
-        string challenge = uuid:createType4AsString();
-        [string, string?][] params = [
-            [HUB_MODE, MODE_SUBSCRIBE],
-            [HUB_TOPIC, message.hubTopic],
-            [HUB_CHALLENGE, challenge],
-            [HUB_LEASE_SECONDS, message.hubLeaseSeconds]
-        ];
-        http:Response subscriberResponse = check sendNotification(message.hubCallback, params, self.clientConfig);
-        string responsePayload = check subscriberResponse.getTextPayload();
-        if challenge != responsePayload {
-            return;
+        boolean skipIntentVerification = self.hubController.skipSubscriptionVerification(message);
+        if !skipIntentVerification {
+            string challenge = uuid:createType4AsString();
+            [string, string?][] params = [
+                [HUB_MODE, MODE_SUBSCRIBE],
+                [HUB_TOPIC, message.hubTopic],
+                [HUB_CHALLENGE, challenge],
+                [HUB_LEASE_SECONDS, message.hubLeaseSeconds]
+            ];
+            http:Response subscriberResponse = check sendNotification(message.hubCallback, params, self.clientConfig);
+            string responsePayload = check subscriberResponse.getTextPayload();
+            if challenge != responsePayload {
+                return;
+            }
         }
 
         VerifiedSubscription verifiedSubscription = {
@@ -100,7 +107,8 @@ isolated class SubscriptionHandler {
             return response;
         }
 
-        UnsubscriptionAccepted|error result = self.adaptor.callOnUnsubscriptionMethod(message, headers);
+        UnsubscriptionAccepted|error result = self.adaptor.callOnUnsubscriptionMethod(
+            message, headers, self.hubController);
         return processOnUnsubscriptionResult(result);
     }
 
@@ -115,16 +123,19 @@ isolated class SubscriptionHandler {
             _ = check sendNotification(message.hubCallback, params, self.clientConfig);
         }
 
-        string challenge = uuid:createType4AsString();
-        [string, string?][] params = [
-            [HUB_MODE, MODE_UNSUBSCRIBE],
-            [HUB_TOPIC, message.hubTopic],
-            [HUB_CHALLENGE, challenge]
-        ];
-        http:Response subscriberResponse = check sendNotification(message.hubCallback, params, self.clientConfig);
-        string responsePayload = check subscriberResponse.getTextPayload();
-        if challenge != responsePayload {
-            return;
+        boolean skipIntentVerification = self.hubController.skipSubscriptionVerification(message);
+        if !skipIntentVerification {
+            string challenge = uuid:createType4AsString();
+            [string, string?][] params = [
+                [HUB_MODE, MODE_UNSUBSCRIBE],
+                [HUB_TOPIC, message.hubTopic],
+                [HUB_CHALLENGE, challenge]
+            ];
+            http:Response subscriberResponse = check sendNotification(message.hubCallback, params, self.clientConfig);
+            string responsePayload = check subscriberResponse.getTextPayload();
+            if challenge != responsePayload {
+                return;
+            }
         }
 
         VerifiedUnsubscription verifiedUnsubscription = {

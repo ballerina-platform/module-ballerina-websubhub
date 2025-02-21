@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -395,6 +396,33 @@ public class CompilerPluginTest {
                 .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
                 .toList();
         Assert.assertEquals(errorDiagnostics.size(), 0);
+    }
+
+    @Test
+    public void testCompilerPluginWebsubhubControllerUsage() {
+        Package currentPackage = loadPackage("sample_24");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .toList();
+        Assert.assertEquals(errorDiagnostics.size(), 0);
+    }
+
+    @Test
+    public void testCompilerPluginInvalidWebsubhubControllerUsage() {
+        Package currentPackage = loadPackage("sample_25");
+        PackageCompilation compilation = currentPackage.getCompilation();
+        DiagnosticResult diagnosticResult = compilation.diagnosticResult();
+        List<Diagnostic> errorDiagnostics = diagnosticResult.diagnostics().stream()
+                .filter(d -> DiagnosticSeverity.ERROR.equals(d.diagnosticInfo().severity()))
+                .toList();
+        Assert.assertEquals(errorDiagnostics.size(), 5);
+        WebSubHubDiagnosticCodes expectedErrCode = WebSubHubDiagnosticCodes.WEBSUBHUB_106;
+        List<Diagnostic> invalidDiagnosticCodes = errorDiagnostics.stream().filter(e ->
+                Objects.nonNull(e.diagnosticInfo()) && expectedErrCode.getCode().equals(e.diagnosticInfo().code()))
+                .toList();
+        Assert.assertEquals(invalidDiagnosticCodes.size(), 0);
     }
 
     private void validateErrorsForInvalidReadonlyTypes(WebSubHubDiagnosticCodes expectedCode, Diagnostic diagnostic,

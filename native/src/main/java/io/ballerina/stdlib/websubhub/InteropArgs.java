@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.stdlib.websubhub.Constants.HTTP_HEADERS_TYPE;
+import static io.ballerina.stdlib.websubhub.Constants.WEBSUBHUB_CONTROLLER_TYPE;
 
 /**
  * {@code InteropArgs} is a wrapper object which contains the parameters for inter-op calls.
@@ -31,16 +32,25 @@ import static io.ballerina.stdlib.websubhub.Constants.HTTP_HEADERS_TYPE;
 public class InteropArgs {
     private final BMap<BString, Object> message;
     private final BObject httpHeaders;
+    private BObject hubController;
 
     InteropArgs(BMap<BString, Object> message, BObject httpHeaders) {
         this.message = message;
         this.httpHeaders = httpHeaders;
     }
 
+    public InteropArgs(BMap<BString, Object> message, BObject httpHeaders, BObject hubController) {
+        this.message = message;
+        this.httpHeaders = httpHeaders;
+        this.hubController = hubController;
+    }
+
     public Object getMappingArg(Type argType) {
         String argTypeName = argType.toString();
         if (HTTP_HEADERS_TYPE.equals(argTypeName)) {
             return httpHeaders;
+        } else if (WEBSUBHUB_CONTROLLER_TYPE.equals(argTypeName)) {
+            return hubController;
         }
         return message;
     }

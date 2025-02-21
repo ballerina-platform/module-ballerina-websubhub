@@ -54,6 +54,9 @@ const int LISTENER_START_ERROR = -3;
 const int LISTENER_DETACH_ERROR = -4;
 const int LISTENER_STOP_ERROR = -5;
 const int CLIENT_INIT_ERROR = -10;
+const SUB_AUTO_VERIFY_ERROR = -11;
+
+const DEFAULT_HUB_LEASE_SECONDS = 86400;
 
 # Options to compress using Gzip or deflate.
 #

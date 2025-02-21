@@ -38,6 +38,7 @@ public interface Constants {
     String ON_UNSUBSCRIPTION_INTENT_VERIFIED = "onUnsubscriptionIntentVerified";
 
     String HTTP_HEADERS_TYPE = "http:Headers";
+    String WEBSUBHUB_CONTROLLER_TYPE = "websubhub:Controller";
 
     String COMMON_RESPONSE = "CommonResponse";
     String STATUS_CODE = "statusCode";
