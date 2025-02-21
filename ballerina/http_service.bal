@@ -31,8 +31,8 @@ isolated service class HttpService {
         self.hub = hubUrl;
         self.defaultLeaseSeconds = serviceConfig?.leaseSeconds ?: DEFAULT_HUB_LEASE_SECONDS;
         ClientConfiguration clientConfig = serviceConfig?.webHookConfig ?: {};
-        boolean autoVerifySubscription = serviceConfig?.autoVerifySubscription ?: false;
-        self.subscriptionHandler = new (adaptor, autoVerifySubscription, clientConfig);
+        boolean autoVerifySubscriptionIntent = serviceConfig?.autoVerifySubscriptionIntent ?: false;
+        self.subscriptionHandler = new (adaptor, autoVerifySubscriptionIntent, clientConfig);
     }
 
     isolated resource function post .(http:Caller caller, http:Request request, http:Headers headers) returns Error? {

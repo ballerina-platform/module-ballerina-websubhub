@@ -16,12 +16,12 @@
 
 # Component which can use to change the default subcription intent verification flow.
 public isolated class Controller {
-    private final boolean autoVerifySubscription;
+    private final boolean autoVerifySubscriptionIntent;
 
     private final map<Subscription|Unsubscription> autoVerifyState = {};
 
-    isolated function init(boolean autoVerifySubscription) {
-        self.autoVerifySubscription = autoVerifySubscription;
+    isolated function init(boolean autoVerifySubscriptionIntent) {
+        self.autoVerifySubscriptionIntent = autoVerifySubscriptionIntent;
     }
 
     # Marks a particular subscription as verified.
@@ -30,9 +30,9 @@ public isolated class Controller {
     # + return - A `websubhub:Error` if the `websubhub:Service` has not enabled subscription auto-verification, 
     #           or else nil
     public isolated function markAsVerified(Subscription|Unsubscription subscription) returns Error? {
-        if !self.autoVerifySubscription {
+        if !self.autoVerifySubscriptionIntent {
             return error Error(
-                "Trying mark a subcription as verified, but the `hub` has not enabled subscription auto-verification", 
+                "Trying mark a subcription as verified, but the `hub` has not enabled automatic subscription intent verification", 
                 statusCode = SUB_AUTO_VERIFY_ERROR);
         }
 

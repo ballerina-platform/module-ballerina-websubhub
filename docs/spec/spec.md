@@ -224,11 +224,11 @@ Apart from the listener level configurations a `hub` will require few additional
 #
 # + leaseSeconds - The period for which the subscription is expected to be active in the `hub`
 # + webHookConfig - HTTP client configurations for subscription/unsubscription intent verification
-# + autoVerifySubscription - Configuration to enable or disable automatic subscription verification
+# + autoVerifySubscriptionIntent - Configuration to enable or disable automatic subscription verification
 public type ServiceConfiguration record {|
     int leaseSeconds?;
     ClientConfiguration webHookConfig?;
-    boolean autoVerifySubscription = false;
+    boolean autoVerifySubscriptionIntent = false;
 |};
 ```
 
@@ -380,7 +380,7 @@ back the appropriate response to the client.
 
 #### 2.2.3. Controller
 
-When `autoVerifySubscription` is enabled in the `websubhub:ServiceConfig` annotation, the `websubhub:Controller` can be used to mark a 
+When `autoVerifySubscriptionIntent` is enabled in the `websubhub:ServiceConfig` annotation, the `websubhub:Controller` can be used to mark a 
 subscription or unsubscription as verified. This class is initialized exclusively within the WebSubHub framework and provides the 
 following API.
 

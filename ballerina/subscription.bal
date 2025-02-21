@@ -27,10 +27,10 @@ isolated class SubscriptionHandler {
     private final boolean isOnUnsubscriptionAvailable;
     private final boolean isOnUnsubscriptionValidationAvailable;
 
-    isolated function init(HttpToWebsubhubAdaptor adaptor, boolean autoVerifySubscription,
+    isolated function init(HttpToWebsubhubAdaptor adaptor, boolean autoVerifySubscriptionIntent,
             ClientConfiguration clientConfig) {
         self.adaptor = adaptor;
-        self.hubController = new (autoVerifySubscription);
+        self.hubController = new (autoVerifySubscriptionIntent);
         self.clientConfig = clientConfig.cloneReadOnly();
         string[] methodNames = adaptor.getServiceMethodNames();
         self.isOnSubscriptionAvailable = methodNames.indexOf("onSubscription") is int;

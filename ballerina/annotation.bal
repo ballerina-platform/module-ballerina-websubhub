@@ -18,11 +18,11 @@
 #
 # + leaseSeconds - The period for which the subscription is expected to be active in the `hub`  
 # + webHookConfig - HTTP client configurations for subscription/unsubscription intent verification  
-# + autoVerifySubscription - Configuration to enable or disable automatic subscription verification
+# + autoVerifySubscriptionIntent - Configuration to enable or disable automatic subscription intent verification
 public type ServiceConfiguration record {|
     int leaseSeconds?;
     ClientConfiguration webHookConfig?;
-    boolean autoVerifySubscription = false;
+    boolean autoVerifySubscriptionIntent = false;
 |};
 
 # WebSub Hub Configuration for the service.

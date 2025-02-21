@@ -29,7 +29,7 @@ isolated boolean subscriptionAutoVerified = false;
 isolated boolean unsubscriptionAutoVerified = false;
 
 Service autoVerifyEnabledService = @ServiceConfig { 
-    autoVerifySubscription: true
+    autoVerifySubscriptionIntent: true
 }
 service object {
 

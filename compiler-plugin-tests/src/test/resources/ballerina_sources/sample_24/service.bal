@@ -17,7 +17,7 @@
 import ballerina/websubhub;
 
 @websubhub:ServiceConfig {
-    autoVerifySubscription: true
+    autoVerifySubscriptionIntent: true
 }
 service /websubhub on new websubhub:Listener(9090) {
     isolated remote function onRegisterTopic(websubhub:TopicRegistration message) 
