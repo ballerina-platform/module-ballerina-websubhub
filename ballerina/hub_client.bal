@@ -77,9 +77,9 @@ public isolated client class HubClient {
         json|xml|byte[] payload = retrieveRequestPayload(contentType, message.content);
         request.setPayload(payload);
         error? result = request.setContentType(contentType);
-        if (result is error) {
-            return error ContentDeliveryError(
-                "Error occurred while setting content type", result, statusCode = http:STATUS_BAD_REQUEST);
+        if result is error {
+            string errorMsg = string `Error occurred while setting content type: ${result.message()}`;
+            return error ContentDeliveryError(errorMsg, result, statusCode = http:STATUS_BAD_REQUEST);
         }
         request.setHeader(LINK, self.hubLinks);
         string? secret = self.secret;
@@ -88,15 +88,15 @@ public isolated client class HubClient {
             if hash is byte[] {
                 request.setHeader(X_HUB_SIGNATURE, string `${SHA256_HMAC}=${hash.toBase16()}`);
             } else {
-                return error ContentDeliveryError(
-                    "Error retrieving content signature", hash, statusCode = http:STATUS_BAD_REQUEST);
+                string errorMsg = string `Error retrieving content signature: ${hash.message()}`;
+                return error ContentDeliveryError(errorMsg, hash, statusCode = http:STATUS_BAD_REQUEST);
             }
         }
         http:Response|error response = self.httpClient->post("", request);
         if response is http:Response {
             return processSubscriberResponse(response, self.topic);
         } else {
-            string errorMsg = string `Content distribution failed for topic [${self.topic}]`;
+            string errorMsg = string `Content distribution failed for topic [${self.topic}]: ${response.message()}`;
             return error ContentDeliveryError(errorMsg, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
         }
     }
