@@ -19,7 +19,6 @@ import ballerina/log;
 
 # Represents a Service listener endpoint.
 public class Listener {
-    private final int defaultHubLeaseSeconds = 864000;
     private http:Listener httpListener;
     private http:InferredListenerConfiguration listenerConfig;
     private int port;
@@ -65,18 +64,9 @@ public class Listener {
 
         string hubUrl = self.retrieveHubUrl(name);
         ServiceConfiguration? configuration = retrieveServiceAnnotations('service);
-        HttpToWebsubhubAdaptor adaptor = new('service);
-        if configuration is ServiceConfiguration {
-            int leaseSeconds = configuration?.leaseSeconds is int ? <int>(configuration?.leaseSeconds) : self.defaultHubLeaseSeconds;
-            if configuration?.webHookConfig is ClientConfiguration {
-                self.httpService = new(adaptor, hubUrl, leaseSeconds, <ClientConfiguration>(configuration?.webHookConfig));
-            } else {
-                self.httpService = new(adaptor, hubUrl, leaseSeconds);
-            }
-        } else {
-            self.httpService = new(adaptor, hubUrl, self.defaultHubLeaseSeconds);
-        }
-        error? result = self.httpListener.attach(<HttpService> self.httpService, name);
+        HttpToWebsubhubAdaptor adaptor = new ('service);
+        self.httpService = new (adaptor, hubUrl, configuration);
+        error? result = self.httpListener.attach(<HttpService>self.httpService, name);
         if (result is error) {
             return error Error("Error occurred while attaching the service", result, statusCode = LISTENER_ATTACH_ERROR);
         }
@@ -92,9 +82,7 @@ public class Listener {
     isolated function retrieveHubUrl(string[]|string? servicePath) returns string {
         string host = self.listenerConfig.host;
         string protocol = self.listenerConfig.secureSocket is () ? "http" : "https";
-        
-        string concatenatedServicePath = "";
-        
+        string concatenatedServicePath = "";        
         if servicePath is string {
             concatenatedServicePath += "/" + <string>servicePath;
         } else if servicePath is string[] {

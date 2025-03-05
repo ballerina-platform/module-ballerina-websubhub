@@ -41,9 +41,7 @@ public enum WebSubHubDiagnosticCodes {
             DiagnosticSeverity.ERROR),
     WEBSUBHUB_107("WEBSUBHUB_107", "{0} type is not allowed to be returned from {1} method",
             DiagnosticSeverity.ERROR),
-    WEBSUBHUB_108("WEBSUBHUB_108", "{0} method should return {1} types", DiagnosticSeverity.ERROR),
-    WEBSUBHUB_109("WEBSUBHUB_109", "{0} method params should follow {1} order",
-            DiagnosticSeverity.ERROR);
+    WEBSUBHUB_108("WEBSUBHUB_108", "{0} method should return {1} types", DiagnosticSeverity.ERROR);
 
     private final String code;
     private final String description;

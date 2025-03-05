@@ -24,7 +24,7 @@ listener Listener functionWithArgumentsListener = new(9090);
 
 service /websubhub on functionWithArgumentsListener {
 
-    isolated remote function onRegisterTopic(TopicRegistration message)
+    isolated remote function onRegisterTopic(TopicRegistration message, http:Headers headers)
                                 returns TopicRegistrationSuccess|TopicRegistrationError {
         if (message.topic == "test") {
             TopicRegistrationSuccess successResult = {
@@ -38,7 +38,7 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    isolated remote function onDeregisterTopic(TopicDeregistration message)
+    isolated remote function onDeregisterTopic(TopicDeregistration message, http:Headers headers)
                         returns TopicDeregistrationSuccess|TopicDeregistrationError {
 
         map<string> body = { isDeregisterSuccess: "true" };
@@ -52,7 +52,7 @@ service /websubhub on functionWithArgumentsListener {
         }
     }
 
-    isolated remote function onUpdateMessage(UpdateMessage msg)
+    isolated remote function onUpdateMessage(UpdateMessage msg, http:Headers headers)
                returns Acknowledgement|UpdateMessageError {
         Acknowledgement ack = {};
         if (msg.hubTopic == "test") {

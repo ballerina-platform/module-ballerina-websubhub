@@ -19,8 +19,12 @@ import ballerina/jballerina.java;
 
 isolated class HttpToWebsubhubAdaptor {
     isolated function init(Service 'service) {
-        externInit(self, 'service);
+        self.externInit('service);
     }
+
+    isolated function externInit(Service serviceObj) = @java:Method {
+        'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
+    } external;
 
     isolated function getServiceMethodNames() returns string[] = @java:Method {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
@@ -41,8 +45,9 @@ isolated class HttpToWebsubhubAdaptor {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 
-    isolated function callOnSubscriptionMethod(Subscription msg, http:Headers headers) returns SubscriptionAccepted|
-        SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError|InternalSubscriptionError|error = @java:Method {
+    isolated function callOnSubscriptionMethod(Subscription msg, http:Headers headers, Controller hubController) 
+    returns SubscriptionAccepted|SubscriptionPermanentRedirect|SubscriptionTemporaryRedirect|BadSubscriptionError
+    |InternalSubscriptionError|error = @java:Method {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 
@@ -55,7 +60,7 @@ isolated class HttpToWebsubhubAdaptor {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 
-    isolated function callOnUnsubscriptionMethod(Unsubscription msg, http:Headers headers)
+    isolated function callOnUnsubscriptionMethod(Unsubscription msg, http:Headers headers, Controller hubController) 
     returns UnsubscriptionAccepted|BadUnsubscriptionError|InternalUnsubscriptionError|error = @java:Method {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
@@ -69,7 +74,3 @@ isolated class HttpToWebsubhubAdaptor {
         'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
     } external;
 }
-
-isolated function externInit(HttpToWebsubhubAdaptor adaptor, Service serviceObj) = @java:Method {
-    'class: "io.ballerina.stdlib.websubhub.NativeHttpToWebsubhubAdaptor"
-} external;
