@@ -85,7 +85,7 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
     });
     do {
         while true {
-            kafka:ConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
+            kafka:BytesConsumerRecord[] records = check consumerEp->poll(config:POLLING_INTERVAL);
             if !isValidConsumer(topicName, subscriberId) {
                 fail error(string `Subscriber with Id ${subscriberId} or topic ${topicName} is invalid`);
             }
@@ -113,7 +113,7 @@ isolated function isValidSubscription(string subscriberId) returns boolean {
     }
 }
 
-isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
+isolated function notifySubscribers(kafka:BytesConsumerRecord[] records, websubhub:HubClient clientEp, kafka:Consumer consumerEp) returns error? {
     foreach var kafkaRecord in records {
         var message = deSerializeKafkaRecord(kafkaRecord);
         if message is websubhub:ContentDistributionMessage {
@@ -129,7 +129,7 @@ isolated function notifySubscribers(kafka:ConsumerRecord[] records, websubhub:Hu
     }
 }
 
-isolated function deSerializeKafkaRecord(kafka:ConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
+isolated function deSerializeKafkaRecord(kafka:BytesConsumerRecord kafkaRecord) returns websubhub:ContentDistributionMessage|error {
     byte[] content = kafkaRecord.value;
     string message = check string:fromBytes(content);
     json payload =  check value:fromJsonString(message);
