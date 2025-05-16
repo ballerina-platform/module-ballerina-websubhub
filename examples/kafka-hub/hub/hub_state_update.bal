@@ -39,11 +39,11 @@ function initializeHubState() returns error? {
 
 function updateHubState() returns error? {
     while true {
-        kafka:ConsumerRecord[] records = check conn:websubEventsConsumer->poll(config:POLLING_INTERVAL);
+        kafka:BytesConsumerRecord[] records = check conn:websubEventsConsumer->poll(config:POLLING_INTERVAL);
         if records.length() <= 0 {
             continue;
         }
-        foreach kafka:ConsumerRecord currentRecord in records {
+        foreach kafka:BytesConsumerRecord currentRecord in records {
             string lastPersistedData = check string:fromBytes(currentRecord.value);
             error? result = processStateUpdateEvent(lastPersistedData);
             if result is error {
