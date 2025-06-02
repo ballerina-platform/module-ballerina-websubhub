@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-( cd hub ; bal clean ; bal build)
-( cd consolidator ; bal clean ; bal build)
+( cd hub ; bal clean ; bal build --cloud=docker)
+( cd consolidator ; bal clean ; bal build --cloud=docker)
