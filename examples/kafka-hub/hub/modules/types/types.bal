@@ -21,6 +21,11 @@ public type SystemStateSnapshot record {|
     websubhub:VerifiedSubscription[] subscriptions;
 |};
 
+public type StaleSubscription record {|
+    *websubhub:VerifiedSubscription;
+    string status = "stale";
+|};
+
 public type OAuth2Config record {|
     string issuer;
     string jwksUrl;
