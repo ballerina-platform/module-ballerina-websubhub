@@ -1,0 +1,129 @@
+name: 'kafkahub'
+
+services:
+    hub-1:
+        image: 'ballerina/kafkahub:1.0.0'
+        hostname: hub1
+        container_name: hub-1
+        ports:
+            - '9000:9000'
+        depends_on:
+            consolidator:
+                condition: service_healthy
+                restart: true
+            idp:
+                condition: service_started
+        environment:
+            HUB_PORT: 9000
+            SERVER_ID: "hub-1"
+            # Update following enviornment variable to point to the relevant kafka-cluster
+            KAFKA_BOOTSTRAP_NODE: "broker:9094"
+            # Update following enviornment variable to point to the consolidator state-snapshot endpoint
+            STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
+            # Update following enviornment variable change the IdP token validation mechanism
+            IDP_TOKEN_ISSUER: "https://localhost:9443/oauth2/token"
+            IDP_TOKEN_AUDIENCE: "ballerina"
+            IDP_TOKEN_SCOPE_KEY: "scope"
+            IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
+            IDP_CLIENT_TRUSTSTORE_FILEPATH: "./resources/client-truststore.jks"
+            IDP_CLIENT_TRUSTSTORE_PASSWORD: "wso2carbon"
+            # Consumer group name uses for `websub-events` consumer
+            WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-1"
+            # Update following enviornment variable to set the client truststore name
+            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
+            # Update following enviornment variable to set the client truststore password
+            TRUSTSTORE_PASSWORD: "password"
+            # Update following enviornment variable to set the client keystore password
+            KEYSTORE_PASSWORD: "password"
+            # Maximum number of records returned in a single call to consumer-poll
+            KAFKA_CONSUMER_MAX_POLL_RECORDS: 50
+            # The HTTP status codes for which the client should retry
+            RETRYABLE_STATUS_CODES: "500,502,503"
+        volumes:
+            # `Config.toml` file for the websubhub-service
+            # - ./_resources/hub.config.toml:/home/ballerina/Config.toml
+            # Kafka client truststore file
+            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+            # Kafka client keystore file
+            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+            # IdP client truststore
+            - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
+            # SSL configurations
+            - ./_resources/secrets/hub/hub-1.keystore.jks:/home/ballerina/resources/hub.keystore.jks
+        healthcheck:
+            test: ["CMD-SHELL", "curl -k --fail https://hub1:9000/health || exit 1"]
+            interval: 30s
+            timeout: 10s 
+            start_period: 30s
+            retries: 10
+        networks:
+            - hub_network
+
+    consolidator: 
+        image: 'ballerina/consolidator:1.0.0'
+        hostname: consolidator
+        container_name: consolidator
+        ports:
+            - '10001:10001'
+        environment:
+            # Update following enviornment variable to point to the relevant kafka-cluster
+            KAFKA_BOOTSTRAP_NODE: "broker:9094"
+            # Consumer group name uses for `websub-events` consumer
+            WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-consolidator"
+            # Consumer group name uses for `websub-events-snapshot` consumer
+            WEBSUB_EVENTS_SNAPSHOT_CONSUMER_GROUP: "websub-events-snapshot-receiver-consolidator"
+            # Update following enviornment variable to set the client truststore name
+            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
+            # Update following enviornment variable to set the client truststore password
+            TRUSTSTORE_PASSWORD: "password"
+            # Update following enviornment variable to set the client keystore name
+            KEYSTORE_FILE_NAME: "client-keystore.jks"
+            # Update following enviornment variable to set the client keystore password
+            KEYSTORE_PASSWORD: "password"
+        depends_on:
+            broker:
+                condition: service_healthy
+        volumes:
+            # `Config.toml` file for the consolidator-service
+            - ./_resources/consolidator.config.toml:/home/ballerina/Config.toml
+            # Kafka client truststore file
+            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+            # Kafka client keystore file
+            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+        healthcheck:
+            test: ["CMD-SHELL", "curl --fail http://consolidator:10001/health/readiness || exit 1"]
+            interval: 30s
+            timeout: 10s
+            start_period: 30s
+            retries: 10
+        networks:
+            - hub_network
+
+    idp:
+        image: 'ayeshalmeida/wso2-is:5.11.0.update'
+        hostname: idp
+        container_name: idp
+        ports:
+            - '9443:9443'
+        volumes:
+            # IdP truststore file
+            - ./_resources/secrets/idp/client-truststore.jks:/opt/wso2is-5.11.0/repository/resources/security/client-truststore.jks
+            # IdP keystore file
+            - ./_resources/secrets/idp/idp.keystore.jks:/opt/wso2is-5.11.0/repository/resources/security/wso2carbon.jks
+        networks:
+            - hub_network
+
+    broker:
+        image: 'apache/kafka:4.0.0'
+        hostname: broker
+        container_name: kafka-broker
+        healthcheck:
+            test: kafka-topics --bootstrap-server broker:9092 --list
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        ports:
+            - '9092:9092'
+
+networks:
+    hub_network:

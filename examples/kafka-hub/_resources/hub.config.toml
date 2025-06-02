@@ -1,0 +1,64 @@
+[kafkaHub.config]
+# Flag to check whether to enable/disable security
+SECURITY_ON = true
+
+# Server ID is is used to uniquely identify each server 
+# Each server must have a unique ID
+SERVER_ID = "hub-1"
+
+# IP and Port of the Kafka bootstrap node
+KAFKA_BOOTSTRAP_NODE = "localhost:9094"
+
+# Maximum number of records returned in a single call to consumer-poll
+KAFKA_CONSUMER_MAX_POLL_RECORDS = 50
+
+# Kafka topic which is stores websub-events for this server
+WEBSUB_EVENTS_TOPIC = "websub-events"
+
+# Consolidator HTTP endpoint to be used to retrieve current state-snapshot
+STATE_SNAPSHOT_ENDPOINT = "http://localhost:10001"
+
+# The interval in which Kafka consumers wait for new messages
+POLLING_INTERVAL = 10.0
+
+# The period in which Kafka close method waits to complete
+GRACEFUL_CLOSE_PERIOD = 5.0
+
+# The port that is used to start the hub
+HUB_PORT = 9000
+
+# SSL keystore file path
+SSL_KEYSTORE_PATH = "./resources/hub.keystore.jks"
+
+# SSL keystore password
+KEYSTORE_PASSWORD = "password"
+
+# The period between retry requests
+MESSAGE_DELIVERY_RETRY_INTERVAL = 3.0
+
+# The maximum retry count
+MESSAGE_DELIVERY_COUNT = 3
+
+# The message delivery timeout
+MESSAGE_DELIVERY_TIMEOUT = 10.0
+
+# The HTTP status codes for which the client should retry
+MESSAGE_DELIVERY_RETRYABLE_STATUS_CODES = [500, 502, 503]
+
+# The Oauth2 authorization related configurations
+[kafkaHub.config.OAUTH2_CONFIG]
+issuer = "https://localhost:9443/oauth2/token"
+audience = "ballerina"
+jwksUrl = "https://localhost:9443/oauth2/jwks"
+trustStore = "./resources/client-truststore.jks"
+trustStorePassword = "wso2carbon"
+
+# The MTLS configurations related to Kafka connection
+[kafkaHub.config.KAFKA_MTLS_CONFIG]
+cert.path = "./resources/brokercerts/client-truststore.jks"
+cert.password = "password"
+key.keyStore.path = "./resources/brokercerts/client-keystore.jks"
+key.keyStore.password = "password"
+
+[ballerina.log]
+level = "DEBUG"

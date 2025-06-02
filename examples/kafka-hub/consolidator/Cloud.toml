@@ -1,7 +1,11 @@
 [container.image]
 repository="ballerina"
 name="consolidator"
-tag="v1"
+tag="1.0.0"
+
+[[container.copy.files]]
+sourceFile="./resources"
+target="/home/ballerina/resources"
 
 [[container.copy.files]]
 sourceFile="./Config.toml"
