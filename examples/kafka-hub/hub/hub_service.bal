@@ -158,8 +158,11 @@ service object {
         websubhub:VerifiedSubscription? subscription = getSubscription(subscriberId);
         // if we have a stale subscription, remove the `status` flag from the subscription and persist it again
         if subscription is websubhub:Subscription {
-            _ = subscription.removeIfHasKey(STATUS);
-            return subscription;
+            websubhub:VerifiedSubscription updatedSubscription = {
+                ...subscription
+            };
+            _ = updatedSubscription.removeIfHasKey(STATUS);
+            return updatedSubscription;
         }
         if !message.hasKey(CONSUMER_GROUP) {
             string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
