@@ -37,12 +37,12 @@ public isolated function generateSubscriberId(string topic, string callbackUrl) 
     return nomalizeString(idValue);
 }
 
-# Generates a group name for the kafka-consumer.
+# Generates a subscription-name for the JMS message-consumer.
 #
 # + topic - The `topic` which subscriber needs to subscribe
 # + callbackUrl - Subscriber callback URL
 # + return - Generated consumer group name the subscriber
-public isolated function generateGroupName(string topic, string callbackUrl) returns string {
+public isolated function generateSubscriptionName(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl + ":::" + time:monotonicNow().toBalString();
     return nomalizeString(idValue);
 }

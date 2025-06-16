@@ -15,6 +15,7 @@
 // under the License.
 
 import jmshub.common;
+import jmshub.config;
 import jmshub.persistence as persist;
 
 import ballerina/http;
@@ -121,13 +122,9 @@ websubhub:Service hubService = service object {
             return updatedSubscription;
         }
 
-        // todo: identify the correct logic for this
-
-        // if !message.hasKey(CONSUMER_GROUP) {
-        //     string consumerGroup = util:generateGroupName(message.hubTopic, message.hubCallback);
-        //     message[CONSUMER_GROUP] = consumerGroup;
-        // }
-        // message[SERVER_ID] = config:SERVER_ID;
+        string subscriptionName = common:generateSubscriptionName(message.hubTopic, message.hubCallback);
+        message[SUBSCRIPTION_NAME] = subscriptionName;
+        message[SERVER_ID] = config:serverId;
         return message;
     }
 
@@ -145,7 +142,7 @@ websubhub:Service hubService = service object {
         }
 
         string subscriberId = common:generateSubscriberId(message.hubTopic, message.hubCallback);
-        if !isValidSubscription(subscriberId) {
+        if !isSubscriptionAvailable(subscriberId) {
             return error websubhub:UnsubscriptionDeniedError(
                 string `Could not find a valid subscriber for Topic ${topic} and Callback ${message.hubCallback}`,
                 statusCode = http:STATUS_NOT_ACCEPTABLE

@@ -25,10 +25,3 @@ public type StaleSubscription record {|
     *websubhub:VerifiedSubscription;
     string status = "stale";
 |};
-
-public type OAuth2Config record {|
-    string issuer;
-    string jwksUrl;
-    string trustStore;
-    string trustStorePassword;
-|};

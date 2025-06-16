@@ -14,43 +14,46 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websubhub;
+import jmshub.connections as conn;
 
-// todo: implement this properly
+import ballerina/websubhub;
+import ballerinax/java.jms;
+import jmshub.config;
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
-    // check updateHubState(message);
+    check updateHubState(message);
 }
 
 public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration message) returns error? {
-    // check updateHubState(message);
+    check updateHubState(message);
 }
 
 public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
-    // check updateHubState(message); 
+    check updateHubState(message);
 }
 
 public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
-    // check updateHubState(message); 
+    check updateHubState(message);
 }
 
-// isolated function updateHubState(websubhub:TopicRegistration|websubhub:TopicDeregistration|
-//                                 websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
-//     json jsonData = message.toJson();
-//     do {
-//         check produceKafkaMessage(config:WEBSUB_EVENTS_TOPIC, jsonData);
-//     } on fail error e {
-//         return error (string `Failed to send updates for hub-state: ${e.message()}`, cause = e);
-//     }
-// }
+isolated function updateHubState(websubhub:TopicRegistration|websubhub:TopicDeregistration|
+                                websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+    json jsonData = message.toJson();
+    do {
+        check produceJmsMessage(config:websubEventsTopic, jsonData);
+    } on fail error e {
+        return error(string `Failed to send updates for hub-state: ${e.message()}`, cause = e);
+    }
+}
 
-public isolated function addUpdateMessage(string topicName, websubhub:UpdateMessage message) returns error? {
+public isolated function addUpdateMessage(string topic, websubhub:UpdateMessage message) returns error? {
     json payload = <json>message.content;
-    // check produceKafkaMessage(topicName, payload);
+    check produceJmsMessage(topic, payload);
 }
 
-// isolated function produceKafkaMessage(string topicName, json payload) returns error? {
-//     byte[] serializedContent = payload.toJsonString().toBytes();
-//     check conn:statePersistProducer->send({ topic: topicName, value: serializedContent });
-//     check conn:statePersistProducer->'flush();
-// }
+isolated function produceJmsMessage(string topic, json payload) returns error? {
+    jms:BytesMessage message = {
+        content: payload.toJsonString().toBytes()
+    };
+    check conn:statePersistProducer->sendTo({'type: jms:TOPIC, name: topic}, message);
+}
