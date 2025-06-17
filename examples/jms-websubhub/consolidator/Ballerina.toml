@@ -1,6 +1,6 @@
 [package]
 org = "wso2"
-name = "consolidatorService"
+name = "consolidatorsvc"
 version = "0.1.0"
 
 [build-options]
