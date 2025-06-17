@@ -50,6 +50,7 @@ function updateHubState() returns error? {
             common:logError("Error occurred while processing state-update event", result, severity = "FATAL");
             return result;
         }
+        check conn:websubEventsConsumer->acknowledge(message);
     }
 }
 

@@ -48,6 +48,7 @@ isolated function consolidateSystemState() returns error? {
             if result is error {
                 log:printError("Error occurred while processing received event ", 'error = result);
             }
+            check conn:websubEventsConsumer->acknowledge(message);
         }
     } on fail var e {
         _ = check conn:websubEventsConsumer->close();
