@@ -84,7 +84,7 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string topic = subscription.hubTopic;
     string subscriptionName = check value:ensureType(subscription[SUBSCRIPTION_NAME]);
-    jms:MessageConsumer consumerEp = check conn:createMessageConsumer(topic, subscriptionName);
+    var [session, consumerEp] = check conn:createMessageConsumer(topic, subscriptionName);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:messageDeliveryRetryInterval,
@@ -105,8 +105,7 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
                 continue;
             }
 
-            _ = check notifySubscribers(message, clientEp);
-            check consumerEp->acknowledge(message);
+            check processSubscriberNotification(session, message, clientEp);
         }
     } on fail error e {
         common:logError("Error occurred while sending notification to subscriber", e);
@@ -117,6 +116,7 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
 
         // If subscription-deleted error received, remove the subscription
         if e is websubhub:SubscriptionDeletedError {
+            check session->unsubscribe(subscriptionName);
             websubhub:VerifiedUnsubscription unsubscription = {
                 hubMode: "unsubscribe",
                 hubTopic: subscription.hubTopic,
@@ -143,13 +143,19 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
     }
 }
 
-isolated function notifySubscribers(jms:Message message, websubhub:HubClient clientEp) returns error? {
+isolated function processSubscriberNotification(jms:Session session, jms:Message message, websubhub:HubClient clientEp) returns error? {
     if message !is jms:BytesMessage {
         // This particular websubhub implementation relies on JMS byte-messages, hence ignore anything else
         return;
     }
-    websubhub:ContentDistributionMessage contentDistributionMsg = check constructContentDistMsg(message);
-    _ = check clientEp->notifyContentDistribution(contentDistributionMsg);
+    do {
+        websubhub:ContentDistributionMessage contentDistributionMsg = check constructContentDistMsg(message);
+        _ = check clientEp->notifyContentDistribution(contentDistributionMsg);
+        check session->'commit();
+    } on fail error err {
+        check session->'rollback();
+        return err;
+    }
 }
 
 isolated function constructContentDistMsg(jms:BytesMessage byteMessage) returns websubhub:ContentDistributionMessage|error {

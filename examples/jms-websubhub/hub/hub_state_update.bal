@@ -19,9 +19,9 @@ import jmshub.config;
 import jmshub.connections as conn;
 
 import ballerina/http;
+import ballerina/lang.value;
 import ballerina/websubhub;
 import ballerinax/java.jms;
-import ballerina/lang.value;
 
 function initializeHubState() returns error? {
     http:Client stateSnapshotClient = check new (config:stateSnapshotEndpoint);
@@ -38,19 +38,34 @@ function initializeHubState() returns error? {
 }
 
 function updateHubState() returns error? {
+    var [session, consumer] = conn:websubEventsConnection;
     while true {
-        jms:Message? message = check conn:websubEventsConsumer->receive(config:pollingInterval);
-        if message is () || message !is jms:BytesMessage {
+        jms:Message? message = check consumer->receive(config:pollingInterval);
+        if message is () {
             continue;
         }
 
-        string lastPersistedData = check string:fromBytes(message.content);
-        error? result = processStateUpdateEvent(lastPersistedData);
+        error? result = processStateUpdateMessage(session, message);
         if result is error {
             common:logError("Error occurred while processing state-update event", result, severity = "FATAL");
             return result;
         }
-        check conn:websubEventsConsumer->acknowledge(message);
+    }
+}
+
+function processStateUpdateMessage(jms:Session session, jms:Message message) returns error? {
+    if message !is jms:BytesMessage {
+        // This particular websubhub implementation relies on JMS byte-messages, hence ignore anything else
+        return;
+    }
+
+    do {
+        string lastPersistedData = check string:fromBytes(message.content);
+        check processStateUpdateEvent(lastPersistedData);
+        check session->'commit();
+    } on fail error err {
+        check session->'rollback();
+        return err;
     }
 }
 

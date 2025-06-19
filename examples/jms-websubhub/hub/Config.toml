@@ -16,16 +16,16 @@ stateSnapshotEndpoint = "http://localhost:10001"
 pollingInterval = 10
 
 # The period in which JMS close method waits to complete
-gracefulClosePeriod = 5
+gracefulClosePeriod = 5.0
 
 # The period between retry requests
-messageDeliveryRetryInterval = 3
+messageDeliveryRetryInterval = 3.0
 
 # The maximum retry count
 messageDeliveryRetryCount = 3
 
 # The message delivery timeout
-messageDeliveryTimeout = 10
+messageDeliveryTimeout = 10.0
 
 [jmshub.config.brokerConfig]
 initialContextFactory = "com.sun.jndi.fscontext.RefFSContextFactory"
