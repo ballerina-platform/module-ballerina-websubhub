@@ -18,16 +18,17 @@ import consolidatorsvc.config;
 
 import ballerinax/java.jms;
 
+final jms:Connection jmsConnection = check new (config:brokerConfig);
+
 # Producer which persist the current in-memory state of the Hub.
 public final jms:MessageProducer statePersistProducer = check createMessageProducer();
 
 # Consumer which reads the persisted websub events.
-public final jms:MessageConsumer websubEventsConsumer = check createMessageConsumer(
+public final [jms:Session, jms:MessageConsumer] websubEventsConnection = check createMessageConsumer(
         config:websubEventsTopic, string `websub-events-group-${config:constructedConsumerId}`);
 
 isolated function createMessageProducer() returns jms:MessageProducer|error {
-    jms:Connection connection = check new (config:brokerConfig);
-    jms:Session session = check connection->createSession();
+    jms:Session session = check jmsConnection->createSession();
     return session.createProducer();
 }
 
@@ -35,13 +36,12 @@ isolated function createMessageProducer() returns jms:MessageProducer|error {
 #
 # + topic - The JMS topic to which the consumer should subscribe
 # + subscriberName - The name used to identify the subscription
-# + return - `jms:MessageConsumer` if succcessful or else `error`
+# + return - A tuple containing `jms:MessageConsumer` and `jms:Session` if succcessful or else `error`
 public isolated function createMessageConsumer(string topic, string subscriberName)
-    returns jms:MessageConsumer|error {
+    returns [jms:Session, jms:MessageConsumer]|error {
 
-    jms:Connection connection = check new (config:brokerConfig);
-    jms:Session session = check connection->createSession(jms:CLIENT_ACKNOWLEDGE);
-    return session.createConsumer({
+    jms:Session session = check jmsConnection->createSession(jms:SESSION_TRANSACTED);
+    jms:MessageConsumer consumer = check session.createConsumer({
         'type: jms:DURABLE,
         destination: {
             'type: jms:TOPIC,
@@ -49,4 +49,5 @@ public isolated function createMessageConsumer(string topic, string subscriberNa
         },
         subscriberName
     });
+    return [session, consumer];
 }

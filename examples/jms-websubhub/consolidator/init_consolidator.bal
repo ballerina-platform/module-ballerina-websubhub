@@ -45,31 +45,32 @@ public function main() returns error? {
 }
 
 isolated function syncSystemState() returns error? {
-    jms:MessageConsumer websubEventsSnapshotConsumer = check conn:createMessageConsumer(
-            config:websubEventsSnapshotTopic, string `websub-events-snapshot-group-${config:constructedConsumerId}`);
+    string subscriptionName = string `websub-events-snapshot-group-${config:constructedConsumerId}`;
+    var [session, consumer] = check conn:createMessageConsumer(config:websubEventsSnapshotTopic, subscriptionName);
     do {
         while true {
             jms:BytesMessage? lastMessage = ();
-            jms:Message? message = check websubEventsSnapshotConsumer->receive(config:pollingInterval);
+            jms:Message? message = check consumer->receive(config:pollingInterval);
             if message is () {
                 if lastMessage is jms:BytesMessage {
                     common:SystemStateSnapshot lastPersistedState = check value:fromJsonStringWithType(check string:fromBytes(lastMessage.content));
                     check persist:persistWebsubEventsSnapshot(lastPersistedState);
                 }
-                return websubEventsSnapshotConsumer->close();
+                check session->unsubscribe(subscriptionName);
+                return consumer->close();
             }
 
             if message !is jms:BytesMessage {
-                continue;
+                // This particular consolidator implementation relies on JMS byte-messages, hence ignore anything else
+                return;
             }
 
             lastMessage = message;
-            check processWebsubEventsSnapshot(message);
-            check websubEventsSnapshotConsumer->acknowledge(message);
+            check processWebsubEventsSnapshot(session, message);
         }
     } on fail error jmsError {
         common:logError("Error occurred while syncing system-state", jmsError, "FATAL");
-        error? result = check websubEventsSnapshotConsumer->close();
+        error? result = check consumer->close();
         if result is error {
             common:logError("Error occurred while gracefully closing JMS message-consumer", result);
         }
@@ -77,8 +78,14 @@ isolated function syncSystemState() returns error? {
     }
 }
 
-isolated function processWebsubEventsSnapshot(jms:BytesMessage message) returns error? {
-    common:SystemStateSnapshot stateSnapshot = check value:fromJsonStringWithType(check string:fromBytes(message.content));
-    refreshTopicCache(stateSnapshot.topics);
-    refreshSubscribersCache(stateSnapshot.subscriptions);
+isolated function processWebsubEventsSnapshot(jms:Session session, jms:BytesMessage message) returns error? {
+    do {
+        common:SystemStateSnapshot stateSnapshot = check value:fromJsonStringWithType(check string:fromBytes(message.content));
+        refreshTopicCache(stateSnapshot.topics);
+        refreshSubscribersCache(stateSnapshot.subscriptions);
+        check session->'commit();
+    } on fail error e {
+        check session->'rollback();
+        return e;
+    }
 }

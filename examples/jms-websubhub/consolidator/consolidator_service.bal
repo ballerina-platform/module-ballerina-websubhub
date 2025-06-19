@@ -35,24 +35,36 @@ http:Service consolidatorService = service object {
     }
 };
 
-isolated function consolidateSystemState() returns error? {
-    do {
-        while true {
-            jms:Message? message = check conn:websubEventsConsumer->receive(config:pollingInterval);
-            if message is () || message !is jms:BytesMessage {
-                continue;
-            }
-
-            string lastPersistedData = check string:fromBytes(message.content);
-            error? result = processPersistedData(lastPersistedData);
-            if result is error {
-                log:printError("Error occurred while processing received event ", 'error = result);
-            }
-            check conn:websubEventsConsumer->acknowledge(message);
+function consolidateSystemState() returns error? {
+    var [session, consumer] = conn:websubEventsConnection;
+    while true {
+        jms:Message? message = check consumer->receive(config:pollingInterval);
+        if message is () {
+            continue;
         }
-    } on fail var e {
-        _ = check conn:websubEventsConsumer->close();
-        return e;
+
+        error? result = processStateUpdateMessage(session, message);
+        if result is error {
+            common:logError("Error occurred while processing received event ", result, severity = "FATAL");
+            check consumer->close();
+            check result;
+        }
+    }
+}
+
+isolated function processStateUpdateMessage(jms:Session session, jms:Message message) returns error? {
+    if message !is jms:BytesMessage {
+        // This particular consolidator implementation relies on JMS byte-messages, hence ignore anything else
+        return;
+    }
+
+    do {
+        string lastPersistedData = check string:fromBytes(message.content);
+        check processPersistedData(lastPersistedData);
+        check session->'commit();
+    } on fail error err {
+        check session->'rollback();
+        return err;
     }
 }
 
