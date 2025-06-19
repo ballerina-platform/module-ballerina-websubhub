@@ -14,16 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websubhub;
 import jmshub.config;
+
 import ballerina/lang.runtime;
 import ballerina/log;
+import ballerina/websubhub;
 
 public function main() returns error? {
     // Initialize the Hub
     check initializeHubState();
-    
-    websubhub:Listener hubListener = check new(config:hubPort);
+
+    websubhub:Listener hubListener = check new (config:hubPort);
     runtime:registerListener(hubListener);
     check hubListener.attach(hubService, "hub");
     check hubListener.'start();

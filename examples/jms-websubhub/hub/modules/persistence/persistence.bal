@@ -14,11 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import jmshub.config;
 import jmshub.connections as conn;
 
 import ballerina/websubhub;
 import ballerinax/java.jms;
-import jmshub.config;
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
     check updateHubState(message);

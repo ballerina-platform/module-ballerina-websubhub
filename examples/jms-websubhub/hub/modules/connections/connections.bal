@@ -18,7 +18,7 @@ import jmshub.config;
 
 import ballerinax/java.jms;
 
-final jms:Connection jmsConnection = check new(config:brokerConfig);
+final jms:Connection jmsConnection = check new (config:brokerConfig);
 
 # Producer which persist the current in-memory state of the Hub.
 public final jms:MessageProducer statePersistProducer = check createMessageProducer();
@@ -36,10 +36,10 @@ isolated function createMessageProducer() returns jms:MessageProducer|error {
 #
 # + topic - The JMS topic to which the consumer should subscribe
 # + subscriberName - The name used to identify the subscription 
-# + return - `jms:MessageConsumer` if succcessful or else `error`
-public isolated function createMessageConsumer(string topic, string subscriberName) 
+# + return - A tuple containing `jms:MessageConsumer` and `jms:Session` if succcessful or else `error`
+public isolated function createMessageConsumer(string topic, string subscriberName)
     returns [jms:Session, jms:MessageConsumer]|error {
-    
+
     jms:Session session = check jmsConnection->createSession(jms:SESSION_TRANSACTED);
     jms:MessageConsumer consumer = check session.createConsumer({
         'type: jms:DURABLE,

@@ -48,6 +48,7 @@ function updateHubState() returns error? {
         error? result = processStateUpdateMessage(session, message);
         if result is error {
             common:logError("Error occurred while processing state-update event", result, severity = "FATAL");
+            check consumer->close();
             return result;
         }
     }
