@@ -30,9 +30,6 @@ public configurable string websubEventsSnapshotTopic = "websub-events-snapshot";
 # The interval in which JMS consumers wait for new messages
 public configurable int pollingInterval = 10;
 
-# The period in which JMS close method waits to complete
-public configurable decimal gracefulClosePeriod = 5;
-
 public final string constructedConsumerId = common:generateRandomString();
 
 # The port that is used to start the HTTP endpoint for consolidator

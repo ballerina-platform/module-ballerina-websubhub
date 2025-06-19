@@ -37,9 +37,6 @@ public configurable jms:ConnectionConfiguration brokerConfig = ?;
 # The interval in which JMS consumers wait for new messages
 public configurable int pollingInterval = 10;
 
-# The period in which JMS close method waits to complete
-public configurable decimal gracefulClosePeriod = 5;
-
 # The period between retry requests
 public configurable decimal messageDeliveryRetryInterval = 3;
 

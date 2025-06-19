@@ -6,10 +6,7 @@ websubEventsTopic = "websub-events"
 websubEventsSnapshotTopic = "websub-events-snapshot"
 
 # The interval in which JMS consumers wait for new messages
-pollingInterval = 10
-
-# The period in which JMS close method waits to complete
-gracefulClosePeriod = 5
+pollingInterval = 10000
 
 # The port that is used to start the HTTP endpoint for consolidator
 consolidatorHttpEpPort = 10001
@@ -17,6 +14,6 @@ consolidatorHttpEpPort = 10001
 [consolidatorsvc.config.brokerConfig]
 initialContextFactory = "com.sun.jndi.fscontext.RefFSContextFactory"
 providerUrl = "file:/path-to/jms-bindings"
-connectionFactoryName = "BallerinaConnectionFactory"
+connectionFactoryName = "BallerinaConsolidatorConnectionFactory"
 username = "admin"
 password = "password"
