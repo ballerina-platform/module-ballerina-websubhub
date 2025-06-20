@@ -159,8 +159,7 @@ isolated function processSubscriberNotification(jms:Session session, jms:Message
 }
 
 isolated function constructContentDistMsg(jms:BytesMessage byteMessage) returns websubhub:ContentDistributionMessage|error {
-    byte[] content = byteMessage.content;
-    string message = check string:fromBytes(content);
+    string message = check string:fromBytes(byteMessage.content);
     json payload = check value:fromJsonString(message);
     websubhub:ContentDistributionMessage distributionMsg = {
         content: payload,
