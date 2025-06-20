@@ -1,0 +1,15 @@
+services:
+  mq:
+    image: icr.io/ibm-messaging/mq:9.4.0.10-r2
+    container_name: ibmmq-jms
+    ports:
+      - "1414:1414"
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=BALLERINA_QM1
+      - MQ_ADMIN_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "chkmqstarted"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
