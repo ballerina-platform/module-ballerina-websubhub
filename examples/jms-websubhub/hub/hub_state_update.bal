@@ -18,24 +18,9 @@ import jmshub.common;
 import jmshub.config;
 import jmshub.connections as conn;
 
-import ballerina/http;
 import ballerina/lang.value;
 import ballerina/websubhub;
 import ballerinax/java.jms;
-
-function initializeHubState() returns error? {
-    http:Client stateSnapshotClient = check new (config:stateSnapshotEndpoint);
-    do {
-        common:SystemStateSnapshot systemStateSnapshot = check stateSnapshotClient->/consolidator/state\-snapshot;
-        check processWebsubTopicsSnapshotState(systemStateSnapshot.topics);
-        check processWebsubSubscriptionsSnapshotState(systemStateSnapshot.subscriptions);
-        // Start hub-state update worker
-        _ = start updateHubState();
-    } on fail error httpError {
-        common:logError("Error occurred while initializing the hub-state using the latest state-snapshot", httpError, severity = "FATAL");
-        return httpError;
-    }
-}
 
 function updateHubState() returns error? {
     var [session, consumer] = conn:websubEventsConnection;

@@ -98,7 +98,7 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
         while true {
             if !isValidConsumer(topic, subscriberId) {
                 fail error common:InvalidSubscriptionError(
-                    string `Subscriber with Id ${subscriberId} or topic ${topic} is invalid`, 
+                    string `Subscriber with Id ${subscriberId} or topic ${topic} is invalid`,
                     topic = topic, subscriberId = subscriberId
                 );
             }

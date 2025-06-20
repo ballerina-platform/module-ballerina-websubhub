@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/http;
 import ballerina/lang.'string as strings;
 import ballerina/log;
 import ballerina/random;
@@ -91,4 +92,30 @@ public isolated function logError(string msg, error 'error, *log:KeyValues keyVa
         cause = cause.cause();
     }
     log:printError(errorMsg, stackTrace = 'error.stackTrace(), keyValues = keyValues);
+}
+
+public isolated function sendNotification(string callbackUrl, map<string?> params) returns http:Response|error {
+    string queryParams = generateQueryString(callbackUrl, params);
+    http:Client httpClient = check new (callbackUrl);
+    return httpClient->get(queryParams);
+}
+
+public isolated function generateQueryString(string callbackUrl, map<string?> params) returns string {
+    string[] keyValPairs = [];
+    foreach var ['key, value] in params.entries() {
+        if value is string {
+            keyValPairs.push(string `${'key}=${value}`);
+        }
+    }
+    return (string:includes(callbackUrl, ("?")) ? "&" : "?") + string:'join("&", ...keyValPairs);
+}
+
+public isolated function getFormUrlEncodedPayload(map<string> content) returns string {
+    string payload = "";
+    string[] messageParams = [];
+    foreach var ['key, value] in content.entries() {
+        messageParams.push('key + "=" + value);
+    }
+    payload += string:'join("&", ...messageParams);
+    return payload;
 }

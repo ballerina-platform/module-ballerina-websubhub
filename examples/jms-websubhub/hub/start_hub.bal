@@ -14,19 +14,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import jmshub.config;
+import jmshub.common;
 
-import ballerina/lang.runtime;
 import ballerina/log;
-import ballerina/websubhub;
 
-public function main() returns error? {
-    // Initialize the Hub
-    check initializeHubState();
+import wso2/mi;
 
-    websubhub:Listener hubListener = check new (config:hubPort);
-    runtime:registerListener(hubListener);
-    check hubListener.attach(hubService, "hub");
-    check hubListener.'start();
-    log:printInfo("Websubhub service started successfully");
+@mi:Operation
+public function initHubState(json initialState) {
+    do {
+        common:SystemStateSnapshot systemStateSnapshot = check initialState.fromJsonWithType();
+        check processWebsubTopicsSnapshotState(systemStateSnapshot.topics);
+        check processWebsubSubscriptionsSnapshotState(systemStateSnapshot.subscriptions);
+        // Start hub-state update worker
+        _ = start updateHubState();
+        log:printInfo("Websubhub service started successfully");
+    } on fail error err {
+        common:logError("Error occurred while initializing the hub-state using the latest state-snapshot", err, severity = "FATAL");
+    }
 }
