@@ -19,21 +19,16 @@ import consolidatorsvc.config;
 import consolidatorsvc.connections as conn;
 import consolidatorsvc.persistence as persist;
 
-import ballerina/http;
 import ballerina/lang.value;
-import ballerina/log;
 import ballerinax/java.jms;
 
-http:Service consolidatorService = service object {
-    isolated resource function get state\-snapshot() returns common:SystemStateSnapshot {
-        common:SystemStateSnapshot stateSnapshot = {
-            topics: getTopics(),
-            subscriptions: getSubscriptions()
-        };
-        log:printInfo("Request received to retrieve state-snapshot, hence responding with the current state-snapshot", state = stateSnapshot);
-        return stateSnapshot;
-    }
-};
+import wso2/mi;
+
+@mi:Operation
+public isolated function getStateSnapshot() returns json {
+    common:SystemStateSnapshot stateSnapshot = constructStateSnapshot();
+    return stateSnapshot.toJson();
+}
 
 function consolidateSystemState() returns error? {
     var [session, consumer] = conn:websubEventsConnection;
@@ -97,3 +92,8 @@ isolated function processStateUpdate() returns error? {
     };
     check persist:persistWebsubEventsSnapshot(stateSnapshot);
 }
+
+isolated function constructStateSnapshot() returns common:SystemStateSnapshot => {
+    topics: getTopics(),
+    subscriptions: getSubscriptions()
+};

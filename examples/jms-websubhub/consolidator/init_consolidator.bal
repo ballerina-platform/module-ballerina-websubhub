@@ -19,13 +19,12 @@ import consolidatorsvc.config;
 import consolidatorsvc.connections as conn;
 import consolidatorsvc.persistence as persist;
 
-import ballerina/http;
 import ballerina/lang.runtime;
 import ballerina/lang.value;
 import ballerina/log;
 import ballerinax/java.jms;
 
-public function main() returns error? {
+function init() returns error? {
     // Initialize consolidator-service state
     error? stateSyncResult = syncSystemState();
     if stateSyncResult is error {
@@ -33,15 +32,9 @@ public function main() returns error? {
         return;
     }
 
-    // Start the HTTP endpoint
-    http:Listener httpListener = check new (config:consolidatorHttpEpPort);
-    runtime:registerListener(httpListener);
-    check httpListener.attach(consolidatorService, "/consolidator");
-    check httpListener.'start();
-    log:printInfo("Starting Event Consolidator Service");
-
     // start the consolidator-service
     _ = start consolidateSystemState();
+    runtime:onGracefulStop(onShutdown);
 }
 
 isolated function syncSystemState() returns error? {
@@ -86,5 +79,15 @@ isolated function processWebsubEventsSnapshot(jms:Session session, jms:BytesMess
     } on fail error e {
         check session->'rollback();
         return e;
+    }
+}
+
+isolated function onShutdown() returns error? {
+    log:printInfo("Shutting down the Event consolidator service, persisting the system state");
+    error? persistError = processStateUpdate();
+    if persistError is error {
+        log:printError("Error occurred while persisting the consolidated state during shutdown, hence logging the state",
+                state = constructStateSnapshot());
+        return persistError;
     }
 }
