@@ -25,3 +25,10 @@ public type StaleSubscription record {|
     *websubhub:VerifiedSubscription;
     string status = "stale";
 |};
+
+public type SubscriptionDetails record {|
+    string topic;
+    string subscriberId;
+|};
+
+public type InvalidSubscriptionError distinct error<SubscriptionDetails>;

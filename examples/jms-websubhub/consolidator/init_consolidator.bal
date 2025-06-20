@@ -45,7 +45,7 @@ public function main() returns error? {
 }
 
 isolated function syncSystemState() returns error? {
-    string subscriptionName = string `websub-events-snapshot-group-${config:constructedConsumerId}`;
+    string subscriptionName = string `websub-events-snapshot-subscriber`;
     var [session, consumer] = check conn:createMessageConsumer(config:websubEventsSnapshotTopic, subscriptionName);
     do {
         while true {
@@ -56,8 +56,7 @@ isolated function syncSystemState() returns error? {
                     common:SystemStateSnapshot lastPersistedState = check value:fromJsonStringWithType(check string:fromBytes(lastMessage.content));
                     check persist:persistWebsubEventsSnapshot(lastPersistedState);
                 }
-                check session->unsubscribe(subscriptionName);
-                return consumer->close();
+                check consumer->close();
             }
 
             if message !is jms:BytesMessage {

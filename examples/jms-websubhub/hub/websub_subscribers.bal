@@ -97,7 +97,10 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
     do {
         while true {
             if !isValidConsumer(topic, subscriberId) {
-                fail error(string `Subscriber with Id ${subscriberId} or topic ${topic} is invalid`);
+                fail error common:InvalidSubscriptionError(
+                    string `Subscriber with Id ${subscriberId} or topic ${topic} is invalid`, 
+                    topic = topic, subscriberId = subscriberId
+                );
             }
 
             jms:Message? message = check consumerEp->receive(config:pollingInterval);
@@ -112,6 +115,10 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
         jms:Error? result = consumerEp->close();
         if result is jms:Error {
             common:logError("Error occurred while gracefully closing JMS message consumer", result);
+        }
+
+        if e is common:InvalidSubscriptionError {
+            return session->unsubscribe(subscriptionName);
         }
 
         // If subscription-deleted error received, remove the subscription

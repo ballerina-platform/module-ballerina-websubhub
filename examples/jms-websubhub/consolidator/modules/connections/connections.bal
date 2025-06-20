@@ -25,7 +25,7 @@ public final jms:MessageProducer statePersistProducer = check createMessageProdu
 
 # Consumer which reads the persisted websub events.
 public final [jms:Session, jms:MessageConsumer] websubEventsConnection = check createMessageConsumer(
-        config:websubEventsTopic, string `websub-events-group-${config:constructedConsumerId}`);
+        config:websubEventsTopic, string `websub-events-subscriber`);
 
 isolated function createMessageProducer() returns jms:MessageProducer|error {
     jms:Session session = check jmsConnection->createSession();

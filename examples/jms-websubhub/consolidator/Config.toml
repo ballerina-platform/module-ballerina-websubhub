@@ -13,7 +13,7 @@ consolidatorHttpEpPort = 10001
 
 [consolidatorsvc.config.brokerConfig]
 initialContextFactory = "com.sun.jndi.fscontext.RefFSContextFactory"
-providerUrl = "file:/path-to/jms-bindings"
+providerUrl = "file:/<path-to>/jndi-bindings"
 connectionFactoryName = "BallerinaConsolidatorConnectionFactory"
 username = "admin"
 password = "password"

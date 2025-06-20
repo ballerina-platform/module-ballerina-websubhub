@@ -6,3 +6,13 @@ version = "0.1.0"
 [build-options]
 observabilityIncluded = true
 
+[[platform.java17.dependency]]
+groupId="com.ibm.mq"
+artifactId="com.ibm.mq.allclient"
+version="9.4.0.10"
+
+[[platform.java17.dependency]]
+path="/<path-to>/fscontext.jar"
+
+[[platform.java17.dependency]]
+path="/<path-to>/providerutil.jar"
