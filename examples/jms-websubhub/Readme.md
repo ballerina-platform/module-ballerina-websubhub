@@ -21,7 +21,7 @@
 
 This WebSub `Hub` implementation introduces a functional API-driven approach that enables triggering the WebSub flow directly from within a Java environment. WebSub `Hub` implementations can be written using multiple approaches including in-memory, database-based, message-broker based etc. 
 
-Given their shared purpose, message brokers are inherently well-suited for implementing WebSub `hubs`. This mplementation leverages the [JMS API](https://www.oracle.com/java/technologies/java-message-service.html), with [IBM MQ](https://www.ibm.com/products/mq) selected as the underlying JMS provider.
+Given their shared purpose, message brokers are inherently well-suited for implementing WebSub `hubs`. This implementation leverages the [JMS API](https://www.oracle.com/java/technologies/java-message-service.html), with [IBM MQ](https://www.ibm.com/products/mq) selected as the underlying JMS provider.
 
 ## 2. Goals and technical requirements
 
