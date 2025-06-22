@@ -173,7 +173,7 @@ To set up IBM MQ using a Docker container, navigate to the `module-ballerina-web
     path="/<path-to-downloaded-location>/providerutil.jar"
     ```
 
-2. Update the `providerUrl` field under `consolidatorsvc.config.brokerConfig` in the `consolidator/Config.toml` file to point to the file system location of the JNDI bindings.\
+2. Update the `providerUrl` field under `consolidatorsvc.config.brokerConfig` in the `consolidator/Config.toml` file to point to the file system location of the JNDI bindings.
 3. Build the `consolidator` project using the following command.
     
     ```sh
@@ -200,7 +200,7 @@ To set up IBM MQ using a Docker container, navigate to the `module-ballerina-web
     path="/<path-to-downloaded-location>/providerutil.jar"
     ```
 
-2. Update the `providerUrl` field under `jmshub.config.brokerConfig` in the `hub/Config.toml` file to point to the file system location of the JNDI bindings.\
+2. Update the `providerUrl` field under `jmshub.config.brokerConfig` in the `hub/Config.toml` file to point to the file system location of the JNDI bindings.
 3. Build the `hub` project using the following command.
     
     ```sh
