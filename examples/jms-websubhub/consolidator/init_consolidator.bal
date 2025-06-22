@@ -35,6 +35,7 @@ function init() returns error? {
     // start the consolidator-service
     _ = start consolidateSystemState();
     runtime:onGracefulStop(onShutdown);
+    log:printInfo("Event consolidator service started successfully");
 }
 
 isolated function syncSystemState() returns error? {
