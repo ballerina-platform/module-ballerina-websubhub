@@ -23,7 +23,7 @@ import ballerina/random;
 # + topic - Name of the `topic`
 # + return - Sanitized topic name
 public isolated function sanitizeTopicName(string topic) returns string {
-    return nomalizeString(topic);
+    return normalizeString(topic);
 }
 
 # Generates a group-name for a subscriber.
@@ -33,14 +33,14 @@ public isolated function sanitizeTopicName(string topic) returns string {
 # + return - Generated group-name for subscriber
 public isolated function generatedSubscriberId(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl;
-    return nomalizeString(idValue);
+    return normalizeString(idValue);
 }
 
 # Normalizes a `string` by replacing special characters with `_`.
 #
 # + baseString - `string` to be normalized
 # + return - Normalized `string`
-isolated function nomalizeString(string baseString) returns string {
+isolated function normalizeString(string baseString) returns string {
     return re `[^a-zA-Z0-9]`.replaceAll(baseString, "_");
 }
 

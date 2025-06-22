@@ -25,7 +25,7 @@ import ballerina/time;
 # + topic - Name of the `topic`
 # + return - Sanitized topic name
 public isolated function sanitizeTopicName(string topic) returns string {
-    return nomalizeString(topic);
+    return normalizeString(topic);
 }
 
 # Generates a unique Id for a subscriber.
@@ -35,7 +35,7 @@ public isolated function sanitizeTopicName(string topic) returns string {
 # + return - Generated subscriber Id for the subscriber
 public isolated function generateSubscriberId(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl;
-    return nomalizeString(idValue);
+    return normalizeString(idValue);
 }
 
 # Generates a subscription-name for the JMS message-consumer.
@@ -45,10 +45,10 @@ public isolated function generateSubscriberId(string topic, string callbackUrl) 
 # + return - Generated consumer group name the subscriber
 public isolated function generateSubscriptionName(string topic, string callbackUrl) returns string {
     string idValue = topic + ":::" + callbackUrl + ":::" + time:monotonicNow().toBalString();
-    return nomalizeString(idValue);
+    return normalizeString(idValue);
 }
 
-isolated function nomalizeString(string baseString) returns string {
+isolated function normalizeString(string baseString) returns string {
     return re `[^a-zA-Z0-9]`.replaceAll(baseString, "_");
 }
 
