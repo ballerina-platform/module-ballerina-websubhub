@@ -18,7 +18,7 @@ import jmshub.common;
 
 import ballerinax/java.jms;
 
-# Server ID is is used to uniquely identify each server 
+# Server ID is used to uniquely identify each server
 # Each server must have a unique ID
 public configurable string serverId = "server-1";
 

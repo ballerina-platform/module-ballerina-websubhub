@@ -1,5 +1,5 @@
 [jmshub.config]
-# Server ID is is used to uniquely identify each server 
+# Server ID is used to uniquely identify each server
 # Each server must have a unique ID
 serverId = "server-1"
 
