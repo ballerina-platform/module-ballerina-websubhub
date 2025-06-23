@@ -31,6 +31,10 @@ public configurable string websubEventsTopic = "websub-events";
 # Consolidator HTTP endpoint to be used to retrieve current state-snapshot
 public configurable string stateSnapshotEndpoint = "http://localhost:10001";
 
+# Enables automatic topic creation during the subscription process
+# if the requested topic does not already exist.
+public configurable boolean enableAutoTopicCreationOnSubscribe = true;
+
 # Configurations related to the JMS provider connection
 public configurable jms:ConnectionConfiguration brokerConfig = ?;
 
