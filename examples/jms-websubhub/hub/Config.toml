@@ -12,10 +12,6 @@ websubEventsTopic = "websub-events"
 # Consolidator HTTP endpoint to be used to retrieve current state-snapshot
 stateSnapshotEndpoint = "http://localhost:10001"
 
-# Enables automatic topic creation during the subscription process
-# if the requested topic does not already exist.
-enableAutoTopicCreationOnSubscribe = true
-
 # The interval in which JMS consumers wait for new messages in miliseconds
 pollingInterval = 10000
 

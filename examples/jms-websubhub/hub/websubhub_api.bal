@@ -235,23 +235,6 @@ public isolated function onSubscriptionValidation(json request) returns json {
 isolated function validateSubscription(websubhub:Subscription message) returns websubhub:SubscriptionDeniedError? {
     string topic = message.hubTopic;
     if !isTopicAvailable(topic) {
-        if !config:enableAutoTopicCreationOnSubscribe {
-            return error websubhub:SubscriptionDeniedError(
-                string `Topic ${topic} is not registered with the Hub`, statusCode = http:STATUS_NOT_ACCEPTABLE);
-        }
-
-        // if `enableAutoTopicCreationOnSubscribe` is enabled, create the topic
-        websubhub:TopicRegistration topicRegistration = {topic};
-        var registerTopicResponse = registerTopic(topicRegistration);
-        if registerTopicResponse is error {
-            return error websubhub:SubscriptionDeniedError(
-                    string `Error occurred while creating the Topic ${topic} during subscription: ${registerTopicResponse.message()}`,
-                    registerTopicResponse, statusCode = http:STATUS_NOT_ACCEPTABLE
-                );
-        }
-    }
-
-    if !config:enableAutoTopicCreationOnSubscribe && !isTopicAvailable(topic) {
         return error websubhub:SubscriptionDeniedError(
                 string `Topic ${topic} is not registered with the Hub`, statusCode = http:STATUS_NOT_ACCEPTABLE);
     }
