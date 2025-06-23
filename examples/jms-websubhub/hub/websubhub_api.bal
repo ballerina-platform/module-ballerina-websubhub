@@ -26,6 +26,11 @@ import ballerina/websubhub;
 import wso2/mi;
 
 @mi:Operation
+public isolated function isTopicExist(string topic) returns boolean {
+    return isTopicAvailable(topic);
+}
+
+@mi:Operation
 public isolated function onRegisterTopic(json request) returns json {
     do {
         websubhub:TopicRegistration topicRegistration = check request.fromJsonWithType();
