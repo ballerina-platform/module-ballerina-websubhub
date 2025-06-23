@@ -1,0 +1,32 @@
+[jmshub.config]
+# Server ID is used to uniquely identify each server
+# Each server must have a unique ID
+serverId = "server-1"
+
+# The port that is used to start the hub
+hubPort = 9000
+
+# JMS topic which is stores websub-events for this server
+websubEventsTopic = "websub-events"
+
+# Consolidator HTTP endpoint to be used to retrieve current state-snapshot
+stateSnapshotEndpoint = "http://localhost:10001"
+
+# The interval in which JMS consumers wait for new messages in miliseconds
+pollingInterval = 10000
+
+# The period between retry requests
+messageDeliveryRetryInterval = 3.0
+
+# The maximum retry count
+messageDeliveryRetryCount = 3
+
+# The message delivery timeout
+messageDeliveryTimeout = 10.0
+
+[jmshub.config.brokerConfig]
+initialContextFactory = "com.sun.jndi.fscontext.RefFSContextFactory"
+providerUrl = "file:/<path-to>/jndi-bindings"
+connectionFactoryName = "BallerinaHubConnectionFactory"
+username = "admin"
+password = "password"

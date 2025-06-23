@@ -1,0 +1,19 @@
+[consolidatorsvc.config]
+# JMS topic which stores websub-events for this server
+websubEventsTopic = "websub-events"
+
+# JMS topic which stores the current snapshot for the websub-events
+websubEventsSnapshotTopic = "websub-events-snapshot"
+
+# The interval in which JMS consumers wait for new messages
+pollingInterval = 10000
+
+# The port that is used to start the HTTP endpoint for consolidator
+consolidatorHttpEpPort = 10001
+
+[consolidatorsvc.config.brokerConfig]
+initialContextFactory = "com.sun.jndi.fscontext.RefFSContextFactory"
+providerUrl = "file:/<path-to>/jndi-bindings"
+connectionFactoryName = "BallerinaConsolidatorConnectionFactory"
+username = "admin"
+password = "password"
