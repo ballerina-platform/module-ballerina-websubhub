@@ -15,7 +15,6 @@
 // under the License.
 
 import jmshub.common;
-import jmshub.config;
 import jmshub.persistence as persist;
 
 import ballerina/http;
