@@ -78,7 +78,7 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string topic = subscription.hubTopic;
     string subscriptionName = check value:ensureType(subscription[SUBSCRIPTION_NAME]);
-    var [session, consumerEp] = check conn:createMessageConsumer(topic, subscriptionName);
+    var [session, consumerEp] = check conn:createMessageConsumer(topic, subscriptionName, true);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:messageDeliveryRetryInterval,

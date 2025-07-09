@@ -36,13 +36,14 @@ isolated function createMessageProducer() returns jms:MessageProducer|error {
 #
 # + topic - The JMS topic to which the consumer should subscribe
 # + subscriberName - The name used to identify the subscription 
+# + shared - A flag to indicate whether this is a shared subscription
 # + return - A tuple containing `jms:MessageConsumer` and `jms:Session` if succcessful or else `error`
-public isolated function createMessageConsumer(string topic, string subscriberName)
+public isolated function createMessageConsumer(string topic, string subscriberName, boolean shared = false)
     returns [jms:Session, jms:MessageConsumer]|error {
 
     jms:Session session = check jmsConnection->createSession(jms:SESSION_TRANSACTED);
     jms:MessageConsumer consumer = check session.createConsumer({
-        'type: jms:DURABLE,
+        'type: shared ? jms:SHARED_DURABLE : jms:DURABLE,
         destination: {
             'type: jms:TOPIC,
             name: topic
