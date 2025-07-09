@@ -28,7 +28,6 @@ import ballerinax/java.jms;
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string SUBSCRIPTION_NAME = "subscriptionName";
-const string SERVER_ID = "SERVER_ID";
 const string STATUS = "status";
 const string STALE_STATE = "stale";
 
@@ -55,11 +54,6 @@ function processSubscription(websubhub:VerifiedSubscription subscription) return
         if isFreshSubscription || isRenewingStaleSubscription || isMarkingSubscriptionAsStale {
             subscribersCache[subscriberId] = subscription.cloneReadOnly();
         }
-    }
-    string serverId = check subscription[SERVER_ID].ensureType();
-    if serverId != config:serverId {
-        log:printDebug(string `Subscriber ${subscriberId} does not belong to the current server, hence not starting the consumer`);
-        return;
     }
 
     if !isFreshSubscription && !isRenewingStaleSubscription {
