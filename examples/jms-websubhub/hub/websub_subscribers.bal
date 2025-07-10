@@ -28,7 +28,6 @@ import ballerinax/java.jms;
 isolated map<websubhub:VerifiedSubscription> subscribersCache = {};
 
 const string SUBSCRIPTION_NAME = "subscriptionName";
-const string SERVER_ID = "SERVER_ID";
 const string STATUS = "status";
 const string STALE_STATE = "stale";
 
@@ -56,11 +55,6 @@ function processSubscription(websubhub:VerifiedSubscription subscription) return
             subscribersCache[subscriberId] = subscription.cloneReadOnly();
         }
     }
-    string serverId = check subscription[SERVER_ID].ensureType();
-    if serverId != config:serverId {
-        log:printDebug(string `Subscriber ${subscriberId} does not belong to the current server, hence not starting the consumer`);
-        return;
-    }
 
     if !isFreshSubscription && !isRenewingStaleSubscription {
         log:printDebug(string `Subscriber ${subscriberId} is already available in the 'hub', hence not starting the consumer`, existing = existingSubscription.toJsonString());
@@ -84,7 +78,7 @@ isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubsc
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
     string topic = subscription.hubTopic;
     string subscriptionName = check value:ensureType(subscription[SUBSCRIPTION_NAME]);
-    var [session, consumerEp] = check conn:createMessageConsumer(topic, subscriptionName);
+    var [session, consumerEp] = check conn:createMessageConsumer(topic, subscriptionName, true);
     websubhub:HubClient clientEp = check new (subscription, {
         retryConfig: {
             interval: config:messageDeliveryRetryInterval,

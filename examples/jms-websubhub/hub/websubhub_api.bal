@@ -15,7 +15,6 @@
 // under the License.
 
 import jmshub.common;
-import jmshub.config;
 import jmshub.persistence as persist;
 
 import ballerina/http;
@@ -301,7 +300,6 @@ isolated function prepareSubscriptionToBePersisted(websubhub:VerifiedSubscriptio
 
     string subscriptionName = common:generateSubscriptionName(message.hubTopic, message.hubCallback);
     message[SUBSCRIPTION_NAME] = subscriptionName;
-    message[SERVER_ID] = config:serverId;
     return message;
 }
 
