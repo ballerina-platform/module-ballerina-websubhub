@@ -22,11 +22,11 @@ isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
 isolated function processWebsubTopicsSnapshotState(websubhub:TopicRegistration[] topics) returns error? {
     log:printDebug("Received latest state-snapshot for websub topics", newState = topics);
     foreach websubhub:TopicRegistration topicReg in topics {
-        check processTopicRegistration(topicReg);
+        check processTopicRegistration(topicReg, true);
     }
 }
 
-isolated function processTopicRegistration(websubhub:TopicRegistration topicRegistration) returns error? {
+isolated function processTopicRegistration(websubhub:TopicRegistration topicRegistration, boolean stateInit = false) returns error? {
     string topic = topicRegistration.topic;
     log:printDebug(string `Topic registration event received for topic ${topic}, hence adding the topic to the internal state`);
     lock {
@@ -35,18 +35,34 @@ isolated function processTopicRegistration(websubhub:TopicRegistration topicRegi
             registeredTopicsCache[topic] = topicRegistration.cloneReadOnly();
         }
     }
+
+    if stateInit {
+        return;
+    }
+    check persistStateSnapshot();
 }
 
-isolated function processTopicDeregistration(websubhub:TopicDeregistration topicDeregistration) returns error? {
+isolated function processTopicDeregistration(websubhub:TopicDeregistration topicDeregistration, boolean stateInit = false) returns error? {
     string topic = topicDeregistration.topic;
     log:printDebug(string `Topic deregistration event received for topic ${topic}, hence removing the topic from the internal state`);
     lock {
         _ = registeredTopicsCache.removeIfHasKey(topic);
     }
+
+    if stateInit {
+        return;
+    }
+    check persistStateSnapshot();
 }
 
 isolated function isTopicAvailable(string topic) returns boolean {
     lock {
         return registeredTopicsCache.hasKey(topic);
+    }
+}
+
+isolated function getTopics() returns websubhub:TopicRegistration[] {
+    lock {
+        return registeredTopicsCache.toArray().cloneReadOnly();
     }
 }
