@@ -16,6 +16,11 @@
 
 import ballerina/websubhub;
 
+public type SystemInitEvent record {|
+    string serverId;
+    string eventType = "init";
+|};
+
 public type SystemStateSnapshot record {|
     websubhub:TopicRegistration[] topics;
     websubhub:VerifiedSubscription[] subscriptions;
