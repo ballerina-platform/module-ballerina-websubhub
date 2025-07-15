@@ -45,7 +45,7 @@ function initHubState() returns error? {
             if message is () {
                 if lastMessage is jms:BytesMessage {
                     common:SystemStateSnapshot lastPersistedState = check value:fromJsonStringWithType(check string:fromBytes(lastMessage.content));
-                    log:printInfo("Processing system state snapshot", state = lastPersistedState);
+                    log:printDebug("Processing system state snapshot", state = lastPersistedState);
                     check processWebsubTopicsSnapshotState(lastPersistedState.topics);
                     check processWebsubSubscriptionsSnapshotState(lastPersistedState.subscriptions);
                     check persist:persistWebsubEventsSnapshot(lastPersistedState);

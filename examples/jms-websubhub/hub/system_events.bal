@@ -57,7 +57,7 @@ isolated function processSystemInitEvent(jms:Session session, jms:Message messag
 
     do {
         common:SystemInitEvent systemInit = check value:fromJsonStringWithType(check string:fromBytes(message.content));
-        log:printInfo("Processing system-init event", event = systemInit);
+        log:printDebug("Processing system-init event", event = systemInit);
         if config:serverId !== systemInit.serverId {
             check persistStateSnapshot();
         }

@@ -33,3 +33,6 @@ providerUrl = "file:/<path-to>/jndi-bindings"
 connectionFactoryName = "BallerinaHubConnectionFactory"
 username = "admin"
 password = "password"
+
+[ballerina.log]
+level = "INFO"
