@@ -6,15 +6,14 @@
 2. [Goals and technical requirements](#2-goals-and-technical-requirements)
 3. [Implementation](#3-implementation)
    * 3.1. [State management](#31-state-management)
-   * 3.2. [Other quality of services](#32-other-quality-of-services)
+   * 3.2. [System events](#32-system-events)
+   * 3.3. [Other quality of services](#33-other-quality-of-services)
 4. [Invoking the APIs from Java environment](#4-invoking-the-apis-from-java-environment)
-   * 4.1. [Invoking the `consolidator` API](#41-invoking-the-consolidator-api)
-   * 4.2. [Invoking the `hub` API](#42-invoking-the-hub-api)
+   * 4.1. [Invoking the `hub` API](#41-invoking-the-hub-api)
 5. [Deploying the system locally](#5-deploying-the-system-locally)
    * 5.1. [Prerequisites](#51-prerequisites)
    * 5.2. [Setting up IBM MQ](#52-setting-up-ibm-mq)
-   * 5.3. [Deploying the `consolidator`](#53-deploying-the-consolidator)
-   * 5.4. [Deploying the `hub`](#54-deploying-the-hub)
+   * 5.3. [Deploying the `hub`](#53-deploying-the-hub)
 6. [References](#6-references)
 
 ## 1. Overview
@@ -60,19 +59,17 @@ At a high level, the following key components are associated with this implement
 |:----------------------------------------------------------------------------:|
 | *Image 1: Current system architecture*                                       |
 
-
-Within the current system architecture, there are two primary components: the `hub` and the `consolidator`. The `hub` functions as a Websub `hub`, while the `consolidator` is responsible for overseeing the system's overall state by merging state-update events into a single consolidated state.
+In the current system architecture, the primary component is the `hub`. It serves a dual purpose: acting as the WebSub `hub` and managing the system’s overall state by consolidating incoming state-update events into a unified state representation.
 
 ### 3.1. State management
 
-To manage the system's state, both the `hub` and the `consolidator` make use of two JMS topics. The `websub-events` topic is utilized for broadcasting system state update events to all relevant parties, while the `websub-events-snapshot` topic serves as a storage location for the current snapshot of the system's overall state.
+The `hub` manages the system's state using two JMS topics. The `websub-events` topic is responsible for broadcasting state update events to all interested parties. Meanwhile, the `websub-events-snapshot` topic holds the latest consolidated snapshot of the system’s overall state, providing a reference point for reconstructing or synchronizing state when needed.
 
-| ![System topic usage](./resources/images/websubhub-topic-2.0.png) |
+| ![System state](./resources/images/system-state-topics.png)       |
 |:-----------------------------------------------------------------:|
-| *Image 2: System topic usage*                                     |
+| *Image 2: System state related topics*                            |
 
-
-While both the `hub` and the `consolidator` listen to `websub-events` topic, `websub-events-snapshot` topic is only used by the `consolidator`. Whenever the `consolidator` re-starts, it will read the latest snapshot state from `websub-events-snapshot` topic and re-initialize the state. But, whenever the `hub` restarts it shoult retrieve the latest state snapshot from the `consolidator`.
+The `hub` uses the `websub-events` topic to build and update the system state during application runtime by processing incoming state change events. In contrast, the `websub-events-snapshot` topic is used during the system initialization phase—typically after a restart—to load the latest consolidated snapshot and reconstruct the initial state of the system.
 
 Following JSON structure is used to store the state-snapshot in the `websub-events-snapshot` topic.
 ```json
@@ -101,29 +98,28 @@ Following JSON structure is used to store the state-snapshot in the `websub-even
 }
 ```
 
-Each WebSub `topic` directly maps to a JMS `topic`, and each WebSub `subscriber` is represented by a durable JMS `subscription` associated with that topic.
+Each WebSub `topic` directly maps to a JMS `topic`, and each WebSub `subscriber` is represented by a **shared-durable** JMS `subscription` associated with that topic.
 
-### 3.2. Other quality of services
+### 3.2. System events
+
+In addition to the state-related JMS topics, the `hub` also uses a separate topic named `system-events` to broadcast system-level notifications. This topic is primarily used to signal the arrival of a new `hub` instance. When a new instance starts up, it publishes a `SystemInitEvent` to the `system-events` topic. Upon receiving this event, any active `hub` instance responds by publishing the current system state snapshot to the `websub-events-snapshot` topic, enabling the newly started instance to initialize its state with the latest data.
+
+| ![System events](./resources/images/system-events-topic.png)      |
+|:-----------------------------------------------------------------:|
+| *Image 2: System events related topic*                            |
+
+### 3.3. Other quality of services
 
 For message persistence and subscription management, the implementation utilizes the JMS provider (in this case IBM MQ).
 
 ## 4. Invoking the APIs from Java environment
 
-### 4.1. Invoking the `consolidator` API
-
-The `consolidator` offers an API to retrieve the latest state snapshot for the system. 
-
-| Function Name    | Description                                           | Argument Type  | Argument Structure | Return Type | Return Type Structure                                                                      |
-|------------------|-------------------------------------------------------|----------------|--------------------|-------------|--------------------------------------------------------------------------------------------|
-| getStateSnapshot | Retrieves the latest state snapshot for the system.   | N/A            | N/A                | json        | { topics: websubhub:TopicRegistration[], subscriptions: websubhub:VerifiedSubscription[] } |
-
-### 4.2. Invoking the `hub` API
+### 4.1. Invoking the `hub` API
 
 The `hub` offers APIs to initiate the WebSub flows.
 
 | Function Name     | Description                                                  | Argument Type | Argument Structure                                                                                                    | Return Type | Return Type Structure                                |
 |-------------------|--------------------------------------------------------------|---------------|-----------------------------------------------------------------------------------------------------------------------|-------------|------------------------------------------------------|
-| initHubState      | Initialize the `hub` state and start the state-sync process. | json          | { topics: websubhub:TopicRegistration[], subscriptions: websubhub:VerifiedSubscription[] }                            | N/A         | N/A                                                  |
 | isTopicExist   | Checks whether a particular WebSub `topic` exists in the `hub`.                  | string          | "topic-a"                                                                                    | boolean        | `true` or `false` |
 | onRegisterTopic   | Handles registration of a new WebSub topic.                  | json          | { topic: string, hubMode: string }                                                                                    | json        | { statusCode: int, mediaType: string, body: string } |
 | onDeregisterTopic | Handles deregistration of an existing WebSub topic.          | json          | { topic: string, hubMode: string }                                                                                    | json        | { statusCode: int, mediaType: string, body: string } |
@@ -149,7 +145,7 @@ The `hub` offers APIs to initiate the WebSub flows.
 
 4. JNDI bindings for IBM MQ JMS API are required. To create the JNDI bindings use [IBM MQ Explorer](https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=mq-explorer). Refer to [this article](https://ayesh9303.medium.com/jms-with-ballerina-lang-part-6-35ac842014a9) to understand how to create JNDI bindings for IBM MQ JMS API.
 
-    > **Note :** In this setup, two connection factories—`BallerinaHubConnectionFactory` and `BallerinaConsolidatorConnectionFactory`—must be created, each with a unique client identifier for the **hub** and **consolidator**, respectively.
+    > **Note :** In this setup, a JMS connection factory—`BallerinaHubConnectionFactory`—must be created, each with a unique client identifier for the **hub**.
 
 ### 5.2. Setting up IBM MQ
 
@@ -162,34 +158,7 @@ To set up IBM MQ using a Docker container, navigate to the `module-ballerina-web
     docker compose up
     ```
 
-### 5.3. Deploying the `consolidator`
-
-1. Update the native dependency path for following dependencies in the `consolidator/Ballerina.toml`
-
-    ```toml
-    [[platform.java17.dependency]]
-    path="/<path-to-downloaded-location>/fscontext.jar"
-
-    [[platform.java17.dependency]]
-    path="/<path-to-downloaded-location>/providerutil.jar"
-    ```
-
-2. Update the `providerUrl` field under `consolidatorsvc.config.brokerConfig` in the `consolidator/Config.toml` file to point to the file system location of the JNDI bindings.
-3. Build the `consolidator` project using the following command.
-    
-    ```sh
-      bal build consolidator
-    ```
-
-4. Copy the `consolidator/target/bin/consolidatorsvc.jar` file to the Java-based environment where the setup will be embedded, and ensure it is included in the runtime classpath. Additionally, set the path to `consolidator/Config.toml` in the `BAL_CONFIG_FILES` environment variable.
-5. Invoke Ballerina runtime `init` from the Java environment to start the consolidator service.
-6. When the `consolidator` starts successfully, the following log message will be printed.
-
-    ```sh
-    Event consolidator service started successfully
-    ```
-
-### 5.4. Deploying the `hub`
+### 5.3. Deploying the `hub`
 
 1. Update the native dependency path for following dependencies in the `hub/Ballerina.toml`
 
@@ -209,13 +178,14 @@ To set up IBM MQ using a Docker container, navigate to the `module-ballerina-web
     ```
 
 4. Copy the `hub/target/bin/jmshub.jar` file to the Java-based environment where the setup will be embedded, and ensure it is included in the runtime classpath. Additionally, set the path to `hub/Config.toml` in the `BAL_CONFIG_FILES` environment variable.
-5. Invoke Ballerina runtime `init` from the Java environment to start the consolidator service.
-6. Retrieve the latest system state by calling the `getStateSnapshot` API of the `consolidator`, and then use the returned data to invoke the `initHubState` function on the `hub`.
-7. When the `hub` starts successfully, the following log message will be printed.
+5. Invoke Ballerina runtime `init` from the Java environment to start the WebSub Hub.
+6. When the `hub` starts successfully, the following log message will be printed.
 
     ```sh
     Websubhub service started successfully
     ```
+
+> **Note:** When deploying multiple `hub` instances, each must be assigned a **unique** `serverId`. You can set this using the `SERVER_ID` environment variable or by configuring the `serverId` field in the `hub/Config.toml` file.
 
 ## 6. References
 - [IBM MQ](https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=mq)
