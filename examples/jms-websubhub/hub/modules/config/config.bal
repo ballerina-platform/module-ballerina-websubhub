@@ -16,11 +16,12 @@
 
 import jmshub.common;
 
+import ballerina/os;
 import ballerinax/java.jms;
 
 # Server ID is is used to uniquely identify each server 
 # Each server must have a unique ID
-public configurable string serverId = "server-1";
+public configurable string serverId = os:getEnv("SERVER_ID") == "" ? "server-1" : os:getEnv("SERVER_ID");
 
 # The port that is used to start the hub
 public configurable int hubPort = 9000;
