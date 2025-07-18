@@ -14,11 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import jmshub.common;
 import jmshub.config;
 import jmshub.connections as conn;
 
 import ballerina/websubhub;
 import ballerinax/java.jms;
+
+public isolated function persistSystemInitEvent(common:SystemInitEvent event) returns error? {
+    json payload = event.toJson();
+    check produceJmsMessage(config:systemEventsTopic, payload);
+}
 
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
     check updateHubState(message);
@@ -34,6 +40,11 @@ public isolated function addSubscription(websubhub:VerifiedSubscription message)
 
 public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
     check updateHubState(message);
+}
+
+public isolated function persistWebsubEventsSnapshot(common:SystemStateSnapshot systemStateSnapshot) returns error? {
+    json payload = systemStateSnapshot.toJson();
+    check produceJmsMessage(config:websubEventsSnapshotTopic, payload);
 }
 
 isolated function updateHubState(websubhub:TopicRegistration|websubhub:TopicDeregistration|

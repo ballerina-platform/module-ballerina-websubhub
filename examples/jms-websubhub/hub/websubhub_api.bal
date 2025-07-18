@@ -200,7 +200,7 @@ isolated function verifyAndValidateSubscription(json request) {
 public isolated function onSubscriptionValidation(json request) returns json {
     do {
         websubhub:Subscription subscription = check request.fromJsonWithType();
-        websubhub:SubscriptionDeniedError? subscriptionDenied = check validateSubscription(subscription);
+        websubhub:SubscriptionDeniedError? subscriptionDenied = validateSubscription(subscription);
         if subscriptionDenied is () {
             return {
                 statusCode: http:STATUS_ACCEPTED,

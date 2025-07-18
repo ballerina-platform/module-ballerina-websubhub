@@ -16,26 +16,33 @@
 
 import jmshub.common;
 
+import ballerina/os;
 import ballerinax/java.jms;
 
-# Server ID is used to uniquely identify each server
+# Server ID is is used to uniquely identify each server 
 # Each server must have a unique ID
-public configurable string serverId = "server-1";
+public configurable string serverId = os:getEnv("SERVER_ID") == "" ? "server-1" : os:getEnv("SERVER_ID");
 
 # The port that is used to start the hub
 public configurable int hubPort = 9000;
 
+# JMS topic which is stores system-events
+public configurable string systemEventsTopic = "system-events";
+
 # JMS topic which is stores websub-events for this server
 public configurable string websubEventsTopic = "websub-events";
 
-# Consolidator HTTP endpoint to be used to retrieve current state-snapshot
-public configurable string stateSnapshotEndpoint = "http://localhost:10001";
+# JMS topic which stores the current snapshot for the websub-events
+public configurable string websubEventsSnapshotTopic = "websub-events-snapshot";
 
 # Configurations related to the JMS provider connection
 public configurable jms:ConnectionConfiguration brokerConfig = ?;
 
 # The interval in which JMS consumers wait for new messages
 public configurable int pollingInterval = 10;
+
+# The period in which JMS close method waits to complete
+public configurable decimal gracefulClosePeriod = 5;
 
 # The period between retry requests
 public configurable decimal messageDeliveryRetryInterval = 3;
@@ -45,5 +52,12 @@ public configurable int messageDeliveryRetryCount = 3;
 
 # The message delivery timeout
 public configurable decimal messageDeliveryTimeout = 10;
+
+# The common configurations to be used with state-sync using pipe's
+public configurable common:StateSyncConfig stateSyncConfig = {
+    maxItemLimit: 10,
+    produceTimeout: 5.0,
+    consumeTimeout: 5.0
+};
 
 public final string constructedServerId = string `${serverId}-${common:generateRandomString()}`;

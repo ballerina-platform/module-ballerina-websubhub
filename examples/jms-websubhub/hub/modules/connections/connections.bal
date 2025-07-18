@@ -23,6 +23,10 @@ final jms:Connection jmsConnection = check new (config:brokerConfig);
 # Producer which persist the current in-memory state of the Hub.
 public final jms:MessageProducer statePersistProducer = check createMessageProducer();
 
+# Consumer which reads the persisted websub events snapshot.
+public final [jms:Session, jms:MessageConsumer] websubEventsSnapshotConnection = check createMessageConsumer(
+            config:websubEventsSnapshotTopic, string `websub-events-snapshot-receiver-${config:serverId}`);
+
 # Consumer which reads the persisted websub events.
 public final [jms:Session, jms:MessageConsumer] websubEventsConnection = check createMessageConsumer(
         config:websubEventsTopic, string `websub-events-receiver-${config:constructedServerId}`);
