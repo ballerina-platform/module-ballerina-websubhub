@@ -16,6 +16,12 @@
 
 import ballerina/websubhub;
 
+public type StateSyncConfig record {|
+    int maxItemLimit;
+    decimal produceTimeout;
+    decimal consumeTimeout;
+|};
+
 public type SystemInitEvent record {|
     string serverId;
     string eventType = "init";

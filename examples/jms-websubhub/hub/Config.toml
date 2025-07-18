@@ -34,5 +34,11 @@ connectionFactoryName = "BallerinaHubConnectionFactory"
 username = "admin"
 password = "password"
 
+# The common configurations to be used with state-sync using pipe's
+[jmshub.config.stateSyncConfig]
+maxItemLimit = 10
+produceTimeout = 5.0
+consumeTimeout = 5.0
+
 [ballerina.log]
 level = "INFO"

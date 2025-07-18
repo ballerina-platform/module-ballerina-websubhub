@@ -53,4 +53,11 @@ public configurable int messageDeliveryRetryCount = 3;
 # The message delivery timeout
 public configurable decimal messageDeliveryTimeout = 10;
 
+# The common configurations to be used with state-sync using pipe's
+public configurable common:StateSyncConfig stateSyncConfig = {
+    maxItemLimit: 10,
+    produceTimeout: 5.0,
+    consumeTimeout: 5.0
+};
+
 public final string constructedServerId = string `${serverId}-${common:generateRandomString()}`;
