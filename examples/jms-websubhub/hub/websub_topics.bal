@@ -14,12 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import jmshub.common;
+import jmshub.config;
+
 import ballerina/log;
 import ballerina/websubhub;
 
 import xlibb/pipe;
-import jmshub.common;
-import jmshub.config;
 
 final pipe:Pipe regTopicStateSync = new ('limit = config:stateSyncConfig.maxItemLimit);
 isolated map<websubhub:TopicRegistration> registeredTopicsCache = {};
