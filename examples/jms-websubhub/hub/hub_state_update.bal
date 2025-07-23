@@ -17,6 +17,8 @@
 import jmshub.common;
 import jmshub.config;
 import jmshub.connections as conn;
+import jmshub.coordinator;
+import jmshub.persistence as persist;
 
 import ballerina/lang.value;
 import ballerina/websubhub;
@@ -34,6 +36,7 @@ function updateHubState() returns error? {
         if result is error {
             common:logError("Error occurred while processing state-update event", result, severity = "FATAL");
             check consumer->close();
+            check session->close();
             return result;
         }
     }
@@ -79,4 +82,15 @@ function processStateUpdateEvent(string persistedData) returns error? {
             return error(string `Error occurred while deserializing state-update events with invalid hubMode [${hubMode}]`);
         }
     }
+}
+
+isolated function persistStateSnapshot() returns error? {
+    if !isSystemInitCompleted() || !coordinator:isLeader() {
+        return;
+    }
+    common:SystemStateSnapshot stateSnapshot = {
+        topics: getTopics(),
+        subscriptions: getSubscriptions()
+    };
+    check persist:persistWebsubEventsSnapshot(stateSnapshot);
 }

@@ -52,6 +52,17 @@ isolated function normalizeString(string baseString) returns string {
     return re `[^a-zA-Z0-9]`.replaceAll(baseString, "_");
 }
 
+# Generates a random `decimal` value within the given range.
+#
+# + min - The lower bound of the range (inclusive).
+# + max - The upper bound of the range (exclusive).
+# + return - A randomly generated `decimal` between `min` (inclusive) and `max` (exclusive)
+public isolated function generateRandomDecimal(decimal min, decimal max) returns decimal {
+    float rand = random:createDecimal();
+    decimal range = max - min;
+    return min + range * <decimal>rand;
+}
+
 # Generates a random `string` of 10 characters
 #
 # + return - The generated `string`

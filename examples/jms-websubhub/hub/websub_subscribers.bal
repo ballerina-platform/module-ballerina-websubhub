@@ -34,11 +34,11 @@ const string STALE_STATE = "stale";
 function processWebsubSubscriptionsSnapshotState(websubhub:VerifiedSubscription[] subscriptions) returns error? {
     log:printDebug("Received latest state-snapshot for websub subscriptions", newState = subscriptions);
     foreach websubhub:VerifiedSubscription subscription in subscriptions {
-        check processSubscription(subscription);
+        check processSubscription(subscription, true);
     }
 }
 
-function processSubscription(websubhub:VerifiedSubscription subscription) returns error? {
+function processSubscription(websubhub:VerifiedSubscription subscription, boolean stateInit = false) returns error? {
     string subscriberId = common:generateSubscriberId(subscription.hubTopic, subscription.hubCallback);
     log:printDebug(string `Subscription event received for the subscriber ${subscriberId}`);
     websubhub:VerifiedSubscription? existingSubscription = getSubscription(subscriberId);
@@ -65,14 +65,24 @@ function processSubscription(websubhub:VerifiedSubscription subscription) return
         return;
     }
     _ = start pollForNewUpdates(subscriberId, subscription);
+
+    if stateInit {
+        return;
+    }
+    check persistStateSnapshot();
 }
 
-isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubscription) returns error? {
+isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubscription, boolean stateInit = false) returns error? {
     string subscriberId = common:generateSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
     log:printDebug(string `Unsubscription event received for the subscriber ${subscriberId}, hence removing the subscriber from the internal state`);
     lock {
         _ = subscribersCache.removeIfHasKey(subscriberId);
     }
+
+    if stateInit {
+        return;
+    }
+    check persistStateSnapshot();
 }
 
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
@@ -182,5 +192,11 @@ isolated function getSubscription(string subscriberId) returns websubhub:Verifie
 isolated function isSubscriptionAvailable(string subscriberId) returns boolean {
     lock {
         return subscribersCache.hasKey(subscriberId);
+    }
+}
+
+isolated function getSubscriptions() returns websubhub:VerifiedSubscription[] {
+    lock {
+        return subscribersCache.toArray().cloneReadOnly();
     }
 }
