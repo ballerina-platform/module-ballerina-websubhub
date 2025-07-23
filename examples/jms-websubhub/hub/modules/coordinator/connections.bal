@@ -24,8 +24,8 @@ final jms:MessageProducer producer = check connections:createMessageProducer();
 
 # Consumer which reads the coordination related consensus.
 final [jms:Session, jms:MessageConsumer] consensusConnection = check connections:createMessageConsumer(
-        "__consensus", string `__consensus-receiver-${config:serverId}}`);
+        CONSENSUS_TOPIC, string `__consensus-receiver-${config:serverId}}`);
 
 # Consumer which reads the node-discovery events.
 final [jms:Session, jms:MessageConsumer] nodeDiscoveryConnection = check connections:createMessageConsumer(
-        "__discovery", string `__node-info-receiver-${config:serverId}}`);
+        NODE_DISCOVERY_TOPIC, string `__node-discovery-receiver-${config:serverId}}`);

@@ -14,14 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import jmshub.common;
+import jmshub.config;
+
 import ballerina/lang.runtime;
 import ballerina/log;
-import ballerina/random;
 import ballerina/time;
 
 final decimal heartbeatTimeout = 5;
-final int randomInterval = check random:createIntInRange(1, 5);
-final decimal electionWaitingInterval = heartbeatTimeout + <decimal>(randomInterval);
+final decimal electionWaitingInterval = config:nodeCoordinationConfig.leaderHeartbeatTimeout + common:generateRandomDecimal(1, 5);
 
 isolated function startElection() returns error? {
     while true {
@@ -32,7 +33,7 @@ isolated function startElection() returns error? {
         time:Utc? lastHeartbeatTime = node.getLastHbTime();
         if lastHeartbeatTime is time:Utc {
             decimal diff = time:utcDiffSeconds(time:utcNow(), lastHeartbeatTime);
-            if diff < heartbeatTimeout {
+            if diff < config:nodeCoordinationConfig.leaderHeartbeatTimeout {
                 continue;
             }
         }

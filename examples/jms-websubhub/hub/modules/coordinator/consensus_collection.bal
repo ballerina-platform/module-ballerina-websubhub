@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import jmshub.config;
+
 import ballerina/lang.runtime;
 import ballerina/lang.value;
 import ballerina/log;
@@ -126,6 +128,6 @@ isolated function startHeartbeat() {
             log:printError(
                     string `[Coordinator] Error occurred while sending heartbeat: ${result.message()}`, result);
         }
-        runtime:sleep(heartbeatTimeout);
+        runtime:sleep(config:nodeCoordinationConfig.leaderHeartbeatTimeout);
     }
 }

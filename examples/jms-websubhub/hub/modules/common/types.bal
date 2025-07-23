@@ -16,6 +16,11 @@
 
 import ballerina/websubhub;
 
+public type NodeCoordinationConfig record {|
+    decimal nodeDiscoveryTimeout;
+    decimal leaderHeartbeatTimeout;
+|};
+
 public type StateSyncConfig record {|
     int maxItemLimit;
     decimal produceTimeout;

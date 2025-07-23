@@ -53,6 +53,12 @@ public configurable int messageDeliveryRetryCount = 3;
 # The message delivery timeout
 public configurable decimal messageDeliveryTimeout = 10;
 
+# The configurations related to distributed coordination among multiple `hub` instances
+public configurable common:NodeCoordinationConfig nodeCoordinationConfig = {
+    nodeDiscoveryTimeout: 5,
+    leaderHeartbeatTimeout: 10
+};
+
 # The common configurations to be used with state-sync using pipe's
 public configurable common:StateSyncConfig stateSyncConfig = {
     maxItemLimit: 10,

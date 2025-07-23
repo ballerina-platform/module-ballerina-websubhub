@@ -29,7 +29,7 @@ function init() returns error? {
     // Start `hub` node coordinator
     check coordinator:initCoordinator(persistStateSnapshot);
     while coordinator:isNodeReady() {
-        runtime:sleep(2);
+        runtime:sleep(5);
     }
 
     // Initialize the Hub

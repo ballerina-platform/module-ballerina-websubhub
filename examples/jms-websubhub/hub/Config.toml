@@ -34,6 +34,11 @@ connectionFactoryName = "BallerinaHubConnectionFactory"
 username = "admin"
 password = "password"
 
+# The configurations related to distributed coordination among multiple `hub` instances
+[jmshub.config.nodeCoordinationConfig]
+nodeDiscoveryTimeout = 5.0
+leaderHeartbeatTimeout = 10.0
+
 # The common configurations to be used with state-sync using pipe's
 [jmshub.config.stateSyncConfig]
 maxItemLimit = 10

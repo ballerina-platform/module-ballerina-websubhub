@@ -19,6 +19,9 @@ import jmshub.config;
 import ballerina/lang.runtime;
 import ballerina/log;
 
+const CONSENSUS_TOPIC = "_consensus";
+const NODE_DISCOVERY_TOPIC = "__discovery";
+
 final Node node = new (config:serverId);
 isolated boolean nodeReady = false;
 isolated SystemStateSync? stateSyncCallback = ();
@@ -50,7 +53,7 @@ public function initCoordinator(SystemStateSync stateSync) returns error? {
     check sendNodeInfo();
     _ = start startNodeDiscovery();
     // wait for a small amount of time to give other nodes to join the consensus collection
-    runtime:sleep(5);
+    runtime:sleep(config:nodeCoordinationConfig.nodeDiscoveryTimeout);
 
     _ = start startConsensusReceiver();
     _ = start startElection();

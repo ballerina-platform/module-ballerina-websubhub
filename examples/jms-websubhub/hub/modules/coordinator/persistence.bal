@@ -47,7 +47,7 @@ isolated function sendConsensus(ConsensusMessage message) returns error? {
     jms:BytesMessage jmsMessage = {
         content: message.toJsonString().toBytes()
     };
-    return producer->sendTo({'type: jms:TOPIC, name: "__consensus"}, jmsMessage);
+    return producer->sendTo({'type: jms:TOPIC, name: CONSENSUS_TOPIC}, jmsMessage);
 }
 
 isolated function sendNodeInfo(NodeInfo? nodeInfo = ()) returns error? {
@@ -55,5 +55,5 @@ isolated function sendNodeInfo(NodeInfo? nodeInfo = ()) returns error? {
     jms:BytesMessage jmsMessage = {
         content: message.toJsonString().toBytes()
     };
-    return producer->sendTo({'type: jms:TOPIC, name: "__discovery"}, jmsMessage);
+    return producer->sendTo({'type: jms:TOPIC, name: NODE_DISCOVERY_TOPIC}, jmsMessage);
 }
