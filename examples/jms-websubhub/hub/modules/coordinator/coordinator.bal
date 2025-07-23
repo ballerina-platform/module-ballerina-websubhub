@@ -19,8 +19,8 @@ import jmshub.config;
 import ballerina/lang.runtime;
 import ballerina/log;
 
-const CONSENSUS_TOPIC = "_consensus";
-const NODE_DISCOVERY_TOPIC = "__discovery";
+const CONSENSUS_TOPIC = "__hub_consensus";
+const NODE_DISCOVERY_TOPIC = "__hub_discovery";
 
 final Node node = new (config:serverId);
 isolated boolean nodeReady = false;
