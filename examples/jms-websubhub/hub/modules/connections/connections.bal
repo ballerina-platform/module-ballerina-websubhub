@@ -31,7 +31,7 @@ public final [jms:Session, jms:MessageConsumer] websubEventsSnapshotConnection =
 public final [jms:Session, jms:MessageConsumer] websubEventsConnection = check createMessageConsumer(
         config:websubEventsTopic, string `websub-events-receiver-${config:constructedServerId}`);
 
-isolated function createMessageProducer() returns jms:MessageProducer|error {
+public isolated function createMessageProducer() returns jms:MessageProducer|error {
     jms:Session session = check jmsConnection->createSession();
     return session.createProducer();
 }
