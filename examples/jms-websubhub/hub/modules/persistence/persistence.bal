@@ -21,11 +21,6 @@ import jmshub.connections as conn;
 import ballerina/websubhub;
 import ballerinax/java.jms;
 
-public isolated function persistSystemInitEvent(common:SystemInitEvent event) returns error? {
-    json payload = event.toJson();
-    check produceJmsMessage(config:systemEventsTopic, payload);
-}
-
 public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
     check updateHubState(message);
 }

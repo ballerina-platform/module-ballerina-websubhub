@@ -17,24 +17,29 @@
 import jmshub.common;
 import jmshub.config;
 import jmshub.connections as conn;
+import jmshub.coordinator;
 import jmshub.persistence as persist;
 
+import ballerina/lang.runtime;
 import ballerina/lang.value;
 import ballerina/log;
 import ballerinax/java.jms;
 
 function init() returns error? {
-    // Notify system `init`
-    check notifySystemInit();
+    // Start `hub` node coordinator
+    check coordinator:initCoordinator(persistStateSnapshot);
+    while coordinator:isNodeReady() {
+        runtime:sleep(2);
+    }
+
     // Initialize the Hub
     check initHubState();
     // start hub state sync
     _ = start updateHubState();
-    // start system-events receiver
-    _ = start receiveSystemEvents();
-
     log:printInfo("Websubhub service started successfully");
 }
+
+isolated boolean systemInitCompleted = false;
 
 function initHubState() returns error? {
     var [session, consumer] = conn:websubEventsSnapshotConnection;
@@ -52,6 +57,9 @@ function initHubState() returns error? {
                 }
                 check consumer->close();
                 check session->close();
+                lock {
+                    systemInitCompleted = true;
+                }
                 return;
             }
 
@@ -67,5 +75,11 @@ function initHubState() returns error? {
         check consumer->close();
         check session->close();
         return err;
+    }
+}
+
+isolated function isSystemInitCompleted() returns boolean {
+    lock {
+        return systemInitCompleted;
     }
 }

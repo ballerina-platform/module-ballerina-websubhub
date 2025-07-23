@@ -49,7 +49,7 @@ isolated function processConsensus(ConsensusMessage consensus) returns error? {
         check processHeartbeat(consensus);
     } else if consensus is VoteRequest {
         check processVoteRequest(consensus);
-    } else if consensus is VoteResponse {
+    } else {
         check processVoteResponse(consensus);
     }
 }

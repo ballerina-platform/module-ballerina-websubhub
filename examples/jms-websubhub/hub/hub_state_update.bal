@@ -17,6 +17,7 @@
 import jmshub.common;
 import jmshub.config;
 import jmshub.connections as conn;
+import jmshub.coordinator;
 import jmshub.persistence as persist;
 
 import ballerina/lang.value;
@@ -84,6 +85,9 @@ function processStateUpdateEvent(string persistedData) returns error? {
 }
 
 isolated function persistStateSnapshot() returns error? {
+    if !isSystemInitCompleted() || !coordinator:isLeader() {
+        return;
+    }
     common:SystemStateSnapshot stateSnapshot = {
         topics: getTopics(),
         subscriptions: getSubscriptions()

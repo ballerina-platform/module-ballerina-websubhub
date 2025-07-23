@@ -22,11 +22,6 @@ public type StateSyncConfig record {|
     decimal consumeTimeout;
 |};
 
-public type SystemInitEvent record {|
-    string serverId;
-    string eventType = "init";
-|};
-
 public type SystemStateSnapshot record {|
     websubhub:TopicRegistration[] topics;
     websubhub:VerifiedSubscription[] subscriptions;
