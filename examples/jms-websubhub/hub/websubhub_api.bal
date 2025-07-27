@@ -66,7 +66,7 @@ isolated function registerTopic(websubhub:TopicRegistration message)
         return error websubhub:TopicRegistrationError(
             string `Topic ${topic} has already registered with the Hub`, statusCode = http:STATUS_CONFLICT);
     }
-    
+
     common:WebSubEvent event = getWebSubEvent(message);
     error? persistResult = persist:updateHubState(event);
     if persistResult is error {
