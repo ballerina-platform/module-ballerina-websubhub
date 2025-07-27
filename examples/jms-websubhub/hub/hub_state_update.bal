@@ -51,11 +51,6 @@ isolated function getNextSequenceNumber() returns int {
     }
 }
 
-function isNewerSeqNumber(int newSeq, int currentSeq) returns boolean {
-    int delta = newSeq - currentSeq;
-    return delta > 0 || (currentSeq > newSeq && currentSeq - newSeq > MAX_SEQUENCE_NUMBER / 2);
-}
-
 function updateHubState() returns error? {
     var [session, consumer] = conn:websubEventsConnection;
     while true {
