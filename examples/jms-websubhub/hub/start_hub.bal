@@ -19,6 +19,7 @@ import jmshub.config;
 import jmshub.connections as conn;
 import jmshub.persistence as persist;
 
+import ballerina/lang.runtime;
 import ballerina/lang.value;
 import ballerina/log;
 import ballerinax/java.jms;
@@ -26,6 +27,7 @@ import ballerinax/java.jms;
 function init() returns error? {
     // Notify system `init`
     check sendStateInitRequest();
+    runtime:sleep(3);
     // Initialize the Hub
     check initHubState();
     // start hub state sync
