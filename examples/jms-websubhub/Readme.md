@@ -74,6 +74,7 @@ The `hub` uses the `websub-events` topic to build and update the system state du
 Following JSON structure is used to store the state-snapshot in the `websub-events-snapshot` topic.
 ```json
 {
+   "lastProcessedSequenceNumber": 1,
    "topics":[
       {
          "topic":"orgA-test",
@@ -102,7 +103,18 @@ Each WebSub `topic` directly maps to a JMS `topic`, and each WebSub `subscriber`
 
 ### 3.2. System events
 
-In addition to the state-related JMS topics, the `hub` also uses a separate topic named `system-events` to broadcast system-level notifications. This topic is primarily used to signal the arrival of a new `hub` instance. When a new instance starts up, it publishes a `SystemInitEvent` to the `system-events` topic. Upon receiving this event, any active `hub` instance responds by publishing the current system state snapshot to the `websub-events-snapshot` topic, enabling the newly started instance to initialize its state with the latest data.
+In addition to state-related JMS topics, the `hub` component utilizes a dedicated topic named `system-events` to facilitate system-level coordination between instances.
+
+When a new `hub` instance starts up, it publishes a `StateInitRequest` message to the `system-events` topic. Upon receiving this request, any active `hub` instance responds by publishing a system state snapshot to the `websub-events-snapshot` topic. This allows the newly started instance to initialize itself with the most recent state.
+
+Additionally, whenever an active `hub` instance processes a new WebSub event (e.g., topic registration or deregistration), it performs two actions:
+
+1. Publishes the event to the `websub-events` topic.
+2. Issues a `StatePersistCommand` to the `system-events` topic.
+
+When another `hub` instance receives this command, it responds by publishing the current state snapshot to the `websub-events-snapshot` topic—ensuring state synchronization across all instances.
+
+To implement load balancing and ensure that only one instance handles each event, all `hub` instances operate as **shared consumers** on the `websub-events` topic. This setup follows the **competing consumers pattern**, where only one consumer processes each message, providing scalability and fault tolerance.
 
 | ![System events](./resources/images/system-events-topic.png)      |
 |:-----------------------------------------------------------------:|
