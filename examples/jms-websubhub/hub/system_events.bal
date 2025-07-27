@@ -19,15 +19,16 @@ import jmshub.config;
 import jmshub.connections as conn;
 import jmshub.persistence as persist;
 
+import ballerina/lang.runtime;
 import ballerina/lang.value;
 import ballerina/log;
 import ballerinax/java.jms;
 
-isolated function notifySystemInit() returns error? {
-    common:SystemInitEvent initEvent = {
+isolated function sendStateInitRequest() returns error? {
+    common:StateInitRequest request = {
         serverId: config:serverId
     };
-    check persist:persistSystemInitEvent(initEvent);
+    check persist:persistStateInitRequest(request);
 }
 
 isolated function receiveSystemEvents() returns error? {
@@ -39,7 +40,7 @@ isolated function receiveSystemEvents() returns error? {
             continue;
         }
 
-        error? result = processSystemInitEvent(session, message);
+        error? result = processSystemEvent(session, message);
         if result is error {
             common:logError("Error occurred while processing system-init event", result, severity = "FATAL");
             check consumer->close();
@@ -49,16 +50,26 @@ isolated function receiveSystemEvents() returns error? {
     }
 }
 
-isolated function processSystemInitEvent(jms:Session session, jms:Message message) returns error? {
+isolated function processSystemEvent(jms:Session session, jms:Message message) returns error? {
     if message !is jms:BytesMessage {
         // This particular websubhub implementation relies on JMS byte-messages, hence ignore anything else
         return;
     }
 
     do {
-        common:SystemInitEvent systemInit = check value:fromJsonStringWithType(check string:fromBytes(message.content));
-        log:printDebug("Processing system-init event", event = systemInit);
-        if config:serverId !== systemInit.serverId {
+        common:SystemEvent systemEvent = check value:fromJsonStringWithType(check string:fromBytes(message.content));
+        log:printDebug("Processing system event", event = systemEvent);
+
+        if systemEvent is common:StateInitRequest {
+            if config:serverId !== systemEvent.serverId {
+                check persistStateSnapshot();
+            }
+        } else if systemEvent is common:StatePersistCommand {
+            // Only proceed if the last processed seq-number is greater than or equal to the received seq-number
+            int lastSeqNumber = getLastProcessedSequenceNumber();
+            while lastSeqNumber < systemEvent.sequenceNumber {
+                runtime:sleep(1);
+            }
             check persistStateSnapshot();
         }
         check session->'commit();

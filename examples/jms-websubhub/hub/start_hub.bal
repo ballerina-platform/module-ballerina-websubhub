@@ -25,7 +25,7 @@ import ballerinax/java.jms;
 
 function init() returns error? {
     // Notify system `init`
-    check notifySystemInit();
+    check sendStateInitRequest();
     // Initialize the Hub
     check initHubState();
     // start hub state sync
@@ -46,6 +46,7 @@ function initHubState() returns error? {
                 if lastMessage is jms:BytesMessage {
                     common:SystemStateSnapshot lastPersistedState = check value:fromJsonStringWithType(check string:fromBytes(lastMessage.content));
                     log:printDebug("Processing system state snapshot", state = lastPersistedState);
+                    setLastProcessedSequenceNumber(lastPersistedState.lastProcessedSequenceNumber);
                     check processWebsubTopicsSnapshotState(lastPersistedState.topics);
                     check processWebsubSubscriptionsSnapshotState(lastPersistedState.subscriptions);
                     check persist:persistWebsubEventsSnapshot(lastPersistedState);
@@ -63,7 +64,7 @@ function initHubState() returns error? {
             check session->'commit();
         }
     } on fail error err {
-        common:logError("Error occurred while initializing system-state", err, severity = "FATAL");
+        common:logError("Error occurred while syncing system-state", err, severity = "FATAL");
         check consumer->close();
         check session->close();
         return err;

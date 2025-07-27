@@ -34,11 +34,11 @@ const string STALE_STATE = "stale";
 function processWebsubSubscriptionsSnapshotState(websubhub:VerifiedSubscription[] subscriptions) returns error? {
     log:printDebug("Received latest state-snapshot for websub subscriptions", newState = subscriptions);
     foreach websubhub:VerifiedSubscription subscription in subscriptions {
-        check processSubscription(subscription, true);
+        check processSubscription(subscription);
     }
 }
 
-function processSubscription(websubhub:VerifiedSubscription subscription, boolean stateInit = false) returns error? {
+function processSubscription(websubhub:VerifiedSubscription subscription) returns error? {
     string subscriberId = common:generateSubscriberId(subscription.hubTopic, subscription.hubCallback);
     log:printDebug(string `Subscription event received for the subscriber ${subscriberId}`);
     websubhub:VerifiedSubscription? existingSubscription = getSubscription(subscriberId);
@@ -65,24 +65,14 @@ function processSubscription(websubhub:VerifiedSubscription subscription, boolea
         return;
     }
     _ = start pollForNewUpdates(subscriberId, subscription);
-
-    if stateInit {
-        return;
-    }
-    check persistStateSnapshot();
 }
 
-isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubscription, boolean stateInit = false) returns error? {
+isolated function processUnsubscription(websubhub:VerifiedUnsubscription unsubscription) returns error? {
     string subscriberId = common:generateSubscriberId(unsubscription.hubTopic, unsubscription.hubCallback);
     log:printDebug(string `Unsubscription event received for the subscriber ${subscriberId}, hence removing the subscriber from the internal state`);
     lock {
         _ = subscribersCache.removeIfHasKey(subscriberId);
     }
-
-    if stateInit {
-        return;
-    }
-    check persistStateSnapshot();
 }
 
 isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubscription subscription) returns error? {
@@ -134,10 +124,16 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
                 hubCallback: subscription.hubCallback,
                 hubSecret: subscription.hubSecret
             };
-            error? persistingResult = persist:removeSubscription(unsubscription);
-            if persistingResult is error {
+            common:WebSubEvent event = getWebSubEvent(unsubscription);
+            error? persistResult = persist:updateHubState(event);
+            if persistResult is error {
                 common:logError(
-                        "Error occurred while removing the subscription", persistingResult, subscription = unsubscription);
+                        "Error occurred while removing the subscription", persistResult, subscription = unsubscription);
+            }
+            error? sysEventPersistResult = initiateStatePersist(event);
+            if sysEventPersistResult is error {
+                string errorMessage = string `Failed to initiate state persist command: ${sysEventPersistResult.message()}`;
+                common:logError(errorMessage, sysEventPersistResult, severity = "FATAL");
             }
             return;
         }
@@ -146,10 +142,12 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
         common:StaleSubscription staleSubscription = {
             ...subscription
         };
-        error? persistingResult = persist:addSubscription(staleSubscription);
-        if persistingResult is error {
+        common:WebSubEvent event = getWebSubEvent(staleSubscription);
+        error? persistResult = persist:updateHubState(event);
+        // No need to send a state-persist command here as stale-subscription is a temporary state
+        if persistResult is error {
             common:logError(
-                    "Error occurred while persisting the stale subscription", persistingResult, subscription = staleSubscription);
+                    "Error occurred while persisting the stale subscription", persistResult, subscription = staleSubscription);
         }
     }
 }

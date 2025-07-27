@@ -22,12 +22,21 @@ public type StateSyncConfig record {|
     decimal consumeTimeout;
 |};
 
-public type SystemInitEvent record {|
+public type SystemEvent StateInitRequest|StatePersistCommand;
+
+public type StateInitRequest record {|
     string serverId;
-    string eventType = "init";
+    string eventType = "init-state";
+|};
+
+public type StatePersistCommand record {|
+    string serverId;
+    int sequenceNumber;
+    string eventType = "persist-state";
 |};
 
 public type SystemStateSnapshot record {|
+    int lastProcessedSequenceNumber;
     websubhub:TopicRegistration[] topics;
     websubhub:VerifiedSubscription[] subscriptions;
 |};
@@ -43,3 +52,11 @@ public type SubscriptionDetails record {|
 |};
 
 public type InvalidSubscriptionError distinct error<SubscriptionDetails>;
+
+# WebSub Event type
+public type EventType websubhub:TopicRegistration|websubhub:TopicDeregistration|websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription;
+
+public type WebSubEvent record {|
+    int sequenceNumber;
+    EventType event;
+|};

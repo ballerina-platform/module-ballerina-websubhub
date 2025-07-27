@@ -21,40 +21,28 @@ import jmshub.connections as conn;
 import ballerina/websubhub;
 import ballerinax/java.jms;
 
-public isolated function persistSystemInitEvent(common:SystemInitEvent event) returns error? {
-    json payload = event.toJson();
+public isolated function persistStateInitRequest(common:StateInitRequest request) returns error? {
+    json payload = request.toJson();
     check produceJmsMessage(config:systemEventsTopic, payload);
 }
 
-public isolated function addRegsiteredTopic(websubhub:TopicRegistration message) returns error? {
-    check updateHubState(message);
+public isolated function persistStatePersistCommand(common:StatePersistCommand command) returns error? {
+    json payload = command.toJson();
+    check produceJmsMessage(config:systemEventsTopic, payload);
 }
 
-public isolated function removeRegsiteredTopic(websubhub:TopicDeregistration message) returns error? {
-    check updateHubState(message);
-}
-
-public isolated function addSubscription(websubhub:VerifiedSubscription message) returns error? {
-    check updateHubState(message);
-}
-
-public isolated function removeSubscription(websubhub:VerifiedUnsubscription message) returns error? {
-    check updateHubState(message);
-}
-
-public isolated function persistWebsubEventsSnapshot(common:SystemStateSnapshot systemStateSnapshot) returns error? {
-    json payload = systemStateSnapshot.toJson();
-    check produceJmsMessage(config:websubEventsSnapshotTopic, payload);
-}
-
-isolated function updateHubState(websubhub:TopicRegistration|websubhub:TopicDeregistration|
-                                websubhub:VerifiedSubscription|websubhub:VerifiedUnsubscription message) returns error? {
+public isolated function updateHubState(common:WebSubEvent message) returns error? {
     json jsonData = message.toJson();
     do {
         check produceJmsMessage(config:websubEventsTopic, jsonData);
     } on fail error e {
         return error(string `Failed to send updates for hub-state: ${e.message()}`, cause = e);
     }
+}
+
+public isolated function persistWebsubEventsSnapshot(common:SystemStateSnapshot systemStateSnapshot) returns error? {
+    json payload = systemStateSnapshot.toJson();
+    check produceJmsMessage(config:websubEventsSnapshotTopic, payload);
 }
 
 public isolated function addUpdateMessage(string topic, websubhub:UpdateMessage message) returns error? {
