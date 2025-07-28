@@ -15,21 +15,60 @@
 // under the License.
 
 import jmshub.common;
+import jmshub.config;
+import jmshub.connections as conn;
+import jmshub.persistence as persist;
 
+import ballerina/lang.runtime;
+import ballerina/lang.value;
 import ballerina/log;
+import ballerinax/java.jms;
 
-import wso2/mi;
+function init() returns error? {
+    // Notify system `init`
+    check sendStateInitRequest();
+    runtime:sleep(3);
+    // Initialize the Hub
+    check initHubState();
+    // start hub state sync
+    _ = start updateHubState();
+    // start system-events receiver
+    _ = start receiveSystemEvents();
 
-@mi:Operation
-public function initHubState(json initialState) {
+    log:printInfo("Websubhub service started successfully");
+}
+
+function initHubState() returns error? {
+    var [session, consumer] = conn:websubEventsSnapshotConnection;
     do {
-        common:SystemStateSnapshot systemStateSnapshot = check initialState.fromJsonWithType();
-        check processWebsubTopicsSnapshotState(systemStateSnapshot.topics);
-        check processWebsubSubscriptionsSnapshotState(systemStateSnapshot.subscriptions);
-        // Start hub-state update worker
-        _ = start updateHubState();
-        log:printInfo("Websubhub service started successfully");
+        jms:BytesMessage? lastMessage = ();
+        while true {
+            jms:Message? message = check consumer->receive(config:pollingInterval);
+            if message is () {
+                if lastMessage is jms:BytesMessage {
+                    common:SystemStateSnapshot lastPersistedState = check value:fromJsonStringWithType(check string:fromBytes(lastMessage.content));
+                    log:printDebug("Processing system state snapshot", state = lastPersistedState);
+                    setLastProcessedSequenceNumber(lastPersistedState.lastProcessedSequenceNumber);
+                    check processWebsubTopicsSnapshotState(lastPersistedState.topics);
+                    check processWebsubSubscriptionsSnapshotState(lastPersistedState.subscriptions);
+                    check persist:persistWebsubEventsSnapshot(lastPersistedState);
+                }
+                check consumer->close();
+                check session->close();
+                return;
+            }
+
+            if message !is jms:BytesMessage {
+                // This particular websubhub implementation relies on JMS byte-messages, hence ignore anything else
+                continue;
+            }
+            lastMessage = message;
+            check session->'commit();
+        }
     } on fail error err {
-        common:logError("Error occurred while initializing the hub-state using the latest state-snapshot", err, severity = "FATAL");
+        common:logError("Error occurred while syncing system-state", err, severity = "FATAL");
+        check consumer->close();
+        check session->close();
+        return err;
     }
 }

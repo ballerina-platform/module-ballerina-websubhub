@@ -6,11 +6,14 @@ serverId = "server-1"
 # The port that is used to start the hub
 hubPort = 9000
 
+# JMS topic which is stores system-events
+systemEventsTopic = "system-events"
+
 # JMS topic which is stores websub-events for this server
 websubEventsTopic = "websub-events"
 
-# Consolidator HTTP endpoint to be used to retrieve current state-snapshot
-stateSnapshotEndpoint = "http://localhost:10001"
+# JMS topic which stores the current snapshot for the websub-events
+websubEventsSnapshotTopic = "websub-events-snapshot"
 
 # The interval in which JMS consumers wait for new messages in miliseconds
 pollingInterval = 10000
@@ -30,3 +33,12 @@ providerUrl = "file:/<path-to>/jndi-bindings"
 connectionFactoryName = "BallerinaHubConnectionFactory"
 username = "admin"
 password = "password"
+
+# The common configurations to be used with state-sync using pipe's
+[jmshub.config.stateSyncConfig]
+maxItemLimit = 10
+produceTimeout = 5.0
+consumeTimeout = 5.0
+
+[ballerina.log]
+level = "INFO"

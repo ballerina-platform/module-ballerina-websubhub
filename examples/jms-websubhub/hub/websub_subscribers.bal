@@ -124,10 +124,16 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
                 hubCallback: subscription.hubCallback,
                 hubSecret: subscription.hubSecret
             };
-            error? persistingResult = persist:removeSubscription(unsubscription);
-            if persistingResult is error {
+            common:WebSubEvent event = getWebSubEvent(unsubscription);
+            error? persistResult = persist:updateHubState(event);
+            if persistResult is error {
                 common:logError(
-                        "Error occurred while removing the subscription", persistingResult, subscription = unsubscription);
+                        "Error occurred while removing the subscription", persistResult, subscription = unsubscription);
+            }
+            error? sysEventPersistResult = initiateStatePersist(event);
+            if sysEventPersistResult is error {
+                string errorMessage = string `Failed to initiate state persist command: ${sysEventPersistResult.message()}`;
+                common:logError(errorMessage, sysEventPersistResult, severity = "FATAL");
             }
             return;
         }
@@ -136,10 +142,12 @@ isolated function pollForNewUpdates(string subscriberId, websubhub:VerifiedSubsc
         common:StaleSubscription staleSubscription = {
             ...subscription
         };
-        error? persistingResult = persist:addSubscription(staleSubscription);
-        if persistingResult is error {
+        common:WebSubEvent event = getWebSubEvent(staleSubscription);
+        error? persistResult = persist:updateHubState(event);
+        // No need to send a state-persist command here as stale-subscription is a temporary state
+        if persistResult is error {
             common:logError(
-                    "Error occurred while persisting the stale subscription", persistingResult, subscription = staleSubscription);
+                    "Error occurred while persisting the stale subscription", persistResult, subscription = staleSubscription);
         }
     }
 }
@@ -182,5 +190,11 @@ isolated function getSubscription(string subscriberId) returns websubhub:Verifie
 isolated function isSubscriptionAvailable(string subscriberId) returns boolean {
     lock {
         return subscribersCache.hasKey(subscriberId);
+    }
+}
+
+isolated function getSubscriptions() returns websubhub:VerifiedSubscription[] {
+    lock {
+        return subscribersCache.toArray().cloneReadOnly();
     }
 }

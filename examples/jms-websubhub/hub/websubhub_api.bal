@@ -15,6 +15,7 @@
 // under the License.
 
 import jmshub.common;
+import jmshub.config;
 import jmshub.persistence as persist;
 
 import ballerina/http;
@@ -65,12 +66,22 @@ isolated function registerTopic(websubhub:TopicRegistration message)
         return error websubhub:TopicRegistrationError(
             string `Topic ${topic} has already registered with the Hub`, statusCode = http:STATUS_CONFLICT);
     }
-    error? persistResult = persist:addRegsiteredTopic(message);
+
+    common:WebSubEvent event = getWebSubEvent(message);
+    error? persistResult = persist:updateHubState(event);
     if persistResult is error {
         string errorMessage = string `Failed to persist the websub topic registration for topic: ${topic}`;
         common:logError(errorMessage, persistResult, severity = "FATAL");
         return error websubhub:TopicRegistrationError(
-            errorMessage, persistResult, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
+                errorMessage, persistResult, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
+    }
+
+    error? sysEventPersistResult = initiateStatePersist(event);
+    if sysEventPersistResult is error {
+        string errorMessage = string `Failed to initiate state persist command: ${sysEventPersistResult.message()}`;
+        common:logError(errorMessage, sysEventPersistResult, severity = "FATAL");
+        return error websubhub:TopicRegistrationError(
+                errorMessage, sysEventPersistResult, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
     }
     return websubhub:TOPIC_REGISTRATION_SUCCESS;
 }
@@ -112,12 +123,21 @@ isolated function deregisterTopic(websubhub:TopicDeregistration message)
                 string `Topic ${topic} has not been registered in the Hub`, statusCode = http:STATUS_NOT_FOUND);
     }
 
-    error? persistResult = persist:removeRegsiteredTopic(message);
+    common:WebSubEvent event = getWebSubEvent(message);
+    error? persistResult = persist:updateHubState(event);
     if persistResult is error {
         string errorMessage = string `Failed to persist the websub topic deregistration for topic: ${topic}`;
         common:logError(errorMessage, persistResult, severity = "FATAL");
         return error websubhub:TopicDeregistrationError(
                 errorMessage, persistResult, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
+    }
+
+    error? sysEventPersistResult = initiateStatePersist(event);
+    if sysEventPersistResult is error {
+        string errorMessage = string `Failed to initiate state persist command: ${sysEventPersistResult.message()}`;
+        common:logError(errorMessage, sysEventPersistResult, severity = "FATAL");
+        return error websubhub:TopicDeregistrationError(
+                errorMessage, sysEventPersistResult, statusCode = http:STATUS_INTERNAL_SERVER_ERROR);
     }
 
     return websubhub:TOPIC_DEREGISTRATION_SUCCESS;
@@ -200,7 +220,7 @@ isolated function verifyAndValidateSubscription(json request) {
 public isolated function onSubscriptionValidation(json request) returns json {
     do {
         websubhub:Subscription subscription = check request.fromJsonWithType();
-        websubhub:SubscriptionDeniedError? subscriptionDenied = check validateSubscription(subscription);
+        websubhub:SubscriptionDeniedError? subscriptionDenied = validateSubscription(subscription);
         if subscriptionDenied is () {
             return {
                 statusCode: http:STATUS_ACCEPTED,
@@ -278,9 +298,15 @@ public isolated function onSubscriptionVerification(json request) {
 
 isolated function onSubscriptionIntentVerified(websubhub:VerifiedSubscription message) {
     websubhub:VerifiedSubscription subscription = prepareSubscriptionToBePersisted(message);
-    error? persistingResult = persist:addSubscription(subscription.cloneReadOnly());
-    if persistingResult is error {
-        common:logError("Error occurred while persisting the subscription", persistingResult);
+    common:WebSubEvent event = getWebSubEvent(subscription);
+    error? persistResult = persist:updateHubState(event);
+    if persistResult is error {
+        common:logError("Error occurred while persisting the subscription", persistResult, severity = "FATAL");
+    }
+    error? sysEventPersistResult = initiateStatePersist(event);
+    if sysEventPersistResult is error {
+        string errorMessage = string `Failed to initiate state persist command: ${sysEventPersistResult.message()}`;
+        common:logError(errorMessage, sysEventPersistResult, severity = "FATAL");
     }
 }
 
@@ -405,8 +431,29 @@ public isolated function onUnsubscriptionVerification(json request) {
 }
 
 isolated function onUnsubscriptionIntentVerified(websubhub:VerifiedUnsubscription message) {
-    error? persistResult = persist:removeSubscription(message.cloneReadOnly());
+    common:WebSubEvent event = getWebSubEvent(message);
+    error? persistResult = persist:updateHubState(event);
     if persistResult is error {
         common:logError("Error occurred while persisting the unsubscription", persistResult, severity = "FATAL");
     }
+    error? sysEventPersistResult = initiateStatePersist(event);
+    if sysEventPersistResult is error {
+        string errorMessage = string `Failed to initiate state persist command: ${sysEventPersistResult.message()}`;
+        common:logError(errorMessage, sysEventPersistResult, severity = "FATAL");
+    }
+}
+
+isolated function getWebSubEvent(common:EventType event) returns common:WebSubEvent {
+    return {
+        sequenceNumber: getNextSequenceNumber(),
+        event
+    };
+}
+
+isolated function initiateStatePersist(common:WebSubEvent event) returns error? {
+    common:StatePersistCommand command = {
+        serverId: config:serverId,
+        sequenceNumber: event.sequenceNumber
+    };
+    return persist:persistStatePersistCommand(command);
 }

@@ -17,10 +17,39 @@
 import jmshub.common;
 import jmshub.config;
 import jmshub.connections as conn;
+import jmshub.persistence as persist;
 
 import ballerina/lang.value;
+import ballerina/log;
 import ballerina/websubhub;
 import ballerinax/java.jms;
+
+const int MAX_SEQUENCE_NUMBER = 9223372036854775807;
+const int MIN_SEQUENCE_NUMBER = 0;
+
+isolated int lastProcessedMessageSequenceNumber = 0;
+
+isolated function setLastProcessedSequenceNumber(int sequenceNumber) {
+    lock {
+        lastProcessedMessageSequenceNumber = sequenceNumber;
+    }
+}
+
+isolated function getLastProcessedSequenceNumber() returns int {
+    lock {
+        return lastProcessedMessageSequenceNumber;
+    }
+}
+
+isolated function getNextSequenceNumber() returns int {
+    lock {
+        if (lastProcessedMessageSequenceNumber >= MAX_SEQUENCE_NUMBER) {
+            return MIN_SEQUENCE_NUMBER;
+        } else {
+            return lastProcessedMessageSequenceNumber + 1;
+        }
+    }
+}
 
 function updateHubState() returns error? {
     var [session, consumer] = conn:websubEventsConnection;
@@ -34,6 +63,7 @@ function updateHubState() returns error? {
         if result is error {
             common:logError("Error occurred while processing state-update event", result, severity = "FATAL");
             check consumer->close();
+            check session->close();
             return result;
         }
     }
@@ -56,27 +86,28 @@ function processStateUpdateMessage(jms:Session session, jms:Message message) ret
 }
 
 function processStateUpdateEvent(string persistedData) returns error? {
-    json event = check value:fromJsonString(persistedData);
-    string hubMode = check event.hubMode;
-    match event.hubMode {
-        "register" => {
-            websubhub:TopicRegistration topicRegistration = check event.fromJsonWithType();
-            check processTopicRegistration(topicRegistration);
-        }
-        "deregister" => {
-            websubhub:TopicDeregistration topicDeregistration = check event.fromJsonWithType();
-            check processTopicDeregistration(topicDeregistration);
-        }
-        "subscribe" => {
-            websubhub:VerifiedSubscription subscription = check event.fromJsonWithType();
-            check processSubscription(subscription);
-        }
-        "unsubscribe" => {
-            websubhub:VerifiedUnsubscription unsubscription = check event.fromJsonWithType();
-            check processUnsubscription(unsubscription);
-        }
-        _ => {
-            return error(string `Error occurred while deserializing state-update events with invalid hubMode [${hubMode}]`);
-        }
+    common:WebSubEvent message = check value:fromJsonStringWithType(persistedData);
+    common:EventType event = message.event;
+    if event is websubhub:TopicRegistration {
+        check processTopicRegistration(event);
+    } else if event is websubhub:TopicDeregistration {
+        check processTopicDeregistration(event);
+    } else if event is websubhub:VerifiedSubscription {
+        check processSubscription(event);
+    } else if event is websubhub:VerifiedUnsubscription {
+        check processUnsubscription(event);
+    } else {
+        return error(string `Could not identify the event type for the event: ${event.toJsonString()}`);
     }
+    setLastProcessedSequenceNumber(message.sequenceNumber);
+}
+
+isolated function persistStateSnapshot() returns error? {
+    common:SystemStateSnapshot stateSnapshot = {
+        lastProcessedSequenceNumber: getLastProcessedSequenceNumber(),
+        topics: getTopics(),
+        subscriptions: getSubscriptions()
+    };
+    log:printDebug("Currrent state", state = stateSnapshot);
+    check persist:persistWebsubEventsSnapshot(stateSnapshot);
 }
