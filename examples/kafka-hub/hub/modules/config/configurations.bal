@@ -14,9 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import kafkaHub.util;
-import ballerina/os;
 import kafkaHub.types;
+import kafkaHub.util;
+
+import ballerina/os;
+
+# Flag to check whether to enable/disable https
+public configurable boolean HTTPS_ON = true;
+
+public final boolean ENABLE_HTTPS = os:getEnv("HTTPS_ON") == "" ? HTTPS_ON : check boolean:fromString(os:getEnv("HTTPS_ON"));
 
 # Flag to check whether to enable/disable security
 public configurable boolean SECURITY_ON = true;
@@ -35,7 +41,7 @@ public final string KAFKA_URL = os:getEnv("KAFKA_BOOTSTRAP_NODE") == "" ? KAFKA_
 # Maximum number of records returned in a single call to consumer-poll
 public configurable int KAFKA_CONSUMER_MAX_POLL_RECORDS = ?;
 
-public final int CONSUMER_MAX_POLL_RECORDS = os:getEnv("KAFKA_CONSUMER_MAX_POLL_RECORDS") == "" ? 
+public final int CONSUMER_MAX_POLL_RECORDS = os:getEnv("KAFKA_CONSUMER_MAX_POLL_RECORDS") == "" ?
     KAFKA_CONSUMER_MAX_POLL_RECORDS : check int:fromString(os:getEnv("KAFKA_CONSUMER_MAX_POLL_RECORDS"));
 
 # Kafka topic which is stores websub-events for this server
