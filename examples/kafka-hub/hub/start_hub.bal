@@ -26,15 +26,22 @@ public function main() returns error? {
     check initializeHubState();
 
     int hubPort = check getHubPort();
-    // Start the HealthCheck Service
-    http:Listener httpListener = check new (hubPort, 
-        secureSocket = {
-            key: {
-                path: config:SSL_KEYSTORE_PATH,
-                password: config:KEYSTORE_PASSWORD
+
+    http:Listener httpListener;
+    if config:ENABLE_HTTPS {
+        httpListener = check new (hubPort, 
+            secureSocket = {
+                key: {
+                    path: config:SSL_KEYSTORE_PATH,
+                    password: config:KEYSTORE_PASSWORD
+                }
             }
-        }
-    );
+        );
+    } else {
+        httpListener = check new (hubPort);
+    }
+    
+    // Start the HealthCheck Service
     runtime:registerListener(httpListener);
     check httpListener.attach(healthCheckService, "/health");
 
