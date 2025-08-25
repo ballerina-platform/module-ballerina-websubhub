@@ -1,0 +1,4220 @@
+{
+  "promotional_messages": [
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-14"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-16"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-13"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-11"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-21"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-22"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-24"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-19"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-20"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-12"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-28"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-23"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-27"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Exclusive online deal!",
+      "validUntil": "2025-12-15"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-10"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Flash sale! Hurry up!",
+      "validUntil": "2025-12-18"
+    },
+    {
+      "promoId": "PRM00004",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-25"
+    },
+    {
+      "promoId": "PRM00005",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-24"
+    }
+  ],
+  "price_updates": [
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029",
+      "previousPrice": 33433,
+      "newPrice": 28999,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 19388,
+      "newPrice": 17716,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 30990,
+      "newPrice": 28121,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 38480,
+      "newPrice": 33579,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 26172,
+      "newPrice": 26069,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 23853,
+      "newPrice": 21802,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 51528,
+      "newPrice": 49128,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 45733,
+      "newPrice": 43854,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 6427,
+      "newPrice": 4809,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 13982,
+      "newPrice": 13705,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 11414,
+      "newPrice": 10088,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 34954,
+      "newPrice": 32392,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 7909,
+      "newPrice": 5290,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 16981,
+      "newPrice": 14015,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 54496,
+      "newPrice": 49912,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 33658,
+      "newPrice": 29576,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 18008,
+      "newPrice": 16339,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 34103,
+      "newPrice": 31881,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 17342,
+      "newPrice": 14958,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 13632,
+      "newPrice": 10027,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 13362,
+      "newPrice": 10808,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 16567,
+      "newPrice": 13088,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 35740,
+      "newPrice": 31560,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 9998,
+      "newPrice": 8673,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 21374,
+      "newPrice": 17993,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 47212,
+      "newPrice": 42816,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 27732,
+      "newPrice": 23884,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 4951,
+      "newPrice": 2280,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 38544,
+      "newPrice": 35356,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 23676,
+      "newPrice": 18815,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 6181,
+      "newPrice": 1211,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 47414,
+      "newPrice": 45925,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 7104,
+      "newPrice": 2915,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 9579,
+      "newPrice": 8188,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 27599,
+      "newPrice": 26138,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 9441,
+      "newPrice": 7383,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 19185,
+      "newPrice": 14507,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 7813,
+      "newPrice": 4807,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 17964,
+      "newPrice": 16678,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 13243,
+      "newPrice": 12221,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 13878,
+      "newPrice": 13753,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 9681,
+      "newPrice": 6741,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 9768,
+      "newPrice": 9383,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 4982,
+      "newPrice": 4367,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 26051,
+      "newPrice": 23373,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 6145,
+      "newPrice": 5370,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 51976,
+      "newPrice": 48840,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 38088,
+      "newPrice": 35970,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 29198,
+      "newPrice": 28244,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 28636,
+      "newPrice": 24795,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 33798,
+      "newPrice": 29882,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 12339,
+      "newPrice": 8817,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 49190,
+      "newPrice": 47372,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 18702,
+      "newPrice": 17749,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 24955,
+      "newPrice": 20219,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 9312,
+      "newPrice": 7761,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 46542,
+      "newPrice": 44211,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 46620,
+      "newPrice": 42790,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 33309,
+      "newPrice": 33208,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 3830,
+      "newPrice": 2045,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 47340,
+      "newPrice": 46365,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 11329,
+      "newPrice": 9135,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 30263,
+      "newPrice": 26101,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 9382,
+      "newPrice": 6995,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 33497,
+      "newPrice": 32627,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 9103,
+      "newPrice": 5885,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 8251,
+      "newPrice": 3542,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 20640,
+      "newPrice": 19071,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 19845,
+      "newPrice": 15624,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 49906,
+      "newPrice": 49764,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 20462,
+      "newPrice": 16826,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 43665,
+      "newPrice": 42316,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 40471,
+      "newPrice": 37230,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 7400,
+      "newPrice": 2559,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 42033,
+      "newPrice": 38736,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 51117,
+      "newPrice": 49950,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 18536,
+      "newPrice": 14177,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 50152,
+      "newPrice": 48979,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 36025,
+      "newPrice": 35260,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 25449,
+      "newPrice": 21782,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 31026,
+      "newPrice": 28037,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 9630,
+      "newPrice": 7491,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 7030,
+      "newPrice": 6672,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 45661,
+      "newPrice": 43208,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 17368,
+      "newPrice": 16322,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 52308,
+      "newPrice": 47775,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 49217,
+      "newPrice": 44532,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 20305,
+      "newPrice": 15327,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 32785,
+      "newPrice": 32098,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 9845,
+      "newPrice": 6332,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 23534,
+      "newPrice": 22059,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 17887,
+      "newPrice": 14353,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 24873,
+      "newPrice": 23947,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 31976,
+      "newPrice": 31613,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 51039,
+      "newPrice": 49434,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 27446,
+      "newPrice": 25215,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 37918,
+      "newPrice": 36367,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 17360,
+      "newPrice": 16586,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 8845,
+      "newPrice": 4538,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 40237,
+      "newPrice": 36033,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 28374,
+      "newPrice": 23826,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 49009,
+      "newPrice": 44302,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 14908,
+      "newPrice": 14072,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 16163,
+      "newPrice": 14444,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 24358,
+      "newPrice": 21753,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 31877,
+      "newPrice": 31301,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 48657,
+      "newPrice": 43925,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 15490,
+      "newPrice": 14504,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 17714,
+      "newPrice": 14254,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 28533,
+      "newPrice": 26596,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 26788,
+      "newPrice": 25107,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 50605,
+      "newPrice": 49061,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 30075,
+      "newPrice": 26641,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 36913,
+      "newPrice": 34667,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 43212,
+      "newPrice": 40739,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 39588,
+      "newPrice": 37786,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 18018,
+      "newPrice": 14187,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 43645,
+      "newPrice": 40915,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 7474,
+      "newPrice": 5036,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 50977,
+      "newPrice": 46387,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 44916,
+      "newPrice": 41943,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 17859,
+      "newPrice": 16743,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 3844,
+      "newPrice": 3124,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 17432,
+      "newPrice": 14772,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 46567,
+      "newPrice": 42922,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 30977,
+      "newPrice": 26671,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 24698,
+      "newPrice": 22092,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 29831,
+      "newPrice": 29255,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 28181,
+      "newPrice": 23453,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 41588,
+      "newPrice": 41256,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 42462,
+      "newPrice": 38794,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 34748,
+      "newPrice": 30683,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 15208,
+      "newPrice": 10373,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 5145,
+      "newPrice": 4779,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 23204,
+      "newPrice": 20742,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 10133,
+      "newPrice": 6407,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 13163,
+      "newPrice": 9480,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 24274,
+      "newPrice": 20296,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 21820,
+      "newPrice": 20645,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 4931,
+      "newPrice": 1810,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 47151,
+      "newPrice": 46200,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 43757,
+      "newPrice": 42654,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 39186,
+      "newPrice": 38517,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 50013,
+      "newPrice": 49706,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 6734,
+      "newPrice": 1771,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 47690,
+      "newPrice": 46641,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 32937,
+      "newPrice": 28153,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 17943,
+      "newPrice": 12961,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 27125,
+      "newPrice": 26075,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 50385,
+      "newPrice": 45407,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 14402,
+      "newPrice": 9517,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 46545,
+      "newPrice": 41783,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 53507,
+      "newPrice": 48660,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 21164,
+      "newPrice": 19878,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 4576,
+      "newPrice": 2243,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 34285,
+      "newPrice": 33366,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 30761,
+      "newPrice": 28419,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 13815,
+      "newPrice": 12112,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 42381,
+      "newPrice": 40816,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 44332,
+      "newPrice": 42113,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 11034,
+      "newPrice": 8933,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 44586,
+      "newPrice": 41533,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 14189,
+      "newPrice": 13721,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 37762,
+      "newPrice": 33956,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 26380,
+      "newPrice": 24466,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 10160,
+      "newPrice": 8692,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 50858,
+      "newPrice": 47010,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 22030,
+      "newPrice": 21283,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 38269,
+      "newPrice": 36530,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 27164,
+      "newPrice": 23937,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 37779,
+      "newPrice": 33700,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 32422,
+      "newPrice": 29287,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 9110,
+      "newPrice": 6383,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 15409,
+      "newPrice": 12705,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 20467,
+      "newPrice": 16064,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 26820,
+      "newPrice": 25478,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 49749,
+      "newPrice": 49593,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 13131,
+      "newPrice": 10283,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 13246,
+      "newPrice": 13103,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 21905,
+      "newPrice": 21419,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 46638,
+      "newPrice": 46300,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 45025,
+      "newPrice": 40383,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 47769,
+      "newPrice": 45846,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 14256,
+      "newPrice": 13648,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 15982,
+      "newPrice": 14239,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 27895,
+      "newPrice": 27140,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 23241,
+      "newPrice": 22257,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 9506,
+      "newPrice": 4866,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 46450,
+      "newPrice": 44922,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 34250,
+      "newPrice": 30857,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 26079,
+      "newPrice": 21435,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 13687,
+      "newPrice": 11855,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 29640,
+      "newPrice": 28049,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 34099,
+      "newPrice": 32634,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 52520,
+      "newPrice": 48231,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 19377,
+      "newPrice": 16965,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 42298,
+      "newPrice": 37465,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 49500,
+      "newPrice": 48482,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 4483,
+      "newPrice": 1857,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 15782,
+      "newPrice": 13538,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 16182,
+      "newPrice": 13827,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 32681,
+      "newPrice": 32541,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 14764,
+      "newPrice": 13541,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 16569,
+      "newPrice": 14090,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 32933,
+      "newPrice": 32296,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 33506,
+      "newPrice": 33334,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 20805,
+      "newPrice": 20684,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 25496,
+      "newPrice": 22229,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 40016,
+      "newPrice": 39074,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 34685,
+      "newPrice": 32439,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 44086,
+      "newPrice": 43905,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 38493,
+      "newPrice": 38189,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 47123,
+      "newPrice": 46431,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 8061,
+      "newPrice": 6781,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 25950,
+      "newPrice": 21279,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 20205,
+      "newPrice": 16381,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 6499,
+      "newPrice": 3500,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 26410,
+      "newPrice": 21533,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 17034,
+      "newPrice": 13858,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 24784,
+      "newPrice": 24474,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 24136,
+      "newPrice": 23447,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 27374,
+      "newPrice": 22870,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 33690,
+      "newPrice": 29823,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 13005,
+      "newPrice": 11216,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 14612,
+      "newPrice": 10612,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 35777,
+      "newPrice": 33890,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 37099,
+      "newPrice": 32175,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 50151,
+      "newPrice": 49447,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 42989,
+      "newPrice": 41475,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 49213,
+      "newPrice": 47316,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 27501,
+      "newPrice": 26542,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 42603,
+      "newPrice": 41555,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 51013,
+      "newPrice": 49078,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 44193,
+      "newPrice": 43333,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 48049,
+      "newPrice": 47779,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 46727,
+      "newPrice": 45414,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 26768,
+      "newPrice": 23298,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 7450,
+      "newPrice": 5909,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 20402,
+      "newPrice": 18626,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 31804,
+      "newPrice": 27104,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 31378,
+      "newPrice": 28538,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 29921,
+      "newPrice": 25859,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 8901,
+      "newPrice": 8313,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 46413,
+      "newPrice": 42426,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 10803,
+      "newPrice": 7170,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 24225,
+      "newPrice": 22940,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 42425,
+      "newPrice": 38594,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 16649,
+      "newPrice": 15797,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 16552,
+      "newPrice": 15476,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 35870,
+      "newPrice": 32611,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 17446,
+      "newPrice": 16957,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 41160,
+      "newPrice": 39173,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 18421,
+      "newPrice": 16428,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 6572,
+      "newPrice": 1892,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 45718,
+      "newPrice": 43231,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 33297,
+      "newPrice": 30944,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 40600,
+      "newPrice": 36633,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 15345,
+      "newPrice": 14859,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 15638,
+      "newPrice": 10912,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 19644,
+      "newPrice": 18706,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 8888,
+      "newPrice": 8412,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 9064,
+      "newPrice": 5484,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 51276,
+      "newPrice": 48451,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 46793,
+      "newPrice": 43238,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 27882,
+      "newPrice": 26500,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 31648,
+      "newPrice": 29839,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 15903,
+      "newPrice": 12708,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 37372,
+      "newPrice": 35717,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 12410,
+      "newPrice": 7620,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 38455,
+      "newPrice": 36862,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 49073,
+      "newPrice": 48883,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 9317,
+      "newPrice": 6615,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 34954,
+      "newPrice": 33641,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_4",
+      "previousPrice": 9534,
+      "newPrice": 6211,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 35375,
+      "newPrice": 33679,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 42374,
+      "newPrice": 42160,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 23987,
+      "newPrice": 21918,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 15286,
+      "newPrice": 10739,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 14118,
+      "newPrice": 11096,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 30271,
+      "newPrice": 28532,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 7745,
+      "newPrice": 6534,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 22014,
+      "newPrice": 17497,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 13336,
+      "newPrice": 8626,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 26807,
+      "newPrice": 26074,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 32973,
+      "newPrice": 28473,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 45664,
+      "newPrice": 42596,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 16108,
+      "newPrice": 15345,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 17649,
+      "newPrice": 16454,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 43251,
+      "newPrice": 41577,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 4011,
+      "newPrice": 3417,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 12106,
+      "newPrice": 9922,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 11885,
+      "newPrice": 11493,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 29905,
+      "newPrice": 29400,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 30549,
+      "newPrice": 26152,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 48926,
+      "newPrice": 44014,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 12941,
+      "newPrice": 10869,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 6160,
+      "newPrice": 5826,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 47291,
+      "newPrice": 44065,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 34693,
+      "newPrice": 29867,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 10678,
+      "newPrice": 6630,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 13071,
+      "newPrice": 11411,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 33243,
+      "newPrice": 32997,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_3",
+      "previousPrice": 21582,
+      "newPrice": 17262,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 38353,
+      "newPrice": 37023,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 31139,
+      "newPrice": 29317,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 7539,
+      "newPrice": 3616,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 38108,
+      "newPrice": 37654,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 13227,
+      "newPrice": 12930,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 40732,
+      "newPrice": 39629,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 16066,
+      "newPrice": 13668,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 42474,
+      "newPrice": 37546,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 41845,
+      "newPrice": 39505,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 16084,
+      "newPrice": 13757,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 28413,
+      "newPrice": 24445,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 22381,
+      "newPrice": 18132,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 48657,
+      "newPrice": 47221,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 36348,
+      "newPrice": 32404,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 30086,
+      "newPrice": 26576,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 45496,
+      "newPrice": 43482,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 36205,
+      "newPrice": 34390,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 6981,
+      "newPrice": 1987,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 46631,
+      "newPrice": 42200,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 23717,
+      "newPrice": 20903,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 49601,
+      "newPrice": 49368,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_5",
+      "previousPrice": 4155,
+      "newPrice": 3151,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 14913,
+      "newPrice": 13152,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 42306,
+      "newPrice": 41759,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_3",
+      "previousPrice": 23061,
+      "newPrice": 21214,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 9373,
+      "newPrice": 8499,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 31444,
+      "newPrice": 30291,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 39503,
+      "newPrice": 36264,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 52041,
+      "newPrice": 49164,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 21376,
+      "newPrice": 17754,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 8775,
+      "newPrice": 6254,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 35411,
+      "newPrice": 33091,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 53060,
+      "newPrice": 48483,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 50377,
+      "newPrice": 47884,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 46099,
+      "newPrice": 41179,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 48598,
+      "newPrice": 44506,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_5",
+      "previousPrice": 47529,
+      "newPrice": 46073,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 30445,
+      "newPrice": 27752,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 6631,
+      "newPrice": 1722,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 29234,
+      "newPrice": 27570,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 18631,
+      "newPrice": 14602,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 45613,
+      "newPrice": 43269,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 18890,
+      "newPrice": 13915,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 21466,
+      "newPrice": 20940,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 22260,
+      "newPrice": 18481,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 52303,
+      "newPrice": 48010,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_5",
+      "previousPrice": 27003,
+      "newPrice": 22189,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 24245,
+      "newPrice": 19608,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 29332,
+      "newPrice": 24621,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 40396,
+      "newPrice": 35727,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 48668,
+      "newPrice": 44963,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 26629,
+      "newPrice": 22036,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 12076,
+      "newPrice": 11865,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_2",
+      "previousPrice": 50290,
+      "newPrice": 49374,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_3",
+      "previousPrice": 31675,
+      "newPrice": 29734,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 38152,
+      "newPrice": 34186,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 18739,
+      "newPrice": 15870,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_1",
+      "previousPrice": 32381,
+      "newPrice": 32250,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 39609,
+      "newPrice": 38133,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 34127,
+      "newPrice": 29541,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_4",
+      "previousPrice": 15170,
+      "newPrice": 10255,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 28878,
+      "newPrice": 27553,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_1",
+      "previousPrice": 46031,
+      "newPrice": 45745,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_2",
+      "previousPrice": 18887,
+      "newPrice": 15195,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 36036,
+      "newPrice": 33580,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_4",
+      "previousPrice": 31338,
+      "newPrice": 29258,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_5",
+      "previousPrice": 33221,
+      "newPrice": 31362,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 13491,
+      "newPrice": 11644,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_2",
+      "previousPrice": 12588,
+      "newPrice": 9079,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 30620,
+      "newPrice": 26246,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_4",
+      "previousPrice": 17338,
+      "newPrice": 15360,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 14089,
+      "newPrice": 10359,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_1",
+      "previousPrice": 33612,
+      "newPrice": 32799,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 10724,
+      "newPrice": 6298,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_3",
+      "previousPrice": 17870,
+      "newPrice": 16982,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 33426,
+      "newPrice": 30455,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 8228,
+      "newPrice": 3291,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_1",
+      "previousPrice": 25179,
+      "newPrice": 20859,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 14076,
+      "newPrice": 13230,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029_3",
+      "previousPrice": 11813,
+      "newPrice": 10589,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_4",
+      "previousPrice": 39561,
+      "newPrice": 38212,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Samsung 65\" QLED TV",
+      "itemCode": "ITM30032_5",
+      "previousPrice": 41792,
+      "newPrice": 39987,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 12315,
+      "newPrice": 7382,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Apple iPhone 15 Pro",
+      "itemCode": "ITM40001_2",
+      "previousPrice": 11951,
+      "newPrice": 11445,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_3",
+      "previousPrice": 30122,
+      "newPrice": 29470,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Dell XPS 13 Laptop",
+      "itemCode": "ITM50001_4",
+      "previousPrice": 36350,
+      "newPrice": 34908,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_5",
+      "previousPrice": 50037,
+      "newPrice": 47691,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_1",
+      "previousPrice": 43752,
+      "newPrice": 41438,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_2",
+      "previousPrice": 44193,
+      "newPrice": 41335,
+      "currencyCode": "SEK"
+    }
+  ]
+}
