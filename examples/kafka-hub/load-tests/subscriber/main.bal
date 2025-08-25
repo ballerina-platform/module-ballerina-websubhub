@@ -115,7 +115,7 @@ public function main() returns error? {
         }
     }
 
-    foreach var resultFuture in results {
+    foreach future<kafka:Error?> resultFuture in results {
         kafka:Error? result = wait resultFuture;
         if result is kafka:Error {
             publishFailures += 1;
