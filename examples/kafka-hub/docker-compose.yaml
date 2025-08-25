@@ -2,63 +2,69 @@ version: '2'
 name: 'kafkahub'
 
 services:
-    hub-1:
-        image: 'ayeshalmeida/kafkahub:13.0.0'
-        hostname: hub1
-        container_name: hub-1
-        ports:
-            - '9000:9000'
-        depends_on:
-            consolidator:
-                condition: service_healthy
-                restart: true
-            idp:
-                condition: service_started
-        environment:
-            HUB_PORT: 9000
-            SERVER_ID: "hub-1"
-            # Update following enviornment variable to point to the relevant kafka-cluster
-            KAFKA_BOOTSTRAP_NODE: "broker:9094"
-            # Update following enviornment variable to point to the consolidator state-snapshot endpoint
-            STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
-            # Update following enviornment variable change the IdP token validation mechanism
-            IDP_TOKEN_ISSUER: "https://localhost:9443/oauth2/token"
-            IDP_TOKEN_AUDIENCE: "ballerina"
-            IDP_TOKEN_SCOPE_KEY: "scope"
-            IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
-            IDP_CLIENT_TRUSTSTORE_FILEPATH: "./resources/client-truststore.jks"
-            IDP_CLIENT_TRUSTSTORE_PASSWORD: "wso2carbon"
-            # Consumer group name uses for `websub-events` consumer
-            WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-1"
-            # Update following enviornment variable to set the client truststore name
-            TRUSTSTORE_FILE_NAME: "client-truststore.jks"
-            # Update following enviornment variable to set the client truststore password
-            TRUSTSTORE_PASSWORD: "password"
-            # Update following enviornment variable to set the client keystore password
-            KEYSTORE_PASSWORD: "password"
-            # Maximum number of records returned in a single call to consumer-poll
-            KAFKA_CONSUMER_MAX_POLL_RECORDS: 50
-            # The HTTP status codes for which the client should retry
-            RETRYABLE_STATUS_CODES: "500,502,503"
-        volumes:
-            # `Config.toml` file for the websubhub-service
-            - ./_resources/hub.config.toml:/home/ballerina/Config.toml
-            # Kafka client truststore file
-            - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
-            # Kafka client keystore file
-            - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
-            # IdP client truststore
-            - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
-            # SSL configurations
-            - ./_resources/secrets/hub/hub-1.keystore.jks:/home/ballerina/resources/hub.keystore.jks
-        healthcheck:
-            test: ["CMD-SHELL", "curl -k --fail https://hub1:9000/health || exit 1"]
-            interval: 30s
-            timeout: 10s 
-            start_period: 30s
-            retries: 10
-        networks:
-            - hub_network
+    # hub-1:
+    #     image: 'ballerina/kafkahub:13.0.0'
+    #     hostname: hub1
+    #     container_name: hub-1
+    #     ports:
+    #         - '9000:9000'
+    #     depends_on:
+    #         consolidator:
+    #             condition: service_healthy
+    #             restart: true
+    #         idp:
+    #             condition: service_started
+    #     environment:
+    #         HUB_PORT: 9000
+    #         SERVER_ID: "hub-1"
+    #         HTTPS_ON: false
+    #         BALLERINA_MAX_POOL_SIZE: 100
+    #         # Update following enviornment variable to point to the relevant kafka-cluster
+    #         KAFKA_BOOTSTRAP_NODE: "broker:9094"
+    #         # Update following enviornment variable to point to the consolidator state-snapshot endpoint
+    #         STATE_SNAPSHOT_ENDPOINT: "http://consolidator:10001"
+    #         # Update following enviornment variable change the IdP token validation mechanism
+    #         IDP_TOKEN_ISSUER: "https://localhost:9443/oauth2/token"
+    #         IDP_TOKEN_AUDIENCE: "ballerina"
+    #         IDP_TOKEN_SCOPE_KEY: "scope"
+    #         IDP_JWKS_ENDPOINT: "https://idp:9443/oauth2/jwks"
+    #         IDP_CLIENT_TRUSTSTORE_FILEPATH: "./resources/client-truststore.jks"
+    #         IDP_CLIENT_TRUSTSTORE_PASSWORD: "wso2carbon"
+    #         # Consumer group name uses for `websub-events` consumer
+    #         WEBSUB_EVENTS_CONSUMER_GROUP: "websub-events-receiver-hub-1"
+    #         # Update following enviornment variable to set the client truststore name
+    #         TRUSTSTORE_FILE_NAME: "client-truststore.jks"
+    #         # Update following enviornment variable to set the client truststore password
+    #         TRUSTSTORE_PASSWORD: "password"
+    #         # Update following enviornment variable to set the client keystore password
+    #         KEYSTORE_PASSWORD: "password"
+    #         # Maximum number of records returned in a single call to consumer-poll
+    #         KAFKA_CONSUMER_MAX_POLL_RECORDS: 50
+    #         # The HTTP status codes for which the client should retry
+    #         RETRYABLE_STATUS_CODES: "500,502,503"
+    #     volumes:
+    #         # `Config.toml` file for the websubhub-service
+    #         - ./_resources/hub.config.toml:/home/ballerina/Config.toml
+    #         # Kafka client truststore file
+    #         - ./_resources/secrets/kafka-client/kafka-client.trustStore.jks:/home/ballerina/resources/brokercerts/client-truststore.jks
+    #         # Kafka client keystore file
+    #         - ./_resources/secrets/kafka-client/kafka-client.keystore.jks:/home/ballerina/resources/brokercerts/client-keystore.jks
+    #         # IdP client truststore
+    #         - ./_resources/secrets/idp/client-truststore.jks:/home/ballerina/resources/client-truststore.jks
+    #         # SSL configurations
+    #         - ./_resources/secrets/hub/hub-1.keystore.jks:/home/ballerina/resources/hub.keystore.jks
+    #     healthcheck:
+    #         test: ["CMD-SHELL", "curl -k --fail https://hub1:9000/health || exit 1"]
+    #         interval: 30s
+    #         timeout: 10s 
+    #         start_period: 30s
+    #         retries: 10
+    #     networks:
+    #         - hub_network
+    #     mem_limit: 1g 
+    #     mem_reservation: 512m 
+    #     cpus: "1.00" 
+    #     restart: always
 
     consolidator: 
         image: 'ayeshalmeida/consolidator:8.0.0'
@@ -169,48 +175,6 @@ services:
             - ./_resources/secrets/kafka-broker/broker_truststore_creds:/etc/kafka/secrets/broker_truststore_creds
             - ./_resources/secrets/kafka-broker/broker.keystore.jks:/etc/kafka/secrets/kafka.broker.keystore.jks
             - ./_resources/secrets/kafka-broker/broker.trustStore.jks:/etc/kafka/secrets/kafka.broker.truststore.jks
-        networks:
-            - hub_network
-
-    schema-registry:
-        image: 'confluentinc/cp-schema-registry:7.5.0'
-        hostname: schema-registry
-        container_name: schema-registry
-        healthcheck:
-            test: curl --output /dev/null --silent --head --fail http://schema-registry:8081/subjects
-            interval: 30s
-            timeout: 10s
-            retries: 3
-        depends_on:
-            broker:
-                condition: service_healthy
-        ports:
-            - '8081:8081'
-        environment:
-            SCHEMA_REGISTRY_HOST_NAME: schema-registry
-            SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
-            SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-        networks:
-            - hub_network
-
-    control-center:
-        image: 'confluentinc/cp-enterprise-control-center:7.5.0'
-        hostname: control-center
-        container_name: control-center
-        depends_on:
-            schema-registry:
-                condition: service_healthy
-        ports:
-            - '9021:9021'
-        environment:
-            CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
-            CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-            CONTROL_CENTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
-            CONTROL_CENTER_REPLICATION_FACTOR: 1
-            CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-            CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-            CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-            PORT: 9021
         networks:
             - hub_network
 

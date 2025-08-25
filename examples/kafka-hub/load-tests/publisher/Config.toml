@@ -1,0 +1,6 @@
+[oauth2Config]
+tokenUrl = "https://idp:9443/oauth2/token"
+clientId= "8EsaVTsN64t4sMDhGvBqJoqMi8Ea"
+clientSecret = "QC71AIfbBjhgAibpi0mpfIEK_bMa"
+trustStore = "./resources/client-truststore.jks"
+trustStorePassword = "wso2carbon"
