@@ -64,10 +64,12 @@ public function main() returns error? {
         foreach var resultFuture in results {
             http:Response|error result = wait resultFuture;
             if result is error {
+                io:println("Error occurred while sending the content publish request: ", result);
                 failureCount += 1;
             } else {
                 int statusCode = result.statusCode;
                 if statusCode != http:STATUS_OK {
+                    io:println("Received error response from the server, status: ", statusCode, " message: ", result.getTextPayload());
                     failureCount += 1;
                 } else {
                     successCount += 1;
