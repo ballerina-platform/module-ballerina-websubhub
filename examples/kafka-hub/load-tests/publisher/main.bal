@@ -16,10 +16,10 @@
 
 import ballerina/http;
 import ballerina/io;
+import ballerina/mime;
 import ballerina/time;
-import ballerina/websubhub;
 
-final websubhub:PublisherClient websubHubClientEP = check new (hubUrl, httpVersion = http:HTTP_2_0, timeout = 120,
+final http:Client clientEp = check new (hubUrl, httpVersion = http:HTTP_2_0, timeout = 120,
     auth = {
         tokenUrl: oauth2Config.tokenUrl,
         clientId: oauth2Config.clientId,
@@ -43,11 +43,11 @@ final websubhub:PublisherClient websubHubClientEP = check new (hubUrl, httpVersi
 );
 
 public function main() returns error? {
-    websubhub:TopicRegistrationSuccess|websubhub:TopicRegistrationError topicReg = websubHubClientEP->registerTopic(topicName);
-    if topicReg is websubhub:TopicRegistrationError {
-        int statusCode = topicReg.detail().statusCode;
-        if http:STATUS_CONFLICT != statusCode {
-            return topicReg;
+    http:Response topicReg = check sendTopicReg(topicName);
+    io:println("Topic registration response status : ", topicReg.statusCode);
+    if topicReg.statusCode < 200 && topicReg.statusCode >= 300 {
+        if http:STATUS_CONFLICT !== topicReg.statusCode {
+            return error(string `Invalid response received: ${topicReg.statusCode}`);
         }
     }
 
@@ -60,13 +60,18 @@ public function main() returns error? {
     int numberOfRounds = numberOfRequests / parallelism;
 
     foreach int i in 0 ..< numberOfRounds {
-        future<websubhub:Acknowledgement|websubhub:UpdateMessageError>[] results = executeRound(parallelism);
+        future<http:Response|error>[] results = executeRound(parallelism);
         foreach var resultFuture in results {
-            websubhub:Acknowledgement|websubhub:UpdateMessageError result = wait resultFuture;
-            if result is websubhub:Acknowledgement {
-                successCount += 1;
-            } else {
+            http:Response|error result = wait resultFuture;
+            if result is error {
                 failureCount += 1;
+            } else {
+                int statusCode = result.statusCode;
+                if statusCode != http:STATUS_OK {
+                    failureCount += 1;
+                } else {
+                    successCount += 1;
+                }
             }
         }
     }
@@ -85,10 +90,22 @@ public function main() returns error? {
     io:println("Throughput               : ", throughput);
 }
 
-function executeRound(int parallelism) returns future<websubhub:Acknowledgement|websubhub:UpdateMessageError>[] {
-    future<websubhub:Acknowledgement|websubhub:UpdateMessageError>[] results = [];
+isolated function sendTopicReg(string topicName) returns http:Response|error {
+    http:Request request = new;
+    request.setTextPayload(string `hub.mode=register&hub.topic=${topicName}`);
+    request.setHeader("Content-Type", mime:APPLICATION_FORM_URLENCODED);
+    return clientEp->post("", request);
+}
+
+isolated function sendContentUpdate(string topicName, json payload) returns http:Response|error {
+    string query = string `?hub.mode=publish&hub.topic=${topicName}`;
+    return clientEp->post(query, payload);
+}
+
+function executeRound(int parallelism) returns future<http:Response|error>[] {
+    future<http:Response|error>[] results = [];
     foreach int i in 0 ..< parallelism {
-        future<websubhub:Acknowledgement|websubhub:UpdateMessageError> result = start websubHubClientEP->publishUpdate(topicName, payload);
+        future<http:Response|error> result = start sendContentUpdate(topicName, payload);
         results.push(result);
     }
     return results;
