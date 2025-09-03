@@ -38,11 +38,9 @@ public type KafkaMtlsConfig record {|
 
 configurable KafkaMtlsConfig kafkaMtlsConfig = ?;
 
-final string hubUrl = os:getEnv("HUB_URL") == "" ? "https://lb:9090/hub" : os:getEnv("HUB_URL");
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final int numberOfRequests = os:getEnv("NUMBER_OF_REQUESTS") == "" ? 10 : check int:fromString(os:getEnv("NUMBER_OF_REQUESTS"));
 final int numberOfSubscribers = os:getEnv("NUMBER_OF_SUBSCRIBERS") == "" ? 1 : check int:fromString(os:getEnv("NUMBER_OF_SUBSCRIBERS"));
-final string? consumerGroup = os:getEnv("CONSUMER_GROUP") == "" ? () : os:getEnv("CONSUMER_GROUP");
+final string? consumerGroup = os:getEnv("CONSUMER_GROUP") == "" ? "consumer-group" : os:getEnv("CONSUMER_GROUP");
 final string? topicPartitions = os:getEnv("TOPIC_PARTITIONS") == "" ? () : os:getEnv("TOPIC_PARTITIONS");
-
 final string kafkaUrl = os:getEnv("KAFKA_URL") == "" ? kafka:DEFAULT_URL : os:getEnv("KAFKA_URL");

@@ -15,8 +15,17 @@
 // under the License.
 
 import ballerina/crypto;
+import ballerina/io;
 import ballerina/os;
 import ballerinax/kafka;
+
+readonly & json DEFAULT_PAYLOAD = {
+    itemName: string `Panasonic 32" LED TV`,
+    itemCode: "ITM30029",
+    previousPrice: 32999.00,
+    newPrice: 28999.00,
+    currencyCode: "SEK"
+};
 
 type OAuth2Config record {|
     string tokenUrl;
@@ -38,11 +47,13 @@ public type KafkaMtlsConfig record {|
 
 configurable KafkaMtlsConfig kafkaMtlsConfig = ?;
 
-final string hubUrl = os:getEnv("HUB_URL") == "" ? "https://lb:9090/hub" : os:getEnv("HUB_URL");
 final string topicName = os:getEnv("TOPIC_NAME") == "" ? "priceUpdate" : os:getEnv("TOPIC_NAME");
 final int numberOfRequests = os:getEnv("NUMBER_OF_REQUESTS") == "" ? 10 : check int:fromString(os:getEnv("NUMBER_OF_REQUESTS"));
 final int numberOfSubscribers = os:getEnv("NUMBER_OF_SUBSCRIBERS") == "" ? 1 : check int:fromString(os:getEnv("NUMBER_OF_SUBSCRIBERS"));
-final string? consumerGroup = os:getEnv("CONSUMER_GROUP") == "" ? () : os:getEnv("CONSUMER_GROUP");
-final string? topicPartitions = os:getEnv("TOPIC_PARTITIONS") == "" ? () : os:getEnv("TOPIC_PARTITIONS");
+final int parallelism = os:getEnv("PARALLELISM") == "" ? 1 : check int:fromString(os:getEnv("PARALLELISM"));
+
+final string payloadSize = os:getEnv("PAYLOAD_SIZE") == "" ? "100B" : os:getEnv("PAYLOAD_SIZE");
+final readonly & byte[] payload = check io:fileReadBytes(string `./resources/payloads/payload_${payloadSize}.json`).cloneReadOnly();
 
 final string kafkaUrl = os:getEnv("KAFKA_URL") == "" ? kafka:DEFAULT_URL : os:getEnv("KAFKA_URL");
+

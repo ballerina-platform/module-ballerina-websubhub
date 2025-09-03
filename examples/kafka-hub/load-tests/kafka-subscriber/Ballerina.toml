@@ -1,0 +1,8 @@
+[package]
+org = "nipunal"
+name = "kafka_subscriber"
+version = "0.1.0"
+distribution = "2201.10.5"
+
+[build-options]
+observabilityIncluded = true

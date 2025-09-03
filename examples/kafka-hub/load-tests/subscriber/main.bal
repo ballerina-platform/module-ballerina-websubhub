@@ -20,10 +20,9 @@ import ballerina/lang.runtime;
 import ballerina/time;
 import ballerina/websub;
 import ballerina/websubhub;
-import ballerinax/kafka;
 
 isolated time:Utc? startTime = ();
-isolated time:Utc? endTIme = ();
+isolated time:Utc? endTime = ();
 isolated int messageCount = 0;
 
 isolated function incrementAndGet() returns int {
@@ -47,33 +46,33 @@ isolated function getStartTime() returns time:Utc? {
 
 isolated function setEndTime(time:Utc time) {
     lock {
-        endTIme = time;
+        endTime = time;
     }
 }
 
 isolated function getEndTime() returns time:Utc? {
     lock {
-        return endTIme;
+        return endTime;
     }
 }
 
 public function main() returns error? {
     // Init with creating the topic
     websubhub:PublisherClient websubHubClientEP = check new (hubUrl,
-        auth = {
-            tokenUrl: oauth2Config.tokenUrl,
-            clientId: oauth2Config.clientId,
-            clientSecret: oauth2Config.clientSecret,
-            scopes: ["register_topic"],
-            clientConfig: {
-                secureSocket: {
-                    cert: {
-                        path: oauth2Config.trustStore,
-                        password: oauth2Config.trustStorePassword
-                    }
-                }
-            }
-        },
+        // auth = {
+        //     tokenUrl: oauth2Config.tokenUrl,
+        //     clientId: oauth2Config.clientId,
+        //     clientSecret: oauth2Config.clientSecret,
+        //     scopes: ["register_topic"],
+        //     clientConfig: {
+        //         secureSocket: {
+        //             cert: {
+        //                 path: oauth2Config.trustStore,
+        //                 password: oauth2Config.trustStorePassword
+        //             }
+        //         }
+        //     }
+        // },
         secureSocket = {
             cert: {
                 path: "./resources/subscriber.truststore.jks",
@@ -99,37 +98,22 @@ public function main() returns error? {
     check wbsbListener.'start();
     runtime:registerListener(wbsbListener);
 
+    io:println("Started listening to ", topicName);
+
+    while getStartTime() is () {
+        runtime:sleep(5);
+    }
+
     io:println("Starting load tests...");
 
-    setStartTime(time:utcNow());
-
-    int numberOfRounds = numberOfRequests / 1000;
-    int publishSuccess = 0;
-    int publishFailures = 0;
-
-    future<kafka:Error?>[] results = [];
-    foreach int i in 0 ..< numberOfRounds {
-        foreach int j in 0 ..< 1000 {
-            future<kafka:Error?> result = start statePersistProducer->send({topic: topicName, value: payload});
-            results.push(result);
-        }
-    }
-
-    foreach future<kafka:Error?> resultFuture in results {
-        kafka:Error? result = wait resultFuture;
-        if result is kafka:Error {
-            publishFailures += 1;
-        } else {
-            publishSuccess += 1;
-        }
-    }
-
     while getEndTime() is () {
-        if publishFailures > 0 {
-            break;
+        lock {
+	        io:println("Messages received : ", messageCount);
         }
         runtime:sleep(5);
     }
+
+    check wbsbListener.gracefulStop();
 
     decimal time = getMessageDeliveryDuration();
     int deliveredMsgCount;
@@ -139,9 +123,8 @@ public function main() returns error? {
     float average = <float>time / <float>deliveredMsgCount;
     float throughput = <float>deliveredMsgCount / <float>time;
 
-    io:println("### ", "Total requests : ", numberOfRequests, " Subscribers : ", numberOfSubscribers, " Payload Size : ", payloadSize, " ###");
+    io:println("### ", "Total requests : ", numberOfRequests, " Subscribers : ", numberOfSubscribers);
 
-    io:println("# of failed message publishes : ", publishFailures);
     io:println("# of delivered messages       : ", deliveredMsgCount);
     io:println("Time taken                    : ", time);
     io:println("Average                       : ", average);
@@ -152,20 +135,6 @@ isolated function getSubscriberConfig() returns websub:SubscriberServiceConfigur
     return {
         target: [hubUrl, topicName],
         httpConfig: {
-            auth: {
-                tokenUrl: oauth2Config.tokenUrl,
-                clientId: oauth2Config.clientId,
-                clientSecret: oauth2Config.clientSecret,
-                scopes: ["subscribe"],
-                clientConfig: {
-                    secureSocket: {
-                        cert: {
-                            path: oauth2Config.trustStore,
-                            password: oauth2Config.trustStorePassword
-                        }
-                    }
-                }
-            },
             secureSocket: {
                 cert: {
                     path: "./resources/subscriber.truststore.jks",

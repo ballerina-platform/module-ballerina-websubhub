@@ -46,7 +46,10 @@ service class SubscriberService {
 
     remote function onEventNotification(websub:ContentDistributionMessage event) returns error? {
         int currentMessageCount = incrementAndGet();
-        if currentMessageCount == numberOfRequests {
+        if currentMessageCount >= 1 && getStartTime() is () {
+            setStartTime(time:utcNow());
+        }
+        if currentMessageCount >= numberOfRequests {
             setEndTime(time:utcNow());
         }
     }
