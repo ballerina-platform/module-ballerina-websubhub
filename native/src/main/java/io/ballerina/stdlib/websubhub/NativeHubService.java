@@ -60,4 +60,13 @@ public class NativeHubService {
     public List<Type> getMethodParameters(String methodName) {
         return methodParameterMapping.getOrDefault(methodName, Collections.emptyList());
     }
+
+    public Object[] resolveArgs(String methodName, InteropArgs interopArgs) {
+        List<Type> artTypes = methodParameterMapping.getOrDefault(methodName, Collections.emptyList());
+        Object[] args = new Object[artTypes.size()];
+        for (int i = 0; i < artTypes.size(); i++) {
+            args[i] = interopArgs.getMappingArg(artTypes.get(i));
+        }
+        return args;
+    }
 }

@@ -39,14 +39,14 @@ public class InteropArgs {
         this.httpHeaders = httpHeaders;
     }
 
-    public InteropArgs(BMap<BString, Object> message, BObject httpHeaders, BObject hubController) {
+    InteropArgs(BMap<BString, Object> message, BObject httpHeaders, BObject hubController) {
         this.message = message;
         this.httpHeaders = httpHeaders;
         this.hubController = hubController;
     }
 
     public Object getMappingArg(Type argType) {
-        String argTypeName = argType.toString();
+        String argTypeName = argType.getPackage().getName() + ":" + argType.getName();
         if (HTTP_HEADERS_TYPE.equals(argTypeName)) {
             return httpHeaders;
         } else if (WEBSUBHUB_CONTROLLER_TYPE.equals(argTypeName)) {
