@@ -1,0 +1,47 @@
+{
+  "promotional_messages": [
+    {
+      "promoId": "PRM00001",
+      "message": "Special discount on electronics!",
+      "validUntil": "2025-12-31"
+    },
+    {
+      "promoId": "PRM00001",
+      "message": "Limited time offer!",
+      "validUntil": "2025-12-17"
+    },
+    {
+      "promoId": "PRM00002",
+      "message": "Weekend mega sale!",
+      "validUntil": "2025-12-26"
+    },
+    {
+      "promoId": "PRM00003",
+      "message": "Buy one get one free!",
+      "validUntil": "2025-12-13"
+    }
+  ],
+  "price_updates": [
+    {
+      "itemName": "Panasonic 32\" LED TV",
+      "itemCode": "ITM30029",
+      "previousPrice": 29977,
+      "newPrice": 28999,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "Sony 40\" Smart TV",
+      "itemCode": "ITM30030_1",
+      "previousPrice": 30532,
+      "newPrice": 30365,
+      "currencyCode": "SEK"
+    },
+    {
+      "itemName": "LG 55\" OLED TV",
+      "itemCode": "ITM30031_2",
+      "previousPrice": 19072,
+      "newPrice": 15891,
+      "currencyCode": "SEK"
+    }
+  ]
+}

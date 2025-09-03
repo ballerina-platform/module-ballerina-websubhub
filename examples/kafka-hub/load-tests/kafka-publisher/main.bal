@@ -14,30 +14,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import ballerina/io;
-import ballerina/mime;
 import ballerina/time;
-
-final http:Client clientEp = check new (hubUrl, httpVersion = http:HTTP_2_0, timeout = 60,
-    secureSocket = {
-        cert: {
-            path: "./resources/publisher.truststore.jks",
-            password: "password"
-        },
-        verifyHostName: false
-    }
-);
+import ballerinax/kafka;
 
 public function main() returns error? {
-    http:Response topicReg = check sendTopicReg(topicName);
-    io:println("Topic registration response status : ", topicReg.statusCode);
-    if topicReg.statusCode < 200 && topicReg.statusCode >= 300 {
-        if http:STATUS_CONFLICT !== topicReg.statusCode {
-            return error(string `Invalid response received: ${topicReg.statusCode}`);
-        }
-    }
-
     io:println("Starting load tests...");
 
     time:Utc startedTime = time:utcNow();
@@ -47,20 +28,14 @@ public function main() returns error? {
     int numberOfRounds = numberOfRequests / parallelism;
 
     foreach int i in 0 ..< numberOfRounds {
-        future<http:Response|error>[] results = executeRound(parallelism);
+        future<kafka:Error?>[] results = executeRound(parallelism);
         foreach var resultFuture in results {
-            http:Response|error result = wait resultFuture;
-            if result is error {
+            kafka:Error? result = wait resultFuture;
+            if result is kafka:Error {
                 io:println("Error occurred while sending the content publish request: ", result);
                 failureCount += 1;
             } else {
-                int statusCode = result.statusCode;
-                if statusCode != http:STATUS_OK {
-                    io:println("Received error response from the server, status: ", statusCode, " message: ", result.getTextPayload());
-                    failureCount += 1;
-                } else {
-                    successCount += 1;
-                }
+                successCount += 1;
             }
         }
         io:println("Completed ", parallelism * (i + 1), " requests");
@@ -81,22 +56,14 @@ public function main() returns error? {
     io:println("Throughput (req/s)       : ", throughput);
 }
 
-isolated function sendTopicReg(string topicName) returns http:Response|error {
-    http:Request request = new;
-    request.setTextPayload(string `hub.mode=register&hub.topic=${topicName}`);
-    request.setHeader("Content-Type", mime:APPLICATION_FORM_URLENCODED);
-    return clientEp->post("", request);
+isolated function sendContentUpdate(string topicName, json payload) returns kafka:Error? {
+    return statePersistProducer->send({topic: topicName, value: payload});
 }
 
-isolated function sendContentUpdate(string topicName, json payload) returns http:Response|error {
-    string query = string `?hub.mode=publish&hub.topic=${topicName}`;
-    return clientEp->post(query, payload);
-}
-
-function executeRound(int parallelism) returns future<http:Response|error>[] {
-    future<http:Response|error>[] results = [];
+function executeRound(int parallelism) returns future<kafka:Error?>[] {
+    future<kafka:Error?>[] results = [];
     foreach int i in 0 ..< parallelism {
-        future<http:Response|error> result = start sendContentUpdate(topicName, payload);
+        future<kafka:Error?> result = start sendContentUpdate(topicName, payload);
         results.push(result);
     }
     return results;
