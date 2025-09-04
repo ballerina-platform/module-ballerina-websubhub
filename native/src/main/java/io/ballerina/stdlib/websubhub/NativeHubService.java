@@ -57,7 +57,12 @@ public class NativeHubService {
         return methodParameterMapping.keySet();
     }
 
-    public List<Type> getMethodParameters(String methodName) {
-        return methodParameterMapping.getOrDefault(methodName, Collections.emptyList());
+    public Object[] resolveArgs(String methodName, InteropArgs interopArgs) {
+        List<Type> argTypes = methodParameterMapping.getOrDefault(methodName, Collections.emptyList());
+        Object[] args = new Object[argTypes.size()];
+        for (int i = 0; i < argTypes.size(); i++) {
+            args[i] = interopArgs.getMappingArg(argTypes.get(i));
+        }
+        return args;
     }
 }
