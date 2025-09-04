@@ -58,10 +58,10 @@ public class NativeHubService {
     }
 
     public Object[] resolveArgs(String methodName, InteropArgs interopArgs) {
-        List<Type> artTypes = methodParameterMapping.getOrDefault(methodName, Collections.emptyList());
-        Object[] args = new Object[artTypes.size()];
-        for (int i = 0; i < artTypes.size(); i++) {
-            args[i] = interopArgs.getMappingArg(artTypes.get(i));
+        List<Type> argType = methodParameterMapping.getOrDefault(methodName, Collections.emptyList());
+        Object[] args = new Object[argType.size()];
+        for (int i = 0; i < argType.size(); i++) {
+            args[i] = interopArgs.getMappingArg(argType.get(i));
         }
         return args;
     }
