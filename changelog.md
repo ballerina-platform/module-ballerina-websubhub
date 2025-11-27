@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [Mark `websubhub:PublisherClient` as an isolated client](https://github.com/ballerina-platform/ballerina-library/issues/8498)
+
 ### Added
 - [Allow `http:ProxyConfig` for the clients in the `websubhub` module](https://github.com/ballerina-platform/ballerina-library/issues/8496)
 
