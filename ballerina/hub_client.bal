@@ -209,4 +209,5 @@ isolated function retrieveResponseBody(http:Response subscriberResponse, string 
         }
         _ => {}
     }
+    return;
 }
