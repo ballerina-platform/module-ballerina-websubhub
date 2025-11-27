@@ -357,17 +357,19 @@ public final UnsubscriptionDeniedError UNSUBSCRIPTION_DENIED_ERROR = error Unsub
 # + poolConfig - Configurations associated with request pooling
 # + auth - Configurations related to client authentication
 # + retryConfig - Configurations associated with retrying
+# + proxy - Proxy server settings if requests need to go through a proxy
 # + responseLimits - Configurations associated with inbound response size limits
 # + secureSocket - SSL/TLS related options
 # + circuitBreaker - Configurations associated with the behaviour of the Circuit Breaker
 public type ClientConfiguration record {|
-    http:HttpVersion httpVersion = HTTP_1_1;
+    http:HttpVersion httpVersion = http:HTTP_2_0;
     http:ClientHttp1Settings http1Settings = {};
     http:ClientHttp2Settings http2Settings = {};
-    decimal timeout = 60;
+    decimal timeout = 30;
     http:PoolConfiguration poolConfig?;
     http:ClientAuthConfig auth?;
     http:RetryConfig retryConfig?;
+    http:ProxyConfig? proxy = ();
     http:ResponseLimitConfigs responseLimits = {};
     http:ClientSecureSocket secureSocket?;
     http:CircuitBreakerConfig circuitBreaker?;
@@ -392,11 +394,12 @@ isolated function retrieveHttpClientConfig(ClientConfiguration config) returns h
         http1Settings: config.http1Settings,
         http2Settings: config.http2Settings,
         timeout: config.timeout,
-        poolConfig: config?.poolConfig,
-        auth: config?.auth,
-        retryConfig: config?.retryConfig,
+        poolConfig: config.poolConfig,
+        auth: config.auth,
+        retryConfig: config.retryConfig,
+        proxy: config.proxy,
         responseLimits: config.responseLimits,
-        secureSocket: config?.secureSocket,
-        circuitBreaker: config?.circuitBreaker
+        secureSocket: config.secureSocket,
+        circuitBreaker: config.circuitBreaker
     };
 }
