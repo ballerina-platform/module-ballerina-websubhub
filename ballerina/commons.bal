@@ -365,7 +365,7 @@ public type ClientConfiguration record {|
     http:HttpVersion httpVersion = HTTP_1_1;
     http:ClientHttp1Settings http1Settings = {};
     http:ClientHttp2Settings http2Settings = {};
-    decimal timeout = 30;
+    decimal timeout = 60;
     http:PoolConfiguration poolConfig?;
     http:ClientAuthConfig auth?;
     http:RetryConfig retryConfig?;
