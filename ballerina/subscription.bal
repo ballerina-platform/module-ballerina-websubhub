@@ -121,6 +121,7 @@ isolated class SubscriptionHandler {
                 [HUB_REASON, validationResult.message()]
             ];
             _ = check sendNotification(message.hubCallback, params, self.clientConfig);
+            return;
         }
 
         boolean skipIntentVerification = self.hubController.skipSubscriptionVerification(message);
