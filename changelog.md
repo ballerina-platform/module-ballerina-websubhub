@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - [Allow `http:ProxyConfig` for the clients in the `websubhub` module](https://github.com/ballerina-platform/ballerina-library/issues/8496)
+- [Introduce a mechanism to notify subscribers when there is an when invoking the `onSubscriptionIntentVerified` method on `hub`](https://github.com/ballerina-platform/ballerina-library/issues/8681)
 
 ## [1.15.2] - 2026-01-22
 
