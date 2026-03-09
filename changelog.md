@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [Allow `http:ProxyConfig` for the clients in the `websubhub` module](https://github.com/ballerina-platform/ballerina-library/issues/8496)
 
+## [1.15.2] - 2026-01-22
+
+### Fixed
+- [Unsubscription intent verification is invoked even when unsubscription validation failed](https://github.com/ballerina-platform/ballerina-library/issues/8575)
+
 ## [1.14.0] - 2025-03-05
 
 ### Changed
