@@ -18,6 +18,7 @@ import ballerina/test;
 import ballerina/http;
 import ballerina/log;
 
+listener Listener commonHubListener = new(9105);
 listener http:Listener simpleSubscriberListener = new (9191);
 
 isolated map<string|string[]> CUSTOM_HEADERS = {
@@ -31,6 +32,9 @@ isolated function retrieveCustomHeaders() returns map<string|string[]> {
         return CUSTOM_HEADERS.cloneReadOnly();
     }
 }
+
+isolated boolean isOnSubErrorInvoked = false;
+isolated boolean isOnUnSubErrorInvoked = false;
 
 http:Service simpleSubscriber = service object {
 
@@ -106,6 +110,25 @@ http:Service simpleSubscriber = service object {
 
     isolated resource function post unsubscribe(http:Caller caller, http:Request req)
             returns error? {
+        return caller->respond();
+    }
+
+    isolated resource function get hubError(http:Caller caller, http:Request req) returns error? {
+        map<string[]> payload = req.getQueryParams();
+        string[] hubMode = <string[]> payload["hub.mode"];
+        if hubMode[0] == "hub-error" {
+            string[] hubReason = <string[]> payload["hub.reason"];
+            lock {
+                isOnSubErrorInvoked = hubReason[0].includes("verified subscription");
+            }
+            lock {
+                isOnUnSubErrorInvoked = hubReason[0].includes("verified unsubscription");
+            }
+        }
+        if hubMode[0] == "subscribe" || hubMode[0] == "unsubscribe" {
+            string[] challengeArray = <string[]> payload["hub.challenge"];
+            return caller->respond(challengeArray[0]);
+        }
         return caller->respond();
     }
 };
