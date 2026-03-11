@@ -38,7 +38,7 @@ Service subIntentVerifyFailureSvc = service object {
     }
 
     isolated remote function onSubscriptionIntentVerified(VerifiedSubscription msg) returns error? {
-        return error ("Internal error occurred while procession verified subscription");
+        return error ("Internal error occurred while processing the verified subscription");
     }
 
     isolated remote function onUnsubscription(Unsubscription msg, http:Headers headers, Controller hubController)
@@ -47,7 +47,7 @@ Service subIntentVerifyFailureSvc = service object {
     }
 
     isolated remote function onUnsubscriptionIntentVerified(VerifiedUnsubscription msg) returns error? {
-        return error ("Internal error occurred while procession verified unsubscription");
+        return error ("Internal error occurred while processing the verified unsubscription");
     }
 };
 
