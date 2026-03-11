@@ -86,7 +86,15 @@ isolated class SubscriptionHandler {
         VerifiedSubscription verifiedSubscription = {
             ...message
         };
-        check self.adaptor.callOnSubscriptionIntentVerifiedMethod(verifiedSubscription, headers);
+        error? result = self.adaptor.callOnSubscriptionIntentVerifiedMethod(verifiedSubscription, headers);
+        if result is error {
+            [string, string?][] params = [
+                [HUB_MODE, MODE_HUB_ERROR],
+                [HUB_TOPIC, message.hubTopic],
+                [HUB_REASON, result.message()]
+            ];
+            _ = check sendNotification(message.hubCallback, params, self.clientConfig);
+        }
     }
 
     isolated function validateSubscription(Subscription message, http:Headers headers) returns error? {
@@ -142,7 +150,15 @@ isolated class SubscriptionHandler {
         VerifiedUnsubscription verifiedUnsubscription = {
             ...message
         };
-        check self.adaptor.callOnUnsubscriptionIntentVerifiedMethod(verifiedUnsubscription, headers);
+        error? result = self.adaptor.callOnUnsubscriptionIntentVerifiedMethod(verifiedUnsubscription, headers);
+        if result is error {
+            [string, string?][] params = [
+                [HUB_MODE, MODE_HUB_ERROR],
+                [HUB_TOPIC, message.hubTopic],
+                [HUB_REASON, result.message()]
+            ];
+            _ = check sendNotification(message.hubCallback, params, self.clientConfig);
+        }
     }
 
     isolated function validateUnsubscription(Unsubscription message, http:Headers headers) returns error? {

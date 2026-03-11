@@ -30,6 +30,7 @@ const string MODE_REGISTER = "register";
 const string MODE_DEREGISTER = "deregister";
 const string MODE_SUBSCRIBE = "subscribe";
 const string MODE_UNSUBSCRIBE = "unsubscribe";
+const string MODE_HUB_ERROR = "hub-error";
 
 const string CONTENT_PUBLISH = "publish";
 const string EVENT_NOTIFY = "event";
