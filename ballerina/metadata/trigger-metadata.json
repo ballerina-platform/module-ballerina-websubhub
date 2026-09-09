@@ -1,0 +1,295 @@
+{
+  "version": "v1.0",
+
+  "listeners": [
+    {
+      "id": "$listener",
+      "doc": "HTTP based listener that receives WebSub hub protocol requests — topic registration and deregistration, subscription and unsubscription requests, and content update notifications — and dispatches each to the attached hub service.",
+      "type": { "name": "Listener" },
+      "services": ["$service"],
+      "multipleServicesAllowed": false
+    }
+  ],
+
+  "serviceTypes": [
+    {
+      "id": "$service",
+      "doc": "Represents a WebSub hub, implementing topic registration, subscription and unsubscription management, and content distribution.",
+      "type": { "name": "Service" },
+      "concrete": false,
+      "multipleListenersAllowed": true,
+      "annotations": ["$serviceConfig"],
+      "identifier": { "presence": "optional", "form": ["basePath"] },
+      "handlers": {
+        "backedByConcreteType": false,
+        "options": [
+          {
+            "id": "$service.onRegisterTopic",
+            "name": "onRegisterTopic",
+            "kind": "remote",
+            "doc": "Invoked when a publisher requests to register a topic with the hub.",
+            "presence": "required",
+            "params": [
+              {
+                "id": "$service.onRegisterTopic.msg",
+                "name": "msg",
+                "doc": "The topic registration request.",
+                "type": { "name": "TopicRegistration" },
+                "presence": "required"
+              },
+              {
+                "id": "$service.onRegisterTopic.headers",
+                "name": "headers",
+                "doc": "The HTTP headers of the incoming request.",
+                "type": {
+                  "name": "Headers",
+                  "packageInfo": { "org": "ballerina", "packageName": "http", "moduleName": "http", "version": "2.14.9" }
+                },
+                "presence": "optional"
+              }
+            ],
+            "returns": {
+              "id": "$service.onRegisterTopic.returns",
+              "type": [{ "name": "TopicRegistrationSuccess" }, { "name": "TopicRegistrationError" }, { "name": "error", "builtin": true }]
+            }
+          },
+          {
+            "id": "$service.onDeregisterTopic",
+            "name": "onDeregisterTopic",
+            "kind": "remote",
+            "doc": "Invoked when a publisher requests to deregister a previously registered topic.",
+            "presence": "required",
+            "params": [
+              {
+                "id": "$service.onDeregisterTopic.msg",
+                "name": "msg",
+                "doc": "The topic deregistration request.",
+                "type": { "name": "TopicDeregistration" },
+                "presence": "required"
+              },
+              {
+                "id": "$service.onDeregisterTopic.headers",
+                "name": "headers",
+                "doc": "The HTTP headers of the incoming request.",
+                "type": {
+                  "name": "Headers",
+                  "packageInfo": { "org": "ballerina", "packageName": "http", "moduleName": "http", "version": "2.14.9" }
+                },
+                "presence": "optional"
+              }
+            ],
+            "returns": {
+              "id": "$service.onDeregisterTopic.returns",
+              "type": [{ "name": "TopicDeregistrationSuccess" }, { "name": "TopicDeregistrationError" }, { "name": "error", "builtin": true }]
+            }
+          },
+          {
+            "id": "$service.onUpdateMessage",
+            "name": "onUpdateMessage",
+            "kind": "remote",
+            "doc": "Invoked when a publisher notifies the hub of new content for a registered topic, to be distributed to its subscribers.",
+            "presence": "required",
+            "params": [
+              {
+                "id": "$service.onUpdateMessage.msg",
+                "name": "msg",
+                "doc": "The content update notification, including the topic it belongs to and the new content.",
+                "type": { "name": "UpdateMessage" },
+                "presence": "required"
+              },
+              {
+                "id": "$service.onUpdateMessage.headers",
+                "name": "headers",
+                "doc": "The HTTP headers of the incoming request.",
+                "type": {
+                  "name": "Headers",
+                  "packageInfo": { "org": "ballerina", "packageName": "http", "moduleName": "http", "version": "2.14.9" }
+                },
+                "presence": "optional"
+              }
+            ],
+            "returns": {
+              "id": "$service.onUpdateMessage.returns",
+              "type": [{ "name": "Acknowledgement" }, { "name": "UpdateMessageError" }, { "name": "error", "builtin": true }]
+            }
+          },
+          {
+            "id": "$service.onSubscription",
+            "name": "onSubscription",
+            "kind": "remote",
+            "doc": "Invoked when a subscriber requests to subscribe to a topic. Accept or deny the request outright, or redirect the subscriber to a different hub.",
+            "presence": "optional",
+            "params": [
+              {
+                "id": "$service.onSubscription.msg",
+                "name": "msg",
+                "doc": "The subscription request.",
+                "type": { "name": "Subscription" },
+                "presence": "required"
+              },
+              {
+                "id": "$service.onSubscription.headers",
+                "name": "headers",
+                "doc": "The HTTP headers of the incoming request.",
+                "type": {
+                  "name": "Headers",
+                  "packageInfo": { "org": "ballerina", "packageName": "http", "moduleName": "http", "version": "2.14.9" }
+                },
+                "presence": "optional"
+              },
+              {
+                "id": "$service.onSubscription.hubController",
+                "name": "hubController",
+                "doc": "Handle for marking this subscription as verified programmatically, bypassing the hub's own verification handshake, when automatic subscription intent verification is enabled.",
+                "type": { "name": "Controller" },
+                "presence": "optional"
+              }
+            ],
+            "returns": {
+              "id": "$service.onSubscription.returns",
+              "type": [
+                { "name": "SubscriptionAccepted" },
+                { "name": "SubscriptionPermanentRedirect" },
+                { "name": "SubscriptionTemporaryRedirect" },
+                { "name": "BadSubscriptionError" },
+                { "name": "InternalSubscriptionError" },
+                { "name": "error", "builtin": true }
+              ]
+            }
+          },
+          {
+            "id": "$service.onSubscriptionValidation",
+            "name": "onSubscriptionValidation",
+            "kind": "remote",
+            "doc": "Invoked before intent verification, letting the hub reject a subscription request outright without going through the verification handshake.",
+            "presence": "optional",
+            "params": [
+              {
+                "id": "$service.onSubscriptionValidation.msg",
+                "name": "msg",
+                "doc": "The subscription request.",
+                "type": { "name": "Subscription" },
+                "presence": "required"
+              }
+            ],
+            "returns": {
+              "id": "$service.onSubscriptionValidation.returns",
+              "type": [{ "name": "SubscriptionDeniedError" }, { "name": "error", "builtin": true }, { "name": "()", "builtin": true }]
+            }
+          },
+          {
+            "id": "$service.onSubscriptionIntentVerified",
+            "name": "onSubscriptionIntentVerified",
+            "kind": "remote",
+            "doc": "Invoked once a subscription's intent has been verified with the subscriber, either through the hub's own verification handshake or via Controller.markAsVerified when automatic verification is enabled.",
+            "presence": "required",
+            "params": [
+              {
+                "id": "$service.onSubscriptionIntentVerified.msg",
+                "name": "msg",
+                "doc": "The subscription request, now confirmed via intent verification.",
+                "type": { "name": "VerifiedSubscription" },
+                "presence": "required"
+              }
+            ],
+            "returns": {
+              "id": "$service.onSubscriptionIntentVerified.returns",
+              "type": [{ "name": "error", "builtin": true }, { "name": "()", "builtin": true }]
+            }
+          },
+          {
+            "id": "$service.onUnsubscription",
+            "name": "onUnsubscription",
+            "kind": "remote",
+            "doc": "Invoked when a subscriber requests to unsubscribe from a topic.",
+            "presence": "optional",
+            "params": [
+              {
+                "id": "$service.onUnsubscription.msg",
+                "name": "msg",
+                "doc": "The unsubscription request.",
+                "type": { "name": "Unsubscription" },
+                "presence": "required"
+              },
+              {
+                "id": "$service.onUnsubscription.headers",
+                "name": "headers",
+                "doc": "The HTTP headers of the incoming request.",
+                "type": {
+                  "name": "Headers",
+                  "packageInfo": { "org": "ballerina", "packageName": "http", "moduleName": "http", "version": "2.14.9" }
+                },
+                "presence": "optional"
+              },
+              {
+                "id": "$service.onUnsubscription.hubController",
+                "name": "hubController",
+                "doc": "Handle for marking this unsubscription as verified programmatically, bypassing the hub's own verification handshake, when automatic subscription intent verification is enabled.",
+                "type": { "name": "Controller" },
+                "presence": "optional"
+              }
+            ],
+            "returns": {
+              "id": "$service.onUnsubscription.returns",
+              "type": [
+                { "name": "UnsubscriptionAccepted" },
+                { "name": "BadUnsubscriptionError" },
+                { "name": "InternalUnsubscriptionError" },
+                { "name": "error", "builtin": true }
+              ]
+            }
+          },
+          {
+            "id": "$service.onUnsubscriptionValidation",
+            "name": "onUnsubscriptionValidation",
+            "kind": "remote",
+            "doc": "Invoked before intent verification, letting the hub reject an unsubscription request outright without going through the verification handshake.",
+            "presence": "optional",
+            "params": [
+              {
+                "id": "$service.onUnsubscriptionValidation.msg",
+                "name": "msg",
+                "doc": "The unsubscription request.",
+                "type": { "name": "Unsubscription" },
+                "presence": "required"
+              }
+            ],
+            "returns": {
+              "id": "$service.onUnsubscriptionValidation.returns",
+              "type": [{ "name": "UnsubscriptionDeniedError" }, { "name": "error", "builtin": true }, { "name": "()", "builtin": true }]
+            }
+          },
+          {
+            "id": "$service.onUnsubscriptionIntentVerified",
+            "name": "onUnsubscriptionIntentVerified",
+            "kind": "remote",
+            "doc": "Invoked once an unsubscription's intent has been verified with the subscriber, either through the hub's own verification handshake or via Controller.markAsVerified when automatic verification is enabled.",
+            "presence": "required",
+            "params": [
+              {
+                "id": "$service.onUnsubscriptionIntentVerified.msg",
+                "name": "msg",
+                "doc": "The unsubscription request, now confirmed via intent verification.",
+                "type": { "name": "VerifiedUnsubscription" },
+                "presence": "required"
+              }
+            ],
+            "returns": {
+              "id": "$service.onUnsubscriptionIntentVerified.returns",
+              "type": [{ "name": "error", "builtin": true }, { "name": "()", "builtin": true }]
+            }
+          }
+        ]
+      }
+    }
+  ],
+
+  "annotations": [
+    {
+      "id": "$serviceConfig",
+      "type": { "name": "ServiceConfiguration" },
+      "attachPoint": "service",
+      "presence": "optional"
+    }
+  ]
+}
