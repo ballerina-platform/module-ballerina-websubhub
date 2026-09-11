@@ -2,7 +2,7 @@
 
 This module provides APIs for a WebSub Hub service and WebSub Publisher client. [**WebSub**](https://www.w3.org/TR/websub/) is a mechanism for publisher-subscriber communication over HTTP webhooks, where a [**WebSub Hub**](https://www.w3.org/TR/websub/#hub) handles subscriptions and distributes updates, and a [**WebSub Publisher**](https://www.w3.org/TR/websub/#publisher) advertises topics and hub URLs.
 
-## Key Features
+### Key Features
 
 - WebSub Hub service for handling subscriptions and distributing content updates
 - WebSub Publisher client for advertising topics and hub URLs
