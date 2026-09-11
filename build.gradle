@@ -27,6 +27,9 @@ allprojects {
     version = project.version
 
     apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = jacocoVersion
+    }
     apply plugin: 'maven-publish'
 
     repositories {
@@ -112,11 +115,22 @@ release {
     }
 }
 
-task build {
-    dependsOn(':websubhub-native:build')
-    dependsOn('websubhub-ballerina:build')
-    dependsOn(':websubhub-compiler-plugin:build')
-    dependsOn(':websubhub-compiler-plugin-tests:build')
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn(':websubhub-native:build')
+        dependsOn('websubhub-ballerina:build')
+        dependsOn(':websubhub-compiler-plugin:build')
+        dependsOn(':websubhub-compiler-plugin-tests:build')
+
+    }
+} else {
+    tasks.register('build') {
+        dependsOn(':websubhub-native:build')
+        dependsOn('websubhub-ballerina:build')
+        dependsOn(':websubhub-compiler-plugin:build')
+        dependsOn(':websubhub-compiler-plugin-tests:build')
+
+    }
 }
 
 publishToMavenLocal.dependsOn build
