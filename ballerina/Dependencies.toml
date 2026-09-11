@@ -73,7 +73,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.14.11"
+version = "2.14.13"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -240,9 +240,6 @@ dependencies = [
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "observe"}
 ]
-modules = [
-	{org = "ballerina", packageName = "log", moduleName = "log"}
-]
 
 [[package]]
 org = "ballerina"
@@ -347,7 +344,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websubhub"
-version = "1.16.1"
+version = "1.16.2"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "http"},
@@ -356,7 +353,6 @@ dependencies = [
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.string"},
-	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
