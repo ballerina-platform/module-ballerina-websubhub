@@ -33,25 +33,25 @@ service /websubhub on hubListener {
 
     isolated remote function onRegisterTopic(TopicRegistration message)
                                 returns TopicRegistrationSuccess {
-        log:printDebug("Received topic-registration request ", message = message);
+        log:printDebug("Received topic-registration request ", payload = message);
         return TOPIC_REGISTRATION_SUCCESS;
     }
 
     isolated remote function onDeregisterTopic(TopicDeregistration message)
                         returns TopicDeregistrationSuccess {
-        log:printDebug("Received topic-deregistration request ", message = message);
+        log:printDebug("Received topic-deregistration request ", payload = message);
         return TOPIC_DEREGISTRATION_SUCCESS;
     }
 
     isolated remote function onUpdateMessage(UpdateMessage message)
                returns Acknowledgement|UpdateMessageError {
-        log:printDebug("Received content-update request ", message = message);
+        log:printDebug("Received content-update request ", payload = message);
         return ACKNOWLEDGEMENT;
     }
     
     isolated remote function onSubscription(Subscription message)
                 returns SubscriptionAccepted {
-        log:printDebug("Received subscription request ", message = message);
+        log:printDebug("Received subscription request ", payload = message);
         return SUBSCRIPTION_ACCEPTED;
     }
 
@@ -64,7 +64,7 @@ service /websubhub on hubListener {
 
     isolated remote function onUnsubscription(Unsubscription message)
                returns UnsubscriptionAccepted {
-        log:printDebug("Received unsubscription request ", message = message);
+        log:printDebug("Received unsubscription request ", payload = message);
         return UNSUBSCRIPTION_ACCEPTED;
     }
 

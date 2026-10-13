@@ -1,20 +1,20 @@
 [package]
 org = "ballerina"
 name = "websubhub"
-version = "1.16.2"
+version = "1.17.0"
 authors = ["Ballerina"]
 keywords = ["websub", "hub", "publisher", "service", "listener", "client", "Type/Connector", "Type/Trigger", "Area/Built-in", "Area/Communication", "Name/WebSub Hub"]
 repository = "https://github.com/ballerina-platform/module-ballerina-websubhub"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.12.0"
+distribution = "2201.14.0"
 include = ["metadata/**"]
 
-[platform.java21]
+[platform.java25]
 graalvmCompatible = true
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "websubhub-native"
-version = "1.16.2"
-path = "../native/build/libs/websubhub-native-1.16.2-SNAPSHOT.jar"
+version = "1.17.0"
+path = "../native/build/libs/websubhub-native-1.17.0-SNAPSHOT.jar"
