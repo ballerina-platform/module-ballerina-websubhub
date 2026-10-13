@@ -45,7 +45,7 @@ service /websubhub on securedListener {
         if (auth is string) {
             return error TopicRegistrationError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
-        log:printDebug("Received topic-registration request ", message = message);
+        log:printDebug("Received topic-registration request ", payload = message);
         return TOPIC_REGISTRATION_SUCCESS;
     }
 
@@ -55,7 +55,7 @@ service /websubhub on securedListener {
         if (auth is string) {
             return error TopicDeregistrationError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
-        log:printDebug("Received topic-deregistration request ", message = message);
+        log:printDebug("Received topic-deregistration request ", payload = message);
         return TOPIC_DEREGISTRATION_SUCCESS;
     }
 
@@ -65,7 +65,7 @@ service /websubhub on securedListener {
         if (auth is string) {
             return error UpdateMessageError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
-        log:printDebug("Received content-update request ", message = message);
+        log:printDebug("Received content-update request ", payload = message);
         return ACKNOWLEDGEMENT;
     }
     
@@ -75,7 +75,7 @@ service /websubhub on securedListener {
         if (auth is string) {
             return error InternalSubscriptionError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
-        log:printDebug("Received subscription request ", message = message);
+        log:printDebug("Received subscription request ", payload = message);
         return SUBSCRIPTION_ACCEPTED;
     }
 
@@ -88,7 +88,7 @@ service /websubhub on securedListener {
         if (auth is string) {
             return error InternalUnsubscriptionError(auth, statusCode = http:STATUS_UNAUTHORIZED);
         }
-        log:printDebug("Received unsubscription request ", message = message);
+        log:printDebug("Received unsubscription request ", payload = message);
         return UNSUBSCRIPTION_ACCEPTED;
     }
 
