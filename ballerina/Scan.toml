@@ -1,0 +1,6 @@
+# ballerina:13 / ballerina:14 match identifier names that contain "secret" and are false positives here.
+# `HUB_SECRET` is a private constant holding the WebSub form-parameter name "hub.secret" (not a credential), and the
+# flagged `hubSecret`/`secret` record fields and variables are optional (`()` by default) subscriber-supplied values
+# used for HMAC content signing; no secret value is hardcoded.
+[rule]
+exclude = ["ballerina:13", "ballerina:14"]
