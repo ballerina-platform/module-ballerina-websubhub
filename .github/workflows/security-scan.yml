@@ -17,3 +17,9 @@ jobs:
       actions: read
     uses: ballerina-platform/ballerina-library/.github/workflows/security-scan-template.yml@main
     secrets: inherit
+    with:
+      # examples/jms-websubhub needs IBM MQ JMS jars (fscontext.jar, providerutil.jar) that users supply
+      # themselves and that are not on Maven, so that package cannot be compiled by bal scan in CI.
+      # Scan the other example packages explicitly instead of the whole examples/ directory.
+      scan-examples: false
+      additional-scan-paths: "examples/in-memory-hub,examples/kafka-hub"
