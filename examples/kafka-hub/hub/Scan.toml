@@ -1,0 +1,5 @@
+# ballerina:14 matches identifier names ("password", "auth") and is a false positive here: the flagged lines
+# pass the configurable trust store password (`config:OAUTH2_CONFIG.trustStorePassword`) and hold the result of
+# JWT authentication in a variable named `auth`. No credential value is hardcoded.
+[rule]
+exclude = ["ballerina:14"]

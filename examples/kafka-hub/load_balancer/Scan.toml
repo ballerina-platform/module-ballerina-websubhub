@@ -1,0 +1,5 @@
+# ballerina/http:1 (resource with the `default` accessor) is a false positive here: this service is a
+# reverse proxy that must forward every HTTP method of the hub API unchanged to the load-balanced hub
+# instances, which then enforce the allowed methods themselves.
+[rule]
+exclude = ["ballerina/http:1"]
