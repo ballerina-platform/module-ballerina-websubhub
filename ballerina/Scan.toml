@@ -2,5 +2,8 @@
 # `HUB_SECRET` is a private constant holding the WebSub form-parameter name "hub.secret" (not a credential), and the
 # flagged `hubSecret`/`secret` record fields and variables are optional (`()` by default) subscriber-supplied values
 # used for HMAC content signing; no secret value is hardcoded.
+# TODO: replace this rule exclusion with a targeted scan suppression (with a reason) once `bal scan` supports it
+# (planned for v0.13.0), and fix the false positives on the scan tool side: a secret-named identifier should only be
+# reported when it is assigned a fixed value.
 [rule]
 exclude = ["ballerina:13", "ballerina:14"]
